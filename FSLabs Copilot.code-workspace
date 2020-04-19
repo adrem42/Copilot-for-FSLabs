@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/*.cpp": true,
+			"**/*.def": true,
+			"**/*.h": true,
+			"**/*.hpp": true,
+			"**/*.lib": true,
+			"**/x64/": true,
+			"docs": true,
+			"**/*.dll": true
+		},
+		"emeraldwalk.runonsave": {
+			"commands": [
+				{
+					"match": ".*",
+					"cmd": "cd ${workspaceFolder} & copytosim.bat"
+				}
+			]
+		}
+	},
+	
+}

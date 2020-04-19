@@ -1,0 +1,5 @@
+LIBRARY "FSL2Json"
+EXPORTS
+Panels DATA
+DLLStart
+DLLStop

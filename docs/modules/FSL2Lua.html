@@ -1,0 +1,967 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Tables">Tables</a></li>
+<li><a href="#Class_MCDU">Class MCDU </a></li>
+<li><a href="#Class_FCU">Class FCU </a></li>
+<li><a href="#Class_Control">Class Control </a></li>
+<li><a href="#Class_Button">Class Button </a></li>
+<li><a href="#Class_Guard">Class Guard </a></li>
+<li><a href="#Class_Switch">Class Switch </a></li>
+<li><a href="#Class_FcuSwitch">Class FcuSwitch </a></li>
+<li><a href="#Class_KnobWithoutPositions">Class KnobWithoutPositions </a></li>
+<li><a href="#"> </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/VoiceCommand.html">VoiceCommand</a></li>
+  <li><a href="../modules/Event.html">Event</a></li>
+  <li><a href="../modules/copilot.html">copilot</a></li>
+  <li><strong>FSL2Lua</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/flows.md.html">flows</a></li>
+  <li><a href="../topics/installation.md.html">installation</a></li>
+  <li><a href="../topics/listofcontrols.md.html">listofcontrols</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>FSL2Lua</code></h1>
+<p></p>
+<p></p>
+
+
+<h2><a href="#Tables">Tables</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#FSL">FSL</a></td>
+	<td class="summary">The main module table containing all the controls and some other functions</td>
+	</tr>
+</table>
+<h2><a href="#Class_MCDU">Class MCDU </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:getArray">MCDU:getArray()</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:getString">MCDU:getString([startpos[, endpos]])</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad()</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:type">MCDU:type(str)</a></td>
+	<td class="summary">types str on the keyboard</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:isOn">MCDU:isOn()</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells()</a></td>
+	<td class="summary">print information about each cells into the console</td>
+	</tr>
+</table>
+<h2><a href="#Class_FCU">Class FCU </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#FCU:getField">FCU:getField(field)</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FCU:isBirdOn">FCU:isBirdOn()</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+<h2><a href="#Class_Control">Class Control </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Control:macro">Control:macro(clickType)</a></td>
+	<td class="summary">If for some reason you want to use a macro directly instead of using one of the control&rsquo;s methods</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Control:isLit">Control:isLit()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Control:getLvarValue">Control:getLvarValue()</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+<h2><a href="#Class_Button">Class Button </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Button:__call">Button:__call()</a></td>
+	<td class="summary">Press the button</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Button:rightClick">Button:rightClick()</a></td>
+	<td class="summary">Simulate a click of the right mouse button (useful for the PA button)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Button:isDown">Button:isDown()</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+<h2><a href="#Class_Guard">Class Guard </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Guard:lift">Guard:lift()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Guard:close">Guard:close()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Guard:isOpen">Guard:isOpen()</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+<h2><a href="#Class_Switch">Class Switch </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Switch:__call">Switch:__call(targetPos)</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Switch:getPosn">Switch:getPosn()</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Switch:toggle">Switch:toggle()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+</table>
+<h2><a href="#Class_FcuSwitch">Class FcuSwitch </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#FcuSwitch:push">FcuSwitch:push()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FcuSwitch:pull">FcuSwitch:pull()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+</table>
+<h2><a href="#Class_KnobWithoutPositions">Class KnobWithoutPositions </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:__call">KnobWithoutPositions:__call(targetPos)</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:rotateLeft">KnobWithoutPositions:rotateLeft()</a></td>
+	<td class="summary">rotate the knob left by 1 tick</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:rotateRight">KnobWithoutPositions:rotateRight()</a></td>
+	<td class="summary">rotate the knob right by 1 tick</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:getPosn">KnobWithoutPositions:getPosn()</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:rotateBy">KnobWithoutPositions:rotateBy(ticks[, pause=70])</a></td>
+	<td class="summary">Rotates the knob by amount of ticks</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:random">KnobWithoutPositions:random([lower=0[, upper=100]])</a></td>
+	<td class="summary">Set to random position between lower and upper</td>
+	</tr>
+</table>
+<h2><a href="#"> </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
+	<td class="summary"></td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Tables"></a>Tables</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "FSL"></a>
+    <strong>FSL</strong>
+    </dt>
+    <dd>
+    The main module table containing all the controls and some other functions
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">CPT</span>
+         table containing controls on the left side
+        </li>
+        <li><span class="parameter">FO</span>
+         table containing controls on the right side
+        </li>
+        <li><span class="parameter">PF</span>
+         table containing controls on the side of the Pilot Flying
+ <br>For example, if the PF is the Captain, it will be the same as the CPT table.
+ <br>The controls on the PM side are in the root FSL table.
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.GSLD_EFIS_VORADF_1_Switch(<span class="string">"VOR"</span>)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_MCDU"></a>Class MCDU </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "MCDU:getArray"></a>
+    <strong>MCDU:getArray()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+         table: array of tables representing display cells.</p>
+
+<p> Each cell table has three fields:</p>
+
+<p> char: the character (nil if the cell is blank)</p>
+
+<p> color: string : <ul><li>&lsquo;cyan&rsquo;</li><li>&lsquo;grey&rsquo;</li><li>&lsquo;green&rsquo;</li><li>&lsquo;magenta&rsquo;</li><li>&lsquo;amber&rsquo;</li><li>&lsquo;white&rsquo;</li></ul></p>
+
+<p> isBold: boolean
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:getString"></a>
+    <strong>MCDU:getString([startpos[, endpos]])</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">startpos</span>
+            <span class="types"><span class="type">number</span></span>
+
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">endpos</span>
+            <span class="types"><span class="type">number</span></span>
+
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:getScratchpad"></a>
+    <strong>MCDU:getScratchpad()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        string: only the last line
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:type"></a>
+    <strong>MCDU:type(str)</strong>
+    </dt>
+    <dd>
+    types str on the keyboard
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:isOn"></a>
+    <strong>MCDU:isOn()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean: true if the display is blank
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:printCells"></a>
+    <strong>MCDU:printCells()</strong>
+    </dt>
+    <dd>
+    print information about each cells into the console
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_FCU"></a>Class FCU </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "FCU:getField"></a>
+    <strong>FCU:getField(field)</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">field</span>
+         string
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.FCU:getField(<span class="string">"SPD"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "FCU:isBirdOn"></a>
+    <strong>FCU:isBirdOn()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean: true if the &lsquo;bird&rsquo; is enabled
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_Control"></a>Class Control </h2>
+
+          <div class="section-description">
+          Abstract control
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Control:macro"></a>
+    <strong>Control:macro(clickType)</strong>
+    </dt>
+    <dd>
+    If for some reason you want to use a macro directly instead of using one of the control&rsquo;s methods
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">clickType</span>
+         string: One of the following:
+ <ul><li>&lsquo;leftPress&rsquo;</li>
+ <li>&lsquo;leftRelease&rsquo;</li>
+ <li>&lsquo;rightPress&rsquo;</li>
+ <li>&lsquo;rightRelease&rsquo;</li>
+ <li>&lsquo;wheelUp&rsquo;</li>
+ <li>&lsquo;wheelDown&rsquo;</li></ul>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Control:isLit"></a>
+    <strong>Control:isLit()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+         boolean : true if the control has a light and it&rsquo;s on.</p>
+
+<p> The control needs to have an LVar associated with its light for this to work.</p>
+
+<p> Unfortunately, overhead-style square buttons don&rsquo;t have such LVars.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> <span class="keyword">not</span> FSL.GSLD_EFIS_CSTR_Button:isLit() <span class="keyword">then</span>
+  FSL.GSLD_EFIS_CSTR_Button()
+<span class="keyword">end</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Control:getLvarValue"></a>
+    <strong>Control:getLvarValue()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_Button"></a>Class Button </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Button:__call"></a>
+    <strong>Button:__call()</strong>
+    </dt>
+    <dd>
+    Press the button
+
+
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.OVHD_ELEC_BAT_1_Button()</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Button:rightClick"></a>
+    <strong>Button:rightClick()</strong>
+    </dt>
+    <dd>
+    Simulate a click of the right mouse button (useful for the PA button)
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Button:isDown"></a>
+    <strong>Button:isDown()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean: true if the button is depressed
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_Guard"></a>Class Guard </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Guard:lift"></a>
+    <strong>Guard:lift()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Guard:close"></a>
+    <strong>Guard:close()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Guard:isOpen"></a>
+    <strong>Guard:isOpen()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_Switch"></a>Class Switch </h2>
+
+          <div class="section-description">
+          All controls that have named positions
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Switch:__call"></a>
+    <strong>Switch:__call(targetPos)</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">targetPos</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.GSLD_EFIS_VORADF_1_Switch(<span class="string">"VOR"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Switch:getPosn"></a>
+    <strong>Switch:getPosn()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        current position of the switch in uppercase
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Switch:toggle"></a>
+    <strong>Switch:toggle()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.OVHD_EXTLT_Land_L_Switch:toggle()</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_FcuSwitch"></a>Class FcuSwitch </h2>
+
+          <div class="section-description">
+          Switches that can be pushed and pulled
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "FcuSwitch:push"></a>
+    <strong>FcuSwitch:push()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "FcuSwitch:pull"></a>
+    <strong>FcuSwitch:pull()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_KnobWithoutPositions"></a>Class KnobWithoutPositions </h2>
+
+          <div class="section-description">
+          Knobs with no fixed positions
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "KnobWithoutPositions:__call"></a>
+    <strong>KnobWithoutPositions:__call(targetPos)</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">targetPos</span>
+         number: relative position from 0-100
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.OVHD_INTLT_Integ_Lt_Knob(<span class="number">42</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "KnobWithoutPositions:rotateLeft"></a>
+    <strong>KnobWithoutPositions:rotateLeft()</strong>
+    </dt>
+    <dd>
+    rotate the knob left by 1 tick
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "KnobWithoutPositions:rotateRight"></a>
+    <strong>KnobWithoutPositions:rotateRight()</strong>
+    </dt>
+    <dd>
+    rotate the knob right by 1 tick
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "KnobWithoutPositions:getPosn"></a>
+    <strong>KnobWithoutPositions:getPosn()</strong>
+    </dt>
+    <dd>
+
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number: relative position from 0-100
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "KnobWithoutPositions:rotateBy"></a>
+    <strong>KnobWithoutPositions:rotateBy(ticks[, pause=70])</strong>
+    </dt>
+    <dd>
+    Rotates the knob by amount of ticks
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">ticks</span>
+            <span class="types"><span class="type">number</span></span>
+         positive to rotate right, negative to rotate left
+        </li>
+        <li><span class="parameter">pause</span>
+            <span class="types"><span class="type">number</span></span>
+         milliseconds to sleep between each tick
+         (<em>default</em> 70)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "KnobWithoutPositions:random"></a>
+    <strong>KnobWithoutPositions:random([lower=0[, upper=100]])</strong>
+    </dt>
+    <dd>
+    Set to random position between lower and upper
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lower</span>
+            <span class="types"><span class="type">number</span></span>
+
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">upper</span>
+            <span class="types"><span class="type">number</span></span>
+
+         (<em>default</em> 100)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name=""></a> </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Bind"></a>
+    <strong>Bind(data)</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">data</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         <span></p>
+
+<p> For a joystick button bind, define the &lsquo;btn&rsquo; field, the value of which should be a string containing the FSUIPC joystick letter and button number (for example, &lsquo;A42&rsquo;).</p>
+
+<p> For a key bind, define the &lsquo;key&rsquo; field.</p>
+
+<p> The following values for &lsquo;key&rsquo; are accepted:</p>
+
+<p> <ul><li>Alphanumeric character keys</li>
+ <li>Escaped keycode for weird characters like &lsquo;ö&rsquo; (key = &lsquo;\222&rsquo;).
+ <br>The keycodes can be looked up in the FSUIPC console after enabling the &lsquo;Button and key operations&rsquo; logging facility.</li>
+ <li>Enter</li>
+ <li>Pause</li>
+ <li>CapsLock</li>
+ <li>Esc </li>
+ <li>Escape</li>
+ <li>Space</li>
+ <li>PageUp</li>
+ <li>PageDown</li>
+ <li>End</li>
+ <li>Home </li>
+ <li>LeftArrow</li>
+ <li>UpArrow </li>
+ <li>RightArrow </li>
+ <li>DownArrow</li>
+ <li>PrintScreen</li>
+ <li>Ins</li>
+ <li>Insert</li>
+ <li>Del</li>
+ <li>Delete</li>
+ <li>NumpadEnter </li>
+ <li>NumpadPlus</li>
+ <li>NumpadMinus</li>
+ <li>NumpadDot </li>
+ <li>NumpadDel</li>
+ <li>NumpadDiv</li>
+ <li>NumpadMult </li></ul></p>
+
+<p> You can combine one key with one or more of the following shift keys using + as the delimiter:</p>
+
+<p> <ul><li>Tab</li>
+ <li>Shift</li>
+ <li>Ctrl</li>
+ <li>LeftAlt</li>
+ <li>RightAlt</li>
+ <li>Windows</li>
+ <li>Apps</li></ul>
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">Bind {key = <span class="string">"SHIFT+A"</span>, onPress = FSL.MIP_ISIS_BARO_Button}
+Bind {
+  key = <span class="string">"NumpadEnter"</span>,
+  onPressRepeat = <span class="keyword">function</span>() FSL.OVHD_INTLT_Integ_Lt_Knob:rotateLeft() <span class="keyword">end</span>
+}
+Bind {
+  btn = <span class="string">"C5"</span>,
+  onPress = FSL.PED_COMM_INT_RAD_Switch_RAD,
+  onRelease = FSL.PED_COMM_INT_RAD_Switch_OFF
+}</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-03-14 14:44:19 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_VoiceCommand">Class VoiceCommand </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>VoiceCommand</strong></li>
+  <li><a href="../modules/Event.html">Event</a></li>
+  <li><a href="../modules/copilot.html">copilot</a></li>
+  <li><a href="../modules/FSL2Lua.html">FSL2Lua</a></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="../topics/flows.md.html">flows</a></li>
+  <li><a href="../topics/installation.md.html">installation</a></li>
+  <li><a href="../topics/listofcontrols.md.html">listofcontrols</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>VoiceCommand</code></h1>
+<p>VoiceCommand is a subclass of Event.</p>
+<p>A voice command can be in one of these  states:<br></p>
+
+<ol>
+<li>Deactivated: the phrases aren&rsquo;t in the recognizer&rsquo;s grammar.</li>
+<li>Ignore mode: the phrases are in the recognizer&rsquo;s grammar but recognition events are ignored by Copilot.</li>
+<li>Active: the phrases are in the recognizer&rsquo;s grammar and Copilot triggers the voice command.</li>
+</ol>
+
+
+<p>If you only have a couple of phrases in the recognizer, especially short ones, the accuracy will be low and
+the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of phrases
+will also degrade the accuracy. I haven&rsquo;t had much time to experiment with balancing this - I&rsquo;ve only made a couple of
+flights since adding speech recognition.</p>
+
+
+<h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:new">VoiceCommand:new(voiceCommand)</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:resetGrammar">VoiceCommand:resetGrammar()</a></td>
+	<td class="summary">Static method that resets the recognizer&rsquo;s grammar.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:activate">VoiceCommand:activate([noGrammarReset=false])</a></td>
+	<td class="summary"></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:setIgnoreMode">VoiceCommand:setIgnoreMode([noGrammarReset=false])</a></td>
+	<td class="summary">The phrases are added to the recognizer&rsquo;s grammar, but recognition<br/>
+ events are ignored by Copilot.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:deactivate">VoiceCommand:deactivate([noGrammarReset=false])</a></td>
+	<td class="summary">Removes the phrases from the recognizer</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:activateOn">VoiceCommand:activateOn(...)</a></td>
+	<td class="summary">The voice command will become active when the events passed as parameters</p>
+
+<p> are triggered.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:deactivateOn">VoiceCommand:deactivateOn(...)</a></td>
+	<td class="summary">The voice command will be deactivated when the events passed as parameters</p>
+
+<p> are triggered.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:setIgnoreModeOn">VoiceCommand:setIgnoreModeOn(...)</a></td>
+	<td class="summary">The voice command will go into ignore mode when the events passed as parameters</p>
+
+<p> are triggered.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:removeEventRef">VoiceCommand:removeEventRef(refType, ...)</a></td>
+	<td class="summary">Use this you want to disable the effect of <a href="../modules/VoiceCommand.html#VoiceCommand:activateOn">activateOn</a>, <a href="../modules/VoiceCommand.html#VoiceCommand:deactivateOn">deactivateOn</a> or <a href="../modules/VoiceCommand.html#VoiceCommand:setIgnoreModeOn">setIgnoreModeOn</a> for one of the predefined voice commands in <a href="../modules/copilot.html#voiceCommands">copilot.voiceCommands</a></td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Class_VoiceCommand"></a>Class VoiceCommand </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "VoiceCommand:new"></a>
+    <strong>VoiceCommand:new(voiceCommand)</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">voiceCommand</span> A table containing the following fields (also the fields taken by the <a href="Event.html#Event:new">parent constructor</a>.):
+        <ul>
+        <li><span class="parameter">phrase</span>
+         string or array of strings
+        </li>
+        <li><span class="parameter">confidence</span>
+            <span class="types"><span class="type">number</span></span>
+         between 0 and 1
+         (<em>default</em> 0.93)
+        </li>
+        </li></ul>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> myVoiceCommand = VoiceCommand:new {
+ phrase = <span class="string">"hello"</span>,
+ confidence = <span class="number">0.95</span>,
+ action = <span class="keyword">function</span>() <span class="global">print</span> <span class="string">"hi there"</span> <span class="keyword">end</span>
+}</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:resetGrammar"></a>
+    <strong>VoiceCommand:resetGrammar()</strong>
+    </dt>
+    <dd>
+    Static method that resets the recognizer&rsquo;s grammar.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:activate"></a>
+    <strong>VoiceCommand:activate([noGrammarReset=false])</strong>
+    </dt>
+    <dd>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">noGrammarReset</span>
+            <span class="types"><span class="type">bool</span></span>
+         true if you don&rsquo;t want to reset the grammar after the phrases are added to the recognizer
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:setIgnoreMode"></a>
+    <strong>VoiceCommand:setIgnoreMode([noGrammarReset=false])</strong>
+    </dt>
+    <dd>
+    The phrases are added to the recognizer&rsquo;s grammar, but recognition<br/>
+ events are ignored by Copilot.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">noGrammarReset</span>
+            <span class="types"><span class="type">bool</span></span>
+         true if you don&rsquo;t want to reset the grammar after the phrases are added to the recognizer
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:deactivate"></a>
+    <strong>VoiceCommand:deactivate([noGrammarReset=false])</strong>
+    </dt>
+    <dd>
+    Removes the phrases from the recognizer
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">noGrammarReset</span>
+            <span class="types"><span class="type">bool</span></span>
+         true if you don&rsquo;t want to reset the grammar after the phrases are removed from the recognizer
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:activateOn"></a>
+    <strong>VoiceCommand:activateOn(...)</strong>
+    </dt>
+    <dd>
+    The voice command will become active when the events passed as parameters</p>
+
+<p> are triggered.</p>
+
+<p> Adds an &lsquo;activate&rsquo; event reference that can be removed from the event via <a href="../modules/VoiceCommand.html#VoiceCommand:removeEventRef">removeEventRef</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+          one or more events
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:deactivateOn"></a>
+    <strong>VoiceCommand:deactivateOn(...)</strong>
+    </dt>
+    <dd>
+    The voice command will be deactivated when the events passed as parameters</p>
+
+<p> are triggered.</p>
+
+<p> Adds a &lsquo;deactivate&rsquo; event reference that can be removed from the event via <a href="../modules/VoiceCommand.html#VoiceCommand:removeEventRef">removeEventRef</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+          one or more events
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:setIgnoreModeOn"></a>
+    <strong>VoiceCommand:setIgnoreModeOn(...)</strong>
+    </dt>
+    <dd>
+    The voice command will go into ignore mode when the events passed as parameters</p>
+
+<p> are triggered.</p>
+
+<p> Adds a &lsquo;ignoreMode&rsquo; event reference that can be removed from the event via <a href="../modules/VoiceCommand.html#VoiceCommand:removeEventRef">removeEventRef</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+          one or more events
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:removeEventRef"></a>
+    <strong>VoiceCommand:removeEventRef(refType, ...)</strong>
+    </dt>
+    <dd>
+    Use this you want to disable the effect of <a href="../modules/VoiceCommand.html#VoiceCommand:activateOn">activateOn</a>, <a href="../modules/VoiceCommand.html#VoiceCommand:deactivateOn">deactivateOn</a> or <a href="../modules/VoiceCommand.html#VoiceCommand:setIgnoreModeOn">setIgnoreModeOn</a> for one of the predefined voice commands in <a href="../modules/copilot.html#voiceCommands">copilot.voiceCommands</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">refType</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         &lsquo;activate&rsquo;, &lsquo;deactivate&rsquo; or &lsquo;ignore&rsquo;
+        </li>
+        <li><span class="parameter">...</span>
+         one or more <a href="#Class_Event">Event</a> objects
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">copilot.voiceCommands.gearUp:removeEventRef(<span class="string">'activate'</span>,
+copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-03-14 14:44:19 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

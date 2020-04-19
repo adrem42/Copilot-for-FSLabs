@@ -1,0 +1,8 @@
+<SimBase.Document Type="AddOnXml" version="4,0" id="add-on">
+  <AddOn.Name>Copilot for FSLabs</AddOn.Name>
+  <AddOn.Component>
+    <Name>Copilot for FSLabs</Name>
+    <Category>DLL</Category>
+    <Path>Copilot.dll</Path>
+  </AddOn.Component>
+</SimBase.Document>
