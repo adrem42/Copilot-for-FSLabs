@@ -8,6 +8,8 @@
 
 4. After P3D has loaded into the main menu, you'll find the configuration file here at *FSUIPC directory/FSLabs Copilot/options.ini*. Open it and adjust the settings.
 
+The script will auto-run after you load a flight with FSLabs.
+
 ## Setting up speech recognition
 
 You need to have English as the Windows language in order for speech recognition to work  
