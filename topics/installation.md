@@ -6,7 +6,7 @@
 
 3. Run the simulator and respond to the prompt asking you to enable the addon.
 
-4. After P3D has loaded into the main menu, you'll find the configuration file here at *FSUIPC directory/FSLabs Copilot/options.ini*. Open it and adjust the settings.
+4. After P3D has loaded into the main menu, you'll find the configuration file at *FSUIPC directory/FSLabs Copilot/options.ini*. Open it and adjust the settings.
 
 The script will auto-run after you load a flight with FSLabs.
 

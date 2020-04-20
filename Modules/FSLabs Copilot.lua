@@ -154,7 +154,7 @@ local function setup()
     FSL:enableSequences()
   end
 
-  pcall(function() require "custom" end)
+  pcall(function() require "FSLabs Copilot.custom" end)
 
   if copilot.isVoiceControlEnabled then
     copilot.recognizer:resetGrammar()
