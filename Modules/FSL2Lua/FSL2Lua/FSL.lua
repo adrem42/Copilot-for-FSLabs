@@ -1548,9 +1548,9 @@ return {
       y = "222",
       z = ""
     },
+    type = "",
     rectangle = "0x40000037",
     toggle = false,
-    type = "FcuSwitch"
   },
   MIP_ISIS_BARO_Knob = {
     LVar = "VC_MIP_ISIS_BARO_Knob",

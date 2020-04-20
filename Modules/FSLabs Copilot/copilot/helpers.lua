@@ -47,7 +47,7 @@ function copilot.GS() return ipc.readUD(0x02B4) / 65536 * 3600 / 1852 end
 function copilot.radALT() return ipc.readUD(0x31E4) / 65536 end
 --- returns the IAS in knots
 function copilot.IAS() return ipc.readUW(0x02BC) / 128 end
---- returns true if the thrust levers are below the IDLE positions
+--- returns true if the thrust levers are below the IDLE position
 function copilot.reverseThrustSelected() return ipc.readLvar("VC_PED_TL_1") > 100 and ipc.readLvar("VC_PED_TL_2") > 100 end
 --- returns the altitude in feet referenced to 1013 hPa
 function copilot.ALT() return ipc.readSD(0x3324) end
@@ -67,8 +67,8 @@ function copilot.enginesRunning(both)
   local eng2_N1 = ipc.readDBL(0x2110)
   local eng1_running = eng1_N1 > 15
   local eng2_running = eng2_N1 > 15
-  if both then return eng1_running and eng2_running
-  else return eng1_running or eng2_running end
+  if both then return eng1_running and eng2_running end
+  return eng1_running or eng2_running
 end
 
 function copilot.exit(msg)

@@ -6,7 +6,9 @@ local ipc = ipc
 local FlightPhaseProcessor = {}
 
 function FlightPhaseProcessor:init()
-  if not copilot.enginesRunning() then
+  if self.initialFlightPhase then
+    self:setFlightPhase(self.initialFlightPhase)
+  elseif not copilot.enginesRunning() then
     self:setFlightPhase(flightPhases.engineShutdown)
   elseif copilot.onGround() then
     self:setFlightPhase(flightPhases.taxi:setCtxEvent(events.enginesStarted))
@@ -41,6 +43,10 @@ function FlightPhaseProcessor:setFlightPhase(newFlightPhase)
     newFlightPhase.ctxEvent:trigger()
     newFlightPhase.ctxEvent = nil
   end
+end
+
+function FlightPhaseProcessor:setInitialFlightPhase(flightPhase)
+  self.initialFlightPhase = flightPhase
 end
 
 function FlightPhaseProcessor:update()
@@ -79,7 +85,7 @@ function FlightPhase:setCtxEvent(event)
 end
 
 local function waitForEngineStart()
-  local chocksReleased = false
+  local chocksReleased = ipc.readLvar("FSLA320_Wheel_Chocks") == 0
   repeat
     if not chocksReleased and ipc.readLvar("FSLA320_Wheel_Chocks") == 0 then
       chocksReleased = true

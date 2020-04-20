@@ -2,7 +2,7 @@ local options = {
   {
     "General",
     {
-      {"http_port", 8080, "The port of the web MCDU"},
+      {"http_port", 8080, "The port of the web MCDU - leave it at default unless you changed it in the FSLabs settings"},
       {"log_level", 2},
       {"PM_seat", "right", "Where the Pilot Monitoring sits in the cockpit - left or right"},
       {"sound_dir", "Hannes"},
@@ -82,9 +82,9 @@ do
 end
 
 local function loadUserOptions(path)
-  local f = file.read(path)
-  if f then
-    for sectionTitle, iniSection in f:gmatch("%[(.-)%]([^%[%]]+)") do
+  local iniFile = file.read(path)
+  if iniFile then
+    for sectionTitle, iniSection in iniFile:gmatch("%[(.-)%]([^%[%]]+)") do
       for _, section in ipairs(options) do
         if section[sectionIndex.title] == sectionTitle then
           for iniKey, iniValue in iniSection:gmatch("([%w _]+)=([%w_%.%+]+)") do

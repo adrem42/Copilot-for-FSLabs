@@ -130,7 +130,7 @@ local MCDU = {
 function MCDU:new(side)
   self.__index = self
   return setmetatable ({
-    request = McduHttpRequest:new(side, 8080),
+    request = HttpRequest:new("", 8080, "MCDU/Display/3CA" .. side),
     sideStr = side == 1 and "CPT" or side == 2 and "FO"
   }, self)
 end
@@ -225,6 +225,33 @@ end
 
 FSL.CPT.MCDU = MCDU:new(1)
 FSL.FO.MCDU = MCDU:new(2)
+
+local FCU = {
+  request = HttpRequest:new("", 8080, "FCU/Display")
+}
+FSL.FCU = FCU
+
+function FCU:getField(json, fieldName)
+  return json:match(fieldName .. ".-([%d%s]+)"):gsub(" ","")
+end
+
+function FCU:get()
+  local json = self.request:get()
+  local SPD = self:getField(json, "SPD")
+  local HDG = self:getField(json, "HDG")
+  local ALT = self:getField(json, "ALT")
+  local ret = {
+    SPD = tonumber(SPD),
+    HDG = tonumber(HDG),
+    ALT = tonumber(ALT),
+    isBirdOn = json:find("HDG_VS_SEL\":false") ~= nil
+  } 
+  return ret
+end
+
+function FCU:setHttpPort(port)
+  self.request:setPort(tonumber(port))
+end
 
 --- Abstract control
 --- @type Control

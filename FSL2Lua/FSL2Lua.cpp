@@ -14,8 +14,10 @@ extern "C"
 __declspec(dllexport) int luaopen_FSL2LuaDLL(lua_State * L)
 {
     sol::state_view lua(L);
-    sol::usertype<Mcdu> McduType = lua.new_usertype<Mcdu>("McduHttpRequest", sol::constructors < Mcdu(int, int)>());
-    McduType["get"] = &Mcdu::getFromLua;
-    McduType["setPort"] = &Mcdu::setPort;
-    return 1;
+
+    sol::usertype<HttpRequest> HttpRequestType = lua.new_usertype<HttpRequest>("HttpRequest", sol::constructors<HttpRequest(const std::string&, int, const std::string&)>());
+    HttpRequestType["get"] = &HttpRequest::get;
+    HttpRequestType["setPort"] = &HttpRequest::setPort;
+
+    return 0;
 }

@@ -23,6 +23,7 @@ if err then copilot.exit(err) end
 
 FSL = require "FSL2Lua"
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
+FSL:setHttpPort(copilot.UserOptions.general.http_port)
 FSL:enableSequences()
 
 copilot.soundDir = APPDIR .. "\\Sounds\\"
@@ -114,12 +115,14 @@ if debugger.enable then
     update()
     debugger.debuggee.poll()
   end
-  Bind {
-    key = debugger.bind,
-    onPress = function()
-      debugger.debuggee.start(debugger.json)
-    end
-  }
+  if debugger.bind then
+    Bind {
+      key = debugger.bind,
+      onPress = function()
+        debugger.debuggee.start(debugger.json)
+      end
+    }
+  end
 end
 
 local function setup()
@@ -151,15 +154,16 @@ local function setup()
     FSL:enableSequences()
   end
 
+  pcall(function() require "custom" end)
+
   if copilot.isVoiceControlEnabled then
     copilot.recognizer:resetGrammar()
   end
-
-  pcall(function() require "custom" end)
   
 end
 
 copilot.logger:info(">>>>>> Script started <<<<<<")
+
 setup()
 
 event.timer(30, "copilot.update")

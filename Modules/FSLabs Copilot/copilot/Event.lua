@@ -286,7 +286,7 @@ end
 
 ---static method
 ---@param event an <a href="#Class_Event">Event</a> object
----@bool returnFunction If true, returns a function that returns true once the event gets triggered, else waits for that event itself.
+---@bool returnFunction If true, waitForEvent returns a function that returns true once the event gets triggered, else waitForEvent returns when the event is triggered.
 ---@usage
 -- Event.waitForEvent(copilot.events.landing)
 

@@ -523,17 +523,17 @@ function copilot.sequences.afterLanding:__call()
   FSL.PED_WXRadar_PWS_Switch("OFF")
 
   local FDsOff = copilot.UserOptions.actions.FDs_off_after_landing == 1
-  if not FSL.PF.GSLD_EFIS_FD_Button:isLit() and not FDsOff then
-    FSL.PF.GSLD_EFIS_FD_Button()
-  elseif FSL.PF.GSLD_EFIS_FD_Button:isLit() and FDsOff then
+  local FDisLit = FSL.PF.GSLD_EFIS_FD_Button:isLit()
+  if (not FDisLit and not FDsOff) or (FDisLit and FDsOff) then
     FSL.PF.GSLD_EFIS_FD_Button()
   end
+  
   if FSL.PF.GSLD_EFIS_LS_Button:isLit() then FSL.PF.GSLD_EFIS_LS_Button() end
-  if FSL.FCU:isBirdOn() then FSL.GSLD_FCU_HDGTRKVSFPA_Button() end
+  if FSL.FCU:get().isBirdOn then FSL.GSLD_FCU_HDGTRKVSFPA_Button() end
   if FSL.GSLD_EFIS_LS_Button:isLit() then FSL.GSLD_EFIS_LS_Button() end
-  if not FSL.GSLD_EFIS_FD_Button:isLit() and not FDsOff then
-    FSL.GSLD_EFIS_FD_Button()
-  elseif FSL.GSLD_EFIS_FD_Button:isLit() and FDsOff then
+
+  FDisLit = FSL.GSLD_EFIS_FD_Button:isLit()
+  if (not FDisLit and not FDsOff) or (FDisLit and FDsOff) then
     FSL.GSLD_EFIS_FD_Button()
   end
 
@@ -578,7 +578,8 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
     if prob(0.2) then copilot.suspend(10000, 20000) end
     copilot.sequences:setupEFIS()
   end
-end, "runAsCoroutine"):stopOn(copilot.events.enginesStarted)
+end, "runAsCoroutine")
+  :stopOn(copilot.events.enginesStarted)
 
 if copilot.UserOptions.actions.after_start == 1 then
   copilot.actions.afterStart = copilot.events.enginesStarted:addAction(function() copilot.sequences:afterStart() end, "runAsCoroutine")
@@ -590,7 +591,8 @@ if copilot.UserOptions.actions.during_taxi == 1 then
     Event:waitForEvents({copilot.events.brakesChecked, copilot.events.flightControlsChecked}, true)
     copilot.suspend(plusminus(5000))
     copilot.sequences:taxiSequence()
-  end, "runAsCoroutine"):stopOn(copilot.events.chocksSet, copilot.events.takeoffInitiated2)
+  end, "runAsCoroutine")
+    :stopOn(copilot.events.chocksSet, copilot.events.takeoffInitiated2)
 
 end
 
@@ -606,12 +608,13 @@ if copilot.UserOptions.actions.lineup == 1 then
       end, "runAsCoroutine"}
     }
       :activateOn(copilot.events.enginesStarted)
-      :deactivateOn(copilot.events.takeoffInitiated2)
+      :deactivateOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
   else
     copilot.actions.lineup = copilot.events.enginesStarted:addAction(function()
       copilot.sequences:waitForLineup()
       copilot.sequences:lineUpSequence()
-    end, "runAsCoroutine"):stopOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
+    end, "runAsCoroutine")
+      :stopOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
   end
 end
 
@@ -641,7 +644,8 @@ do
       copilot.suspend(plusminus(2000))
       copilot.sequences:afterTakeoffSequence()
     end
-  end, "runAsCoroutine"):stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
+  end, "runAsCoroutine")
+    :stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
 
   copilot.actions.noVoiceTakeoffTrigger = copilot.events.enginesStarted:addAction(function()
     repeat copilot.suspend()
@@ -663,7 +667,6 @@ copilot.actions.aboveTenThousand = copilot.events.aboveTenThousand:addAction(fun
     copilot.voiceCommands.flapsFull:deactivate()
     copilot.voiceCommands.flapsUp:deactivate()
     copilot.voiceCommands.gearUp:deactivate()
-    
   end
   if copilot.UserOptions.actions.ten_thousand_dep == 1 then
     copilot.sequences.tenThousandDep()
@@ -737,10 +740,10 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.afterLandingNoApu = VoiceCommand:new {
     phrase = {
-      "after landing, no apu",
-      "after landing, hold apu",
-      "check after landing, no apu",
-      "check after landing, hold apu"
+      "after landing no apu",
+      "after landing hold apu",
+      "check after landing no apu",
+      "check after landing hold apu"
     },
     action = {function()
       copilot.sequences.afterLanding.noApu = true
