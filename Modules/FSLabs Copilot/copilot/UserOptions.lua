@@ -6,8 +6,8 @@ local options = {
       {"log_level", 2},
       {"PM_seat", "right", "Where the Pilot Monitoring sits in the cockpit - left or right"},
       {"sound_dir", "Hannes"},
-      {"debug", hidden = true},
-      {"debug_bind", hidden = true}
+      {"debugger", hidden = true},
+      {"debugger_bind", hidden = true}
     }
   },
   {
@@ -64,30 +64,33 @@ local options = {
 
 file = require "FSL2Lua.FSL2Lua.file"
 
+local optionIndex = {key = 1, value = 2, comment = 3}
+local sectionIndex = {title = 1, options = 2, comments = 3}
+
 local UserOptions = {}
 
 do
   local failureOptions
-  for _, v in ipairs(options) do
-    if v[1] == "Failures" then
-      failureOptions = v[2]
+  for _, section in ipairs(options) do
+    if section[sectionIndex.title] == "Failures" then
+      failureOptions = section[sectionIndex.options]
     end
   end
-  for _, v in ipairs(require "FSLabs Copilot.copilot.failurelist") do
-    table.insert(failureOptions, v)
+  for _, failure in ipairs(require "FSLabs Copilot.copilot.failurelist") do
+    table.insert(failureOptions, failure)
   end
 end
 
 local function loadUserOptions(path)
   local f = file.read(path)
   if f then
-    for sectionName, ini_section in f:gmatch("%[(.-)%]([^%[%]]+)") do
+    for sectionTitle, iniSection in f:gmatch("%[(.-)%]([^%[%]]+)") do
       for _, section in ipairs(options) do
-        if section[1] == sectionName then
-          for key, value in ini_section:gmatch("([%w _]+)=([%w_%.%+]+)") do
-            for _, option in ipairs(section[2]) do
-              if option[1] == key then
-                option[2] = tonumber(value) or value
+        if section[sectionIndex.title] == sectionTitle then
+          for iniKey, iniValue in iniSection:gmatch("([%w _]+)=([%w_%.%+]+)") do
+            for _, option in ipairs(section[sectionIndex.options]) do
+              if option[optionIndex.key] == iniKey then
+                option[optionIndex.value] = tonumber(iniValue) or iniValue
               end
             end
           end
@@ -96,11 +99,11 @@ local function loadUserOptions(path)
     end
   end
   for _, section in ipairs(options) do
-    local sectionName = section[1]:lower()
-    UserOptions[sectionName] = {}
-    for _, option in ipairs(section[2]) do
-      local key, value = option[1], option[2]
-      UserOptions[sectionName][key] = value
+    local sectionTitle = section[sectionIndex.title]:lower()
+    UserOptions[sectionTitle] = {}
+    for _, option in ipairs(section[sectionIndex.options]) do
+      local key, value = option[optionIndex.key], option[optionIndex.value]
+      UserOptions[sectionTitle][key] = value
     end
   end
 end
@@ -108,17 +111,17 @@ end
 local function saveUserOptions(path)
   local f = {}
   for _, section in ipairs(options) do
-    table.insert(f, ("[%s]"):format(section[1]))
-    local comments = section[3]
+    table.insert(f, ("[%s]"):format(section[sectionIndex.title]))
+    local comments = section[sectionIndex.comments]
     if comments then
       for _, line in ipairs(comments) do
         table.insert(f, ";" .. line)
       end
     end
-    for i, option in ipairs(section[2]) do
-      local key, value = option[1], option[2]
+    for i, option in ipairs(section[sectionIndex.options]) do
+      local key, value = option[optionIndex.key], option[optionIndex.value]
       if not (option.hidden and not value) then
-        local comment = option[3]
+        local comment = option[optionIndex.comment]
         if option.format == "hex" then
           value = "0x" .. string.format("%x", value):upper()
         end
@@ -126,7 +129,7 @@ local function saveUserOptions(path)
         if comment then s = s .. " ;" .. comment end
         table.insert(f, s)
       end
-      if i == #section[2] then table.insert(f, "") end
+      if i == #section[sectionIndex.options] then table.insert(f, "") end
     end
   end
   file.write(path, table.concat(f,"\n"), "w")
@@ -138,17 +141,7 @@ saveUserOptions(optionFilePath)
 
 if not ipc then return end
 
-do
-  local seat = UserOptions.general.PM_seat
-  if seat == "left" then FSL_SEAT_PM = 1
-  elseif seat == "right" then FSL_SEAT_PM = 2 end
-end
-FSL = require "FSL2Lua"
-FSL:setPilot(FSL_SEAT_PM)
-FSL:enableSequences()
-
-VOLUME = UserOptions.callouts.volume
-SOUNDDIR = APPDIR .. "\\Sounds\\"
-copilot.isVoiceControlEnabled = UserOptions.voice_control.enable == 1
+local seat = UserOptions.general.PM_seat:lower()
+UserOptions.general.PM_seat = seat == "left" and 1 or seat == "right" and 2 or copilot.exit("The PM_seat option value needs to be 'left' or 'right'")
 
 return UserOptions

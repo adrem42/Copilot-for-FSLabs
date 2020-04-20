@@ -1,6 +1,6 @@
 #include "Recognizer.h"
 
-bool Recognizer::init()
+Recognizer::Recognizer()
 {
 	HRESULT hr;
 	hr = CoInitialize(NULL);
@@ -19,7 +19,8 @@ bool Recognizer::init()
 	if (SUCCEEDED(hr))
 		recoContext->CreateGrammar(0, &recoGrammar);
 
-	return SUCCEEDED(hr);
+	if (!SUCCEEDED(hr))
+		throw std::exception();
 }
 
 Recognizer::~Recognizer()
@@ -29,7 +30,6 @@ Recognizer::~Recognizer()
 	recoGrammar.Release();
 	recoContext.Release();
 	recognizer.Release();
-	CoUninitialize();
 }
 
 DWORD Recognizer::addRule(std::vector<std::string> phrases, float confidence)
@@ -77,8 +77,7 @@ void Recognizer::resetGrammar()
 				SPSTATEHANDLE initialState;
 				hr = recoGrammar->GetRule(NULL, rule.ruleID, SPRAF_TopLevel | SPRAF_Active | SPRAF_Dynamic, TRUE, &initialState);
 				if (SUCCEEDED(hr)) {
-					const std::string& str = phrase;
-					const std::wstring phraseWstr = std::wstring(str.begin(), str.end());
+					std::wstring phraseWstr = std::wstring(phrase.begin(), phrase.end());
 					hr = recoGrammar->AddWordTransition(initialState, NULL, phraseWstr.c_str(), L" ", SPWT_LEXICAL, 1, NULL);
 				}
 			}

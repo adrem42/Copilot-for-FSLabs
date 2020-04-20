@@ -365,6 +365,7 @@ function copilot.sequences:taxiSequence()
   FSL.PED_ECP_TO_CONFIG_Button()
   FSL.PED_ECP_TO_CONFIG_Button()
   FSL.PED_ECP_TO_CONFIG_Button()
+  FSL.PED_ECP_TO_CONFIG_Button()
   copilot.SequenceLock:unlock()
 end
 
@@ -626,7 +627,7 @@ do
     }
   end
 
-  copilot.events.takeoffInitiated2:addAction(function()
+  copilot.actions.takeoff = copilot.events.takeoffInitiated2:addAction(function()
     if copilot.UserOptions.actions.takeoff_sequence == 1 then
       copilot.sequences:takeoffSequence()
     end
@@ -745,7 +746,7 @@ if copilot.isVoiceControlEnabled then
       copilot.sequences.afterLanding.noApu = true
       copilot.voiceCommands.startApu:activate()
       copilot.voiceCommands.afterLanding:deactivate()
-      
+  
       copilot.sequences:afterLanding()
     end, "runAsCoroutine"}
   }

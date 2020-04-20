@@ -1,7 +1,7 @@
 #include "SimConnect.h"
 #include <mutex>
 
-enum MuteKeyStatus{
+enum MuteKeyStatus {
 	Depressed = 0,
 	Released
 };

@@ -63,19 +63,18 @@ end
 --- returns true if the engines are running
 --- @bool both  if true, will return true if both engines are running. If ommited or false, returns true if either engine is running.
 function copilot.enginesRunning(both)
-  local fuelFlow_1 = ipc.readDBL(0x2020)
-  local fuelFlow_2 = ipc.readDBL(0x2120)
-  local eng1_running = fuelFlow_1 > 0
-  local eng2_running = fuelFlow_2 > 0
+  local eng1_N1 = ipc.readDBL(0x2010)
+  local eng2_N1 = ipc.readDBL(0x2110)
+  local eng1_running = eng1_N1 > 15
+  local eng2_running = eng2_N1 > 15
   if both then return eng1_running and eng2_running
   else return eng1_running or eng2_running end
 end
 
 function copilot.exit(msg)
-  if copilot.logger then
-    copilot.logger:error(msg)
-    ipc.exit()
-  else
-    error(msg)
+  if msg then 
+    copilot.logger:error(msg) 
+    copilot.logger:error("Exiting...") 
   end
+  ipc.exit()
 end

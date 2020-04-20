@@ -8,7 +8,6 @@ local function addPackagePath(dir)
 end
 
 local function addPackageCPath(dir)
-  print(dir)
   package.cpath = dir .. "\\?.dll;" .. package.cpath
 end
 
@@ -17,13 +16,22 @@ addPackagePath(APPDIR)
 addPackageCPath(ipc.readSTR(0x1000, 256):gsub("(Prepar3D v%d) Files.*", "%1 Add-ons\\Copilot for FSLabs"))
 
 copilot = require "Copilot"
-copilot.UserOptions = require "copilot.init"
-if not copilot.init() then ipc.exit() end
-
 require "copilot.helpers"
+copilot.UserOptions = require "copilot.UserOptions"
+local err = copilot.init()
+if err then copilot.exit(err) end
 
-local debugger = {enable = copilot.UserOptions.general.debug == 1}
+FSL = require "FSL2Lua"
+FSL:setPilot(copilot.UserOptions.general.PM_seat)
+FSL:enableSequences()
 
+copilot.soundDir = APPDIR .. "\\Sounds\\"
+copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == 1
+
+local debugger = {
+  enable = copilot.UserOptions.general.debugger == 1,
+  bind = copilot.UserOptions.general.debugger_bind
+}
 if debugger.enable then
   debugger.debuggee = require 'FSLabs Copilot.libs.vscode-debuggee'
   debugger.json = require 'FSLabs Copilot.libs.dkjson'
@@ -31,7 +39,7 @@ if debugger.enable then
 end 
 
 do
-  local soundDir = APPDIR .. "\\sounds\\" .. copilot.UserOptions.general.sound_dir .. "\\"
+  local soundDir = copilot.soundDir .. copilot.UserOptions.general.sound_dir .. "\\"
   local sounds = {}
   copilot.sounds = sounds
   function copilot.addSound(path, length, volume)
@@ -70,14 +78,8 @@ local callbacks = {}
 
 --- adds function or couroutine func to the main callback loop
 --- @param func a function or thread
---- @param name optional string which can be used to remove the callback later
+--- @param name optional string which can be used to remove the callback with @{removeCallback}
 --- @return func
---- @usage copilot.addCallback(coroutine.create(function()
---   while true do
---     print "hello world"
---     copilot.suspend()
---   end
--- end))
 
 function copilot.addCallback(func, name)
   callbacks[name or func] = func
@@ -87,15 +89,7 @@ end
 --- removes a previously added callback
 --- @param key Either the function or thread itself or the name argument passed to @{addCallback}
 function copilot.removeCallback(key)
-  if key == "all" then
-    for key in pairs(callbacks) do
-      if key ~= "FlightPhaseProcessor" and key ~= "EventHandler" then
-        callbacks[key] = nil
-      end
-    end
-  else
-    callbacks[key] = nil
-  end
+  callbacks[key] = nil
 end
 
 function copilot.update(time)
@@ -121,7 +115,7 @@ if debugger.enable then
     debugger.debuggee.poll()
   end
   Bind {
-    key = copilot.UserOptions.general.debug_bind,
+    key = debugger.bind,
     onPress = function()
       debugger.debuggee.start(debugger.json)
     end
@@ -136,8 +130,11 @@ local function setup()
     copilot.UserOptions.actions.during_taxi = 0
   end
 
-  copilot.addCallback(coroutine.create(function() FlightPhaseProcessor:update() end), "FlightPhaseProcessor")
-  copilot.addCallback(function() Event:EventHandler() end, "EventHandler")
+  copilot.addCallback(coroutine.create(function() FlightPhaseProcessor:update() end))
+  copilot.addCallback(function() Event:runThreads() end)
+  if copilot.isVoiceControlEnabled then
+    copilot.addCallback(function() Event:fetchRecoResult() end)
+  end
 
   if copilot.UserOptions.callouts.enable == 1 then
     require "copilot.callouts"
@@ -154,9 +151,12 @@ local function setup()
     FSL:enableSequences()
   end
 
-  if file.exists(APPDIR .. "\\custom.lua") then require "custom" end
+  if copilot.isVoiceControlEnabled then
+    copilot.recognizer:resetGrammar()
+  end
+
+  pcall(function() require "custom" end)
   
-  copilot.recognizer:resetGrammar()
 end
 
 copilot.logger:info(">>>>>> Script started <<<<<<")

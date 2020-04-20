@@ -271,13 +271,14 @@ function Event:stopCurrentActions()
   end
 end
 
-function Event:EventHandler()
-  if copilot.isVoiceControlEnabled then
-    local ruleID = copilot.recoResultFetcher:getResult()
-    if ruleID then
-      self.voiceCommands[ruleID]:trigger()
-    end
+function Event:fetchRecoResult()
+  local ruleID = copilot.recoResultFetcher:getResult()
+  if ruleID then
+    self.voiceCommands[ruleID]:trigger()
   end
+end
+
+function Event:runThreads()
   for event in pairs(self.events) do
     event:processThreads()
   end

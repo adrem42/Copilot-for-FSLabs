@@ -30,7 +30,7 @@ private:
 	std::vector<Rule> rules;
 	std::mutex mtx;
 public:
-	bool init();
+	Recognizer();
 	~Recognizer();
 	DWORD addRule(std::vector<std::string> phrases, float confidence);
 	void ignoreRule(DWORD ruleID);

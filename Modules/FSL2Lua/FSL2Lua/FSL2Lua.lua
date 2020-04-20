@@ -27,7 +27,7 @@ elseif ipc.readLvar("AIRCRAFT_A321") == 1 then FSL.acType = "A321" end
 local logFilePath = FSL2LuaDir .. "\\FSL2Lua.log"
 
 local function log(msg, drawline, notimestamp)
-  if not logging then return end
+  if not FSL.logging then return end
   local str = ""
   if drawline == 1 then
     str = "-------------------------------------------------------------------------------------------\n"
@@ -249,7 +249,7 @@ function Control:new(control)
   return setmetatable(control, self)
 end
 
---- If for some reason you want to use a macro directly instead of using one of the control's methods
+--- Invokes the mouse macro directly
 --- @string clickType One of the following:
 --
 -- * 'leftPress'
