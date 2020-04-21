@@ -50,6 +50,10 @@
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
 </ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+</ul>
 
 </div>
 
@@ -57,10 +61,8 @@
 
 <h1>Module <code>Event</code></h1>
 <p>
-
 </p>
 <p>
-
 </p>
 
 
@@ -80,7 +82,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Action:stopCurrent">Action:stopCurrent()</a></td>
-	<td class="summary">If the 'runAsCoroutine' flag was passed to the constructor, stops the execution of the currently running coroutine immediately.</td>
+	<td class="summary">If the &lsquo;runAsCoroutine&rsquo; flag was passed to the constructor, stops the execution of the currently running coroutine immediately.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Action:stopOn">Action:stopOn(...)</a></td>
@@ -88,7 +90,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Action:addCleanup">Action:addCleanup(func)</a></td>
-	<td class="summary">Can be used when the action can be stopped - function func will be executed when the action is stopped.</td>
+	<td class="summary">Can be used when the action can be stopped &ndash; function func will be executed when the action is stopped.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Action:addLogMsg">Action:addLogMsg(msg)</a></td>
@@ -107,7 +109,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event:addOneOffAction">Event:addOneOffAction(...)</a></td>
-	<td class="summary">Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.</td>
+	<td class="summary">Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event&rsquo;s action list after it&rsquo;s executed once.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event:removeAction">Event:removeAction(action)</a></td>
@@ -123,7 +125,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event:waitForEvents">Event:waitForEvents(events[, waitForAll=false])</a></td>
-	<td class="summary">Static method - same as <a href="../libraries/Event.html#Event:waitForEvent">waitForEvent</a> but for multiple events</td>
+	<td class="summary">Static method &ndash; same as <a href="../libraries/Event.html#Event:waitForEvent">waitForEvent</a> but for multiple events</td>
 	</tr>
 </table>
 <h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
@@ -185,11 +187,10 @@
             <span class="types"><span class="type">function</span></span>
 
 
-
         </li>
         <li><span class="parameter">flags</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         'runAsCoroutine'
+         &lsquo;runAsCoroutine&rsquo;
          (<em>optional</em>)
         </li>
     </ul>
@@ -232,7 +233,7 @@
     <ul>
         <li><span class="parameter">refType</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         'stop'
+         &lsquo;stop&rsquo;
         </li>
         <li><span class="parameter">...</span>
          one or more <a href="#Class_Event">Event</a> object
@@ -253,7 +254,7 @@
     <strong>Action:stopCurrent()</strong>
     </dt>
     <dd>
-    If the 'runAsCoroutine' flag was passed to the constructor, stops the execution of the currently running coroutine immediately.
+    If the &lsquo;runAsCoroutine&rsquo; flag was passed to the constructor, stops the execution of the currently running coroutine immediately.
 
 
 
@@ -273,7 +274,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-         One or more events. If the 'runAsCoroutine' flag was passed to the constructor, the callback coroutine will be stopped when these events are triggered.
+         One or more events. If the &lsquo;runAsCoroutine&rsquo; flag was passed to the constructor, the callback coroutine will be stopped when these events are triggered.
         </li>
     </ul>
 
@@ -296,14 +297,13 @@
     <strong>Action:addCleanup(func)</strong>
     </dt>
     <dd>
-    Can be used when the action can be stopped - function func will be executed when the action is stopped.
+    Can be used when the action can be stopped &ndash; function func will be executed when the action is stopped.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">func</span>
             <span class="types"><span class="type">function</span></span>
-
 
 
         </li>
@@ -331,7 +331,6 @@
     <ul>
         <li><span class="parameter">msg</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
 
 
         </li>
@@ -364,8 +363,8 @@
         <li><span class="parameter">data</span> A table containing the following fields:
         <ul>
         <li><span class="parameter">action</span>
-         Function or <a href="#Class_Action">Action</a> object or array of functions or <a href="#Class_Action">Action</a> objects that will be executed when the event is triggered. <br/>
- If it's an array of functions, each function can optionally be followed by string 'runAsCoroutine'. <br/>
+         Function or <a href="#Class_Action">Action</a> object or array of functions or <a href="#Class_Action">Action</a> objects that will be executed when the event is triggered.<br/>
+ If it&rsquo;s an array of functions, each function can optionally be followed by string &lsquo;runAsCoroutine&rsquo;.<br/>
  Actions can also be added to an existing event via <a href="../libraries/Event.html#Event:addAction">addAction</a>.
          (<em>optional</em>)
         </li>
@@ -408,7 +407,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-         Either a function with the optional flag 'runAsCoroutine' as the second argument or an <a href="#Class_Action">Action</a> object.
+         Either a function with the optional flag &lsquo;runAsCoroutine&rsquo; as the second argument or an <a href="#Class_Action">Action</a> object.
         </li>
     </ul>
 
@@ -431,13 +430,12 @@
     <strong>Event:addOneOffAction(...)</strong>
     </dt>
     <dd>
-    Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.
+    Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event&rsquo;s action list after it&rsquo;s executed once.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-
 
 
         </li>
@@ -526,7 +524,7 @@ myEvent:removeAction(myAction)</pre>
     <strong>Event:waitForEvents(events[, waitForAll=false])</strong>
     </dt>
     <dd>
-    Static method - same as <a href="../libraries/Event.html#Event:waitForEvent">waitForEvent</a> but for multiple events
+    Static method &ndash; same as <a href="../libraries/Event.html#Event:waitForEvent">waitForEvent</a> but for multiple events
 
 
     <h3>Parameters:</h3>
@@ -537,7 +535,6 @@ myEvent:removeAction(myAction)</pre>
         </li>
         <li><span class="parameter">waitForAll</span>
             <span class="types"><span class="type">bool</span></span>
-
 
 
          (<em>default</em> false)
@@ -566,10 +563,11 @@ myEvent:removeAction(myAction)</pre>
 <p> A voice command can be in one of these  states:</p>
 
 <ol>
-    <li><p>Deactivated: the phrases aren't in the recognizer's grammar.</p></li>
-    <li><p>Ignore mode: the phrases are in the recognizer's grammar but recognition events don't trigger the voice command.</p></li>
-    <li><p>Active: the phrases are in the recognizer's grammar and Copilot triggers the voice command.</p></li>
+<li><p>Deactivated: the phrases aren&rsquo;t in the recognizer&rsquo;s grammar.</p></li>
+<li><p>Ignore mode: the phrases are in the recognizer&rsquo;s grammar but recognition events don&rsquo;t trigger the voice command.</p></li>
+<li><p>Active: the phrases are in the recognizer&rsquo;s grammar and Copilot triggers the voice command.</p></li>
 </ol>
+
 
 <p> If you only have a couple of phrases in the recognizer, especially short ones, the accuracy will be low and
  the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of phrases
@@ -597,13 +595,12 @@ myEvent:removeAction(myAction)</pre>
          (<em>default</em> 0.93)
         </li>
         <li><span class="parameter">persistent</span>
-
-
-<ul>
-    <li>ommited or false: the voice command will be deactivated after being triggered.</li>
-    <li>'ignore': the voice command will be put into ignore mode after being triggered.</li>
-    <li>true: the voice command will stay active after being triggered.</li>
+        <ul>
+<li>ommited or false: the voice command will be deactivated after being triggered.</li>
+<li>&lsquo;ignore&rsquo;: the voice command will be put into ignore mode after being triggered.</li>
+<li>true: the voice command will stay active after being triggered.</li>
 </ul>
+
 
          (<em>default</em> false)
         </li>
@@ -687,7 +684,7 @@ myEvent:removeAction(myAction)</pre>
     <dd>
     The voice command will become active when the events passed as parameters are triggered. </p>
 
-<p> Adds an 'activate' event reference that can be removed from the event via <a href="../libraries/Event.html#Action:removeEventRef">removeEventRef</a>
+<p> Adds an &lsquo;activate&rsquo; event reference that can be removed from the event via <a href="../libraries/Event.html#Action:removeEventRef">removeEventRef</a>
 
 
     <h3>Parameters:</h3>
@@ -709,7 +706,7 @@ myEvent:removeAction(myAction)</pre>
     <dd>
     The voice command will be deactivated when the events passed as parameters are triggered. </p>
 
-<p> Adds a 'deactivate' event reference that can be removed from the event via <a href="../libraries/Event.html#Action:removeEventRef">removeEventRef</a>
+<p> Adds a &lsquo;deactivate&rsquo; event reference that can be removed from the event via <a href="../libraries/Event.html#Action:removeEventRef">removeEventRef</a>
 
 
     <h3>Parameters:</h3>
@@ -733,7 +730,7 @@ myEvent:removeAction(myAction)</pre>
 
 <p> are triggered. </p>
 
-<p> Adds a 'ignore' event reference that can be removed from the event via <a href="../libraries/Event.html#Action:removeEventRef">removeEventRef</a>
+<p> Adds a &lsquo;ignore&rsquo; event reference that can be removed from the event via <a href="../libraries/Event.html#Action:removeEventRef">removeEventRef</a>
 
 
     <h3>Parameters:</h3>
@@ -760,7 +757,7 @@ myEvent:removeAction(myAction)</pre>
     <ul>
         <li><span class="parameter">refType</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         'activate', 'deactivate' or 'ignore'
+         &lsquo;activate&rsquo;, &lsquo;deactivate&rsquo; or &lsquo;ignore&rsquo;
         </li>
         <li><span class="parameter">...</span>
          one or more <a href="#Class_Event">Event</a> objects
@@ -784,7 +781,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-04-21 00:36:06 </i>
+<i style="float:right;">Last updated 2020-04-21 02:53:16 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

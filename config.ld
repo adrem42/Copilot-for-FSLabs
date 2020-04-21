@@ -16,6 +16,8 @@ readme = {
   'topics',
 }
 
+examples={'examples'}
+
 kind_names={topic='Manual',module='Libraries'}
 
 use_markdown_titles = true
@@ -23,3 +25,5 @@ use_markdown_titles = true
 no_space_before_args = true
 
 convert_opt = false
+
+pretty='lxsh'

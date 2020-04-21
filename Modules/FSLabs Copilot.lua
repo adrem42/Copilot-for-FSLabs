@@ -87,6 +87,15 @@ function copilot.addCallback(func, name)
   return func
 end
 
+function copilot.callOnce(func)
+  local deletthis
+  deletthis = function()
+    func()
+    copilot.removeCallback(deletthis)
+  end
+  copilot.addCallback(deletthis)
+end
+
 --- removes a previously added callback
 --- @param key Either the function or thread itself or the name argument passed to @{addCallback}
 function copilot.removeCallback(key)

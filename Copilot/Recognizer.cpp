@@ -43,19 +43,20 @@ void Recognizer::ignoreRule(DWORD ruleID)
 {
 	std::lock_guard<std::mutex> lock(mtx);
 	recoGrammar->SetRuleIdState(ruleID, SPRS_ACTIVE);
-	rules[ruleID - 1].ignore = true;
+	rules[ruleID - 1].state = Ignore;
 }
 
 void Recognizer::activateRule(DWORD ruleID)
 {
 	std::lock_guard<std::mutex> lock(mtx);
 	recoGrammar->SetRuleIdState(ruleID, SPRS_ACTIVE);
-	rules[ruleID - 1].ignore = false;
+	rules[ruleID - 1].state = Active;
 }
 
 void Recognizer::deactivateRule(DWORD ruleID)
 {
 	recoGrammar->SetRuleIdState(ruleID, SPRS_INACTIVE);
+	rules[ruleID - 1].state = Inactive;
 }
 
 void Recognizer::resetGrammar()
@@ -85,6 +86,10 @@ void Recognizer::resetGrammar()
 	}
 	recoGrammar->Commit(NULL);
 	recoContext->Resume(NULL);
+	for (const auto& rule : rules) {
+		if (rule.state == Active) activateRule(rule.ruleID);
+		else if (rule.state == Ignore) ignoreRule(rule.ruleID);
+	}
 }
 
 std::optional<RecoResult> Recognizer::getResult()
@@ -105,7 +110,7 @@ std::optional<RecoResult> Recognizer::getResult()
 				std::string phrase = dstrText.CopyToChar();
 				std::lock_guard<std::mutex> lock(mtx);
 				const Rule& rule = rules[ruleID - 1];
-				if (!rule.ignore && confidence >= rule.confidence) {
+				if (rule.state != Ignore && confidence >= rule.confidence) {
 					return RecoResult {phrase, confidence, ruleID};
 				}
 			}

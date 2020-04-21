@@ -16,11 +16,12 @@ struct RecoResult {
 
 class Recognizer {
 private:
+	enum RuleState { Active, Inactive, Ignore };
 	struct Rule {
 		std::vector<std::string> phrases;
 		float confidence;
 		DWORD ruleID;
-		bool ignore = false;
+		RuleState state = Inactive;
 	};
 	CComPtr<ISpRecognizer> recognizer;
 	CComPtr<ISpRecoGrammar> recoGrammar;

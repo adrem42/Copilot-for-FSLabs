@@ -109,11 +109,14 @@ ___
 ### After takeoff
 
 * Select the packs back on if they were turned off for takeoff
-*Voice commands (if voice_control=1)*
-* *'Flaps two'*
-* *'Flaps one'*
-* *'Flaps up' or 'flaps zero'*
+
+* Voice commands *(if voice_control=1)*:
+   * *'Flaps two'*
+   * *'Flaps one'*
+   * *'Flaps up' or 'flaps zero'*
+
 When the flaps are retracted:
+
 * Disarm the ground spoilers
 
 #### Trigger:

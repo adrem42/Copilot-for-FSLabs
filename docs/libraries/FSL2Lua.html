@@ -56,6 +56,10 @@
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
 </ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+</ul>
 
 </div>
 
@@ -72,7 +76,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#FSL">FSL</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 </table>
@@ -81,19 +84,16 @@
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:getArray">MCDU:getArray()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:getString">MCDU:getString([startpos[, endpos]])</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
@@ -103,7 +103,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:isOn">MCDU:isOn()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
@@ -124,7 +123,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#Control:getLvarValue">Control:getLvarValue()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 </table>
@@ -141,7 +139,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#Button:isDown">Button:isDown()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 </table>
@@ -158,7 +155,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#Guard:isOpen">Guard:isOpen()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 </table>
@@ -167,13 +163,11 @@
 	<tr>
 	<td class="name" nowrap><a href="#Switch:__call">Switch:__call(targetPos)</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Switch:getPosn">Switch:getPosn()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
@@ -197,7 +191,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#KnobWithoutPositions:__call">KnobWithoutPositions:__call(targetPos)</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
@@ -211,7 +204,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#KnobWithoutPositions:getPosn">KnobWithoutPositions:getPosn()</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 	<tr>
@@ -228,7 +220,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
 	<td class="summary">
-
 </td>
 	</tr>
 </table>
@@ -245,7 +236,6 @@
     <strong>FSL</strong>
     </dt>
     <dd>
-
 
 
 
@@ -288,29 +278,30 @@
 
 
 
-
     <h3>Returns:</h3>
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-<p> Array of tables representing display cells.</p>
+        <p> Array of tables representing display cells.</p>
 
 <p> Each cell table has three fields:</p>
 
 <ul>
-    <li>char: the character (nil if the cell is blank)</li>
-    <li>color: string :
-    <ul>
-        <li>'cyan' </li>
-        <li>'grey' </li>
-        <li>'green' </li>
-        <li>'magenta' </li>
-        <li>'amber' </li>
-        <li>'white' </li>
-    </ul></li>
-    <li>isBold: bool</li>
+<li>char: the character (nil if the cell is blank)</li>
+<li>color: string :
+
+<ul>
+<li>&lsquo;cyan&rsquo; </li>
+<li>&lsquo;grey&rsquo; </li>
+<li>&lsquo;green&rsquo; </li>
+<li>&lsquo;magenta&rsquo; </li>
+<li>&lsquo;amber&rsquo; </li>
+<li>&lsquo;white&rsquo; </li>
 </ul>
+</li>
+<li>isBold: bool</li>
+</ul>
+
 
     </ol>
 
@@ -327,19 +318,16 @@
 
 
 
-
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">startpos</span>
             <span class="types"><span class="type">number</span></span>
 
 
-
          (<em>optional</em>)
         </li>
         <li><span class="parameter">endpos</span>
             <span class="types"><span class="type">number</span></span>
-
 
 
          (<em>optional</em>)
@@ -350,7 +338,6 @@
     <ol>
 
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
 
 
     </ol>
@@ -364,7 +351,6 @@
     <strong>MCDU:getScratchpad()</strong>
     </dt>
     <dd>
-
 
 
 
@@ -395,7 +381,6 @@
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
 
 
-
         </li>
     </ul>
 
@@ -409,7 +394,6 @@
     <strong>MCDU:isOn()</strong>
     </dt>
     <dd>
-
 
 
 
@@ -459,17 +443,17 @@
     <ul>
         <li><span class="parameter">clickType</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-<p> One of the following:</p>
+        <p> One of the following:</p>
 
 <ul>
-    <li>'leftPress'</li>
-    <li>'leftRelease'</li>
-    <li>'rightPress'</li>
-    <li>'rightRelease'</li>
-    <li>'wheelUp'</li>
-    <li>'wheelDown'</li>
+<li>&lsquo;leftPress&rsquo;</li>
+<li>&lsquo;leftRelease&rsquo;</li>
+<li>&lsquo;rightPress&rsquo;</li>
+<li>&lsquo;rightRelease&rsquo;</li>
+<li>&lsquo;wheelUp&rsquo;</li>
+<li>&lsquo;wheelDown&rsquo;</li>
 </ul>
+
 
         </li>
     </ul>
@@ -492,11 +476,11 @@
     <ol>
 
            <span class="types"><span class="type">bool</span></span>
-         True if the control has a light and it's on.</p>
+         True if the control has a light and it&rsquo;s on.</p>
 
 <p> The control needs to have an LVar associated with its light for this to work.</p>
 
-<p> Unfortunately, overhead-style square buttons don't have such LVars.
+<p> Unfortunately, overhead-style square buttons don&rsquo;t have such LVars.
     </ol>
 
 
@@ -519,12 +503,10 @@
 
 
 
-
     <h3>Returns:</h3>
     <ol>
 
            <span class="types"><span class="type">number</span></span>
-
 
 
     </ol>
@@ -574,7 +556,6 @@
     <strong>Button:isDown()</strong>
     </dt>
     <dd>
-
 
 
 
@@ -633,12 +614,10 @@
 
 
 
-
     <h3>Returns:</h3>
     <ol>
 
            <span class="types"><span class="type">bool</span></span>
-
 
 
     </ol>
@@ -663,12 +642,10 @@
 
 
 
-
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">targetPos</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
 
 
         </li>
@@ -688,7 +665,6 @@
     <strong>Switch:getPosn()</strong>
     </dt>
     <dd>
-
 
 
 
@@ -774,7 +750,6 @@
 
 
 
-
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">targetPos</span>
@@ -825,7 +800,6 @@
     <strong>KnobWithoutPositions:getPosn()</strong>
     </dt>
     <dd>
-
 
 
 
@@ -882,12 +856,10 @@
             <span class="types"><span class="type">number</span></span>
 
 
-
          (<em>default</em> 0)
         </li>
         <li><span class="parameter">upper</span>
             <span class="types"><span class="type">number</span></span>
-
 
 
          (<em>default</em> 100)
@@ -912,7 +884,6 @@
 
 
 
-
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">data</span> A table containing the following fields:
@@ -921,11 +892,9 @@
             <span class="types"><span class="type">function</span></span>
 
 
-
         </li>
         <li><span class="parameter">onPressRepeat</span>
             <span class="types"><span class="type">function</span></span>
-
 
 
         </li>
@@ -933,59 +902,58 @@
             <span class="types"><span class="type">function</span></span>
 
 
-
         </li>
         <li><span class="parameter">btn</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
+         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: &lsquo;A42&rsquo;.
         </li>
         <li><span class="parameter">key</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-<p> Define this field for a key bind. The following values for are accepted:<br><br></p>
+        <p> Define this field for a key bind. The following values for are accepted:<br><br></p>
 
 <ul>
-    <li>Alphanumeric character keys</li>
-    <li>Escaped keycode for weird characters like 'ö' (key = '\222').
-    The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging facility.</li>
-    <li>Enter</li>
-    <li>Pause</li>
-    <li>CapsLock</li>
-    <li>Esc</li>
-    <li>Escape</li>
-    <li>Space</li>
-    <li>PageUp</li>
-    <li>PageDown</li>
-    <li>End</li>
-    <li>Home </li>
-    <li>LeftArrow</li>
-    <li>UpArrow</li>
-    <li>RightArrow </li>
-    <li>DownArrow</li>
-    <li>PrintScreen</li>
-    <li>Ins</li>
-    <li>Insert</li>
-    <li>Del</li>
-    <li>Delete</li>
-    <li>NumpadEnter</li>
-    <li>NumpadPlus</li>
-    <li>NumpadMinus</li>
-    <li>NumpadDot </li>
-    <li>NumpadDel</li>
-    <li>NumpadDiv</li>
-    <li>NumpadMult</li>
+<li>Alphanumeric character keys</li>
+<li>Escaped keycode for weird characters like &lsquo;ö&rsquo; (key = &lsquo;\222&rsquo;).
+The keycodes can be looked up in the FSUIPC console after enabling the &lsquo;Button and key operations&rsquo; logging facility.</li>
+<li>Enter</li>
+<li>Pause</li>
+<li>CapsLock</li>
+<li>Esc</li>
+<li>Escape</li>
+<li>Space</li>
+<li>PageUp</li>
+<li>PageDown</li>
+<li>End</li>
+<li>Home </li>
+<li>LeftArrow</li>
+<li>UpArrow</li>
+<li>RightArrow </li>
+<li>DownArrow</li>
+<li>PrintScreen</li>
+<li>Ins</li>
+<li>Insert</li>
+<li>Del</li>
+<li>Delete</li>
+<li>NumpadEnter</li>
+<li>NumpadPlus</li>
+<li>NumpadMinus</li>
+<li>NumpadDot </li>
+<li>NumpadDel</li>
+<li>NumpadDiv</li>
+<li>NumpadMult</li>
 </ul>
+
 
 <p> You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br></p>
 
 <ul>
-    <li>Tab</li>
-    <li>Shift</li>
-    <li>Ctrl</li>
-    <li>LeftAlt</li>
-    <li>RightAlt</li>
-    <li>Windows</li>
-    <li>Apps</li>
+<li>Tab</li>
+<li>Shift</li>
+<li>Ctrl</li>
+<li>LeftAlt</li>
+<li>RightAlt</li>
+<li>Windows</li>
+<li>Apps</li>
 </ul>
 
 
@@ -1018,7 +986,7 @@ Bind {
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-04-21 00:36:06 </i>
+<i style="float:right;">Last updated 2020-04-21 02:53:16 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

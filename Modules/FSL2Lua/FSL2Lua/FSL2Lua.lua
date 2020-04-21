@@ -370,15 +370,14 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     else
       sleepAfterPress = 100
     end
+    local timeout = ipc.elapsedtime() + 200
     if twoSwitches then
       repeat 
         coroutine.yield()
-        ipc.mousemacro(self.rectangle, pressClickType or 3) 
-      until self:isDown()
+      until self:isDown() or ipc.elapsedtime() > timeout
       local time = ipc.elapsedtime()
       repeat coroutine.yield() until ipc.elapsedtime() - time >= sleepAfterPress
     else
-      local timeout = ipc.elapsedtime() + 200
       repeat 
         sleep(10) 
       until self:isDown() or ipc.elapsedtime() > timeout
