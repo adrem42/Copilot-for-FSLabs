@@ -14,7 +14,7 @@ local options = {
     "Voice_control",
     {
       {"enable", 1},
-      {"confidence_coefficient", 1, "Set above/below 1 to increase/decrease the recognition confidence threshold"}
+      {"confidence_threshold", 0.93}
     }
   },
   {

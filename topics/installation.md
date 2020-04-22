@@ -10,6 +10,8 @@
 
 The script will auto-run after you load a flight with FSLabs.
 
+If you want to extend the functionality of the script, see @{custom.lua | this example.}
+
 ## Setting up speech recognition
 
 You need to have English as the Windows language in order for speech recognition to work  

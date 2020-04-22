@@ -1,4 +1,4 @@
-#pragma warning(disable : 4996)
+
 extern "C"
 {
 #include "../lua515/include/lua.h"
@@ -6,6 +6,7 @@ extern "C"
 #include "../lua515/include/lualib.h"
 }
 
+#pragma warning(disable : 4996)
 #include <sol/sol.hpp>
 #include <iostream>
 #include <Windows.h>
@@ -22,8 +23,6 @@ extern "C"
 #include "Recognizer.h"
 #include "McduWatcher.h"
 #include "SimConnect.h"
-
-#pragma warning(disable : 26444)
 
 using namespace std::literals::chrono_literals;
 

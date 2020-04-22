@@ -87,11 +87,14 @@ function copilot.addCallback(func, name)
   return func
 end
 
-function copilot.callOnce(func)
+function copilot.callOnce(func, timeOffset)
   local deletthis
+  local callAt = ipc.elapsedtime() + (timeOffset or 0) 
   deletthis = function()
-    func()
-    copilot.removeCallback(deletthis)
+    if ipc.elapsedtime() > callAt then
+      func()
+      copilot.removeCallback(deletthis)
+    end
   end
   copilot.addCallback(deletthis)
 end
@@ -108,9 +111,7 @@ function copilot.update(time)
       callback(time)
     elseif type(callback) == "thread" then
       local _, err = coroutine.resume(callback, time)
-      if err then 
-        copilot.exit(err)
-      end
+      if err then error(err) end
       if coroutine.status(callback) == "dead" then
         copilot.removeCallback(key)
       end
@@ -143,9 +144,9 @@ local function setup()
   end
 
   copilot.addCallback(coroutine.create(function() FlightPhaseProcessor:update() end))
-  copilot.addCallback(function() Event:runThreads() end)
+  copilot.addCallback(Event.resumeThreads)
   if copilot.isVoiceControlEnabled then
-    copilot.addCallback(function() Event:fetchRecoResult() end)
+    copilot.addCallback(Event.fetchRecoResult)
   end
 
   if copilot.UserOptions.callouts.enable == 1 then
@@ -163,7 +164,8 @@ local function setup()
     FSL:enableSequences()
   end
 
-  pcall(function() require "FSLabs Copilot.custom" end)
+  local path = APPDIR .. "\\custom.lua"
+  if file.exists(path) then dofile(path) end
 
   if copilot.isVoiceControlEnabled then
     copilot.recognizer:resetGrammar()

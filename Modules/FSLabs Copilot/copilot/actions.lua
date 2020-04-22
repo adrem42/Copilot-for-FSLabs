@@ -36,6 +36,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsOne = VoiceCommand:new {
     phrase = "flaps one",
+    confidence = 0.94,
     action = function()
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
@@ -68,6 +69,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsTwo = VoiceCommand:new {
     phrase = "flaps two",
+    confidence = 0.94,
     action = function()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
@@ -93,7 +95,7 @@ if copilot.isVoiceControlEnabled then
       VoiceCommand:react(500)
       copilot.playSound("flapsTwo")
       FSL.PED_FLAP_LEVER("2")
-      
+
     end,
     persistent = true
   }
@@ -206,10 +208,14 @@ if copilot.isVoiceControlEnabled then
         copilot.voiceCommands.flapsTwo:activate()
         copilot.voiceCommands.flapsUp:activate()
       end
-      
     end
   }
     :activateOn(copilot.events.goAround)
+
+  copilot.events.goAround:addAction(function()
+    copilot.suspend(20000)
+    copilot.voiceCommands.goAroundFlaps:deactivate()
+  end)
 
   copilot.voiceCommands.gearDown = VoiceCommand:new {
     phrase = "gear down",
@@ -588,7 +594,7 @@ end
 if copilot.UserOptions.actions.during_taxi == 1 then
 
   copilot.actions.taxi = copilot.events.enginesStarted:addAction(function()
-    Event:waitForEvents({copilot.events.brakesChecked, copilot.events.flightControlsChecked}, true)
+    Event.waitForEvents({copilot.events.brakesChecked, copilot.events.flightControlsChecked}, true)
     copilot.suspend(plusminus(5000))
     copilot.sequences:taxiSequence()
   end, "runAsCoroutine")

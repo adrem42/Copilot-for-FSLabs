@@ -1,16 +1,16 @@
 -- An example of adding actions and voice commands to Copilot.
--- Copilot will auto-load a file named 'custom.lua' 
--- in the FSLabs Copilot directory
+-- If you have a file named 'custom.lua' inside the
+-- FSLabs Copilot directory, Copilot will auto-load it.
 
 local FSL = FSL
 local copilot = copilot
 
-local voiceCommand1 = VoiceCommand:new {phrase = "please stop"}
+local pleaseStop = VoiceCommand:new {phrase = "please stop"}
 
 copilot.events.enginesStarted:addAction(function()
   -- wait a random amount of time between 30 and 60 seconds
-  copilot.suspend(30000, 60000) 
-  voiceCommand1:activate()
+  copilot.suspend(30000, 60000)
+  pleaseStop:activate()
 
   FSL.OVHD_WIPER_KNOB_LEFT_Knob("FAST")
   FSL.OVHD_GPWS_TERR_Button()
@@ -43,12 +43,13 @@ copilot.events.enginesStarted:addAction(function()
   FSL.PF.MIP_DU_PNL_ND_BRT_Knob(0)
 
 end, "runAsCoroutine")
-  :stopOn(voiceCommand1)
+  :stopOn(pleaseStop)
 
-local voiceCommand2 = VoiceCommand:new {
+local getMetarVoiceCommand = VoiceCommand:new {
 
-  phrase = {"fetch me some weather, would you?"},
-  action = function()
+  phrase = {"get the metar please", "get the metar"},
+  
+  action = function(voiceCommand)
     copilot.sleep(500, 1000)
     if not FSL.MCDU:getString():find("MCDU MENU") then
       FSL.PED_MCDU_KEY_MENU()
@@ -63,11 +64,9 @@ local voiceCommand2 = VoiceCommand:new {
     FSL.PED_MCDU_LSK_R2()
     copilot.sleep(500, 1000)
     FSL.PED_MCDU_LSK_R6()
+    voiceCommand:activate()
   end,
-
-  persistent = true -- don't auto-deactivate after recognition event
 
 }
 
-voiceCommand2:activate()
-
+getMetarVoiceCommand:activate()

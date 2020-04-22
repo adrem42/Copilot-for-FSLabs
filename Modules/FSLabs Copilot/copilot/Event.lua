@@ -56,21 +56,21 @@ function Action:runCallback(...)
 end
 
 function Action:createThread()
-  if not self.activeThread then
+  if not self.currentThread then
     if self.logMsg then
       copilot.logger:debug("Starting action: " .. self.logMsg)
     end
-    self.activeThread = coroutine.create(self.callback)
+    self.currentThread = coroutine.create(self.callback)
     return true
   end
 end
 
-function Action:resumeActiveThread(...)
-  if not self.activeThread then return false end
-  local _, err = coroutine.resume(self.activeThread, ...)
-  if err then copilot.exit(err) end
-  if coroutine.status(self.activeThread) == "dead" then
-    self.activeThread = nil
+function Action:resumeThread(...)
+  if not self.currentThread then return false end
+  local _, err = coroutine.resume(self.currentThread, ...)
+  if err then error(err) end
+  if coroutine.status(self.currentThread) == "dead" then
+    self.currentThread = nil
     return false
   end
   return true
@@ -87,8 +87,8 @@ Action.removeEventRef = removeEventRef
 --- If the 'runAsCoroutine' flag was passed to the constructor, stops the execution of the currently running coroutine immediately.
 
 function Action:stopCurrent()
-  if self.activeThread then
-    self.activeThread = nil
+  if self.currentThread then
+    self.currentThread = nil
     if self.logMsg then
       copilot.logger:debug("Stopping action: " .. self.logMsg)
     end
@@ -128,7 +128,7 @@ end
 
 --- @type Event
 
-Event = {events = {}, voiceCommands = {}}
+Event = {events = {}, voiceCommands = {}, runningThreads = {}}
 
 --- Constructor
 --- @tparam[opt] table data A table containing the following fields:
@@ -155,7 +155,6 @@ function Event:new(data)
   local event = setmetatable(data or {}, self)
   event.actions = {}
   event.runOnce = {}
-  event.activeThreads = {}
   if event.action then
     if type(event.action) == "function" then
       event:addAction(event.action)
@@ -239,9 +238,8 @@ function Event:trigger(...)
   for action in pairs(self.actions) do
     if action.isEnabled then
       if action.runAsCoroutine then
-        if action:createThread() then
-          self.activeThreads[action] = action
-          self:resumeThread(action, ...)
+        if action:createThread() and action:resumeThread(self, ...) then
+          Event.runningThreads[action] = self
         end
       else
         action:runCallback(self, ...)
@@ -253,44 +251,28 @@ function Event:trigger(...)
   end
 end
 
-function Event:resumeThread(action, ...)
-  if not action:resumeActiveThread(self, ...) then
-    self.activeThreads[action] = nil
-  end
-end
-
-function Event:processThreads()
-  for action in pairs(self.activeThreads) do
-    self:resumeThread(action)
-  end
-end
-
-function Event:stopCurrentActions()
-  for action in pairs(self.actions) do
-    action:stopCurrent()
-  end
-end
-
-function Event:fetchRecoResult()
+function Event.fetchRecoResult()
   local ruleID = copilot.recoResultFetcher:getResult()
   if ruleID then
-    self.voiceCommands[ruleID]:trigger()
+    Event.voiceCommands[ruleID]:trigger()
   end
 end
 
-function Event:runThreads()
-  for event in pairs(self.events) do
-    event:processThreads()
+function Event.resumeThreads()
+  for action, event in pairs(Event.runningThreads) do
+    if not action:resumeThread(event) then
+      Event.runningThreads[action] = nil
+    end
   end
 end
 
----static method
+---@static
 ---@param event an <a href="#Class_Event">Event</a> object
 ---@bool returnFunction If true, waitForEvent returns a function that returns true once the event gets triggered, else waitForEvent returns when the event is triggered.
 ---@usage
 -- Event.waitForEvent(copilot.events.landing)
 
-function Event:waitForEvent(event, returnFunction)
+function Event.waitForEvent(event, returnFunction)
   local isEventTriggered = false
   event:addOneOffAction(function()
     isEventTriggered = true
@@ -302,14 +284,15 @@ function Event:waitForEvent(event, returnFunction)
   end
 end
 
---- Static method - same as @{waitForEvent} but for multiple events
+---Same as @{waitForEvent} but for multiple events
+---@static
 ---@tparam table events array of <a href="#Class_Event">Event</a> objects
 ---@bool[opt=false] waitForAll
 ---@treturn function if waitForAll is true, this function works the same as the one returned by @{waitForEvent} and returns true once all events have been triggered
 --
 -- Otherwise, for every event that has been triggered, it returns the event object
 
-function Event:waitForEvents(events, waitForAll, returnFunction)
+function Event.waitForEvents(events, waitForAll, returnFunction)
 
   local flags = {}
 
@@ -382,11 +365,13 @@ setmetatable(VoiceCommand, {__index = Event})
 
 function VoiceCommand:new(data)
   local voiceCommand = data
-  voiceCommand.confidence = (voiceCommand.confidence or 0.93) * copilot.UserOptions.voice_control.confidence_coefficient
+  voiceCommand.confidence = voiceCommand.confidence or copilot.UserOptions.voice_control.confidence_threshold
   voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
-  voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase, voiceCommand.confidence)
   voiceCommand.status = self.Status.inactive
-  Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
+  if copilot.isVoiceControlEnabled then
+    voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase, voiceCommand.confidence)
+    Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
+  end
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
   return setmetatable(Event:new(voiceCommand), self)
@@ -396,7 +381,7 @@ end
 ---@return self
 
 function VoiceCommand:activate()
-  if self.status ~= self.Status.active then
+  if copilot.isVoiceControlEnabled and self.status ~= self.Status.active then
     copilot.logger:debug("Activating voice command: " .. self.phrase[1])
     recognizer:activateRule(self.ruleID)
     self.status = self.Status.active
@@ -408,7 +393,7 @@ end
 ---@return self
 
 function VoiceCommand:ignore()
-  if self.status ~= self.Status.ignore then
+  if copilot.isVoiceControlEnabled and self.status ~= self.Status.ignore then
     copilot.logger:debug("Starting ignore mode for voice command: " .. self.phrase[1])
     recognizer:ignoreRule(self.ruleID)
     self.status = self.Status.ignore
@@ -420,7 +405,7 @@ end
 ---@return self
 
 function VoiceCommand:deactivate()
-  if self.status ~= self.Status.inactive then
+  if copilot.isVoiceControlEnabled and self.status ~= self.Status.inactive then
     copilot.logger:debug("Deactivating voice command: " .. self.phrase[1])
     recognizer:deactivateRule(self.ruleID)
     self.status = self.Status.inactive
@@ -435,6 +420,13 @@ function VoiceCommand:trigger()
   elseif self.persistent == "ignore" then
     self:ignore()
   end
+end
+
+function VoiceCommand:getAction()
+  if self:getActionCount() ~= 1 then
+    error(string.format("Cannot get action of voice command %s - action count isn't 1", self.phrase[1]))
+  end
+  for action in pairs(self.actions) do return action end
 end
 
 function VoiceCommand:react(plus)

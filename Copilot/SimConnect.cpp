@@ -55,7 +55,7 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 						copilot::logger->sinks().push_back(console);
 
 						std::thread([] {
-							Sleep(10000);
+							Sleep(30000);
 							copilot::startLuaThread();
 									}).detach();
 					}

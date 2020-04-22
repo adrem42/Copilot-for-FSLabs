@@ -218,17 +218,17 @@ end
 
 function MCDU:printCells()
   for pos,cell in ipairs(self:getArray()) do
-    local isBold = cell.isBold and "bold" or cell.isBold == false and "not bold" or ""
-    print(pos, cell.char or "", cell.color or "", isBold)
+    print(pos, 
+          cell.char or "", 
+          cell.color or "", 
+          cell.isBold and "bold" or cell.isBold == false and "not bold" or "")
   end
 end
 
 FSL.CPT.MCDU = MCDU:new(1)
 FSL.FO.MCDU = MCDU:new(2)
 
-local FCU = {
-  request = HttpRequest:new("", 8080, "FCU/Display")
-}
+local FCU = {request = HttpRequest:new("", 8080, "FCU/Display")}
 FSL.FCU = FCU
 
 function FCU:getField(json, fieldName)
@@ -240,17 +240,12 @@ function FCU:get()
   local SPD = self:getField(json, "SPD")
   local HDG = self:getField(json, "HDG")
   local ALT = self:getField(json, "ALT")
-  local ret = {
+  return {
     SPD = tonumber(SPD),
     HDG = tonumber(HDG),
     ALT = tonumber(ALT),
     isBirdOn = json:find("HDG_VS_SEL\":false") ~= nil
   } 
-  return ret
-end
-
-function FCU:setHttpPort(port)
-  self.request:setPort(tonumber(port))
 end
 
 --- Abstract control
@@ -264,7 +259,8 @@ local Control = {
     rightRelease = 11,
     wheelUp = 14,
     wheelDown = 15
-  }
+  },
+  FSL_VC_control = true
 }
 
 function Control:new(control)
@@ -292,7 +288,7 @@ end
 
 function Control:moveHandHere()
   local reachtime = hand:moveTo(self.pos)
-  log(("Position of control %s : x = %s, y = %s, z = %s"):format(self.LVar:gsub("VC_", ""), math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z)), 1)
+  log(("Position of control %s : x = %s, y = %s, z = %s"):format(self.name , math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z)), 1)
   log("Control reached in " .. math.floor(reachtime) .. " ms")
 end
 
@@ -930,8 +926,10 @@ function FSL:disableSequences()
 end
 
 function FSL:setHttpPort(port)
-  self.CPT.MCDU.request:setPort(tonumber(port))
-  self.FO.MCDU.request:setPort(tonumber(port))
+  port = tonumber(port)
+  self.CPT.MCDU.request:setPort(port)
+  self.FO.MCDU.request:setPort(port)
+  self.FCU.request:setPort(port)
 end
 
 local TL_posns = {
@@ -1084,24 +1082,6 @@ end
 
 function atsuLog:test()
   self.path = self.path:gsub("ATSU.log", "test.log")
-end
-
-local bindCount = 0
-
-function keyBind(keycode,func,cond,shifts,downup)
-  cond = cond or function() return true end
-  bindCount = bindCount + 1
-  local funcName = "FSL2LuaLegacyBind" .. bindCount
-  _G[funcName] = function() if cond() then func() end end
-  event.key(keycode,shifts,downup or 1,funcName)
-end
-
-function buttBind(joyLetter,butt,func,cond,downup)
-  cond = cond or function() return true end
-  bindCount = bindCount + 1
-  local funcName = "FSL2LuaLegacyBind" .. bindCount
-  _G[funcName] = function() if cond() then func() end end
-  event.button(joyLetter,butt,downup or 1,funcName)
 end
 
 local keyList = {
@@ -1328,9 +1308,9 @@ setmetatable(Bind, Bind)
 
 --- @function Bind
 --- @tparam table data A table containing the following fields: 
---- @tparam function data.onPress
---- @tparam function data.onPressRepeat
---- @tparam function data.onRelease
+--- @tparam function data.onPress (see usage below)
+--- @tparam function data.onPressRepeat (see usage below)
+--- @tparam function data.onRelease (see usage below)
 --- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
 --- @string data.key Define this field for a key bind. The following values for are accepted:<br><br>
 --
@@ -1377,19 +1357,26 @@ setmetatable(Bind, Bind)
 --- @usage Bind {key = "SHIFT+A", onPress = FSL.MIP_ISIS_BARO_Button}
 --- Bind {
 ---   key = "NumpadEnter",
----   onPressRepeat = function() FSL.OVHD_INTLT_Integ_Lt_Knob:rotateLeft() end
+---   onPressRepeat = {FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft"}
 --- }
 --- Bind {
 ---   btn = "C5",
 ---   onPress = {FSL.PED_COMM_INT_RAD_Switch, "RAD"}, 
 ---   onRelease = {FSL.PED_COMM_INT_RAD_Switch, "OFF"}
 --- }
+--- Bind {key = "NumpadMinus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "push"}}
+--- Bind {key = "NumpadPlus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "pull"}}
 
 function Bind:__call(data)
+  assert(data.key or data.btn, "Attempt to create a bind without a key or button :D")
   data = self:prepareData(data)
-  local bind = data.key and keyBind:new(data) or data.btn and joyBind:new(data)
-  if bind then
-    self.binds[#self.binds+1] = bind
+  local _keyBind = data.key and keyBind:new(data)
+  local _joyBind = data.btn and joyBind:new(data)
+  if _keyBind then
+    self.binds[#self.binds+1] = _keyBind
+  end
+  if _joyBind then
+    self.binds[#self.binds+1] = _joyBind
   end
 end
 
@@ -1425,10 +1412,22 @@ function Bind:makeSingleFunc(funcs)
           local nextElem = _funcs[i+1]
           local _func
           if type(nextElem) == "string" then
-            if type(func) == "table" and func[nextElem] then
-              _func = function() func[nextElem](func) end
-            else
-              _func = function() func(nextElem) end
+            local valid = false
+            if type(func) == "table" then
+              local control = func
+              assert(control.FSL_VC_control, tostring(control) .. " is not an FSL2Lua cockpit control.")
+              if control[nextElem] then
+                _func = function() control[nextElem](func) end
+                valid = true
+              elseif control.posn then
+                for pos in pairs(control.posn) do
+                  if pos:lower() == nextElem:lower() then
+                    valid = true
+                    _func = function() control(nextElem) end
+                  end
+                end
+              end
+              assert(valid, string.format("%s is neither a position or method of control %s", nextElem, control.name))
             end
           else
             _func = func
