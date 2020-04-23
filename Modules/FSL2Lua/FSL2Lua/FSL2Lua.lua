@@ -1366,6 +1366,7 @@ setmetatable(Bind, Bind)
 --- }
 --- Bind {key = "NumpadMinus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "push"}}
 --- Bind {key = "NumpadPlus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "pull"}}
+--- Bind {key = "Backspace", onPress = function () ipc.control(66807) end}
 
 function Bind:__call(data)
   assert(data.key or data.btn, "Attempt to create a bind without a key or button :D")

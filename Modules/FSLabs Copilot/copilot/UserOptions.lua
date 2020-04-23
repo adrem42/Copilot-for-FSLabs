@@ -5,7 +5,6 @@ local options = {
       {"http_port", 8080, "The port of the web MCDU - leave it at default unless you changed it in the FSLabs settings"},
       {"log_level", 2},
       {"PM_seat", "right", "Where the Pilot Monitoring sits in the cockpit - left or right"},
-      {"sound_dir", "Hannes"},
       {"debugger", hidden = true},
       {"debugger_bind", hidden = true}
     }
@@ -20,6 +19,7 @@ local options = {
   {
     "Callouts",
     {
+      {"sound_set", "Hannes"},
       {"enable", 1},
       {"volume", 60, "This sets the maximum volume from 0-100. You can also adjust the volume with the INT volume knob in the cockpit"},
       {"device_id", -1, "-1 is the default device"},

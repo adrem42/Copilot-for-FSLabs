@@ -167,37 +167,41 @@ void init()
 	std::string FSUIPC_DIR = std::regex_replace(lpFilename, std::regex("FSUIPC\\d.dll"), "");
 	std::string appDir = FSUIPC_DIR + "\\FSLabs Copilot\\";
 
-	std::string logFileName = appDir + "\\Copilot.log";
+	if (GetFileAttributes(appDir.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		std::string logFileName = appDir + "\\Copilot.log";
 #ifdef DEBUG
-	logFileName = appDir + "\\Copilot(debug).log";
+		logFileName = appDir + "\\Copilot(debug).log";
 #endif
-	auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFileName, 1048576 * 5, 0, true);
-	fileSink->set_pattern("[%d-%m-%C %T] [%l] %v");
-	std::string logName = "FSLabs Copilot";
+		auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFileName, 1048576 * 5, 0, true);
+		fileSink->set_pattern("[%d-%m-%C %T] [%l] %v");
+		std::string logName = "FSLabs Copilot";
 #ifdef DEBUG
-	logName += "(debug)";
+		logName += "(debug)";
 #endif
-	copilot::logger = std::make_shared<spdlog::logger>(logName, fileSink);
-	copilot::logger->flush_on(spdlog::level::trace);
+		copilot::logger = std::make_shared<spdlog::logger>(logName, fileSink);
+		copilot::logger->flush_on(spdlog::level::trace);
 
-	sol::state lua;
-	lua.open_libraries();
-	lua["FSUIPC_DIR"] = FSUIPC_DIR;
-	lua["APPDIR"] = appDir;
-	lua.do_string(R"(package.path = FSUIPC_DIR .. '\\?.lua')");
-	auto res = lua.do_file(appDir + "\\copilot\\UserOptions.lua");
-	if (res.status() != sol::call_status::ok) {
-		std::string err = "copilot - " + res.get<std::string>();
-		copilot::logger->error(err);
+		sol::state lua;
+		lua.open_libraries();
+		lua["FSUIPC_DIR"] = FSUIPC_DIR;
+		lua["APPDIR"] = appDir;
+		lua.do_string(R"(package.path = FSUIPC_DIR .. '\\?.lua')");
+		auto res = lua.do_file(appDir + "\\copilot\\UserOptions.lua");
+		if (res.status() != sol::call_status::ok) {
+			std::string err = "copilot - " + res.get<std::string>();
+			copilot::logger->error(err);
+		}
+
+		BASS_DEVICEINFO info;
+		copilot::logger->info("Output device info:");
+		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
+			copilot::logger->info("{}={} {}",
+								  i, info.name,
+								  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
+		copilot::logger->info("---------------------------------------------------------------------");
 	}
 
-	BASS_DEVICEINFO info;
-	copilot::logger->info("Output device info:");
-	for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
-		copilot::logger->info("{}={} {}",
-							  i, info.name,
-							  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
-	copilot::logger->info("---------------------------------------------------------------------");
+	
 }
 
 void DLLStart(void)
@@ -219,7 +223,7 @@ void DLLStop(void)
 }
 
 extern "C"
-__declspec(dllexport) int luaopen_Copilot(lua_State* L)
+__declspec(dllexport) int luaopen_FSLCopilot(lua_State* L)
 {
 	sol::state_view lua(L);
 

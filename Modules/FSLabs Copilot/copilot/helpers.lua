@@ -3,7 +3,7 @@
 local ipc = ipc
 local coroutine = coroutine
 
---- if both parameters ommited: ipc.sleep(100)
+--- if both parameters omitted: ipc.sleep(100)
 --- if time1 specified: ipc.sleep(time1)
 --- if both are specified: ipc.sleep(math.random(time1, time2))
 function copilot.sleep(time1,time2)
@@ -18,7 +18,7 @@ function copilot.sleep(time1,time2)
   ipc.sleep(time)
 end
 
---- if both parameters ommited: coroutine.yield()
+--- if both parameters omitted: coroutine.yield()
 --- if time1 specified: couroutine.yield() until time1 milliseconds pass
 --- if both are specified: couroutine.yield() a random amount of ms between time1 and time2
 function copilot.suspend(time1, time2)
@@ -61,7 +61,7 @@ function copilot.thrustLeversSetForTakeoff()
 end
 
 --- returns true if the engines are running
---- @bool both  if true, will return true if both engines are running. If ommited or false, returns true if either engine is running.
+--- @bool both  if true, will return true if both engines are running. If omitted or false, returns true if either engine is running.
 function copilot.enginesRunning(both)
   local eng1_N1 = ipc.readDBL(0x2010)
   local eng2_N1 = ipc.readDBL(0x2110)

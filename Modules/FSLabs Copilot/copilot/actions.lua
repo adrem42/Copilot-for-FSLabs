@@ -32,11 +32,15 @@ else
   flapsLimits.flapsFull = 177
 end
 
+local function recoConfidence(confidence)
+  return confidence * copilot.UserOptions.voice_control.confidence_threshold / 0.93
+end
+
 if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsOne = VoiceCommand:new {
     phrase = "flaps one",
-    confidence = 0.94,
+    confidence = recoConfidence(0.94),
     action = function()
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
@@ -60,7 +64,7 @@ if copilot.isVoiceControlEnabled then
       end
       copilot.voiceCommands.flapsOne:ignore()
       VoiceCommand:react(500)
-      copilot.playSound("flapsOne")
+      copilot.playCallout("flapsOne")
       FSL.PED_FLAP_LEVER("1")
       
     end,
@@ -69,7 +73,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsTwo = VoiceCommand:new {
     phrase = "flaps two",
-    confidence = 0.94,
+    confidence = recoConfidence(0.94),
     action = function()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
@@ -93,7 +97,7 @@ if copilot.isVoiceControlEnabled then
       end
       copilot.voiceCommands.flapsTwo:ignore()
       VoiceCommand:react(500)
-      copilot.playSound("flapsTwo")
+      copilot.playCallout("flapsTwo")
       FSL.PED_FLAP_LEVER("2")
 
     end,
@@ -107,7 +111,7 @@ if copilot.isVoiceControlEnabled then
         copilot.voiceCommands.flapsThree:ignore()
         copilot.voiceCommands.flapsFull:activate()
         VoiceCommand:react(500)
-        copilot.playSound("flapsThree")
+        copilot.playCallout("flapsThree")
         FSL.PED_FLAP_LEVER("3")
       end
     end,
@@ -121,7 +125,7 @@ if copilot.isVoiceControlEnabled then
         if copilot.IAS() <= flapsLimits.flapsFull then
           copilot.voiceCommands.flapsFull:ignore()
           VoiceCommand:react(500)
-          copilot.playSound("flapsFull")
+          copilot.playCallout("flapsFull")
           FSL.PED_FLAP_LEVER("FULL")
         end
       end
@@ -140,7 +144,7 @@ if copilot.isVoiceControlEnabled then
           copilot.voiceCommands.flapsOne:activate()
         end
         VoiceCommand:react(500)
-        copilot.playSound("flapsZero")
+        copilot.playCallout("flapsZero")
         FSL.PED_FLAP_LEVER("0")
         
       end
@@ -228,7 +232,7 @@ if copilot.isVoiceControlEnabled then
     persistent = true
   }
 
-  copilot.voiceCommands.takeoff = VoiceCommand:new {phrase = "takeoff", confidence = 0.95}
+  copilot.voiceCommands.takeoff = VoiceCommand:new {phrase = "takeoff", confidence = recoConfidence(0.95)}
   copilot.voiceCommands.taxiLightOff = VoiceCommand:new {
     phrase = {"taxi light off", "taxilightoff"},
     action = function() FSL.OVHD_EXTLT_Nose_Switch("OFF") end
@@ -340,11 +344,8 @@ function copilot.sequences:setupEFIS()
   if not FSL.GSLD_EFIS_CSTR_Button:isLit() then
     FSL.GSLD_EFIS_CSTR_Button()
   end
-  if prob(0.5) then
-    FSL.GSLD_EFIS_ND_Range_Knob("10")
-  else
-    FSL.GSLD_EFIS_ND_Range_Knob("20")
-  end
+
+  FSL.GSLD_EFIS_ND_Range_Knob(prob(0.5) and "10" or "20")
   FSL.GSLD_EFIS_ND_Mode_Knob("ARC")
   FSL.GSLD_EFIS_VORADF_1_Switch("VOR")
   FSL.GSLD_VORADF_2_Switch("VOR")
@@ -630,7 +631,7 @@ do
     copilot.voiceCommands.takeoff = VoiceCommand:new{
       phrase = "takeoff",
       action = function()
-        copilot.actions.noVoiceTakeoffTrigger:stopCurrent()
+        copilot.actions.noVoiceTakeoffTrigger:stopCurrentThread()
         copilot.events.takeoffInitiated2:trigger()
       end
     }
@@ -762,7 +763,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.noApu = VoiceCommand:new {
     phrase = {"no apu", "hold apu"},
-    confidence = 0.95,
+    confidence = recoConfidence(0.95),
     action = function()
       copilot.sequences.afterLanding.noApu = true
       copilot.voiceCommands.startApu:activate()

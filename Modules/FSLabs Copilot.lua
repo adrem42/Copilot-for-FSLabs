@@ -13,9 +13,12 @@ end
 
 APPDIR = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1FSLabs Copilot\\")
 addPackagePath(APPDIR)
-addPackageCPath(ipc.readSTR(0x1000, 256):gsub("(Prepar3D v%d) Files.*", "%1 Add-ons\\Copilot for FSLabs"))
+--addPackageCPath(ipc.readSTR(0x1000, 256):gsub("(Prepar3D v%d) Files.*", "%1 Add-ons\\Copilot for FSLabs"))
+addPackageCPath(string.format("%s\\Documents\\Prepar3D v%s Add-ons\\Copilot for FSLabs",
+                              os.getenv("HOMEPATH"), 
+                              tostring(ipc.readUB(0x3124)):sub(1, 1)))
 
-copilot = require "Copilot"
+copilot = require "FSLCopilot"
 require "copilot.helpers"
 copilot.UserOptions = require "copilot.UserOptions"
 local err = copilot.init()
@@ -40,23 +43,20 @@ if debugger.enable then
 end 
 
 do
-  local soundDir = copilot.soundDir .. copilot.UserOptions.general.sound_dir .. "\\"
-  local sounds = {}
-  copilot.sounds = sounds
-  function copilot.addSound(path, length, volume)
-    local name
-    if not path:find("\\") then
-      name = path
-      path = soundDir .. path
-    end
-    sounds[name or path] = Sound:new(path .. ".wav", length or 0, volume or 1)
+  local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
+  local callouts = {}
+  copilot.sounds = {callouts = callouts}
+  function copilot.addCallout(fileName, length, volume)
+    callouts[fileName] = Sound:new(string.format("%s\\%s.wav", calloutDir, fileName), length or 0, volume or 1)
   end
-  function copilot.playSound(path, delay)
-    if sounds[path] then
-      sounds[path]:play(delay or 0)
+  function copilot.playCallout(fileName, delay)
+    if callouts[fileName] then
+      callouts[fileName]:play(delay or 0)
+    else
+      copilot.logger:warn("Callout " .. fileName .. " not found")
     end
   end
-  dofile(soundDir .. "\\sounds.lua")
+  dofile(calloutDir .. "\\sounds.lua")
 end
 
 --- Predefined events
@@ -158,17 +158,19 @@ local function setup()
     require "copilot.actions"
   end
 
-  if copilot.UserOptions.failures.enable == 1 and not debugger.enable and not ipc.get("failuresSetup") then 
-    FSL:disableSequences()
-    require "copilot.failures"
-    FSL:enableSequences()
-  end
-
-  local path = APPDIR .. "\\custom.lua"
-  if file.exists(path) then dofile(path) end
+  local customDir = APPDIR .. "\\custom"
+  for file in lfs.dir(customDir) do
+    if file:find(".lua$") then
+      dofile(customDir .. "\\" .. file)
+    end
+  end 
 
   if copilot.isVoiceControlEnabled then
     copilot.recognizer:resetGrammar()
+  end
+
+  if copilot.UserOptions.failures.enable == 1 and not debugger.enable then 
+    require "copilot.failures"
   end
   
 end

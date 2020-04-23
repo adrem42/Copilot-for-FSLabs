@@ -167,7 +167,7 @@ quat = {
   end,
 
   __tostring = function(q)
-    return string.format('(%f, %f, %f, %f)', q.x, q.y, q.z, q.w)
+    return string.format('(%f, %f, %f, %f)', q.x or 0, q.y or 0, q.z or 0, q.w or 0)
   end,
 
   __add = function(q, r) return q:add(r, quat()) end,

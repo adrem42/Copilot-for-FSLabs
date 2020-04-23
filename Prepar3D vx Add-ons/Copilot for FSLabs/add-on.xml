@@ -3,6 +3,6 @@
   <AddOn.Component>
     <Name>Copilot for FSLabs</Name>
     <Category>DLL</Category>
-    <Path>Copilot.dll</Path>
+    <Path>FSLCopilot.dll</Path>
   </AddOn.Component>
 </SimBase.Document>

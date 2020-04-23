@@ -1,6 +1,6 @@
 -- An example of adding actions and voice commands to Copilot.
--- If you have a file named 'custom.lua' inside the
--- FSLabs Copilot directory, Copilot will auto-load it.
+-- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
+-- any lua files in that directory
 
 local FSL = FSL
 local copilot = copilot

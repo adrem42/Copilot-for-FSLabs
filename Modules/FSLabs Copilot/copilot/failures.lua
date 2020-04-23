@@ -2,14 +2,21 @@
 local mt = require "FSLabs Copilot.libs.mt19937ar"
 local serpent = require "FSL2Lua.libs.serpent"
 local file = require "FSL2Lua.FSL2Lua.file"
-local aircraftReg = copilot.UserOptions.failures.per_airframe == 1 and ipc.readSTR(0x313C,12):match("%w+%-%w+") or "common"
-local aircraftRegDir = APPDIR .. "failures\\" .. aircraftReg
-local stateFilePath = aircraftRegDir .. "\\state.lua"
 local minutesLoggedAtStart, scriptStartTime, coldAndDark
 local debugging = false
 local failureStates
 local failures = {}
 local function sleep(time) ipc.sleep(time or 100) end
+
+local aircraftReg
+if copilot.UserOptions.failures.per_airframe == 1 then
+  aircraftReg = ipc.readSTR(0x313C, 12)
+  aircraftReg = aircraftReg:sub(1, aircraftReg:find("\0") - 1)
+else
+  aircraftReg = "common"
+end
+local aircraftRegDir = APPDIR .. "failures\\" .. aircraftReg
+local stateFilePath = aircraftRegDir .. "\\state.lua"
 
 for _, v in ipairs(require "FSLabs Copilot.copilot.failurelist") do
   local failureName = v[1]
@@ -245,12 +252,11 @@ local function init()
 
   local path = ipc.readSTR(0x3C00,256):gsub("SimObjects.+", "A320XGauges.ini")
   coldAndDark = file.read(path):find("%[PANEL_STATE%].-Default=1")
-  if coldAndDark then
-      FSL:setPilot(1)
-    else 
-      FSL:setPilot(2)
-  end
+  
 
+end
+
+local function loadStates()
   if not file.exists(stateFilePath) then
     copilot.logger:info("Creating failure file for " .. aircraftReg)
     minutesLoggedAtStart = 0
@@ -268,23 +274,31 @@ end
 
 --#############################################################################
 
-local pilotBefore = FSL:getPilot()
 init()
-if not debugging then 
-  dimDisplay() 
-  ipc.set("failuresSetup", 1)
-end
-setupFailures()
-if not coldAndDark then restoreBrightness()
-else turnOffDisplay() end
-copilot.logger:info("Finished setting up failures")
-FSL:setPilot(pilotBefore)
-scriptStartTime = ipc.elapsedtime()
+loadStates()
 
+if not ipc.get("FSLC_failures") then
+  FSL:disableSequences()
+  local pilotBefore = FSL:getPilot()
+  FSL:setPilot(coldAndDark and 1 or 2)
+
+  if not debugging then 
+    dimDisplay() 
+    ipc.set("FSLC_failures", 1)
+  end
+  setupFailures()
+  if not coldAndDark then restoreBrightness()
+  else turnOffDisplay() end
+  copilot.logger:info("Finished setting up failures")
+  FSL:setPilot(pilotBefore)
+  FSL:enableSequences()
+end
+
+scriptStartTime = ipc.elapsedtime()
 local nextTimeSave = ipc.elapsedtime() + 60000
 
-copilot.addCallback(function(time)
-  if time > nextTimeSave then
+copilot.addCallback(function()
+  if ipc.elapsedtime() > nextTimeSave then
     saveTime()
     nextTimeSave = ipc.elapsedtime() + 60000
   end

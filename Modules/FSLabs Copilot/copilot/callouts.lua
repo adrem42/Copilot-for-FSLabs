@@ -73,7 +73,7 @@ function copilot.callouts:waitForThrustSet()
     eng1_N1_prev = eng1_N1
     eng2_N1_prev = eng2_N1
     if thrustSet then
-      copilot.playSound("thrustSet")
+      copilot.playCallout("thrustSet")
     end
   until thrustSet or skipThis
 end
@@ -81,7 +81,7 @@ end
 function copilot.callouts:waitForOneHundred()
   while true do
     if copilot.radALT() < 10 and copilot.IAS() >= 100 then
-      copilot.playSound("oneHundred", PFD_delay)
+      copilot.playCallout("oneHundred", PFD_delay)
       return
     end
     copilot.suspend()
@@ -92,7 +92,7 @@ function copilot.callouts:waitForV1(V1)
   while true do
     copilot.suspend()
     if copilot.radALT() < 10 and copilot.IAS() >= V1 then
-      copilot.playSound("V1", PFD_delay)
+      copilot.playCallout("V1", PFD_delay)
       return
     end
   end
@@ -102,7 +102,7 @@ function copilot.callouts:waitForVr(Vr)
   while true do
     copilot.suspend()
     if copilot.radALT() < 10 and copilot.IAS() >= Vr then
-      copilot.playSound("rotate", PFD_delay)
+      copilot.playCallout("rotate", PFD_delay)
       return
     end
   end
@@ -115,7 +115,7 @@ function copilot.callouts:waitForPositiveClimb()
     local positiveClimb = copilot.radALT() >= 10 and verticalSpeed >= 500
     local skipThis = not positiveClimb and copilot.radALT() > 150.0
     if positiveClimb then
-      copilot.playSound("positiveClimb")
+      copilot.playCallout("positiveClimb")
     end
   until positiveClimb or skipThis
 end
@@ -129,9 +129,9 @@ function copilot.callouts:waitForSpoilers()
     local spoilers = spoilers_left and spoilers_right
     local noSpoilers = not spoilers and self.landedTime and ipc.elapsedtime() - self.landedTime > plusminus(1500)
     if spoilers then
-      copilot.playSound("spoilers", delay)
+      copilot.playCallout("spoilers", delay)
     elseif noSpoilers then
-      copilot.playSound("noSpoilers", delay)
+      copilot.playCallout("noSpoilers", delay)
     end
     copilot.suspend()
   until spoilers or noSpoilers
@@ -150,14 +150,14 @@ function copilot.callouts:waitForReverseGreen()
       self.noReverseTimeRef = ipc.elapsedtime() 
     end
     if reverseGreen then
-      copilot.playSound("reverseGreen", delay)
+      copilot.playCallout("reverseGreen", delay)
     elseif noReverse then
       if reverseLeftGreen then
-        copilot.playSound("noReverseLeft", delay)
+        copilot.playCallout("noReverseLeft", delay)
       elseif reverseRightGreen then
-        copilot.playSound("noReverseRight", delay)
+        copilot.playCallout("noReverseRight", delay)
       else
-        copilot.playSound("noReverse", delay)
+        copilot.playCallout("noReverse", delay)
       end
     end
   until reverseGreen or noReverse
@@ -172,9 +172,9 @@ function copilot.callouts:waitForDecel()
     local decel = accelLateral < -3
     local noDecel = (not decel and ipc.elapsedtime() - self.noDecelTimeRef > plusminus(3500)) or copilot.GS() < 70
     if decel then
-      copilot.playSound("decel", delay)
+      copilot.playCallout("decel", delay)
     elseif noDecel then
-      copilot.playSound("noDecel", delay)
+      copilot.playCallout("noDecel", delay)
     end
   until decel or noDecel
 end
@@ -186,7 +186,7 @@ function copilot.callouts:waitForSeventy()
     copilot.suspend()
     local seventy = copilot.GS() <= 70
     if seventy then
-      copilot.playSound("seventy", delay)
+      copilot.playCallout("seventy", delay)
     end
   until seventy
 end
@@ -211,7 +211,7 @@ function copilot.callouts.brakeCheck:__call()
     local rightPressure = ipc.readLvar("VC_MIP_BrkPress_R")
     if leftPressure == 0 and rightPressure == 0 then
       copilot.sleep(plusminus(800,0.2))
-      copilot.playSound("pressureZero", delay)
+      copilot.playCallout("pressureZero", delay)
       copilot.events.brakesChecked:trigger()
       self.brakesChecked = true
       return true
@@ -256,63 +256,63 @@ function copilot.callouts.flightControlsCheck:__call()
     if not fullLeft and not ((fullUp or fullDown) and not yNeutral) and self:fullLeft() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("fullLeft_1")
+      copilot.playCallout("fullLeft_1")
       fullLeft = true
     end
     -- full right aileron
     if not fullRight and not ((fullUp or fullDown) and not yNeutral) and self:fullRight() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("fullRight_1")
+      copilot.playCallout("fullRight_1")
       fullRight = true
     end
     -- neutral after full left and full right aileron
     if fullLeft and fullRight and not xNeutral and self:stickNeutral() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("neutral_1")
+      copilot.playCallout("neutral_1")
       xNeutral = true
     end
     -- full up
     if not fullUp and not ((fullLeft or fullRight) and not xNeutral) and self:fullUp() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("fullUp")
+      copilot.playCallout("fullUp")
       fullUp = true
     end
     -- full down
     if not fullDown and not ((fullLeft or fullRight) and not xNeutral) and self:fullDown() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("fullDown")
+      copilot.playCallout("fullDown")
       fullDown = true
     end
     -- neutral after full up and full down
     if fullUp and fullDown and not yNeutral and self:stickNeutral() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("neutral_3")
+      copilot.playCallout("neutral_3")
       yNeutral = true
     end
     -- full left rudder
     if not fullLeftRud and xNeutral and yNeutral and self:fullLeftRud() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("fullLeft_2")
+      copilot.playCallout("fullLeft_2")
       fullLeftRud = true
     end
     -- full right rudder
     if not fullRightRud and xNeutral and yNeutral and self:fullRightRud() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("fullRight_2")
+      copilot.playCallout("fullRight_2")
       fullRightRud = true
     end
     -- neutral after full left and full right rudder
     if fullLeftRud and fullRightRud and not rudNeutral and self:rudNeutral() then
       copilot.sleep(ECAM_delay)
       self:randomDelay()
-      copilot.playSound("neutral_2")
+      copilot.playCallout("neutral_2")
       rudNeutral = true
     end
 

@@ -5,5 +5,5 @@ IF "%1" == "d" (
 ) ELSE (
 	set config="Release"
 )
-copy "x64\%config%\Copilot.dll" "C:\Users\Peter\Documents\Prepar3D v4 Add-ons\Copilot for FSLabs"
-copy "x64\Release\Copilot.dll" "Prepar3D vx Add-ons\Copilot for FSLabs"
+copy "x64\%config%\FSLCopilot.dll" "C:\Users\Peter\Documents\Prepar3D v4 Add-ons\Copilot for FSLabs"
+copy "x64\Release\FSLCopilot.dll" "Prepar3D vx Add-ons\Copilot for FSLabs"

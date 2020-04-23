@@ -48,6 +48,10 @@ function Action:setEnabled(value)
   self.isEnabled = value
 end
 
+function Action:isThreadRunning()
+  return self.currentThread ~= nil
+end
+
 function Action:runCallback(...)
   if self.logMsg then
     copilot.logger:debug("Starting action: " .. self.logMsg)
@@ -86,13 +90,13 @@ Action.removeEventRef = removeEventRef
 
 --- If the 'runAsCoroutine' flag was passed to the constructor, stops the execution of the currently running coroutine immediately.
 
-function Action:stopCurrent()
+function Action:stopCurrentThread()
   if self.currentThread then
     self.currentThread = nil
     if self.logMsg then
       copilot.logger:debug("Stopping action: " .. self.logMsg)
     end
-    if self.cleanUp then self.cleanUp() end
+    if self.cleanUpCallback then self.cleanUpCallback() end
   end
 end
 
@@ -104,7 +108,7 @@ Action.makeEventRef = makeEventRef
 --- @return self
 
 function Action:stopOn(...)
-  self:makeEventRef(function() self:stopCurrent() end, "stop", ...)
+  self:makeEventRef(function() self:stopCurrentThread() end, "stop", ...)
   return self
 end
 
@@ -113,7 +117,7 @@ end
 --- @return self
 
 function Action:addCleanup(func)
-  self.cleanUp = func
+  self.cleanUpCallback = func
   return self
 end
 
@@ -239,7 +243,7 @@ function Event:trigger(...)
     if action.isEnabled then
       if action.runAsCoroutine then
         if action:createThread() and action:resumeThread(self, ...) then
-          Event.runningThreads[action] = self
+          Event.runningThreads[action] = action
         end
       else
         action:runCallback(self, ...)
@@ -259,8 +263,8 @@ function Event.fetchRecoResult()
 end
 
 function Event.resumeThreads()
-  for action, event in pairs(Event.runningThreads) do
-    if not action:resumeThread(event) then
+  for action in pairs(Event.runningThreads) do
+    if not action:resumeThread() then
       Event.runningThreads[action] = nil
     end
   end
@@ -269,8 +273,7 @@ end
 ---@static
 ---@param event an <a href="#Class_Event">Event</a> object
 ---@bool returnFunction If true, waitForEvent returns a function that returns true once the event gets triggered, else waitForEvent returns when the event is triggered.
----@usage
--- Event.waitForEvent(copilot.events.landing)
+---@usage Event.waitForEvent(copilot.events.landing)
 
 function Event.waitForEvent(event, returnFunction)
   local isEventTriggered = false
@@ -353,7 +356,7 @@ setmetatable(VoiceCommand, {__index = Event})
 --  @param data.phrase string or array of strings
 --  @number[opt=0.93] data.confidence between 0 and 1
 --  @param[opt=false] data.persistent
--- * ommited or false: the voice command will be deactivated after being triggered.
+-- * omitted or false: the voice command will be deactivated after being triggered.
 -- * 'ignore': the voice command will be put into ignore mode after being triggered.
 -- * true: the voice command will stay active after being triggered.
 --- @usage
