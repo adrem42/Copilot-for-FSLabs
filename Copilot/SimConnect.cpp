@@ -25,10 +25,10 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 					if (copilot::recoResultFetcher) {
 						switch ((MuteKeyStatus)evt->dwData) {
 							case Depressed:
-								copilot::recoResultFetcher->isMuteKeyPressed = true;
+								copilot::recoResultFetcher->onMuteKeyEvent(true);
 								break;
 							case Released:
-								copilot::recoResultFetcher->isMuteKeyPressed = false;
+								copilot::recoResultFetcher->onMuteKeyEvent(false);
 								break;
 						}
 					}

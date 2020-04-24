@@ -6,24 +6,26 @@ RecoResultFetcher::RecoResultFetcher(std::shared_ptr<Recognizer> recognizer)
 {
 }
 
+void RecoResultFetcher::onMuteKeyEvent(bool isMuteKeyPressed)
+{
+	std::lock_guard<std::mutex> lock(mtx);
+	if (!isMuteKeyPressed) muteKeyRelasedTime = std::chrono::system_clock::now();
+	else muted = true;
+}
+
 void RecoResultFetcher::fetchResults()
 {
 	auto recoResult = recognizer->getResult();
-	if (recoResult && !muted) {
-		copilot::logger->info("Recognized phrase '{}', confidence: {:.4f}", recoResult->phrase, recoResult->confidence);
+	if (recoResult) {
 		std::lock_guard<std::mutex> lock(mtx);
-		recoResults.emplace(recoResult->ruleID);
+		if (muted && std::chrono::system_clock::now() - muteKeyRelasedTime > delayBeforeUnmute)
+			muted = false;
+		if (!muted) {
+			copilot::logger->info("Recognized phrase '{}', confidence: {:.4f}", recoResult->phrase, recoResult->confidence);
+			recoResults.emplace(recoResult->ruleID);
+		}
 	}
-	auto now = std::chrono::system_clock::now();
-	if (isMuteKeyPressed && !wasMuteKeyPressed) {
-		wasMuteKeyPressed = true;
-		muted = true;
-	} else if (!isMuteKeyPressed && wasMuteKeyPressed) {
-		wasMuteKeyPressed = false;
-		muteKeyReleasedTime = now;
-	}
-	if (muted && !wasMuteKeyPressed && now - muteKeyReleasedTime > std::chrono::milliseconds(delayBeforeUnmute))
-		muted = false;
+	
 }
 
 std::optional<DWORD> RecoResultFetcher::getResult()

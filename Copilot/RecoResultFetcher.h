@@ -16,13 +16,11 @@ using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 class RecoResultFetcher {
 	std::shared_ptr<Recognizer> recognizer;
 	bool muted = false;
-	bool wasMuteKeyPressed = false;
-	TimePoint muteKeyRelased = std::chrono::system_clock::now();
-	TimePoint muteKeyReleasedTime;
-	int delayBeforeUnmute = 1000;
+	std::chrono::milliseconds delayBeforeUnmute = std::chrono::milliseconds(1000);
 	std::mutex mtx;
+	TimePoint muteKeyRelasedTime = std::chrono::system_clock::now();
 public:
-	std::atomic<bool> isMuteKeyPressed = false;
+	void onMuteKeyEvent(bool isMuteKeyPressed);
 	std::queue<DWORD> recoResults;
 	RecoResultFetcher(std::shared_ptr<Recognizer> recognizer);
 	void fetchResults();
