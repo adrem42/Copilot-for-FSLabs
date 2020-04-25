@@ -90,9 +90,9 @@ end
 function copilot.callOnce(func, timeOffset)
   local deletthis
   local callAt = ipc.elapsedtime() + (timeOffset or 0) 
-  deletthis = function()
+  deletthis = function(...)
     if ipc.elapsedtime() > callAt then
-      func()
+      func(...)
       copilot.removeCallback(deletthis)
     end
   end
@@ -121,8 +121,8 @@ end
 
 if debugger.enable then
   local update = copilot.update
-  function copilot.update()
-    update()
+  function copilot.update(...)
+    update(...)
     debugger.debuggee.poll()
   end
   if debugger.bind then
@@ -175,8 +175,7 @@ local function setup()
   
 end
 
-copilot.logger:info(">>>>>> Script started <<<<<<")
-
 setup()
-
 event.timer(30, "copilot.update")
+
+copilot.logger:info(">>>>>> Script started <<<<<<")

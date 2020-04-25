@@ -96,7 +96,7 @@ ___
 
 * 'Thrust set'
 * 'One hundred'
-* 'V1 (*if play_V1=1*)
+* 'V1 (if it's not played by the aircraft itself)
 * 'Rotate'
 * 'Positive climb'
 ___

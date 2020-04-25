@@ -23,7 +23,6 @@ local options = {
       {"enable", 1},
       {"volume", 60, "This sets the maximum volume from 0-100. You can also adjust the volume with the INT volume knob in the cockpit"},
       {"device_id", -1, "-1 is the default device"},
-      {"PM_announces_V1", 1},
       {"PM_announces_flightcontrol_check", 1},
       {"PM_announces_brake_check", 1}
     }

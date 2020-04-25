@@ -295,11 +295,12 @@ if not ipc.get("FSLC_failures") then
 end
 
 scriptStartTime = ipc.elapsedtime()
-local nextTimeSave = ipc.elapsedtime() + 60000
+local nextTimeSave = scriptStartTime + 60000
 
 copilot.addCallback(function()
-  if ipc.elapsedtime() > nextTimeSave then
+  local now = ipc.elapsedtime()
+  if now > nextTimeSave then
     saveTime()
-    nextTimeSave = ipc.elapsedtime() + 60000
+    nextTimeSave = now + 60000
   end
 end)

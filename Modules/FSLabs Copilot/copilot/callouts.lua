@@ -23,6 +23,17 @@ function copilot.callouts:resetFlags()
   self.flightControlsChecked = false
 end
 
+local aicraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
+local aircraftTitle = ipc.readSTR(0x3D00,256)
+aircraftTitle = aircraftTitle:sub(1, aircraftTitle:find("\0") - 1)
+
+local function getFslV1Option()
+  local aircraftCfg = file.read(aicraftDir .. "aircraft.cfg")
+  local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(aircraftTitle, nil, true))
+  local fltsimCfg = file.read(string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir))
+  return tonumber(fltsimCfg:match("sdac_v1_call=(%d)"))
+end
+
 function copilot.callouts:takeoff()
   local V1 = copilot.mcduWatcher:getVar("V1")
   local Vr = copilot.mcduWatcher:getVar("Vr")
@@ -36,7 +47,9 @@ function copilot.callouts:takeoff()
   end
   self:waitForThrustSet()
   self:waitForOneHundred()
-  if copilot.UserOptions.callouts.PM_announces_V1 == 1 and V1 then
+  local FslV1Option = getFslV1Option()
+  copilot.logger:info(string.format("sdac_v1_call=%s", FslV1Option or "not found :D"))
+  if (FslV1Option == 0 or not FslV1Option) and V1 then
     self:waitForV1(V1)
   end
   if Vr then
