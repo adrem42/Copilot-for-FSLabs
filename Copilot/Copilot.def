@@ -1,4 +1,4 @@
-LIBRARY "Copilot"
+LIBRARY "FSLCopilot"
 EXPORTS
 DLLStart
 DLLStop

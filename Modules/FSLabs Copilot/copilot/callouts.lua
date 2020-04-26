@@ -35,6 +35,8 @@ local function getFslV1Option()
 end
 
 function copilot.callouts:takeoff()
+  local FslV1Option = getFslV1Option()
+  copilot.logger:info(string.format("sdac_v1_call=%s", FslV1Option or "not found"))
   local V1 = copilot.mcduWatcher:getVar("V1")
   local Vr = copilot.mcduWatcher:getVar("Vr")
   if not V1 or not Vr then
@@ -47,8 +49,6 @@ function copilot.callouts:takeoff()
   end
   self:waitForThrustSet()
   self:waitForOneHundred()
-  local FslV1Option = getFslV1Option()
-  copilot.logger:info(string.format("sdac_v1_call=%s", FslV1Option or "not found :D"))
   if (FslV1Option == 0 or not FslV1Option) and V1 then
     self:waitForV1(V1)
   end

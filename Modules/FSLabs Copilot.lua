@@ -7,18 +7,10 @@ local function addPackagePath(dir)
   package.path = dir .. "\\?.lua;" .. package.path
 end
 
-local function addPackageCPath(dir)
-  package.cpath = dir .. "\\?.dll;" .. package.cpath
-end
-
 APPDIR = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1FSLabs Copilot\\")
 addPackagePath(APPDIR)
---addPackageCPath(ipc.readSTR(0x1000, 256):gsub("(Prepar3D v%d) Files.*", "%1 Add-ons\\Copilot for FSLabs"))
-addPackageCPath(string.format("%s\\Documents\\Prepar3D v%s Add-ons\\Copilot for FSLabs",
-                              os.getenv("HOMEPATH"), 
-                              tostring(ipc.readUB(0x3124)):sub(1, 1)))
 
-copilot = require "FSLCopilot"
+copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
 require "copilot.helpers"
 copilot.UserOptions = require "copilot.UserOptions"
 local err = copilot.init()
