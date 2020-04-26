@@ -11,4 +11,5 @@ namespace copilot {
 	void connectToFSUIPC();
 	void startLuaThread();
 	void stopLuaThread();
+	void autoStartLua();
 };

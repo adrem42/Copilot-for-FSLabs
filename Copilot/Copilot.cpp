@@ -32,6 +32,7 @@ std::shared_ptr<SimConnect> simConnect = nullptr;
 
 std::unique_ptr<std::thread> copilotThread;
 std::atomic<bool> stopThread = false;
+std::atomic<bool> scriptStarted = false;
 std::string appDir;
 
 GAUGESIMPORT ImportTable = {
@@ -77,6 +78,15 @@ namespace copilot {
 		DWORD dwResult;
 		FSUIPC_Write(0x0D70, strlen(request) + 1, (void*)request, &dwResult);
 		FSUIPC_Process(&dwResult);
+	}
+
+	void autoStartLua()
+	{
+		Sleep(30000);
+		do {
+			startLuaThread();
+			Sleep(5000);
+		} while (!scriptStarted);
 	}
 }
 
@@ -226,6 +236,7 @@ extern "C"
 __declspec(dllexport) int luaopen_FSLCopilot(lua_State* L)
 {
 	sol::state_view lua(L);
+	scriptStarted = true;
 
 	using logger = spdlog::logger;
 	sol::usertype<logger> LoggerType = lua.new_usertype<logger>("Logger");

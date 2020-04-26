@@ -7,17 +7,6 @@ local ipc = ipc
 
 local firstFlight = true
 
-copilot.SequenceLock = {}
-
-function copilot.SequenceLock:lock()
-  while self.isLocked do copilot.suspend() end
-  self.isLocked = true
-end
-
-function copilot.SequenceLock:unlock()
-  self.isLocked = false
-end
-
 local flapsLimits = {}
 
 if FSL:getAcType() == "A321" then
@@ -362,7 +351,6 @@ function copilot.sequences:afterStart()
 end
 
 function copilot.sequences:taxiSequence()
-  copilot.SequenceLock:lock()
   if FSL:getPilot() == 1 then FSL.PED_WXRadar_SYS_Switch("2")
   elseif FSL:getPilot() == 2 then FSL.PED_WXRadar_SYS_Switch("1") end
   FSL.PED_WXRadar_PWS_Switch("AUTO")
@@ -373,7 +361,6 @@ function copilot.sequences:taxiSequence()
   FSL.PED_ECP_TO_CONFIG_Button()
   FSL.PED_ECP_TO_CONFIG_Button()
   FSL.PED_ECP_TO_CONFIG_Button()
-  copilot.SequenceLock:unlock()
 end
 
 function copilot.sequences:waitForLineup()
@@ -396,7 +383,6 @@ function copilot.sequences:waitForLineup()
 end
 
 function copilot.sequences:lineUpSequence()
-  copilot.SequenceLock:lock()
   local packs = FSL.atsuLog:getTakeoffPacks() or copilot.UserOptions.actions.packs_on_takeoff
   FSL.PED_ATCXPDR_ON_OFF_Switch("ON")
   FSL.PED_ATCXPDR_MODE_Switch("TARA")
@@ -404,15 +390,12 @@ function copilot.sequences:lineUpSequence()
     if FSL.OVHD_AC_Pack_1_Button:isDown() then FSL.OVHD_AC_Pack_1_Button() end
     if FSL.OVHD_AC_Pack_2_Button:isDown() then FSL.OVHD_AC_Pack_2_Button() end
   end
-  copilot.SequenceLock:unlock()
 end
 
 function copilot.sequences:takeoffSequence()
-  copilot.SequenceLock:lock()
   firstFlight = false
   FSL.MIP_CHRONO_ELAPS_SEL_Switch("RUN")
   if copilot.UserOptions.actions.after_landing == 1 then FSL.GSLD_Chrono_Button() end
-  copilot.SequenceLock:unlock()
 end
 
 function copilot.sequences:afterTakeoffSequence()
@@ -597,7 +580,7 @@ if copilot.UserOptions.actions.during_taxi == 1 then
   copilot.actions.taxi = copilot.events.enginesStarted:addAction(function()
     Event.waitForEvents({copilot.events.brakesChecked, copilot.events.flightControlsChecked}, true)
     copilot.suspend(plusminus(5000))
-    copilot.sequences:taxiSequence()
+    copilot.callOnce(copilot.sequences.taxiSequence)
   end, "runAsCoroutine")
     :stopOn(copilot.events.chocksSet, copilot.events.takeoffInitiated2)
 
@@ -611,15 +594,15 @@ if copilot.UserOptions.actions.lineup == 1 then
         if copilot.UserOptions.actions.takeoff_sequence == 1 then
           copilot.voiceCommands.takeoff:activate()
         end
-        copilot.sequences:lineUpSequence()
-      end, "runAsCoroutine"}
+        copilot.sequences.lineUpSequence()
+      end}
     }
       :activateOn(copilot.events.enginesStarted)
       :deactivateOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
   else
     copilot.actions.lineup = copilot.events.enginesStarted:addAction(function()
       copilot.sequences:waitForLineup()
-      copilot.sequences:lineUpSequence()
+      copilot.callOnce(copilot.sequences.lineUpSequence)
     end, "runAsCoroutine")
       :stopOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
   end
@@ -639,7 +622,7 @@ do
 
   copilot.actions.takeoff = copilot.events.takeoffInitiated2:addAction(function()
     if copilot.UserOptions.actions.takeoff_sequence == 1 then
-      copilot.sequences:takeoffSequence()
+      copilot.callOnce(copilot.sequences.takeoffSequence)
     end
     if copilot.isVoiceControlEnabled then
       if copilot.UserOptions.actions.lineup == 1 then

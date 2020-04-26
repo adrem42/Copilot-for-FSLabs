@@ -1,23 +1,47 @@
 #include "Recognizer.h"
+#include "Copilot.h"
+
+void checkResult(const std::string& msg, HRESULT hr)
+{
+	//copilot::logger->debug("{}, result={}", msg, std::to_string(hr));
+}
 
 Recognizer::Recognizer()
 {
 	HRESULT hr;
 	hr = CoInitialize(NULL);
-	if (SUCCEEDED(hr))
+	checkResult("CoInitialize", hr);
+
+
+	if (SUCCEEDED(hr)) {
 		hr = recognizer.CoCreateInstance(CLSID_SpInprocRecognizer);
+		checkResult("Creating recognizer", hr);
+	}
+		
 
-	if (SUCCEEDED(hr))
+	if (SUCCEEDED(hr)) {
 		hr = SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio);
+		checkResult("SpCreateDefaultObjectFromCategoryId", hr);
+	}
+		
 
-	if (SUCCEEDED(hr))
+	if (SUCCEEDED(hr)) {
 		hr = recognizer->SetInput(audio, TRUE);
+		checkResult("SetInput", hr);
+	}
+		
 
-	if (SUCCEEDED(hr))
+	if (SUCCEEDED(hr)) {
 		hr = recognizer->CreateRecoContext(&recoContext);
+		checkResult("Creating reco context", hr);
+	}
+		
 
-	if (SUCCEEDED(hr))
+	if (SUCCEEDED(hr)) {
 		recoContext->CreateGrammar(0, &recoGrammar);
+		checkResult("Creating grammar", hr);
+	}
+		
 
 	if (!SUCCEEDED(hr))
 		throw std::exception();
@@ -49,7 +73,8 @@ void Recognizer::ignoreRule(DWORD ruleID)
 void Recognizer::activateRule(DWORD ruleID)
 {
 	std::lock_guard<std::mutex> lock(mtx);
-	recoGrammar->SetRuleIdState(ruleID, SPRS_ACTIVE);
+	HRESULT hr = recoGrammar->SetRuleIdState(ruleID, SPRS_ACTIVE);
+	checkResult("Activating rule", hr);
 	rules[ruleID - 1].state = Active;
 }
 
@@ -62,13 +87,21 @@ void Recognizer::deactivateRule(DWORD ruleID)
 void Recognizer::resetGrammar()
 {
 	HRESULT hr;
+	//copilot::logger->debug("Resetting grammar: ");
 	hr = recognizer->SetRecoState(SPRST_INACTIVE);
+	checkResult("Deactivating reco state", hr);
 	hr = recoContext->Pause(NULL);
+	checkResult("Pausing reco context", hr);
 	hr = recognizer->SetRecoState(SPRST_ACTIVE);
+	checkResult("Reactivating reco state", hr);
 	if (SUCCEEDED(hr)) {
 		hr = recoGrammar->ResetGrammar(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
-		if (FAILED(hr))
+		checkResult("Trying English-US", hr);
+		if (FAILED(hr)) {
 			hr = recoGrammar->ResetGrammar(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_UK));
+			checkResult("Trying English-UK", hr);
+		}
+			
 	}
 
 	if (SUCCEEDED(hr)) {
@@ -77,15 +110,19 @@ void Recognizer::resetGrammar()
 			for (const auto& phrase : rule.phrases) {
 				SPSTATEHANDLE initialState;
 				hr = recoGrammar->GetRule(NULL, rule.ruleID, SPRAF_TopLevel | SPRAF_Active | SPRAF_Dynamic, TRUE, &initialState);
+				checkResult("Creating rule", hr);
 				if (SUCCEEDED(hr)) {
 					std::wstring phraseWstr = std::wstring(phrase.begin(), phrase.end());
 					hr = recoGrammar->AddWordTransition(initialState, NULL, phraseWstr.c_str(), L" ", SPWT_LEXICAL, 1, NULL);
+					checkResult("AddWordTransition", hr);
 				}
 			}
 		}
 	}
-	recoGrammar->Commit(NULL);
-	recoContext->Resume(NULL);
+	hr = recoGrammar->Commit(NULL);
+	checkResult("Commiting grammar", hr);
+	hr = recoContext->Resume(NULL);
+	checkResult("Resuming reco context", hr);
 	for (const auto& rule : rules) {
 		if (rule.state == Active) activateRule(rule.ruleID);
 		else if (rule.state == Ignore) ignoreRule(rule.ruleID);

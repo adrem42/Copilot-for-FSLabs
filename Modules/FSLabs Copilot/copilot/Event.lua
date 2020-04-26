@@ -71,12 +71,12 @@ end
 
 function Action:resumeThread(...)
   if not self.currentThread then return false end
-  local _, err = coroutine.resume(self.currentThread, ...)
-  if err then error(err) end
   if coroutine.status(self.currentThread) == "dead" then
     self.currentThread = nil
     return false
   end
+  local _, err = coroutine.resume(self.currentThread, ...)
+  if err then error(err) end
   return true
 end
 
