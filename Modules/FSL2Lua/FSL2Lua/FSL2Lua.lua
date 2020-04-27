@@ -791,6 +791,9 @@ function FSL:init()
 
   for varname, control in pairs(rawControls) do
 
+    local rect = control.rectangle
+    control.rectangle = FSL:getAcType() == "A321" and rect.A321 or rect.A320
+
     control.pos = self:initControlPositions(varname,control)
 
     if control.posn then

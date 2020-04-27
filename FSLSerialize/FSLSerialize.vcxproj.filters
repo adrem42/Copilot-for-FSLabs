@@ -15,17 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FSL2Json.cpp">
+    <ClCompile Include="FSLSerialize.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MouseListenerCallback.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="FSL2Json.def">
+    <None Include="FSLSerialize.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

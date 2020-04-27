@@ -203,9 +203,9 @@ if copilot.isVoiceControlEnabled then
       end
     end
   }
-    :activateOn(copilot.events.goAround)
 
   copilot.events.goAround:addAction(function()
+    copilot.voiceCommands.goAroundFlaps:activate()
     copilot.suspend(20000)
     copilot.voiceCommands.goAroundFlaps:deactivate()
   end)
@@ -243,7 +243,9 @@ copilot.addCallback(coroutine.create(function()
       elseif scratchpad ~= scratchpadMsg then
         clearScratchpadTime = nil
       elseif now > clearScratchpadTime then
-        FSL.PED_MCDU_KEY_CLR()
+        if not copilot.actions.aboveTenThousand:isThreadRunning() then
+          FSL.PED_MCDU_KEY_CLR()
+        end
         clearScratchpadTime = nil
       end
     end

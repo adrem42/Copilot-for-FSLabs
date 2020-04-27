@@ -102,11 +102,11 @@ function copilot.update(time)
     if type(callback) == "function" then
       callback(time)
     elseif type(callback) == "thread" then
-      local _, err = coroutine.resume(callback, time)
-      if err then error(err) end
       if coroutine.status(callback) == "dead" then
         copilot.removeCallback(key)
       end
+      local _, err = coroutine.resume(callback, time)
+      if err then error(err) end
     end
   end
 end

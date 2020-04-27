@@ -6,7 +6,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000225",
+    rectangle = {
+      A320 = "0x40000225",
+      A321 = "0x40000225"
+    },
     type = ""
   },
   BLIND_CPT_BACK_SIDE = {
@@ -15,6 +18,9 @@ return {
       x = "",
       y = "",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x4000012b"
     },
     type = ""
   },
@@ -25,6 +31,9 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {
+      A320 = "0x4000026f"
+    },
     type = ""
   },
   BLIND_FO = {
@@ -34,7 +43,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000067",
+    rectangle = {
+      A320 = "0x40000067",
+      A321 = "0x40000067"
+    },
     type = ""
   },
   BLIND_FO_BACK_SIDE = {
@@ -43,6 +55,9 @@ return {
       x = "",
       y = "",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x4000012d"
     },
     type = ""
   },
@@ -53,6 +68,9 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {
+      A320 = "0x40000127"
+    },
     type = ""
   },
   COMPASS_HANDLE = {
@@ -61,6 +79,9 @@ return {
       x = "",
       y = "",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x4000004c"
     },
     type = ""
   },
@@ -71,7 +92,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000001",
+    rectangle = {
+      A320 = "0x40000001",
+      A321 = "0x40000001"
+    },
     type = ""
   },
   FOOTREST_L_FO = {
@@ -81,7 +105,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000004a",
+    rectangle = {
+      A320 = "0x4000004a",
+      A321 = "0x4000004a"
+    },
     type = ""
   },
   FOOTREST_R_CPT = {
@@ -91,7 +118,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000048",
+    rectangle = {
+      A320 = "0x40000048",
+      A321 = "0x40000048"
+    },
     type = ""
   },
   FOOTREST_R_FO = {
@@ -101,7 +131,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000049",
+    rectangle = {
+      A320 = "0x40000049",
+      A321 = "0x40000049"
+    },
     type = ""
   },
   GEAR_Lever = {
@@ -120,6 +153,7 @@ return {
       dn = 0,
       up = 100
     },
+    rectangle = {},
     type = ""
   },
   GSLD_CP_ATC_MSG_Button = {
@@ -129,6 +163,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -139,7 +174,10 @@ return {
       y = "18",
       z = ""
     },
-    rectangle = "0x22002002",
+    rectangle = {
+      A320 = "0x22002002",
+      A321 = "0x22002002"
+    },
     toggle = false,
     type = ""
   },
@@ -154,7 +192,10 @@ return {
       hpa = 10,
       inhg = 0
     },
-    rectangle = "0x40000033",
+    rectangle = {
+      A320 = "0x40000033",
+      A321 = "0x40000033"
+    },
     type = ""
   },
   GSLD_CP_Caution_Button = {
@@ -164,7 +205,10 @@ return {
       y = "18",
       z = ""
     },
-    rectangle = "0x22002001",
+    rectangle = {
+      A320 = "0x22002001",
+      A321 = "0x22002001"
+    },
     toggle = false,
     type = ""
   },
@@ -175,7 +219,10 @@ return {
       y = "45",
       z = ""
     },
-    rectangle = "0x40000003",
+    rectangle = {
+      A320 = "0x40000003",
+      A321 = "0x40000003"
+    },
     toggle = false,
     type = ""
   },
@@ -190,7 +237,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000017",
+    rectangle = {
+      A320 = "0x40000017",
+      A321 = "0x40000017"
+    },
     toggle = true,
     type = ""
   },
@@ -202,7 +252,10 @@ return {
       z = "20"
     },
     range = 360,
-    rectangle = "0x40000126",
+    rectangle = {
+      A320 = "0x40000121",
+      A321 = "0x40000126"
+    },
     type = ""
   },
   GSLD_CP_EFIS_Baro_Switch = {
@@ -212,7 +265,10 @@ return {
       y = "32",
       z = ""
     },
-    rectangle = "0x40000126",
+    rectangle = {
+      A320 = "0x40000122",
+      A321 = "0x40000126"
+    },
     toggle = false,
     type = "FcuSwitch"
   },
@@ -227,7 +283,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x4000000b",
+    rectangle = {
+      A320 = "0x4000000b",
+      A321 = "0x4000000b"
+    },
     toggle = true,
     type = ""
   },
@@ -242,7 +301,10 @@ return {
       y = "11",
       z = ""
     },
-    rectangle = "0x40000004",
+    rectangle = {
+      A320 = "0x40000004",
+      A321 = "0x40000004"
+    },
     toggle = true,
     type = ""
   },
@@ -257,7 +319,10 @@ return {
       y = "11",
       z = ""
     },
-    rectangle = "0x40000007",
+    rectangle = {
+      A320 = "0x40000007",
+      A321 = "0x40000007"
+    },
     toggle = true,
     type = ""
   },
@@ -272,7 +337,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000014",
+    rectangle = {
+      A320 = "0x40000014",
+      A321 = "0x40000014"
+    },
     toggle = true,
     type = ""
   },
@@ -290,7 +358,10 @@ return {
       PLAN = 40,
       VOR = 10
     },
-    rectangle = "0x40000052",
+    rectangle = {
+      A320 = "0x40000052",
+      A321 = "0x40000052"
+    },
     type = ""
   },
   GSLD_CP_EFIS_ND_Range_Knob = {
@@ -308,7 +379,10 @@ return {
       ["160"] = 40,
       ["320"] = 50
     },
-    rectangle = "0x40000054",
+    rectangle = {
+      A320 = "0x40000054",
+      A321 = "0x40000054"
+    },
     type = ""
   },
   GSLD_CP_EFIS_VORADF_1_Switch = {
@@ -323,7 +397,10 @@ return {
       off = 10,
       vor = 20
     },
-    rectangle = "0x40000268",
+    rectangle = {
+      A320 = "0x40000272",
+      A321 = "0x40000268"
+    },
     type = ""
   },
   GSLD_CP_EFIS_VORD_Button = {
@@ -337,7 +414,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000011",
+    rectangle = {
+      A320 = "0x40000011",
+      A321 = "0x40000011"
+    },
     toggle = true,
     type = ""
   },
@@ -352,7 +432,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x4000000e",
+    rectangle = {
+      A320 = "0x4000000e",
+      A321 = "0x4000000e"
+    },
     toggle = true,
     type = ""
   },
@@ -368,7 +451,10 @@ return {
       off = 10,
       vor = 20
     },
-    rectangle = "0x40000269",
+    rectangle = {
+      A320 = "0x40000273",
+      A321 = "0x40000269"
+    },
     type = ""
   },
   GSLD_CP_Warning_Button = {
@@ -378,7 +464,10 @@ return {
       y = "44",
       z = ""
     },
-    rectangle = "0x22002000",
+    rectangle = {
+      A320 = "0x22002000",
+      A321 = "0x22002000"
+    },
     toggle = false,
     type = ""
   },
@@ -388,6 +477,9 @@ return {
       x = "653",
       y = "41",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x4000002f"
     },
     toggle = false,
     type = ""
@@ -400,7 +492,10 @@ return {
       z = ""
     },
     range = 360,
-    rectangle = "0x40000128",
+    rectangle = {
+      A320 = "0x40000124",
+      A321 = "0x40000128"
+    },
     type = ""
   },
   GSLD_FCU_ALT_Switch = {
@@ -410,7 +505,10 @@ return {
       y = "41",
       z = ""
     },
-    rectangle = "0x40000128",
+    rectangle = {
+      A320 = "0x40000124",
+      A321 = "0x40000128"
+    },
     toggle = true,
     type = "FcuSwitch"
   },
@@ -425,7 +523,10 @@ return {
       y = "36",
       z = ""
     },
-    rectangle = "0x4000001c",
+    rectangle = {
+      A320 = "0x4000001c",
+      A321 = "0x4000001c"
+    },
     toggle = true,
     type = ""
   },
@@ -440,7 +541,10 @@ return {
       y = "38",
       z = ""
     },
-    rectangle = "0x4000001d",
+    rectangle = {
+      A320 = "0x4000001d",
+      A321 = "0x4000001d"
+    },
     toggle = true,
     type = ""
   },
@@ -455,7 +559,10 @@ return {
       y = "12",
       z = ""
     },
-    rectangle = "0x4000001e",
+    rectangle = {
+      A320 = "0x4000001e",
+      A321 = "0x4000001e"
+    },
     toggle = true,
     type = ""
   },
@@ -470,7 +577,10 @@ return {
       y = "12",
       z = ""
     },
-    rectangle = "0x4000001a",
+    rectangle = {
+      A320 = "0x4000001a",
+      A321 = "0x4000001a"
+    },
     toggle = true,
     type = ""
   },
@@ -482,7 +592,10 @@ return {
       z = "-20"
     },
     range = 359,
-    rectangle = "0x4000012c",
+    rectangle = {
+      A320 = "0x4000012a",
+      A321 = "0x4000012c"
+    },
     type = ""
   },
   GSLD_FCU_DspLt_Knob = {
@@ -493,7 +606,10 @@ return {
       z = "-20"
     },
     range = 359,
-    rectangle = "0x4000012b",
+    rectangle = {
+      A320 = "0x40000129",
+      A321 = "0x4000012b"
+    },
     type = ""
   },
   GSLD_FCU_EXPED_Button = {
@@ -507,7 +623,10 @@ return {
       y = "11",
       z = ""
     },
-    rectangle = "0x4000001b",
+    rectangle = {
+      A320 = "0x4000001b",
+      A321 = "0x4000001b"
+    },
     toggle = true,
     type = ""
   },
@@ -518,7 +637,10 @@ return {
       y = "53",
       z = ""
     },
-    rectangle = "0x40000034",
+    rectangle = {
+      A320 = "0x40000034",
+      A321 = "0x40000034"
+    },
     toggle = true,
     type = ""
   },
@@ -530,7 +652,9 @@ return {
       z = ""
     },
     range = 360,
-    rectangle = "0x4000002c",
+    rectangle = {
+      A321 = "0x4000002c"
+    },
     type = ""
   },
   GSLD_FCU_HDG_Switch = {
@@ -540,7 +664,10 @@ return {
       y = "41",
       z = ""
     },
-    rectangle = "0x4000002c",
+    rectangle = {
+      A320 = "0x4000002c",
+      A321 = "0x4000002c"
+    },
     toggle = true,
     type = "FcuSwitch"
   },
@@ -555,7 +682,10 @@ return {
       y = "12",
       z = ""
     },
-    rectangle = "0x40000019",
+    rectangle = {
+      A320 = "0x40000019",
+      A321 = "0x40000019"
+    },
     toggle = true,
     type = ""
   },
@@ -565,6 +695,9 @@ return {
       x = "675",
       y = "53",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x40000036"
     },
     toggle = true,
     type = ""
@@ -577,7 +710,9 @@ return {
       z = ""
     },
     range = 360,
-    rectangle = "0x4000002a",
+    rectangle = {
+      A321 = "0x4000002a"
+    },
     type = ""
   },
   GSLD_FCU_SPD_MACH_Button = {
@@ -587,7 +722,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000035",
+    rectangle = {
+      A320 = "0x40000035",
+      A321 = "0x40000035"
+    },
     toggle = true,
     type = ""
   },
@@ -598,7 +736,10 @@ return {
       y = "41",
       z = ""
     },
-    rectangle = "0x4000002a",
+    rectangle = {
+      A320 = "0x4000002b",
+      A321 = "0x4000002a"
+    },
     toggle = true,
     type = "FcuSwitch"
   },
@@ -610,7 +751,10 @@ return {
       z = ""
     },
     range = 360,
-    rectangle = "0x40000030",
+    rectangle = {
+      A320 = "0x40000030",
+      A321 = "0x40000030"
+    },
     type = ""
   },
   GSLD_FCU_VS_Switch = {
@@ -620,7 +764,10 @@ return {
       y = "41",
       z = ""
     },
-    rectangle = "0x40000030",
+    rectangle = {
+      A320 = "0x40000030",
+      A321 = "0x40000030"
+    },
     toggle = true,
     type = "FcuSwitch"
   },
@@ -631,6 +778,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -641,7 +789,10 @@ return {
       y = "18",
       z = ""
     },
-    rectangle = "0x22002007",
+    rectangle = {
+      A320 = "0x22002007",
+      A321 = "0x22002007"
+    },
     toggle = false,
     type = ""
   },
@@ -656,7 +807,10 @@ return {
       hpa = 10,
       inhg = 0
     },
-    rectangle = "0x40000029",
+    rectangle = {
+      A320 = "0x40000122",
+      A321 = "0x40000029"
+    },
     type = ""
   },
   GSLD_FO_Caution_Button = {
@@ -666,7 +820,10 @@ return {
       y = "20",
       z = ""
     },
-    rectangle = "0x22002006",
+    rectangle = {
+      A320 = "0x22002006",
+      A321 = "0x22002006"
+    },
     toggle = false,
     type = ""
   },
@@ -677,7 +834,10 @@ return {
       y = "46",
       z = ""
     },
-    rectangle = "0x40000027",
+    rectangle = {
+      A320 = "0x40000027",
+      A321 = "0x40000027"
+    },
     toggle = false,
     type = ""
   },
@@ -692,7 +852,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000026",
+    rectangle = {
+      A320 = "0x40000026",
+      A321 = "0x40000026"
+    },
     toggle = true,
     type = ""
   },
@@ -704,7 +867,10 @@ return {
       z = "20"
     },
     range = 360,
-    rectangle = "0x4000012a",
+    rectangle = {
+      A320 = "0x40000126",
+      A321 = "0x4000012a"
+    },
     type = ""
   },
   GSLD_FO_EFIS_Baro_Switch = {
@@ -714,7 +880,10 @@ return {
       y = "32",
       z = ""
     },
-    rectangle = "0x4000012a",
+    rectangle = {
+      A320 = "0x40000126",
+      A321 = "0x4000012a"
+    },
     toggle = false,
     type = "FcuSwitch"
   },
@@ -729,7 +898,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000022",
+    rectangle = {
+      A320 = "0x40000022",
+      A321 = "0x40000022"
+    },
     toggle = true,
     type = ""
   },
@@ -744,7 +916,10 @@ return {
       y = "10",
       z = ""
     },
-    rectangle = "0x40000021",
+    rectangle = {
+      A320 = "0x40000021",
+      A321 = "0x40000021"
+    },
     toggle = true,
     type = ""
   },
@@ -759,7 +934,10 @@ return {
       y = "10",
       z = ""
     },
-    rectangle = "0x40000020",
+    rectangle = {
+      A320 = "0x40000020",
+      A321 = "0x40000020"
+    },
     toggle = true,
     type = ""
   },
@@ -774,7 +952,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000025",
+    rectangle = {
+      A320 = "0x40000025",
+      A321 = "0x40000025"
+    },
     toggle = true,
     type = ""
   },
@@ -792,7 +973,10 @@ return {
       PLAN = 40,
       VOR = 10
     },
-    rectangle = "0x40000050",
+    rectangle = {
+      A320 = "0x40000050",
+      A321 = "0x40000050"
+    },
     type = ""
   },
   GSLD_FO_EFIS_ND_Range_Knob = {
@@ -810,7 +994,10 @@ return {
       ["160"] = 40,
       ["320"] = 50
     },
-    rectangle = "0x4000004e",
+    rectangle = {
+      A320 = "0x4000004e",
+      A321 = "0x4000004e"
+    },
     type = ""
   },
   GSLD_FO_EFIS_VORADF_1_Switch = {
@@ -825,7 +1012,10 @@ return {
       off = 10,
       vor = 20
     },
-    rectangle = "0x40000267",
+    rectangle = {
+      A320 = "0x40000271",
+      A321 = "0x40000267"
+    },
     type = ""
   },
   GSLD_FO_EFIS_VORD_Button = {
@@ -839,7 +1029,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000024",
+    rectangle = {
+      A320 = "0x40000024",
+      A321 = "0x40000024"
+    },
     toggle = true,
     type = ""
   },
@@ -854,7 +1047,10 @@ return {
       y = "70",
       z = ""
     },
-    rectangle = "0x40000023",
+    rectangle = {
+      A320 = "0x40000023",
+      A321 = "0x40000023"
+    },
     toggle = true,
     type = ""
   },
@@ -870,7 +1066,10 @@ return {
       off = 10,
       vor = 20
     },
-    rectangle = "0x4000001f",
+    rectangle = {
+      A320 = "0x4000001f",
+      A321 = "0x4000001f"
+    },
     type = ""
   },
   GSLD_FO_Warning_Button = {
@@ -880,7 +1079,10 @@ return {
       y = "45",
       z = ""
     },
-    rectangle = "0x22002005",
+    rectangle = {
+      A320 = "0x22002005",
+      A321 = "0x22002005"
+    },
     toggle = false,
     type = ""
   },
@@ -892,7 +1094,10 @@ return {
       z = ""
     },
     range = 359,
-    rectangle = "0x40000137",
+    rectangle = {
+      A320 = "0x40000135",
+      A321 = "0x40000137"
+    },
     type = ""
   },
   GSLD_MapLt_FO_Knob = {
@@ -903,7 +1108,10 @@ return {
       z = ""
     },
     range = 359,
-    rectangle = "0x40000138",
+    rectangle = {
+      A320 = "0x40000136",
+      A321 = "0x40000138"
+    },
     type = ""
   },
   MIP_BRAKES_ASKID_Button = {
@@ -917,7 +1125,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x40000002",
+    rectangle = {
+      A320 = "0x40000002",
+      A321 = "0x40000002"
+    },
     toggle = false,
     type = ""
   },
@@ -928,7 +1139,10 @@ return {
       y = "254",
       z = ""
     },
-    rectangle = "0x2200200b",
+    rectangle = {
+      A320 = "0x2200200b",
+      A321 = "0x2200200b"
+    },
     toggle = false,
     type = ""
   },
@@ -939,7 +1153,10 @@ return {
       y = "255",
       z = ""
     },
-    rectangle = "0x2200200d",
+    rectangle = {
+      A320 = "0x2200200d",
+      A321 = "0x2200200d"
+    },
     toggle = false,
     type = ""
   },
@@ -950,7 +1167,10 @@ return {
       y = "254",
       z = ""
     },
-    rectangle = "0x2200200c",
+    rectangle = {
+      A320 = "0x2200200c",
+      A321 = "0x2200200c"
+    },
     toggle = false,
     type = ""
   },
@@ -961,7 +1181,10 @@ return {
       y = "294",
       z = ""
     },
-    rectangle = "0x2200200a",
+    rectangle = {
+      A320 = "0x2200200a",
+      A321 = "0x2200200a"
+    },
     toggle = false,
     type = ""
   },
@@ -972,7 +1195,10 @@ return {
       y = "131",
       z = ""
     },
-    rectangle = "0x40000239",
+    rectangle = {
+      A320 = "0x40000239",
+      A321 = "0x40000239"
+    },
     toggle = false,
     type = ""
   },
@@ -988,7 +1214,10 @@ return {
       run = 0,
       stp = 10
     },
-    rectangle = "0x4000023b",
+    rectangle = {
+      A320 = "0x4000023b",
+      A321 = "0x4000023b"
+    },
     shouldHideCursor = true,
     type = ""
   },
@@ -1004,7 +1233,10 @@ return {
       int = 10,
       set = 20
     },
-    rectangle = "0x4000023a",
+    rectangle = {
+      A320 = "0x4000023a",
+      A321 = "0x4000023a"
+    },
     shouldHideCursor = true,
     type = ""
   },
@@ -1015,7 +1247,10 @@ return {
       y = "162",
       z = ""
     },
-    rectangle = "0x4000023c",
+    rectangle = {
+      A320 = "0x4000023c",
+      A321 = "0x4000023c"
+    },
     toggle = false,
     type = ""
   },
@@ -1026,7 +1261,10 @@ return {
       y = "157",
       z = ""
     },
-    rectangle = "0x4000023d",
+    rectangle = {
+      A320 = "0x4000023d",
+      A321 = "0x4000023d"
+    },
     toggle = false,
     type = ""
   },
@@ -1042,7 +1280,10 @@ return {
       dim = 10,
       off = 0
     },
-    rectangle = "0x4000022d",
+    rectangle = {
+      A320 = "0x4000022d",
+      A321 = "0x4000022d"
+    },
     type = ""
   },
   MIP_CPT_DU_PNL_LOUD_Knob = {
@@ -1053,7 +1294,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x4000022a",
+    rectangle = {
+      A320 = "0x4000022a",
+      A321 = "0x4000022a"
+    },
     type = ""
   },
   MIP_CPT_DU_PNL_ND_BRT_Knob = {
@@ -1064,7 +1308,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000231",
+    rectangle = {
+      A320 = "0x40000231",
+      A321 = "0x40000231"
+    },
     type = ""
   },
   MIP_CPT_DU_PNL_PFD_BRT_Knob = {
@@ -1075,7 +1322,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000229",
+    rectangle = {
+      A320 = "0x40000229",
+      A321 = "0x40000229"
+    },
     type = ""
   },
   MIP_CPT_DU_PNL_WX_BRT_Knob = {
@@ -1086,7 +1336,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x4000022b",
+    rectangle = {
+      A320 = "0x4000022b",
+      A321 = "0x4000022b"
+    },
     type = ""
   },
   MIP_CPT_FT_WRM_Switch = {
@@ -1096,6 +1349,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1106,6 +1360,7 @@ return {
       y = "357",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1116,7 +1371,10 @@ return {
       y = "318",
       z = ""
     },
-    rectangle = "0x4000022c",
+    rectangle = {
+      A320 = "0x4000022c",
+      A321 = "0x4000022c"
+    },
     toggle = false,
     type = ""
   },
@@ -1127,7 +1385,10 @@ return {
       y = "237",
       z = ""
     },
-    rectangle = "0x22002004",
+    rectangle = {
+      A320 = "0x22002004",
+      A321 = "0x22002004"
+    },
     toggle = false,
     type = ""
   },
@@ -1138,7 +1399,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027a",
+    rectangle = {
+      A321 = "0x4000027a"
+    },
     type = ""
   },
   MIP_DCDU_L_DIM = {
@@ -1148,7 +1411,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027a",
+    rectangle = {
+      A321 = "0x4000027a"
+    },
     type = ""
   },
   MIP_DCDU_L_LSK_L1 = {
@@ -1158,7 +1423,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000277",
+    rectangle = {
+      A321 = "0x40000277"
+    },
     toggle = false,
     type = ""
   },
@@ -1169,7 +1436,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000276",
+    rectangle = {
+      A321 = "0x40000276"
+    },
     toggle = false,
     type = ""
   },
@@ -1180,7 +1449,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027e",
+    rectangle = {
+      A321 = "0x4000027e"
+    },
     toggle = false,
     type = ""
   },
@@ -1191,7 +1462,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027f",
+    rectangle = {
+      A321 = "0x4000027f"
+    },
     toggle = false,
     type = ""
   },
@@ -1202,7 +1475,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000279",
+    rectangle = {
+      A321 = "0x40000279"
+    },
     type = ""
   },
   MIP_DCDU_L_MSG_PLUS = {
@@ -1212,7 +1487,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000278",
+    rectangle = {
+      A321 = "0x40000278"
+    },
     type = ""
   },
   MIP_DCDU_L_PGE_MINUS = {
@@ -1222,7 +1499,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027c",
+    rectangle = {
+      A321 = "0x4000027c"
+    },
     type = ""
   },
   MIP_DCDU_L_PGE_PLUS = {
@@ -1232,7 +1511,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027d",
+    rectangle = {
+      A321 = "0x4000027d"
+    },
     type = ""
   },
   MIP_DCDU_L_PRINT = {
@@ -1242,7 +1523,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000027b",
+    rectangle = {
+      A321 = "0x4000027b"
+    },
     type = ""
   },
   MIP_DCDU_R_BRT = {
@@ -1252,7 +1535,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000026c",
+    rectangle = {
+      A321 = "0x4000026c"
+    },
     type = ""
   },
   MIP_DCDU_R_DIM = {
@@ -1262,7 +1547,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000026d",
+    rectangle = {
+      A321 = "0x4000026d"
+    },
     type = ""
   },
   MIP_DCDU_R_LSK_L1 = {
@@ -1272,7 +1559,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000026f",
+    rectangle = {
+      A321 = "0x4000026f"
+    },
     toggle = false,
     type = ""
   },
@@ -1283,7 +1572,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000270",
+    rectangle = {
+      A321 = "0x40000270"
+    },
     toggle = false,
     type = ""
   },
@@ -1294,7 +1585,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000272",
+    rectangle = {
+      A321 = "0x40000272"
+    },
     toggle = false,
     type = ""
   },
@@ -1305,7 +1598,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000271",
+    rectangle = {
+      A321 = "0x40000271"
+    },
     toggle = false,
     type = ""
   },
@@ -1316,7 +1611,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000026e",
+    rectangle = {
+      A321 = "0x4000026e"
+    },
     type = ""
   },
   MIP_DCDU_R_MSG_PLUS = {
@@ -1326,7 +1623,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000026b",
+    rectangle = {
+      A321 = "0x4000026b"
+    },
     type = ""
   },
   MIP_DCDU_R_PGE_MINUS = {
@@ -1336,7 +1635,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000273",
+    rectangle = {
+      A321 = "0x40000273"
+    },
     type = ""
   },
   MIP_DCDU_R_PGE_PLUS = {
@@ -1346,7 +1647,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000026a",
+    rectangle = {
+      A321 = "0x4000026a"
+    },
     type = ""
   },
   MIP_DCDU_R_PRINT = {
@@ -1356,7 +1659,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000274",
+    rectangle = {
+      A321 = "0x40000274"
+    },
     type = ""
   },
   MIP_DDRMI_Fail_HDG = {
@@ -1366,6 +1671,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_DDRMI_Fail_NAV1 = {
@@ -1375,6 +1681,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_DDRMI_Fail_NAV2 = {
@@ -1384,6 +1691,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_DDRMI_NAV1_Needle = {
@@ -1393,6 +1701,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_DDRMI_NAV2_Needle = {
@@ -1402,6 +1711,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_DDRMI_Scale = {
@@ -1411,6 +1721,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_DDRMI_VORADF_L_Switch = {
@@ -1424,7 +1735,10 @@ return {
       adf = 10,
       vor = 0
     },
-    rectangle = "0x40000076",
+    rectangle = {
+      A320 = "0x40000076",
+      A321 = "0x40000076"
+    },
     type = ""
   },
   MIP_DDRMI_VORADF_R_Switch = {
@@ -1438,7 +1752,10 @@ return {
       adf = 10,
       vor = 0
     },
-    rectangle = "0x40000077",
+    rectangle = {
+      A320 = "0x40000077",
+      A321 = "0x40000077"
+    },
     type = ""
   },
   MIP_FO_CONS_Switch = {
@@ -1453,7 +1770,10 @@ return {
       dim = 10,
       off = 0
     },
-    rectangle = "0x40000228",
+    rectangle = {
+      A320 = "0x40000228",
+      A321 = "0x40000228"
+    },
     type = ""
   },
   MIP_FO_DU_PNL_LOUD_Knob = {
@@ -1464,7 +1784,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000233",
+    rectangle = {
+      A320 = "0x40000233",
+      A321 = "0x40000233"
+    },
     type = ""
   },
   MIP_FO_DU_PNL_ND_BRT_Knob = {
@@ -1475,7 +1798,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000236",
+    rectangle = {
+      A320 = "0x40000236",
+      A321 = "0x40000236"
+    },
     type = ""
   },
   MIP_FO_DU_PNL_PFD_BRT_Knob = {
@@ -1486,7 +1812,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000234",
+    rectangle = {
+      A320 = "0x40000234",
+      A321 = "0x40000234"
+    },
     type = ""
   },
   MIP_FO_DU_PNL_WX_BRT_Knob = {
@@ -1497,7 +1826,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000232",
+    rectangle = {
+      A320 = "0x40000232",
+      A321 = "0x40000232"
+    },
     type = ""
   },
   MIP_FO_FT_WRM_Switch = {
@@ -1507,6 +1839,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1516,6 +1849,9 @@ return {
       x = "946",
       y = "357",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x22002008"
     },
     toggle = false,
     type = ""
@@ -1527,6 +1863,9 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {
+      A320 = "0x40000227"
+    },
     toggle = false,
     type = ""
   },
@@ -1537,7 +1876,9 @@ return {
       y = "203",
       z = ""
     },
-    rectangle = "0x22002009",
+    rectangle = {
+      A321 = "0x22002009"
+    },
     toggle = false,
     type = ""
   },
@@ -1548,9 +1889,12 @@ return {
       y = "222",
       z = ""
     },
-    type = "",
-    rectangle = "0x40000037",
+    rectangle = {
+      A320 = "0x40000037",
+      A321 = "0x40000037"
+    },
     toggle = false,
+    type = ""
   },
   MIP_ISIS_BARO_Knob = {
     LVar = "VC_MIP_ISIS_BARO_Knob",
@@ -1559,6 +1903,7 @@ return {
       y = "222",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   MIP_ISIS_BUGS_Button = {
@@ -1568,7 +1913,10 @@ return {
       y = "286",
       z = ""
     },
-    rectangle = "0x4000003a",
+    rectangle = {
+      A320 = "0x4000003a",
+      A321 = "0x4000003a"
+    },
     toggle = false,
     type = ""
   },
@@ -1579,7 +1927,10 @@ return {
       y = "288",
       z = ""
     },
-    rectangle = "0x4000003d",
+    rectangle = {
+      A320 = "0x4000003d",
+      A321 = "0x4000003d"
+    },
     toggle = false,
     type = ""
   },
@@ -1590,7 +1941,10 @@ return {
       y = "226",
       z = ""
     },
-    rectangle = "0x40000042",
+    rectangle = {
+      A320 = "0x40000042",
+      A321 = "0x40000042"
+    },
     toggle = false,
     type = ""
   },
@@ -1601,7 +1955,10 @@ return {
       y = "268",
       z = ""
     },
-    rectangle = "0x4000003f",
+    rectangle = {
+      A320 = "0x4000003f",
+      A321 = "0x4000003f"
+    },
     toggle = false,
     type = ""
   },
@@ -1612,7 +1969,10 @@ return {
       y = "219",
       z = ""
     },
-    rectangle = "0x40000045",
+    rectangle = {
+      A320 = "0x40000045",
+      A321 = "0x40000045"
+    },
     toggle = false,
     type = ""
   },
@@ -1624,7 +1984,10 @@ return {
       z = ""
     },
     range = 100,
-    rectangle = "0x40000102",
+    rectangle = {
+      A320 = "0x400000ff",
+      A321 = "0x40000102"
+    },
     type = ""
   },
   OVHD_AC_Cargo_Aft_Knob = {
@@ -1635,7 +1998,10 @@ return {
       z = ""
     },
     range = 100,
-    rectangle = "0x400000e1",
+    rectangle = {
+      A320 = "0x400000e2",
+      A321 = "0x400000e1"
+    },
     type = ""
   },
   OVHD_AC_Cockpit_Knob = {
@@ -1646,7 +2012,10 @@ return {
       z = ""
     },
     range = 100,
-    rectangle = "0x40000108",
+    rectangle = {
+      A320 = "0x40000104",
+      A321 = "0x40000108"
+    },
     type = ""
   },
   OVHD_AC_ECON_FLOW_Button = {
@@ -1656,7 +2025,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24402807",
+    rectangle = {
+      A321 = "0x24402807"
+    },
     toggle = true,
     type = ""
   },
@@ -1667,7 +2038,10 @@ return {
       y = "157",
       z = ""
     },
-    rectangle = "0x24402804",
+    rectangle = {
+      A320 = "0x24402804",
+      A321 = "0x24402804"
+    },
     toggle = true,
     type = ""
   },
@@ -1678,7 +2052,10 @@ return {
       y = "160",
       z = ""
     },
-    rectangle = "0x24402802",
+    rectangle = {
+      A320 = "0x24402802",
+      A321 = "0x24402802"
+    },
     toggle = true,
     type = ""
   },
@@ -1689,7 +2066,10 @@ return {
       y = "160",
       z = ""
     },
-    rectangle = "0x24402805",
+    rectangle = {
+      A320 = "0x24402805",
+      A321 = "0x24402805"
+    },
     toggle = true,
     type = ""
   },
@@ -1701,7 +2081,10 @@ return {
       z = ""
     },
     range = 100,
-    rectangle = "0x40000105",
+    rectangle = {
+      A320 = "0x40000102",
+      A321 = "0x40000105"
+    },
     type = ""
   },
   OVHD_AC_HOT_AIR_Button = {
@@ -1711,7 +2094,10 @@ return {
       y = "228",
       z = ""
     },
-    rectangle = "0x24402806",
+    rectangle = {
+      A320 = "0x24402806",
+      A321 = "0x24402806"
+    },
     toggle = true,
     type = ""
   },
@@ -1722,7 +2108,10 @@ return {
       y = 195,
       z = ""
     },
-    rectangle = "0x24402800",
+    rectangle = {
+      A320 = "0x24402800",
+      A321 = "0x24402800"
+    },
     toggle = true,
     type = ""
   },
@@ -1733,7 +2122,10 @@ return {
       y = 195,
       z = ""
     },
-    rectangle = "0x24402801",
+    rectangle = {
+      A320 = "0x24402801",
+      A321 = "0x24402801"
+    },
     toggle = true,
     type = ""
   },
@@ -1749,6 +2141,9 @@ return {
       low = 0,
       norm = 10
     },
+    rectangle = {
+      A320 = "0x40000117"
+    },
     type = ""
   },
   OVHD_AC_XBleed_Knob = {
@@ -1763,7 +2158,10 @@ return {
       open = 20,
       shut = 0
     },
-    rectangle = "0x400000ff",
+    rectangle = {
+      A320 = "0x400000fc",
+      A321 = "0x400000ff"
+    },
     type = ""
   },
   OVHD_ADIRS_1_Knob = {
@@ -1778,7 +2176,10 @@ return {
       nav = 10,
       off = 0
     },
-    rectangle = "0x400000fd",
+    rectangle = {
+      A320 = "0x400000fa",
+      A321 = "0x400000fd"
+    },
     type = ""
   },
   OVHD_ADIRS_2_Knob = {
@@ -1793,7 +2194,10 @@ return {
       nav = 10,
       off = 0
     },
-    rectangle = "0x400000f9",
+    rectangle = {
+      A320 = "0x400000f8",
+      A321 = "0x400000f9"
+    },
     type = ""
   },
   OVHD_ADIRS_3_Knob = {
@@ -1808,7 +2212,10 @@ return {
       nav = 10,
       off = 0
     },
-    rectangle = "0x400000fb",
+    rectangle = {
+      A320 = "0x400000f6",
+      A321 = "0x400000fb"
+    },
     type = ""
   },
   OVHD_ADR_1_Button = {
@@ -1818,7 +2225,10 @@ return {
       y = "418",
       z = ""
     },
-    rectangle = "0x24400003",
+    rectangle = {
+      A320 = "0x24400003",
+      A321 = "0x24400003"
+    },
     toggle = false,
     type = ""
   },
@@ -1829,7 +2239,10 @@ return {
       y = "418",
       z = ""
     },
-    rectangle = "0x24400004",
+    rectangle = {
+      A320 = "0x24400004",
+      A321 = "0x24400004"
+    },
     toggle = false,
     type = ""
   },
@@ -1840,7 +2253,10 @@ return {
       y = "418",
       z = ""
     },
-    rectangle = "0x24400005",
+    rectangle = {
+      A320 = "0x24400005",
+      A321 = "0x24400005"
+    },
     toggle = false,
     type = ""
   },
@@ -1851,7 +2267,10 @@ return {
       y = "191",
       z = ""
     },
-    rectangle = "0x400000b8",
+    rectangle = {
+      A320 = "0x400000b9",
+      A321 = "0x400000b8"
+    },
     toggle = false,
     type = ""
   },
@@ -1862,7 +2281,10 @@ return {
       y = "191",
       z = ""
     },
-    rectangle = "0x400000b9",
+    rectangle = {
+      A320 = "0x400000ba",
+      A321 = "0x400000b9"
+    },
     toggle = false,
     type = ""
   },
@@ -1873,7 +2295,10 @@ return {
       y = 108,
       z = ""
     },
-    rectangle = "0x24403801",
+    rectangle = {
+      A320 = "0x24403801",
+      A321 = "0x24403801"
+    },
     toggle = true,
     type = ""
   },
@@ -1884,7 +2309,10 @@ return {
       y = 108,
       z = ""
     },
-    rectangle = "0x24403802",
+    rectangle = {
+      A320 = "0x24403802",
+      A321 = "0x24403802"
+    },
     toggle = true,
     type = ""
   },
@@ -1895,7 +2323,10 @@ return {
       y = 108,
       z = ""
     },
-    rectangle = "0x24403800",
+    rectangle = {
+      A320 = "0x24403800",
+      A321 = "0x24403800"
+    },
     toggle = true,
     type = ""
   },
@@ -1906,6 +2337,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1916,6 +2348,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1926,7 +2359,10 @@ return {
       y = "58",
       z = ""
     },
-    rectangle = "0x24403806",
+    rectangle = {
+      A320 = "0x24403806",
+      A321 = "0x24403806"
+    },
     toggle = true,
     type = ""
   },
@@ -1937,7 +2373,10 @@ return {
       y = "23",
       z = ""
     },
-    rectangle = "0x24403807",
+    rectangle = {
+      A320 = "0x24403807",
+      A321 = "0x24403807"
+    },
     toggle = false,
     type = ""
   },
@@ -1948,6 +2387,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1958,7 +2398,10 @@ return {
       y = "275",
       z = ""
     },
-    rectangle = "0x24404001",
+    rectangle = {
+      A320 = "0x24404001",
+      A321 = "0x24404001"
+    },
     toggle = true,
     type = ""
   },
@@ -1969,6 +2412,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1979,6 +2423,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -1990,7 +2435,10 @@ return {
       z = ""
     },
     range = 300,
-    rectangle = "0x40000084",
+    rectangle = {
+      A320 = "0x40000085",
+      A321 = "0x40000084"
+    },
     type = ""
   },
   OVHD_CABPRESS_Man_VS_Ctl_Switch = {
@@ -2004,7 +2452,10 @@ return {
       dn = 0,
       up = 10
     },
-    rectangle = "0x40000109",
+    rectangle = {
+      A320 = "0x40000106",
+      A321 = "0x40000109"
+    },
     type = ""
   },
   OVHD_CABPRESS_Mode_Sel_Button = {
@@ -2014,7 +2465,10 @@ return {
       y = "109",
       z = ""
     },
-    rectangle = "0x24403804",
+    rectangle = {
+      A320 = "0x24403804",
+      A321 = "0x24403804"
+    },
     toggle = true,
     type = ""
   },
@@ -2025,7 +2479,10 @@ return {
       y = "102",
       z = ""
     },
-    rectangle = "0x400000ee",
+    rectangle = {
+      A320 = "0x400000ef",
+      A321 = "0x400000ee"
+    },
     toggle = false,
     type = ""
   },
@@ -2036,7 +2493,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000ef",
+    rectangle = {
+      A321 = "0x400000ef"
+    },
     toggle = false,
     type = ""
   },
@@ -2047,7 +2506,10 @@ return {
       y = "106",
       z = ""
     },
-    rectangle = "0x2440100a",
+    rectangle = {
+      A320 = "0x2440100a",
+      A321 = "0x2440100a"
+    },
     toggle = false,
     type = ""
   },
@@ -2058,7 +2520,10 @@ return {
       y = "106",
       z = ""
     },
-    rectangle = "0x2440100a",
+    rectangle = {
+      A320 = "0x400000f2",
+      A321 = "0x2440100a"
+    },
     toggle = false,
     type = ""
   },
@@ -2069,7 +2534,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000f6",
+    rectangle = {
+      A321 = "0x400000f6"
+    },
     toggle = false,
     type = ""
   },
@@ -2080,7 +2547,10 @@ return {
       y = "102",
       z = ""
     },
-    rectangle = "0x400000f7",
+    rectangle = {
+      A320 = "0x400000f0",
+      A321 = "0x400000f7"
+    },
     toggle = false,
     type = ""
   },
@@ -2091,7 +2561,10 @@ return {
       y = "102",
       z = ""
     },
-    rectangle = "0x400000f0",
+    rectangle = {
+      A320 = "0x400000f1",
+      A321 = "0x400000f0"
+    },
     toggle = false,
     type = ""
   },
@@ -2102,7 +2575,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000f5",
+    rectangle = {
+      A321 = "0x400000f5"
+    },
     toggle = false,
     type = ""
   },
@@ -2117,7 +2592,10 @@ return {
       capt = 0,
       capt_purs = 10
     },
-    rectangle = "0x400000e6",
+    rectangle = {
+      A320 = "0x400000e7",
+      A321 = "0x400000e6"
+    },
     type = ""
   },
   OVHD_CARGO_SMOKE_TEST_Button = {
@@ -2127,7 +2605,10 @@ return {
       y = "185",
       z = ""
     },
-    rectangle = "0x400000de",
+    rectangle = {
+      A320 = "0x400000df",
+      A321 = "0x400000de"
+    },
     toggle = false,
     type = ""
   },
@@ -2139,7 +2620,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x2580100c",
+    rectangle = {
+      A320 = "0x2580100c",
+      A321 = "0x2580100c"
+    },
     type = ""
   },
   OVHD_COMM_3_ADF1_Switch = {
@@ -2150,7 +2634,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000af",
+    rectangle = {
+      A320 = "0x400000b0",
+      A321 = "0x400000af"
+    },
     toggle = true,
     type = ""
   },
@@ -2162,7 +2649,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x2580100d",
+    rectangle = {
+      A320 = "0x2580100d",
+      A321 = "0x2580100d"
+    },
     type = ""
   },
   OVHD_COMM_3_ADF2_Switch = {
@@ -2173,7 +2663,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000b2",
+    rectangle = {
+      A320 = "0x400000b3",
+      A321 = "0x400000b2"
+    },
     toggle = true,
     type = ""
   },
@@ -2185,6 +2678,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2196,7 +2690,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801006",
+    rectangle = {
+      A320 = "0x25801006",
+      A321 = "0x25801006"
+    },
     type = ""
   },
   OVHD_COMM_3_CAB_Switch = {
@@ -2207,7 +2704,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000009d",
+    rectangle = {
+      A320 = "0x4000009e",
+      A321 = "0x4000009d"
+    },
     toggle = true,
     type = ""
   },
@@ -2219,6 +2719,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2230,7 +2731,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801003",
+    rectangle = {
+      A320 = "0x25801003",
+      A321 = "0x25801003"
+    },
     type = ""
   },
   OVHD_COMM_3_HF1_Switch = {
@@ -2241,7 +2745,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000094",
+    rectangle = {
+      A320 = "0x40000095",
+      A321 = "0x40000094"
+    },
     toggle = true,
     type = ""
   },
@@ -2253,6 +2760,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2264,7 +2772,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801004",
+    rectangle = {
+      A320 = "0x25801004",
+      A321 = "0x25801004"
+    },
     type = ""
   },
   OVHD_COMM_3_HF2_Switch = {
@@ -2275,7 +2786,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000097",
+    rectangle = {
+      A320 = "0x40000098",
+      A321 = "0x40000097"
+    },
     toggle = true,
     type = ""
   },
@@ -2287,6 +2801,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OVHD_COMM_3_INOP_Switch = {
@@ -2297,6 +2812,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = true,
     type = ""
   },
@@ -2308,6 +2824,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2319,7 +2836,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801005",
+    rectangle = {
+      A320 = "0x25801005",
+      A321 = "0x25801005"
+    },
     type = ""
   },
   OVHD_COMM_3_INT_RAD_Switch = {
@@ -2335,7 +2855,10 @@ return {
       off = 10,
       rad = 0
     },
-    rectangle = "0x40000088",
+    rectangle = {
+      A320 = "0x40000089",
+      A321 = "0x40000088"
+    },
     type = ""
   },
   OVHD_COMM_3_INT_Switch = {
@@ -2346,7 +2869,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000009a",
+    rectangle = {
+      A320 = "0x4000009b",
+      A321 = "0x4000009a"
+    },
     toggle = true,
     type = ""
   },
@@ -2358,7 +2884,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x2580100b",
+    rectangle = {
+      A320 = "0x2580100b",
+      A321 = "0x2580100b"
+    },
     type = ""
   },
   OVHD_COMM_3_LS_Switch = {
@@ -2369,7 +2898,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000ac",
+    rectangle = {
+      A320 = "0x400000ad",
+      A321 = "0x400000ac"
+    },
     toggle = false,
     type = ""
   },
@@ -2381,7 +2913,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x2580100a",
+    rectangle = {
+      A321 = "0x2580100a"
+    },
     type = ""
   },
   OVHD_COMM_3_MKR_Switch = {
@@ -2392,7 +2926,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000a9",
+    rectangle = {
+      A320 = "0x400000aa",
+      A321 = "0x400000a9"
+    },
     toggle = false,
     type = ""
   },
@@ -2404,7 +2941,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801007",
+    rectangle = {
+      A320 = "0x25801007",
+      A321 = "0x25801007"
+    },
     type = ""
   },
   OVHD_COMM_3_PA_Switch = {
@@ -2415,7 +2955,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000a0",
+    rectangle = {
+      A320 = "0x400000a1",
+      A321 = "0x400000a0"
+    },
     toggle = true,
     type = ""
   },
@@ -2427,6 +2970,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2438,6 +2982,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2449,7 +2994,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801000",
+    rectangle = {
+      A320 = "0x25801000",
+      A321 = "0x25801000"
+    },
     type = ""
   },
   OVHD_COMM_3_VHF1_Switch = {
@@ -2460,7 +3008,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801000",
+    rectangle = {
+      A320 = "0x4000008c",
+      A321 = "0x25801000"
+    },
     toggle = true,
     type = ""
   },
@@ -2472,6 +3023,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2483,7 +3035,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801001",
+    rectangle = {
+      A320 = "0x25801001",
+      A321 = "0x25801001"
+    },
     type = ""
   },
   OVHD_COMM_3_VHF2_Switch = {
@@ -2494,7 +3049,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000008e",
+    rectangle = {
+      A320 = "0x4000008f",
+      A321 = "0x4000008e"
+    },
     toggle = true,
     type = ""
   },
@@ -2506,6 +3064,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2517,7 +3076,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801002",
+    rectangle = {
+      A320 = "0x25801002",
+      A321 = "0x25801002"
+    },
     type = ""
   },
   OVHD_COMM_3_VHF3_Switch = {
@@ -2528,7 +3090,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000091",
+    rectangle = {
+      A320 = "0x40000092",
+      A321 = "0x40000091"
+    },
     toggle = true,
     type = ""
   },
@@ -2540,6 +3105,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2551,7 +3117,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801008",
+    rectangle = {
+      A320 = "0x25801008",
+      A321 = "0x25801008"
+    },
     type = ""
   },
   OVHD_COMM_3_VOR1_Switch = {
@@ -2562,7 +3131,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000a3",
+    rectangle = {
+      A320 = "0x400000a4",
+      A321 = "0x400000a3"
+    },
     toggle = true,
     type = ""
   },
@@ -2574,7 +3146,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25801009",
+    rectangle = {
+      A320 = "0x25801009",
+      A321 = "0x25801009"
+    },
     type = ""
   },
   OVHD_COMM_3_VOR2_Switch = {
@@ -2585,7 +3160,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000a6",
+    rectangle = {
+      A320 = "0x400000a7",
+      A321 = "0x400000a6"
+    },
     toggle = true,
     type = ""
   },
@@ -2596,7 +3174,10 @@ return {
       y = "275",
       z = ""
     },
-    rectangle = "0x24404000",
+    rectangle = {
+      A320 = "0x24404000",
+      A321 = "0x24404000"
+    },
     toggle = true,
     type = ""
   },
@@ -2607,6 +3188,7 @@ return {
       y = "114",
       z = ""
     },
+    rectangle = {},
     toggle = true,
     type = ""
   },
@@ -2617,6 +3199,7 @@ return {
       y = "114",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2627,7 +3210,10 @@ return {
       y = "-75",
       z = ""
     },
-    rectangle = "0x24400800",
+    rectangle = {
+      A320 = "0x24400800",
+      A321 = "0x24400800"
+    },
     toggle = true,
     type = ""
   },
@@ -2638,7 +3224,10 @@ return {
       y = "370",
       z = ""
     },
-    rectangle = "0x24402000",
+    rectangle = {
+      A320 = "0x24402000",
+      A321 = "0x24402000"
+    },
     toggle = true,
     type = ""
   },
@@ -2648,6 +3237,9 @@ return {
       x = "242",
       y = "329",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x24403002"
     },
     toggle = true,
     type = ""
@@ -2659,7 +3251,10 @@ return {
       y = "281",
       z = ""
     },
-    rectangle = "0x24403008",
+    rectangle = {
+      A320 = "0x24403008",
+      A321 = "0x24403008"
+    },
     toggle = true,
     type = ""
   },
@@ -2670,7 +3265,10 @@ return {
       y = "341",
       z = ""
     },
-    rectangle = "0x2440300a",
+    rectangle = {
+      A320 = "0x2440300a",
+      A321 = "0x2440300a"
+    },
     toggle = true,
     type = ""
   },
@@ -2681,7 +3279,10 @@ return {
       y = "336",
       z = ""
     },
-    rectangle = "0x2440300b",
+    rectangle = {
+      A320 = "0x2440300b",
+      A321 = "0x2440300b"
+    },
     toggle = true,
     type = ""
   },
@@ -2692,7 +3293,10 @@ return {
       y = "296",
       z = ""
     },
-    rectangle = "0x24403003",
+    rectangle = {
+      A320 = "0x24403003",
+      A321 = "0x24403003"
+    },
     toggle = true,
     type = ""
   },
@@ -2703,6 +3307,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2713,7 +3318,10 @@ return {
       y = "278",
       z = ""
     },
-    rectangle = "0x24403009",
+    rectangle = {
+      A320 = "0x24403009",
+      A321 = "0x24403009"
+    },
     toggle = false,
     type = ""
   },
@@ -2724,6 +3332,7 @@ return {
       y = "314",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2734,7 +3343,10 @@ return {
       y = "280",
       z = ""
     },
-    rectangle = "0x24403004",
+    rectangle = {
+      A320 = "0x24403004",
+      A321 = "0x24403004"
+    },
     toggle = true,
     type = ""
   },
@@ -2745,7 +3357,10 @@ return {
       y = "279",
       z = ""
     },
-    rectangle = "0x24403005",
+    rectangle = {
+      A320 = "0x24403005",
+      A321 = "0x24403005"
+    },
     toggle = false,
     type = ""
   },
@@ -2756,7 +3371,10 @@ return {
       y = "281",
       z = ""
     },
-    rectangle = "0x24403006",
+    rectangle = {
+      A320 = "0x24403006",
+      A321 = "0x24403006"
+    },
     toggle = false,
     type = ""
   },
@@ -2767,7 +3385,10 @@ return {
       y = "281",
       z = ""
     },
-    rectangle = "0x40000080",
+    rectangle = {
+      A320 = "0x24403006",
+      A321 = "0x40000080"
+    },
     toggle = false,
     type = ""
   },
@@ -2778,7 +3399,10 @@ return {
       y = "277",
       z = ""
     },
-    rectangle = "0x24403007",
+    rectangle = {
+      A320 = "0x24403007",
+      A321 = "0x24403007"
+    },
     toggle = false,
     type = ""
   },
@@ -2789,7 +3413,10 @@ return {
       y = "277",
       z = ""
     },
-    rectangle = "0x40000081",
+    rectangle = {
+      A320 = "0x24403007",
+      A321 = "0x40000081"
+    },
     toggle = false,
     type = ""
   },
@@ -2800,7 +3427,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000f4",
+    rectangle = {
+      A320 = "0x4000007a",
+      A321 = "0x400000f4"
+    },
     toggle = false,
     type = ""
   },
@@ -2811,7 +3441,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000f3",
+    rectangle = {
+      A320 = "0x400000f4",
+      A321 = "0x400000f3"
+    },
     toggle = false,
     type = ""
   },
@@ -2822,7 +3455,10 @@ return {
       y = "108",
       z = ""
     },
-    rectangle = "0x24404005",
+    rectangle = {
+      A320 = "0x24404005",
+      A321 = "0x24404005"
+    },
     toggle = true,
     type = ""
   },
@@ -2833,7 +3469,10 @@ return {
       y = "108",
       z = ""
     },
-    rectangle = "0x400000da",
+    rectangle = {
+      A320 = "0x400000db",
+      A321 = "0x400000da"
+    },
     toggle = false,
     type = ""
   },
@@ -2844,6 +3483,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2854,6 +3494,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2864,7 +3505,10 @@ return {
       y = "102",
       z = ""
     },
-    rectangle = "0x24404006",
+    rectangle = {
+      A320 = "0x24404006",
+      A321 = "0x24404006"
+    },
     toggle = true,
     type = ""
   },
@@ -2875,7 +3519,10 @@ return {
       y = "102",
       z = ""
     },
-    rectangle = "0x400000db",
+    rectangle = {
+      A320 = "0x24404006",
+      A321 = "0x400000db"
+    },
     toggle = false,
     type = ""
   },
@@ -2886,6 +3533,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2896,6 +3544,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -2906,7 +3555,10 @@ return {
       y = "330",
       z = ""
     },
-    rectangle = "0x24401000",
+    rectangle = {
+      A320 = "0x24401000",
+      A321 = "0x24401000"
+    },
     toggle = true,
     type = ""
   },
@@ -2917,7 +3569,10 @@ return {
       y = "330",
       z = ""
     },
-    rectangle = "0x400000e4",
+    rectangle = {
+      A320 = "0x24401000",
+      A321 = "0x400000e4"
+    },
     toggle = false,
     type = ""
   },
@@ -2932,7 +3587,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x40000116",
+    rectangle = {
+      A320 = "0x40000113",
+      A321 = "0x40000116"
+    },
     type = ""
   },
   OVHD_EXTLT_Land_L_Switch = {
@@ -2947,7 +3605,10 @@ return {
       on = 20,
       retr = 0
     },
-    rectangle = "0x40000115",
+    rectangle = {
+      A320 = "0x40000112",
+      A321 = "0x40000115"
+    },
     type = ""
   },
   OVHD_EXTLT_Land_R_Switch = {
@@ -2962,7 +3623,10 @@ return {
       on = 20,
       retr = 0
     },
-    rectangle = "0x40000113",
+    rectangle = {
+      A320 = "0x40000110",
+      A321 = "0x40000113"
+    },
     type = ""
   },
   OVHD_EXTLT_NavLogo_Switch = {
@@ -2977,7 +3641,10 @@ return {
       ["2"] = 20,
       off = 0
     },
-    rectangle = "0x40000111",
+    rectangle = {
+      A320 = "0x4000010e",
+      A321 = "0x40000111"
+    },
     type = ""
   },
   OVHD_EXTLT_Nose_Switch = {
@@ -2992,7 +3659,10 @@ return {
       taxi = 10,
       to = 20
     },
-    rectangle = "0x40000112",
+    rectangle = {
+      A320 = "0x4000010f",
+      A321 = "0x40000112"
+    },
     type = ""
   },
   OVHD_EXTLT_RwyTurnoff_Switch = {
@@ -3006,7 +3676,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x40000118",
+    rectangle = {
+      A320 = "0x40000115",
+      A321 = "0x40000118"
+    },
     type = ""
   },
   OVHD_EXTLT_Strobe_Switch = {
@@ -3021,7 +3694,10 @@ return {
       off = 0,
       on = 20
     },
-    rectangle = "0x40000117",
+    rectangle = {
+      A320 = "0x40000114",
+      A321 = "0x40000117"
+    },
     type = ""
   },
   OVHD_EXTLT_Wing_Switch = {
@@ -3035,7 +3711,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x40000114",
+    rectangle = {
+      A320 = "0x40000111",
+      A321 = "0x40000114"
+    },
     type = ""
   },
   OVHD_FAC_1_Button = {
@@ -3045,7 +3724,10 @@ return {
       y = "-23",
       z = ""
     },
-    rectangle = "0x24400802",
+    rectangle = {
+      A320 = "0x24400802",
+      A321 = "0x24400802"
+    },
     toggle = true,
     type = ""
   },
@@ -3056,7 +3738,10 @@ return {
       y = "452",
       z = ""
     },
-    rectangle = "0x24402003",
+    rectangle = {
+      A320 = "0x24402003",
+      A321 = "0x24402003"
+    },
     toggle = true,
     type = ""
   },
@@ -3067,6 +3752,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3077,6 +3763,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3087,6 +3774,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3097,6 +3785,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3107,7 +3796,10 @@ return {
       y = "506",
       z = ""
     },
-    rectangle = "0x24404805",
+    rectangle = {
+      A320 = "0x24404805",
+      A321 = "0x24404805"
+    },
     toggle = false,
     type = ""
   },
@@ -3118,7 +3810,10 @@ return {
       y = "534",
       z = ""
     },
-    rectangle = "0x24404801",
+    rectangle = {
+      A320 = "0x24404801",
+      A321 = "0x24404801"
+    },
     toggle = true,
     type = ""
   },
@@ -3129,7 +3824,10 @@ return {
       y = "534",
       z = ""
     },
-    rectangle = "0x4000007b",
+    rectangle = {
+      A320 = "0x24404801",
+      A321 = "0x4000007b"
+    },
     toggle = true,
     type = ""
   },
@@ -3140,7 +3838,10 @@ return {
       y = "504",
       z = ""
     },
-    rectangle = "0x4000007e",
+    rectangle = {
+      A320 = "0x4000007f",
+      A321 = "0x4000007e"
+    },
     toggle = false,
     type = ""
   },
@@ -3151,7 +3852,10 @@ return {
       y = "535",
       z = ""
     },
-    rectangle = "0x24404803",
+    rectangle = {
+      A320 = "0x24404803",
+      A321 = "0x24404803"
+    },
     toggle = false,
     type = ""
   },
@@ -3162,7 +3866,10 @@ return {
       y = "535",
       z = ""
     },
-    rectangle = "0x24404804",
+    rectangle = {
+      A320 = "0x24404804",
+      A321 = "0x24404804"
+    },
     toggle = false,
     type = ""
   },
@@ -3173,7 +3880,10 @@ return {
       y = "524",
       z = ""
     },
-    rectangle = "0x24404800",
+    rectangle = {
+      A320 = "0x24404800",
+      A321 = "0x24404800"
+    },
     toggle = true,
     type = ""
   },
@@ -3184,7 +3894,10 @@ return {
       y = "524",
       z = ""
     },
-    rectangle = "0x4000007a",
+    rectangle = {
+      A320 = "0x24404800",
+      A321 = "0x4000007a"
+    },
     toggle = true,
     type = ""
   },
@@ -3195,7 +3908,10 @@ return {
       y = "513",
       z = ""
     },
-    rectangle = "0x4000007d",
+    rectangle = {
+      A320 = "0x4000007e",
+      A321 = "0x4000007d"
+    },
     toggle = false,
     type = ""
   },
@@ -3206,7 +3922,10 @@ return {
       y = "536",
       z = ""
     },
-    rectangle = "0x24404806",
+    rectangle = {
+      A320 = "0x24404806",
+      A321 = "0x24404806"
+    },
     toggle = false,
     type = ""
   },
@@ -3217,7 +3936,10 @@ return {
       y = "535",
       z = ""
     },
-    rectangle = "0x24404807",
+    rectangle = {
+      A320 = "0x24404807",
+      A321 = "0x24404807"
+    },
     toggle = false,
     type = ""
   },
@@ -3228,7 +3950,10 @@ return {
       y = "524",
       z = ""
     },
-    rectangle = "0x24404802",
+    rectangle = {
+      A320 = "0x24404802",
+      A321 = "0x24404802"
+    },
     toggle = true,
     type = ""
   },
@@ -3239,7 +3964,10 @@ return {
       y = "524",
       z = ""
     },
-    rectangle = "0x4000007c",
+    rectangle = {
+      A320 = "0x24404802",
+      A321 = "0x4000007c"
+    },
     toggle = true,
     type = ""
   },
@@ -3250,7 +3978,10 @@ return {
       y = "512",
       z = ""
     },
-    rectangle = "0x4000007f",
+    rectangle = {
+      A320 = "0x40000080",
+      A321 = "0x4000007f"
+    },
     toggle = false,
     type = ""
   },
@@ -3261,6 +3992,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = true,
     type = ""
   },
@@ -3270,6 +4002,9 @@ return {
       x = "146",
       y = "377",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x24401807"
     },
     toggle = true,
     type = ""
@@ -3281,7 +4016,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x2440180b",
+    rectangle = {
+      A321 = "0x2440180b"
+    },
     toggle = true,
     type = ""
   },
@@ -3291,6 +4028,9 @@ return {
       x = "206",
       y = "377",
       z = ""
+    },
+    rectangle = {
+      A320 = "0x24401808"
     },
     toggle = true,
     type = ""
@@ -3302,7 +4042,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x2440180c",
+    rectangle = {
+      A321 = "0x2440180c"
+    },
     toggle = true,
     type = ""
   },
@@ -3313,7 +4055,10 @@ return {
       y = "378",
       z = ""
     },
-    rectangle = "0x24401805",
+    rectangle = {
+      A320 = "0x24401805",
+      A321 = "0x24401805"
+    },
     toggle = true,
     type = ""
   },
@@ -3324,7 +4069,10 @@ return {
       y = "377",
       z = ""
     },
-    rectangle = "0x24401806",
+    rectangle = {
+      A320 = "0x24401806",
+      A321 = "0x24401806"
+    },
     toggle = true,
     type = ""
   },
@@ -3335,7 +4083,10 @@ return {
       y = "373",
       z = ""
     },
-    rectangle = "0x24401808",
+    rectangle = {
+      A320 = "0x2440180a",
+      A321 = "0x24401808"
+    },
     toggle = true,
     type = ""
   },
@@ -3346,7 +4097,10 @@ return {
       y = "373",
       z = ""
     },
-    rectangle = "0x24401809",
+    rectangle = {
+      A320 = "0x2440180b",
+      A321 = "0x24401809"
+    },
     toggle = true,
     type = ""
   },
@@ -3357,7 +4111,10 @@ return {
       y = "373",
       z = ""
     },
-    rectangle = "0x2440180a",
+    rectangle = {
+      A320 = "0x2440180c",
+      A321 = "0x2440180a"
+    },
     toggle = true,
     type = ""
   },
@@ -3368,7 +4125,10 @@ return {
       y = "408",
       z = ""
     },
-    rectangle = "0x24401807",
+    rectangle = {
+      A320 = "0x24401809",
+      A321 = "0x24401807"
+    },
     toggle = true,
     type = ""
   },
@@ -3379,7 +4139,10 @@ return {
       y = "192",
       z = ""
     },
-    rectangle = "0x400000ba",
+    rectangle = {
+      A320 = "0x400000bb",
+      A321 = "0x400000ba"
+    },
     toggle = false,
     type = ""
   },
@@ -3390,7 +4153,10 @@ return {
       y = "192",
       z = ""
     },
-    rectangle = "0x400000bb",
+    rectangle = {
+      A320 = "0x400000bc",
+      A321 = "0x400000bb"
+    },
     toggle = false,
     type = ""
   },
@@ -3401,7 +4167,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24401001",
+    rectangle = {
+      A320 = "0x24401001",
+      A321 = "0x24401001"
+    },
     toggle = true,
     type = ""
   },
@@ -3412,7 +4181,10 @@ return {
       y = "237",
       z = ""
     },
-    rectangle = "0x24401005",
+    rectangle = {
+      A320 = "0x24401005",
+      A321 = "0x24401005"
+    },
     toggle = true,
     type = ""
   },
@@ -3423,7 +4195,10 @@ return {
       y = "240",
       z = ""
     },
-    rectangle = "0x24401004",
+    rectangle = {
+      A320 = "0x24401004",
+      A321 = "0x24401004"
+    },
     toggle = true,
     type = ""
   },
@@ -3434,7 +4209,10 @@ return {
       y = "237",
       z = ""
     },
-    rectangle = "0x24401006",
+    rectangle = {
+      A320 = "0x24401006",
+      A321 = "0x24401006"
+    },
     toggle = true,
     type = ""
   },
@@ -3445,7 +4223,10 @@ return {
       y = "236",
       z = ""
     },
-    rectangle = "0x24401003",
+    rectangle = {
+      A320 = "0x24401003",
+      A321 = "0x24401003"
+    },
     toggle = true,
     type = ""
   },
@@ -3456,7 +4237,10 @@ return {
       y = "237",
       z = ""
     },
-    rectangle = "0x24401002",
+    rectangle = {
+      A320 = "0x24401002",
+      A321 = "0x24401002"
+    },
     toggle = true,
     type = ""
   },
@@ -3467,7 +4251,10 @@ return {
       y = "331",
       z = ""
     },
-    rectangle = "0x400000e5",
+    rectangle = {
+      A320 = "0x400000e6",
+      A321 = "0x400000e5"
+    },
     toggle = false,
     type = ""
   },
@@ -3478,7 +4265,9 @@ return {
       y = "347",
       z = ""
     },
-    rectangle = "0x24401801",
+    rectangle = {
+      A321 = "0x24401801"
+    },
     toggle = true,
     type = ""
   },
@@ -3489,7 +4278,10 @@ return {
       y = "437",
       z = ""
     },
-    rectangle = "0x24401801",
+    rectangle = {
+      A320 = "0x4000028f",
+      A321 = "0x24401801"
+    },
     toggle = false,
     type = ""
   },
@@ -3500,7 +4292,10 @@ return {
       y = "473",
       z = ""
     },
-    rectangle = "0x24401800",
+    rectangle = {
+      A320 = "0x24401800",
+      A321 = "0x24401800"
+    },
     toggle = false,
     type = ""
   },
@@ -3511,7 +4306,10 @@ return {
       y = "443",
       z = ""
     },
-    rectangle = "0x24401803",
+    rectangle = {
+      A320 = "0x24401803",
+      A321 = "0x24401803"
+    },
     toggle = false,
     type = ""
   },
@@ -3522,6 +4320,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3532,6 +4331,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3542,6 +4342,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3552,6 +4353,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3562,6 +4364,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3572,6 +4375,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3582,7 +4386,10 @@ return {
       y = "450",
       z = ""
     },
-    rectangle = "0x24401802",
+    rectangle = {
+      A320 = "0x24401802",
+      A321 = "0x24401802"
+    },
     toggle = false,
     type = ""
   },
@@ -3593,7 +4400,10 @@ return {
       y = "443",
       z = ""
     },
-    rectangle = "0x40000283",
+    rectangle = {
+      A320 = "0x4000028d",
+      A321 = "0x40000283"
+    },
     toggle = false,
     type = ""
   },
@@ -3604,7 +4414,10 @@ return {
       y = "443",
       z = ""
     },
-    rectangle = "0x40000284",
+    rectangle = {
+      A320 = "0x4000028e",
+      A321 = "0x40000284"
+    },
     toggle = false,
     type = ""
   },
@@ -3615,7 +4428,10 @@ return {
       y = "438",
       z = ""
     },
-    rectangle = "0x24401804",
+    rectangle = {
+      A320 = "0x24401804",
+      A321 = "0x24401804"
+    },
     toggle = true,
     type = ""
   },
@@ -3631,7 +4447,10 @@ return {
       dim = 0,
       test = 20
     },
-    rectangle = "0x4000010d",
+    rectangle = {
+      A320 = "0x4000010a",
+      A321 = "0x4000010d"
+    },
     type = ""
   },
   OVHD_INTLT_Dome_Switch = {
@@ -3646,7 +4465,10 @@ return {
       dim = 10,
       off = 0
     },
-    rectangle = "0x4000010c",
+    rectangle = {
+      A320 = "0x40000109",
+      A321 = "0x4000010c"
+    },
     type = ""
   },
   OVHD_INTLT_Integ_Lt_Knob = {
@@ -3657,7 +4479,10 @@ return {
       z = ""
     },
     range = 100,
-    rectangle = "0x40000086",
+    rectangle = {
+      A320 = "0x40000087",
+      A321 = "0x40000086"
+    },
     type = ""
   },
   OVHD_INTLT_StbyCompass_Switch = {
@@ -3671,7 +4496,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x4000010b",
+    rectangle = {
+      A320 = "0x40000108",
+      A321 = "0x4000010b"
+    },
     type = ""
   },
   OVHD_IR_1_Button = {
@@ -3681,7 +4509,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24400000",
+    rectangle = {
+      A320 = "0x24400000",
+      A321 = "0x24400000"
+    },
     toggle = false,
     type = ""
   },
@@ -3692,7 +4523,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24400001",
+    rectangle = {
+      A320 = "0x24400001",
+      A321 = "0x24400001"
+    },
     toggle = false,
     type = ""
   },
@@ -3703,7 +4537,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24400002",
+    rectangle = {
+      A320 = "0x24400002",
+      A321 = "0x24400002"
+    },
     toggle = false,
     type = ""
   },
@@ -3714,7 +4551,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000e7",
+    rectangle = {
+      A320 = "0x400000e8",
+      A321 = "0x400000e7"
+    },
     toggle = false,
     type = ""
   },
@@ -3725,7 +4565,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400000e8",
+    rectangle = {
+      A320 = "0x400000e9",
+      A321 = "0x400000e8"
+    },
     toggle = false,
     type = ""
   },
@@ -3736,7 +4579,10 @@ return {
       y = "146",
       z = ""
     },
-    rectangle = "0x24401009",
+    rectangle = {
+      A320 = "0x24401009",
+      A321 = "0x24401009"
+    },
     toggle = true,
     type = ""
   },
@@ -3747,7 +4593,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24401008",
+    rectangle = {
+      A320 = "0x24401008",
+      A321 = "0x24401008"
+    },
     toggle = true,
     type = ""
   },
@@ -3758,7 +4607,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24401008",
+    rectangle = {
+      A320 = "0x24401008",
+      A321 = "0x24401008"
+    },
     toggle = false,
     type = ""
   },
@@ -3769,7 +4621,10 @@ return {
       y = "153",
       z = ""
     },
-    rectangle = "0x400000ed",
+    rectangle = {
+      A320 = "0x400000ee",
+      A321 = "0x400000ed"
+    },
     toggle = false,
     type = ""
   },
@@ -3780,7 +4635,10 @@ return {
       y = "153",
       z = ""
     },
-    rectangle = "0x400000ec",
+    rectangle = {
+      A320 = "0x400000ed",
+      A321 = "0x400000ec"
+    },
     toggle = false,
     type = ""
   },
@@ -3791,6 +4649,7 @@ return {
       y = "147",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3801,6 +4660,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -3811,7 +4671,10 @@ return {
       y = "108",
       z = ""
     },
-    rectangle = "0x24403803",
+    rectangle = {
+      A320 = "0x24403803",
+      A321 = "0x24403803"
+    },
     toggle = true,
     type = ""
   },
@@ -3822,7 +4685,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c0100a",
+    rectangle = {
+      A320 = "0x25c0100a",
+      A321 = "0x25c0100a"
+    },
     toggle = false,
     type = ""
   },
@@ -3833,7 +4699,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01005",
+    rectangle = {
+      A320 = "0x25c01005",
+      A321 = "0x25c01005"
+    },
     toggle = false,
     type = ""
   },
@@ -3844,7 +4713,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c0100b",
+    rectangle = {
+      A320 = "0x25c0100b",
+      A321 = "0x25c0100b"
+    },
     toggle = false,
     type = ""
   },
@@ -3855,7 +4727,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01003",
+    rectangle = {
+      A320 = "0x25c01003",
+      A321 = "0x25c01003"
+    },
     toggle = false,
     type = ""
   },
@@ -3866,7 +4741,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01004",
+    rectangle = {
+      A320 = "0x25c01004",
+      A321 = "0x25c01004"
+    },
     toggle = false,
     type = ""
   },
@@ -3877,6 +4755,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OVHD_RADIO_3_LS_Button = {
@@ -3886,7 +4765,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01008",
+    rectangle = {
+      A320 = "0x25c01008",
+      A321 = "0x25c01008"
+    },
     toggle = false,
     type = ""
   },
@@ -3897,7 +4779,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01006",
+    rectangle = {
+      A320 = "0x25c01006",
+      A321 = "0x25c01006"
+    },
     toggle = false,
     type = ""
   },
@@ -3908,7 +4793,10 @@ return {
       y = "459",
       z = ""
     },
-    rectangle = "0x400000b6",
+    rectangle = {
+      A320 = "0x400000b8",
+      A321 = "0x400000b6"
+    },
     toggle = false,
     type = ""
   },
@@ -3923,7 +4811,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x400000b5",
+    rectangle = {
+      A320 = "0x400000b6",
+      A321 = "0x400000b5"
+    },
     type = ""
   },
   OVHD_RADIO_3_Outer_Knob = {
@@ -3933,6 +4824,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OVHD_RADIO_3_VHF1_Button = {
@@ -3942,7 +4834,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01000",
+    rectangle = {
+      A320 = "0x25c01000",
+      A321 = "0x25c01000"
+    },
     toggle = false,
     type = ""
   },
@@ -3953,7 +4848,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01001",
+    rectangle = {
+      A320 = "0x25c01001",
+      A321 = "0x25c01001"
+    },
     toggle = false,
     type = ""
   },
@@ -3964,7 +4862,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01002",
+    rectangle = {
+      A320 = "0x25c01002",
+      A321 = "0x25c01002"
+    },
     toggle = false,
     type = ""
   },
@@ -3975,7 +4876,10 @@ return {
       y = "459",
       z = ""
     },
-    rectangle = "0x25c01007",
+    rectangle = {
+      A320 = "0x25c01007",
+      A321 = "0x25c01007"
+    },
     toggle = false,
     type = ""
   },
@@ -3986,7 +4890,10 @@ return {
       y = "167",
       z = ""
     },
-    rectangle = "0x24402803",
+    rectangle = {
+      A320 = "0x24402803",
+      A321 = "0x24402803"
+    },
     toggle = true,
     type = ""
   },
@@ -3997,7 +4904,10 @@ return {
       y = "167",
       z = ""
     },
-    rectangle = "0x24402803",
+    rectangle = {
+      A320 = "0x24402803",
+      A321 = "0x24402803"
+    },
     toggle = false,
     type = ""
   },
@@ -4008,7 +4918,10 @@ return {
       y = "197",
       z = ""
     },
-    rectangle = "0x400000ea",
+    rectangle = {
+      A320 = "0x400000eb",
+      A321 = "0x400000ea"
+    },
     toggle = false,
     type = ""
   },
@@ -4019,7 +4932,10 @@ return {
       y = "197",
       z = ""
     },
-    rectangle = "0x400000e9",
+    rectangle = {
+      A320 = "0x400000ea",
+      A321 = "0x400000e9"
+    },
     toggle = false,
     type = ""
   },
@@ -4030,7 +4946,10 @@ return {
       y = "197",
       z = ""
     },
-    rectangle = "0x24401007",
+    rectangle = {
+      A320 = "0x24401007",
+      A321 = "0x24401007"
+    },
     toggle = false,
     type = ""
   },
@@ -4042,6 +4961,7 @@ return {
       z = ""
     },
     range = 269,
+    rectangle = {},
     type = ""
   },
   OVHD_ReadingLt_FO_Knob = {
@@ -4052,7 +4972,10 @@ return {
       z = ""
     },
     range = 269,
-    rectangle = "0x40000124",
+    rectangle = {
+      A320 = "0x40000120",
+      A321 = "0x40000124"
+    },
     type = ""
   },
   OVHD_SEC_1_Button = {
@@ -4062,7 +4985,10 @@ return {
       y = "-49",
       z = ""
     },
-    rectangle = "0x24400801",
+    rectangle = {
+      A320 = "0x24400801",
+      A321 = "0x24400801"
+    },
     toggle = true,
     type = ""
   },
@@ -4073,7 +4999,10 @@ return {
       y = "398",
       z = ""
     },
-    rectangle = "0x24402001",
+    rectangle = {
+      A320 = "0x24402001",
+      A321 = "0x24402001"
+    },
     toggle = true,
     type = ""
   },
@@ -4084,7 +5013,10 @@ return {
       y = "425",
       z = ""
     },
-    rectangle = "0x24402002",
+    rectangle = {
+      A320 = "0x24402002",
+      A321 = "0x24402002"
+    },
     toggle = true,
     type = ""
   },
@@ -4100,7 +5032,10 @@ return {
       off = 0,
       on = 20
     },
-    rectangle = "0x4000010e",
+    rectangle = {
+      A320 = "0x4000010b",
+      A321 = "0x4000010e"
+    },
     type = ""
   },
   OVHD_SIGNS_NoSmoking_Switch = {
@@ -4115,7 +5050,10 @@ return {
       off = 0,
       on = 20
     },
-    rectangle = "0x4000010f",
+    rectangle = {
+      A320 = "0x4000010c",
+      A321 = "0x4000010f"
+    },
     type = ""
   },
   OVHD_SIGNS_SeatBelts_Switch = {
@@ -4129,7 +5067,10 @@ return {
       off = 0,
       on = 20
     },
-    rectangle = "0x40000110",
+    rectangle = {
+      A320 = "0x4000010d",
+      A321 = "0x40000110"
+    },
     type = ""
   },
   OVHD_SVC_INT_OVRD_Button = {
@@ -4139,6 +5080,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -4149,7 +5091,10 @@ return {
       y = "148",
       z = ""
     },
-    rectangle = "0x24404002",
+    rectangle = {
+      A320 = "0x24404002",
+      A321 = "0x24404002"
+    },
     toggle = true,
     type = ""
   },
@@ -4160,7 +5105,10 @@ return {
       y = "145",
       z = ""
     },
-    rectangle = "0x24404004",
+    rectangle = {
+      A320 = "0x24404004",
+      A321 = "0x24404004"
+    },
     toggle = true,
     type = ""
   },
@@ -4171,7 +5119,10 @@ return {
       y = "148",
       z = ""
     },
-    rectangle = "0x24404003",
+    rectangle = {
+      A320 = "0x24404003",
+      A321 = "0x24404003"
+    },
     toggle = true,
     type = ""
   },
@@ -4188,7 +5139,10 @@ return {
       slow = 10
     },
     range = 20,
-    rectangle = "0x400000e3",
+    rectangle = {
+      A320 = "0x400000e4",
+      A321 = "0x400000e3"
+    },
     type = ""
   },
   OVHD_WIPER_KNOB_RIGHT_Knob = {
@@ -4204,7 +5158,10 @@ return {
       slow = 10
     },
     range = 20,
-    rectangle = "0x400000bd",
+    rectangle = {
+      A320 = "0x400000be",
+      A321 = "0x400000bd"
+    },
     type = ""
   },
   OVHD_WIPER_RPLNT_LEFT_Button = {
@@ -4214,7 +5171,10 @@ return {
       y = "69",
       z = ""
     },
-    rectangle = "0x400000f2",
+    rectangle = {
+      A320 = "0x400000f3",
+      A321 = "0x400000f2"
+    },
     toggle = false,
     type = ""
   },
@@ -4225,7 +5185,10 @@ return {
       y = "69",
       z = ""
     },
-    rectangle = "0x400000df",
+    rectangle = {
+      A320 = "0x400000e0",
+      A321 = "0x400000df"
+    },
     toggle = false,
     type = ""
   },
@@ -4236,7 +5199,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000024d",
+    rectangle = {
+      A320 = "0x4000024d",
+      A321 = "0x4000024d"
+    },
     type = ""
   },
   OXY_MASK_COVER_FO = {
@@ -4246,7 +5212,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000249",
+    rectangle = {
+      A320 = "0x40000249",
+      A321 = "0x40000249"
+    },
     type = ""
   },
   OXY_MASK_LIGHT_CPT = {
@@ -4256,6 +5225,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OXY_MASK_LIGHT_FO = {
@@ -4265,6 +5235,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OXY_MASK_LIGHT_JMP_CPT = {
@@ -4274,6 +5245,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OXY_MASK_LIGHT_JMP_FO = {
@@ -4283,6 +5255,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   OXY_MASK_TEST_CPT = {
@@ -4292,7 +5265,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000024a",
+    rectangle = {
+      A320 = "0x4000024a",
+      A321 = "0x4000024a"
+    },
     type = ""
   },
   OXY_MASK_TEST_FO = {
@@ -4302,7 +5278,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000251",
+    rectangle = {
+      A320 = "0x40000251",
+      A321 = "0x40000251"
+    },
     type = ""
   },
   OXY_MASK_TEST_JMP_CPT = {
@@ -4312,7 +5291,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000024f",
+    rectangle = {
+      A320 = "0x4000024f",
+      A321 = "0x4000024f"
+    },
     type = ""
   },
   OXY_MASK_TEST_JMP_FO = {
@@ -4322,7 +5304,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000250",
+    rectangle = {
+      A320 = "0x40000250",
+      A321 = "0x40000250"
+    },
     type = ""
   },
   PEDAL_DISC_CPT = {
@@ -4332,6 +5317,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   PEDAL_DISC_FO = {
@@ -4341,6 +5327,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   PED_ATCXPDR_1_2_Switch = {
@@ -4354,7 +5341,10 @@ return {
       ["1"] = 0,
       ["2"] = 10
     },
-    rectangle = "0x4000014d",
+    rectangle = {
+      A320 = "0x4000014b",
+      A321 = "0x4000014d"
+    },
     type = ""
   },
   PED_ATCXPDR_ALT_RPTG_Switch = {
@@ -4368,7 +5358,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x4000014c",
+    rectangle = {
+      A320 = "0x4000014a",
+      A321 = "0x4000014c"
+    },
     type = ""
   },
   PED_ATCXPDR_KEY_0 = {
@@ -4378,7 +5371,10 @@ return {
       y = "278",
       z = ""
     },
-    rectangle = "0x4000018b",
+    rectangle = {
+      A320 = "0x40000189",
+      A321 = "0x4000018b"
+    },
     toggle = false,
     type = ""
   },
@@ -4389,7 +5385,10 @@ return {
       y = "306",
       z = ""
     },
-    rectangle = "0x4000017d",
+    rectangle = {
+      A320 = "0x4000017b",
+      A321 = "0x4000017d"
+    },
     toggle = false,
     type = ""
   },
@@ -4400,7 +5399,10 @@ return {
       y = "306",
       z = ""
     },
-    rectangle = "0x4000017f",
+    rectangle = {
+      A320 = "0x4000017d",
+      A321 = "0x4000017f"
+    },
     toggle = false,
     type = ""
   },
@@ -4411,7 +5413,10 @@ return {
       y = "307",
       z = ""
     },
-    rectangle = "0x40000181",
+    rectangle = {
+      A320 = "0x4000017f",
+      A321 = "0x40000181"
+    },
     toggle = false,
     type = ""
   },
@@ -4422,7 +5427,10 @@ return {
       y = "293",
       z = ""
     },
-    rectangle = "0x40000183",
+    rectangle = {
+      A320 = "0x40000181",
+      A321 = "0x40000183"
+    },
     toggle = false,
     type = ""
   },
@@ -4433,7 +5441,10 @@ return {
       y = "293",
       z = ""
     },
-    rectangle = "0x40000185",
+    rectangle = {
+      A320 = "0x40000183",
+      A321 = "0x40000185"
+    },
     toggle = false,
     type = ""
   },
@@ -4444,7 +5455,10 @@ return {
       y = "292",
       z = ""
     },
-    rectangle = "0x40000187",
+    rectangle = {
+      A320 = "0x40000185",
+      A321 = "0x40000187"
+    },
     toggle = false,
     type = ""
   },
@@ -4455,7 +5469,10 @@ return {
       y = "278",
       z = ""
     },
-    rectangle = "0x4000018d",
+    rectangle = {
+      A320 = "0x4000018b",
+      A321 = "0x4000018d"
+    },
     toggle = false,
     type = ""
   },
@@ -4466,7 +5483,10 @@ return {
       y = "278",
       z = ""
     },
-    rectangle = "0x40000189",
+    rectangle = {
+      A320 = "0x40000187",
+      A321 = "0x40000189"
+    },
     toggle = false,
     type = ""
   },
@@ -4477,7 +5497,10 @@ return {
       y = "307",
       z = ""
     },
-    rectangle = "0x40000150",
+    rectangle = {
+      A320 = "0x4000014e",
+      A321 = "0x40000150"
+    },
     toggle = false,
     type = ""
   },
@@ -4493,7 +5516,10 @@ return {
       TA = 10,
       TARA = 20
     },
-    rectangle = "0x4000014f",
+    rectangle = {
+      A320 = "0x4000014d",
+      A321 = "0x4000014f"
+    },
     shouldHideCursor = true,
     type = ""
   },
@@ -4509,7 +5535,10 @@ return {
       ON = 20,
       STBY = 0
     },
-    rectangle = "0x4000014e",
+    rectangle = {
+      A320 = "0x4000014c",
+      A321 = "0x4000014e"
+    },
     shouldHideCursor = true,
     type = ""
   },
@@ -4526,7 +5555,10 @@ return {
       blw = 30,
       thrt = 0
     },
-    rectangle = "0x4000014b",
+    rectangle = {
+      A320 = "0x40000149",
+      A321 = "0x4000014b"
+    },
     shouldHideCursor = true,
     type = ""
   },
@@ -4546,7 +5578,10 @@ return {
         20
       }
     },
-    rectangle = "0x4000028a",
+    rectangle = {
+      A320 = "0x400001c6",
+      A321 = "0x4000028a"
+    },
     type = ""
   },
   PED_COCKPIT_DOOR_VIDEO_Button = {
@@ -4556,7 +5591,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000289",
+    rectangle = {
+      A321 = "0x40000289"
+    },
     toggle = false,
     type = ""
   },
@@ -4567,7 +5604,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000028c",
+    rectangle = {
+      A321 = "0x4000028c"
+    },
     toggle = false,
     type = ""
   },
@@ -4580,7 +5619,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580000c",
+    rectangle = {
+      A320 = "0x2580000c",
+      A321 = "0x2580000c"
+    },
     type = ""
   },
   PED_COMM_1_ADF1_Switch = {
@@ -4591,7 +5633,10 @@ return {
       y = "390",
       z = ""
     },
-    rectangle = "0x400001d0",
+    rectangle = {
+      A320 = "0x400001f1",
+      A321 = "0x400001d0"
+    },
     toggle = true,
     type = ""
   },
@@ -4604,7 +5649,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580000d",
+    rectangle = {
+      A320 = "0x2580000d",
+      A321 = "0x2580000d"
+    },
     type = ""
   },
   PED_COMM_1_ADF2_Switch = {
@@ -4615,7 +5663,10 @@ return {
       y = "390",
       z = ""
     },
-    rectangle = "0x400001d3",
+    rectangle = {
+      A320 = "0x400001f4",
+      A321 = "0x400001d3"
+    },
     toggle = true,
     type = ""
   },
@@ -4627,7 +5678,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c01806",
+    rectangle = {
+      A320 = "0x25c01806",
+      A321 = "0x25c01806"
+    },
     toggle = false,
     type = ""
   },
@@ -4640,7 +5694,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800006",
+    rectangle = {
+      A320 = "0x25800006",
+      A321 = "0x25800006"
+    },
     type = ""
   },
   PED_COMM_1_CAB_Switch = {
@@ -4651,7 +5708,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x400001d6",
+    rectangle = {
+      A320 = "0x400001d0",
+      A321 = "0x400001d6"
+    },
     toggle = true,
     type = ""
   },
@@ -4663,7 +5723,10 @@ return {
       y = "453",
       z = ""
     },
-    rectangle = "0x25c01803",
+    rectangle = {
+      A320 = "0x25c01803",
+      A321 = "0x25c01803"
+    },
     toggle = false,
     type = ""
   },
@@ -4676,7 +5739,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800003",
+    rectangle = {
+      A320 = "0x25800003",
+      A321 = "0x25800003"
+    },
     type = ""
   },
   PED_COMM_1_HF1_Switch = {
@@ -4687,7 +5753,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x400001d9",
+    rectangle = {
+      A320 = "0x400001d9",
+      A321 = "0x400001d9"
+    },
     toggle = true,
     type = ""
   },
@@ -4699,7 +5768,10 @@ return {
       y = "453",
       z = ""
     },
-    rectangle = "0x25c01804",
+    rectangle = {
+      A320 = "0x25c01804",
+      A321 = "0x25c01804"
+    },
     toggle = false,
     type = ""
   },
@@ -4712,7 +5784,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800004",
+    rectangle = {
+      A320 = "0x25800004",
+      A321 = "0x25800004"
+    },
     type = ""
   },
   PED_COMM_1_HF2_Switch = {
@@ -4723,7 +5798,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x400001dc",
+    rectangle = {
+      A320 = "0x400001d6",
+      A321 = "0x400001dc"
+    },
     toggle = true,
     type = ""
   },
@@ -4735,6 +5813,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   PED_COMM_1_INOP_Switch = {
@@ -4745,6 +5824,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = true,
     type = ""
   },
@@ -4756,7 +5836,10 @@ return {
       y = "453",
       z = ""
     },
-    rectangle = "0x25c01805",
+    rectangle = {
+      A320 = "0x25c01805",
+      A321 = "0x25c01805"
+    },
     toggle = false,
     type = ""
   },
@@ -4769,7 +5852,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800005",
+    rectangle = {
+      A320 = "0x25800005",
+      A321 = "0x25800005"
+    },
     type = ""
   },
   PED_COMM_1_INT_RAD_Switch = {
@@ -4787,7 +5873,10 @@ return {
         0
       }
     },
-    rectangle = "0x400001cd",
+    rectangle = {
+      A320 = "0x400001cd",
+      A321 = "0x400001cd"
+    },
     type = ""
   },
   PED_COMM_1_INT_Switch = {
@@ -4798,7 +5887,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x400001df",
+    rectangle = {
+      A320 = "0x400001d3",
+      A321 = "0x400001df"
+    },
     toggle = true,
     type = ""
   },
@@ -4811,7 +5903,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580000b",
+    rectangle = {
+      A320 = "0x2580000b",
+      A321 = "0x2580000b"
+    },
     type = ""
   },
   PED_COMM_1_LS_Switch = {
@@ -4822,7 +5917,10 @@ return {
       y = "390",
       z = ""
     },
-    rectangle = "0x400001e2",
+    rectangle = {
+      A320 = "0x400001ee",
+      A321 = "0x400001e2"
+    },
     toggle = true,
     type = ""
   },
@@ -4835,7 +5933,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580000a",
+    rectangle = {
+      A320 = "0x2580000a",
+      A321 = "0x2580000a"
+    },
     type = ""
   },
   PED_COMM_1_MKR_Switch = {
@@ -4846,7 +5947,10 @@ return {
       y = "390",
       z = ""
     },
-    rectangle = "0x400001e5",
+    rectangle = {
+      A320 = "0x400001eb",
+      A321 = "0x400001e5"
+    },
     toggle = true,
     type = ""
   },
@@ -4858,7 +5962,10 @@ return {
       y = "414",
       z = ""
     },
-    rectangle = "0x25c01809",
+    rectangle = {
+      A320 = "0x25c01809",
+      A321 = "0x25c01809"
+    },
     toggle = false,
     type = ""
   },
@@ -4871,7 +5978,9 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800007",
+    rectangle = {
+      A321 = "0x25800007"
+    },
     type = ""
   },
   PED_COMM_1_PA_Switch = {
@@ -4882,7 +5991,10 @@ return {
       y = "413",
       z = ""
     },
-    rectangle = "0x400001e8",
+    rectangle = {
+      A320 = "0x400001f7",
+      A321 = "0x400001e8"
+    },
     toggle = true,
     type = ""
   },
@@ -4894,7 +6006,10 @@ return {
       y = "413",
       z = ""
     },
-    rectangle = "0x25c01808",
+    rectangle = {
+      A320 = "0x25c01808",
+      A321 = "0x25c01808"
+    },
     toggle = false,
     type = ""
   },
@@ -4906,7 +6021,10 @@ return {
       y = "456",
       z = ""
     },
-    rectangle = "0x25c01800",
+    rectangle = {
+      A320 = "0x25c01800",
+      A321 = "0x25c01800"
+    },
     toggle = false,
     type = ""
   },
@@ -4919,7 +6037,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800000",
+    rectangle = {
+      A320 = "0x25800000",
+      A321 = "0x25800000"
+    },
     type = ""
   },
   PED_COMM_1_VHF1_Switch = {
@@ -4930,7 +6051,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x25800000",
+    rectangle = {
+      A320 = "0x25800000",
+      A321 = "0x25800000"
+    },
     toggle = true,
     type = ""
   },
@@ -4942,7 +6066,10 @@ return {
       y = "450",
       z = ""
     },
-    rectangle = "0x25c01801",
+    rectangle = {
+      A320 = "0x25c01801",
+      A321 = "0x25c01801"
+    },
     toggle = false,
     type = ""
   },
@@ -4955,7 +6082,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800001",
+    rectangle = {
+      A320 = "0x25800001",
+      A321 = "0x25800001"
+    },
     type = ""
   },
   PED_COMM_1_VHF2_Switch = {
@@ -4966,7 +6096,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x25800000",
+    rectangle = {
+      A320 = "0x400001df",
+      A321 = "0x25800000"
+    },
     toggle = true,
     type = ""
   },
@@ -4978,7 +6111,10 @@ return {
       y = "453",
       z = ""
     },
-    rectangle = "0x25c01802",
+    rectangle = {
+      A320 = "0x25c01802",
+      A321 = "0x25c01802"
+    },
     toggle = false,
     type = ""
   },
@@ -4991,7 +6127,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800002",
+    rectangle = {
+      A320 = "0x25800002",
+      A321 = "0x25800002"
+    },
     type = ""
   },
   PED_COMM_1_VHF3_Switch = {
@@ -5002,7 +6141,10 @@ return {
       y = "431",
       z = ""
     },
-    rectangle = "0x400001f1",
+    rectangle = {
+      A320 = "0x400001dc",
+      A321 = "0x400001f1"
+    },
     toggle = true,
     type = ""
   },
@@ -5014,7 +6156,10 @@ return {
       y = "413",
       z = ""
     },
-    rectangle = "0x25c01807",
+    rectangle = {
+      A320 = "0x25c01807",
+      A321 = "0x25c01807"
+    },
     toggle = false,
     type = ""
   },
@@ -5027,7 +6172,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800008",
+    rectangle = {
+      A320 = "0x25800008",
+      A321 = "0x25800008"
+    },
     type = ""
   },
   PED_COMM_1_VOR1_Switch = {
@@ -5038,7 +6186,10 @@ return {
       y = "390",
       z = ""
     },
-    rectangle = "0x400001f7",
+    rectangle = {
+      A320 = "0x400001e5",
+      A321 = "0x400001f7"
+    },
     toggle = true,
     type = ""
   },
@@ -5051,7 +6202,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800009",
+    rectangle = {
+      A320 = "0x25800009",
+      A321 = "0x25800009"
+    },
     type = ""
   },
   PED_COMM_1_VOR2_Switch = {
@@ -5062,7 +6216,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400001f7",
+    rectangle = {
+      A320 = "0x400001e8",
+      A321 = "0x400001f7"
+    },
     toggle = true,
     type = ""
   },
@@ -5075,7 +6232,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580080c",
+    rectangle = {
+      A320 = "0x2580080c",
+      A321 = "0x2580080c"
+    },
     type = ""
   },
   PED_COMM_2_ADF1_Switch = {
@@ -5086,7 +6246,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000020d",
+    rectangle = {
+      A320 = "0x400001fe",
+      A321 = "0x4000020d"
+    },
     toggle = true,
     type = ""
   },
@@ -5099,7 +6262,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580080d",
+    rectangle = {
+      A320 = "0x2580080d",
+      A321 = "0x2580080d"
+    },
     type = ""
   },
   PED_COMM_2_ADF2_Switch = {
@@ -5110,7 +6276,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400001fe",
+    rectangle = {
+      A320 = "0x400001fb",
+      A321 = "0x400001fe"
+    },
     toggle = true,
     type = ""
   },
@@ -5122,7 +6291,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02006",
+    rectangle = {
+      A320 = "0x25c02006",
+      A321 = "0x25c02006"
+    },
     toggle = false,
     type = ""
   },
@@ -5135,7 +6307,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800806",
+    rectangle = {
+      A320 = "0x25800806",
+      A321 = "0x25800806"
+    },
     type = ""
   },
   PED_COMM_2_CAB_Switch = {
@@ -5146,7 +6321,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000213",
+    rectangle = {
+      A320 = "0x40000210",
+      A321 = "0x40000213"
+    },
     toggle = true,
     type = ""
   },
@@ -5158,7 +6336,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02003",
+    rectangle = {
+      A320 = "0x25c02003",
+      A321 = "0x25c02003"
+    },
     toggle = false,
     type = ""
   },
@@ -5171,7 +6352,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800803",
+    rectangle = {
+      A320 = "0x25800803",
+      A321 = "0x25800803"
+    },
     type = ""
   },
   PED_COMM_2_HF1_Switch = {
@@ -5182,7 +6366,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000021c",
+    rectangle = {
+      A320 = "0x40000219",
+      A321 = "0x4000021c"
+    },
     toggle = true,
     type = ""
   },
@@ -5194,7 +6381,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02004",
+    rectangle = {
+      A320 = "0x25c02004",
+      A321 = "0x25c02004"
+    },
     toggle = false,
     type = ""
   },
@@ -5207,7 +6397,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800804",
+    rectangle = {
+      A320 = "0x25800804",
+      A321 = "0x25800804"
+    },
     type = ""
   },
   PED_COMM_2_HF2_Switch = {
@@ -5218,7 +6411,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000219",
+    rectangle = {
+      A320 = "0x40000216",
+      A321 = "0x40000219"
+    },
     toggle = true,
     type = ""
   },
@@ -5230,6 +6426,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   PED_COMM_2_INOP_Switch = {
@@ -5240,6 +6437,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = true,
     type = ""
   },
@@ -5251,7 +6449,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02005",
+    rectangle = {
+      A320 = "0x25c02005",
+      A321 = "0x25c02005"
+    },
     toggle = false,
     type = ""
   },
@@ -5264,7 +6465,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800805",
+    rectangle = {
+      A320 = "0x25800805",
+      A321 = "0x25800805"
+    },
     type = ""
   },
   PED_COMM_2_INT_RAD_Switch = {
@@ -5280,7 +6484,10 @@ return {
       off = 10,
       rad = 0
     },
-    rectangle = "0x400001f8",
+    rectangle = {
+      A320 = "0x400001f8",
+      A321 = "0x400001f8"
+    },
     type = ""
   },
   PED_COMM_2_INT_Switch = {
@@ -5291,7 +6498,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000216",
+    rectangle = {
+      A320 = "0x40000213",
+      A321 = "0x40000216"
+    },
     toggle = true,
     type = ""
   },
@@ -5304,7 +6514,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580080b",
+    rectangle = {
+      A320 = "0x2580080b",
+      A321 = "0x2580080b"
+    },
     type = ""
   },
   PED_COMM_2_LS_Switch = {
@@ -5315,7 +6528,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000020a",
+    rectangle = {
+      A320 = "0x40000201",
+      A321 = "0x4000020a"
+    },
     toggle = false,
     type = ""
   },
@@ -5328,7 +6544,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x2580080a",
+    rectangle = {
+      A320 = "0x2580080a",
+      A321 = "0x2580080a"
+    },
     type = ""
   },
   PED_COMM_2_MKR_Switch = {
@@ -5339,7 +6558,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000207",
+    rectangle = {
+      A320 = "0x40000204",
+      A321 = "0x40000207"
+    },
     toggle = true,
     type = ""
   },
@@ -5351,7 +6573,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02009",
+    rectangle = {
+      A320 = "0x25c02009",
+      A321 = "0x25c02009"
+    },
     toggle = false,
     type = ""
   },
@@ -5364,7 +6589,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800807",
+    rectangle = {
+      A320 = "0x25800807",
+      A321 = "0x25800807"
+    },
     type = ""
   },
   PED_COMM_2_PA_Switch = {
@@ -5375,7 +6603,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000201",
+    rectangle = {
+      A320 = "0x4000020d",
+      A321 = "0x40000201"
+    },
     toggle = true,
     type = ""
   },
@@ -5387,7 +6618,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02008",
+    rectangle = {
+      A320 = "0x25c02008",
+      A321 = "0x25c02008"
+    },
     toggle = false,
     type = ""
   },
@@ -5399,7 +6633,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02000",
+    rectangle = {
+      A320 = "0x25c02000",
+      A321 = "0x25c02000"
+    },
     toggle = false,
     type = ""
   },
@@ -5412,7 +6649,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800800",
+    rectangle = {
+      A320 = "0x25800800",
+      A321 = "0x25800800"
+    },
     type = ""
   },
   PED_COMM_2_VHF1_Switch = {
@@ -5423,7 +6663,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25800800",
+    rectangle = {
+      A321 = "0x25800800"
+    },
     toggle = true,
     type = ""
   },
@@ -5435,7 +6677,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02001",
+    rectangle = {
+      A320 = "0x25c02001",
+      A321 = "0x25c02001"
+    },
     toggle = false,
     type = ""
   },
@@ -5448,7 +6693,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800801",
+    rectangle = {
+      A320 = "0x25800801",
+      A321 = "0x25800801"
+    },
     type = ""
   },
   PED_COMM_2_VHF2_Switch = {
@@ -5459,7 +6707,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000222",
+    rectangle = {
+      A320 = "0x4000021f",
+      A321 = "0x40000222"
+    },
     toggle = true,
     type = ""
   },
@@ -5471,7 +6722,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02002",
+    rectangle = {
+      A320 = "0x25c02002",
+      A321 = "0x25c02002"
+    },
     toggle = false,
     type = ""
   },
@@ -5484,7 +6738,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800802",
+    rectangle = {
+      A320 = "0x25800802",
+      A321 = "0x25800802"
+    },
     type = ""
   },
   PED_COMM_2_VHF3_Switch = {
@@ -5495,7 +6752,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000021f",
+    rectangle = {
+      A320 = "0x4000021c",
+      A321 = "0x4000021f"
+    },
     toggle = true,
     type = ""
   },
@@ -5507,7 +6767,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c02007",
+    rectangle = {
+      A320 = "0x25c02007",
+      A321 = "0x25c02007"
+    },
     toggle = false,
     type = ""
   },
@@ -5520,7 +6783,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800808",
+    rectangle = {
+      A320 = "0x25800808",
+      A321 = "0x25800808"
+    },
     type = ""
   },
   PED_COMM_2_VOR1_Switch = {
@@ -5531,7 +6797,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400001fb",
+    rectangle = {
+      A320 = "0x4000020a",
+      A321 = "0x400001fb"
+    },
     toggle = true,
     type = ""
   },
@@ -5544,7 +6813,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x25800809",
+    rectangle = {
+      A320 = "0x25800809",
+      A321 = "0x25800809"
+    },
     type = ""
   },
   PED_COMM_2_VOR2_Switch = {
@@ -5555,7 +6827,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000204",
+    rectangle = {
+      A320 = "0x40000207",
+      A321 = "0x40000204"
+    },
     toggle = true,
     type = ""
   },
@@ -5570,7 +6845,10 @@ return {
       y = "669",
       z = ""
     },
-    rectangle = "0x40000175",
+    rectangle = {
+      A320 = "0x40000173",
+      A321 = "0x40000175"
+    },
     toggle = false,
     type = ""
   },
@@ -5585,7 +6863,10 @@ return {
       y = "669",
       z = ""
     },
-    rectangle = "0x4000016f",
+    rectangle = {
+      A320 = "0x4000016d",
+      A321 = "0x4000016f"
+    },
     toggle = false,
     type = ""
   },
@@ -5600,7 +6881,10 @@ return {
       y = "681",
       z = ""
     },
-    rectangle = "0x4000016c",
+    rectangle = {
+      A320 = "0x4000016a",
+      A321 = "0x4000016c"
+    },
     toggle = false,
     type = ""
   },
@@ -5615,7 +6899,10 @@ return {
       y = "655",
       z = ""
     },
-    rectangle = "0x4000017c",
+    rectangle = {
+      A320 = "0x4000017a",
+      A321 = "0x4000017c"
+    },
     toggle = true,
     type = ""
   },
@@ -5630,7 +6917,10 @@ return {
       y = "654",
       z = ""
     },
-    rectangle = "0x40000179",
+    rectangle = {
+      A320 = "0x40000177",
+      A321 = "0x40000179"
+    },
     toggle = true,
     type = ""
   },
@@ -5645,7 +6935,10 @@ return {
       y = "668",
       z = ""
     },
-    rectangle = "0x4000016e",
+    rectangle = {
+      A320 = "0x4000016c",
+      A321 = "0x4000016e"
+    },
     toggle = false,
     type = ""
   },
@@ -5660,7 +6953,10 @@ return {
       y = "670",
       z = ""
     },
-    rectangle = "0x40000170",
+    rectangle = {
+      A320 = "0x4000016e",
+      A321 = "0x40000170"
+    },
     toggle = false,
     type = ""
   },
@@ -5675,7 +6971,10 @@ return {
       y = "681",
       z = ""
     },
-    rectangle = "0x40000174",
+    rectangle = {
+      A320 = "0x40000172",
+      A321 = "0x40000174"
+    },
     toggle = false,
     type = ""
   },
@@ -5686,7 +6985,9 @@ return {
       y = "697",
       z = ""
     },
-    rectangle = "0x40000178",
+    rectangle = {
+      A321 = "0x40000178"
+    },
     toggle = false,
     type = ""
   },
@@ -5701,7 +7002,10 @@ return {
       y = "681",
       z = ""
     },
-    rectangle = "0x4000016b",
+    rectangle = {
+      A320 = "0x40000169",
+      A321 = "0x4000016b"
+    },
     toggle = false,
     type = ""
   },
@@ -5716,7 +7020,10 @@ return {
       y = "669",
       z = ""
     },
-    rectangle = "0x40000176",
+    rectangle = {
+      A320 = "0x40000174",
+      A321 = "0x40000176"
+    },
     toggle = false,
     type = ""
   },
@@ -5731,7 +7038,10 @@ return {
       y = "682",
       z = ""
     },
-    rectangle = "0x40000172",
+    rectangle = {
+      A320 = "0x40000170",
+      A321 = "0x40000172"
+    },
     toggle = false,
     type = ""
   },
@@ -5746,7 +7056,10 @@ return {
       y = "681",
       z = ""
     },
-    rectangle = "0x40000173",
+    rectangle = {
+      A320 = "0x40000171",
+      A321 = "0x40000173"
+    },
     toggle = false,
     type = ""
   },
@@ -5758,7 +7071,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000193",
+    rectangle = {
+      A320 = "0x40000191",
+      A321 = "0x40000193"
+    },
     type = ""
   },
   PED_ECP_PRESS_Button = {
@@ -5772,7 +7088,10 @@ return {
       y = "682",
       z = ""
     },
-    rectangle = "0x40000171",
+    rectangle = {
+      A320 = "0x4000016f",
+      A321 = "0x40000171"
+    },
     toggle = false,
     type = ""
   },
@@ -5783,7 +7102,10 @@ return {
       y = "654",
       z = ""
     },
-    rectangle = "0x4000017a",
+    rectangle = {
+      A320 = "0x40000178",
+      A321 = "0x4000017a"
+    },
     toggle = false,
     type = ""
   },
@@ -5798,7 +7120,10 @@ return {
       y = "654",
       z = ""
     },
-    rectangle = "0x4000017b",
+    rectangle = {
+      A320 = "0x40000179",
+      A321 = "0x4000017b"
+    },
     toggle = false,
     type = ""
   },
@@ -5809,7 +7134,10 @@ return {
       y = "697",
       z = ""
     },
-    rectangle = "0x4000016d",
+    rectangle = {
+      A320 = "0x4000016b",
+      A321 = "0x4000016d"
+    },
     toggle = false,
     type = ""
   },
@@ -5821,7 +7149,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000195",
+    rectangle = {
+      A320 = "0x40000193",
+      A321 = "0x40000195"
+    },
     type = ""
   },
   PED_ECP_WHEEL_Button = {
@@ -5835,7 +7166,10 @@ return {
       y = "668",
       z = ""
     },
-    rectangle = "0x40000177",
+    rectangle = {
+      A320 = "0x40000175",
+      A321 = "0x40000177"
+    },
     toggle = false,
     type = ""
   },
@@ -5846,7 +7180,9 @@ return {
       y = "697",
       z = ""
     },
-    rectangle = "0x400001c9",
+    rectangle = {
+      A321 = "0x400001c9"
+    },
     toggle = false,
     type = ""
   },
@@ -5861,7 +7197,10 @@ return {
       off = 0,
       on = 30
     },
-    rectangle = "0x40000153",
+    rectangle = {
+      A320 = "0x40000151",
+      A321 = "0x40000153"
+    },
     shouldHideCursor = true,
     type = "EngineMasterSwitch"
   },
@@ -5876,7 +7215,10 @@ return {
       off = 0,
       on = 30
     },
-    rectangle = "0x40000152",
+    rectangle = {
+      A320 = "0x40000150",
+      A321 = "0x40000152"
+    },
     shouldHideCursor = true,
     type = "EngineMasterSwitch"
   },
@@ -5892,7 +7234,10 @@ return {
       ["ign/start"] = 20,
       norm = 10
     },
-    rectangle = "0x40000168",
+    rectangle = {
+      A320 = "0x40000166",
+      A321 = "0x40000168"
+    },
     shouldHideCursor = true,
     type = ""
   },
@@ -5915,6 +7260,9 @@ return {
       ["3"] = 310,
       FULL = 410
     },
+    rectangle = {
+      A320 = "0x40000146"
+    },
     type = ""
   },
   PED_FLD_LT_MainPnl_Knob = {
@@ -5925,7 +7273,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000159",
+    rectangle = {
+      A320 = "0x40000158",
+      A321 = "0x40000159"
+    },
     type = ""
   },
   PED_FLD_LT_Ped_Knob = {
@@ -5936,7 +7287,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000156",
+    rectangle = {
+      A320 = "0x40000154",
+      A321 = "0x40000156"
+    },
     type = ""
   },
   PED_INTEG_LT_MainPnl_Knob = {
@@ -5947,7 +7301,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x40000158",
+    rectangle = {
+      A320 = "0x40000156",
+      A321 = "0x40000158"
+    },
     type = ""
   },
   PED_LDG_GEAR_GRV_EXT_Switch = {
@@ -5957,7 +7314,10 @@ return {
       y = "34",
       z = ""
     },
-    rectangle = "0x40000154",
+    rectangle = {
+      A320 = "0x40000152",
+      A321 = "0x40000154"
+    },
     toggle = false,
     type = ""
   },
@@ -5968,7 +7328,10 @@ return {
       y = "564",
       z = ""
     },
-    rectangle = "0x24c0000e",
+    rectangle = {
+      A320 = "0x24c0000e",
+      A321 = "0x24c0000e"
+    },
     toggle = false,
     type = ""
   },
@@ -5979,7 +7342,10 @@ return {
       y = "608",
       z = ""
     },
-    rectangle = "0x24c0000f",
+    rectangle = {
+      A320 = "0x24c0000f",
+      A321 = "0x24c0000f"
+    },
     toggle = false,
     type = ""
   },
@@ -5990,7 +7356,10 @@ return {
       y = "609",
       z = ""
     },
-    rectangle = "0x24c00010",
+    rectangle = {
+      A320 = "0x24c00010",
+      A321 = "0x24c00010"
+    },
     toggle = false,
     type = ""
   },
@@ -6001,7 +7370,10 @@ return {
       y = "608",
       z = ""
     },
-    rectangle = "0x24c00011",
+    rectangle = {
+      A320 = "0x24c00011",
+      A321 = "0x24c00011"
+    },
     toggle = false,
     type = ""
   },
@@ -6012,7 +7384,10 @@ return {
       y = "594",
       z = ""
     },
-    rectangle = "0x24c00012",
+    rectangle = {
+      A320 = "0x24c00012",
+      A321 = "0x24c00012"
+    },
     toggle = false,
     type = ""
   },
@@ -6023,7 +7398,10 @@ return {
       y = "594",
       z = ""
     },
-    rectangle = "0x24c00013",
+    rectangle = {
+      A320 = "0x24c00013",
+      A321 = "0x24c00013"
+    },
     toggle = false,
     type = ""
   },
@@ -6034,7 +7412,10 @@ return {
       y = "594",
       z = ""
     },
-    rectangle = "0x24c00014",
+    rectangle = {
+      A320 = "0x24c00014",
+      A321 = "0x24c00014"
+    },
     toggle = false,
     type = ""
   },
@@ -6045,7 +7426,10 @@ return {
       y = "578",
       z = ""
     },
-    rectangle = "0x24c00015",
+    rectangle = {
+      A320 = "0x24c00015",
+      A321 = "0x24c00015"
+    },
     toggle = false,
     type = ""
   },
@@ -6056,7 +7440,10 @@ return {
       y = "578",
       z = ""
     },
-    rectangle = "0x24c00016",
+    rectangle = {
+      A320 = "0x24c00016",
+      A321 = "0x24c00016"
+    },
     toggle = false,
     type = ""
   },
@@ -6067,7 +7454,10 @@ return {
       y = "579",
       z = ""
     },
-    rectangle = "0x24c00017",
+    rectangle = {
+      A320 = "0x24c00017",
+      A321 = "0x24c00017"
+    },
     toggle = false,
     type = ""
   },
@@ -6078,7 +7468,10 @@ return {
       y = "636",
       z = ""
     },
-    rectangle = "0x24c00018",
+    rectangle = {
+      A320 = "0x24c00018",
+      A321 = "0x24c00018"
+    },
     toggle = false,
     type = ""
   },
@@ -6089,7 +7482,10 @@ return {
       y = "641",
       z = ""
     },
-    rectangle = "0x24c00040",
+    rectangle = {
+      A320 = "0x24c00040",
+      A321 = "0x24c00040"
+    },
     toggle = false,
     type = ""
   },
@@ -6100,7 +7496,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0003e",
+    rectangle = {
+      A320 = "0x24c0003e",
+      A321 = "0x24c0003e"
+    },
     toggle = false,
     type = ""
   },
@@ -6111,7 +7510,10 @@ return {
       y = "638",
       z = ""
     },
-    rectangle = "0x24c00019",
+    rectangle = {
+      A320 = "0x24c00019",
+      A321 = "0x24c00019"
+    },
     toggle = false,
     type = ""
   },
@@ -6122,6 +7524,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -6132,7 +7535,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00041",
+    rectangle = {
+      A320 = "0x24c00041",
+      A321 = "0x24c00041"
+    },
     toggle = false,
     type = ""
   },
@@ -6143,7 +7549,10 @@ return {
       y = "670",
       z = ""
     },
-    rectangle = "0x4000013d",
+    rectangle = {
+      A320 = "0x4000013b",
+      A321 = "0x4000013d"
+    },
     toggle = false,
     type = ""
   },
@@ -6154,7 +7563,10 @@ return {
       y = "637",
       z = ""
     },
-    rectangle = "0x24c0001a",
+    rectangle = {
+      A320 = "0x24c0001a",
+      A321 = "0x24c0001a"
+    },
     toggle = false,
     type = ""
   },
@@ -6165,7 +7577,10 @@ return {
       y = "566",
       z = ""
     },
-    rectangle = "0x24c00046",
+    rectangle = {
+      A320 = "0x24c00046",
+      A321 = "0x24c00046"
+    },
     toggle = false,
     type = ""
   },
@@ -6176,7 +7591,10 @@ return {
       y = "638",
       z = ""
     },
-    rectangle = "0x24c0001b",
+    rectangle = {
+      A320 = "0x24c0001b",
+      A321 = "0x24c0001b"
+    },
     toggle = false,
     type = ""
   },
@@ -6187,7 +7605,10 @@ return {
       y = "670",
       z = ""
     },
-    rectangle = "0x24c00039",
+    rectangle = {
+      A320 = "0x24c00039",
+      A321 = "0x24c00039"
+    },
     toggle = false,
     type = ""
   },
@@ -6198,7 +7619,10 @@ return {
       y = "657",
       z = ""
     },
-    rectangle = "0x4000013e",
+    rectangle = {
+      A320 = "0x4000013e",
+      A321 = "0x4000013e"
+    },
     toggle = false,
     type = ""
   },
@@ -6209,7 +7633,10 @@ return {
       y = "670",
       z = ""
     },
-    rectangle = "0x24c00035",
+    rectangle = {
+      A320 = "0x24c00035",
+      A321 = "0x24c00035"
+    },
     toggle = false,
     type = ""
   },
@@ -6220,7 +7647,10 @@ return {
       y = "564",
       z = ""
     },
-    rectangle = "0x24c0000c",
+    rectangle = {
+      A320 = "0x24c0000c",
+      A321 = "0x24c0000c"
+    },
     toggle = false,
     type = ""
   },
@@ -6231,7 +7661,10 @@ return {
       y = "627",
       z = ""
     },
-    rectangle = "0x24c00045",
+    rectangle = {
+      A320 = "0x24c00045",
+      A321 = "0x24c00045"
+    },
     toggle = false,
     type = ""
   },
@@ -6242,7 +7675,10 @@ return {
       y = "638",
       z = ""
     },
-    rectangle = "0x24c0001c",
+    rectangle = {
+      A320 = "0x24c0001c",
+      A321 = "0x24c0001c"
+    },
     toggle = false,
     type = ""
   },
@@ -6253,7 +7689,10 @@ return {
       y = "622",
       z = ""
     },
-    rectangle = "0x24c0001d",
+    rectangle = {
+      A320 = "0x24c0001d",
+      A321 = "0x24c0001d"
+    },
     toggle = false,
     type = ""
   },
@@ -6264,7 +7703,10 @@ return {
       y = "653",
       z = ""
     },
-    rectangle = "0x24c0003a",
+    rectangle = {
+      A320 = "0x24c0003a",
+      A321 = "0x24c0003a"
+    },
     toggle = false,
     type = ""
   },
@@ -6275,7 +7717,10 @@ return {
       y = "656",
       z = ""
     },
-    rectangle = "0x24c0003c",
+    rectangle = {
+      A320 = "0x24c0003c",
+      A321 = "0x24c0003c"
+    },
     toggle = false,
     type = ""
   },
@@ -6286,7 +7731,10 @@ return {
       y = "622",
       z = ""
     },
-    rectangle = "0x24c0001e",
+    rectangle = {
+      A320 = "0x24c0001e",
+      A321 = "0x24c0001e"
+    },
     toggle = false,
     type = ""
   },
@@ -6297,7 +7745,10 @@ return {
       y = "622",
       z = ""
     },
-    rectangle = "0x24c0001f",
+    rectangle = {
+      A320 = "0x24c0001f",
+      A321 = "0x24c0001f"
+    },
     toggle = false,
     type = ""
   },
@@ -6308,7 +7759,10 @@ return {
       y = "622",
       z = ""
     },
-    rectangle = "0x24c00020",
+    rectangle = {
+      A320 = "0x24c00020",
+      A321 = "0x24c00020"
+    },
     toggle = false,
     type = ""
   },
@@ -6319,7 +7773,10 @@ return {
       y = "670",
       z = ""
     },
-    rectangle = "0x24c00038",
+    rectangle = {
+      A320 = "0x24c00038",
+      A321 = "0x24c00038"
+    },
     toggle = false,
     type = ""
   },
@@ -6330,7 +7787,10 @@ return {
       y = "623",
       z = ""
     },
-    rectangle = "0x24c00021",
+    rectangle = {
+      A320 = "0x24c00021",
+      A321 = "0x24c00021"
+    },
     toggle = false,
     type = ""
   },
@@ -6341,7 +7801,10 @@ return {
       y = "608",
       z = ""
     },
-    rectangle = "0x24c00022",
+    rectangle = {
+      A320 = "0x24c00022",
+      A321 = "0x24c00022"
+    },
     toggle = false,
     type = ""
   },
@@ -6352,7 +7815,10 @@ return {
       y = "608",
       z = ""
     },
-    rectangle = "0x24c00023",
+    rectangle = {
+      A320 = "0x24c00023",
+      A321 = "0x24c00023"
+    },
     toggle = false,
     type = ""
   },
@@ -6363,7 +7829,10 @@ return {
       y = "628",
       z = ""
     },
-    rectangle = "0x24c00042",
+    rectangle = {
+      A320 = "0x24c00042",
+      A321 = "0x24c00042"
+    },
     toggle = false,
     type = ""
   },
@@ -6374,7 +7843,10 @@ return {
       y = "609",
       z = ""
     },
-    rectangle = "0x24c00024",
+    rectangle = {
+      A320 = "0x24c00024",
+      A321 = "0x24c00024"
+    },
     toggle = false,
     type = ""
   },
@@ -6385,7 +7857,10 @@ return {
       y = "656",
       z = ""
     },
-    rectangle = "0x24c0003f",
+    rectangle = {
+      A320 = "0x24c0003f",
+      A321 = "0x24c0003f"
+    },
     toggle = false,
     type = ""
   },
@@ -6396,7 +7871,10 @@ return {
       y = "608",
       z = ""
     },
-    rectangle = "0x24c00025",
+    rectangle = {
+      A320 = "0x24c00025",
+      A321 = "0x24c00025"
+    },
     toggle = false,
     type = ""
   },
@@ -6407,7 +7885,10 @@ return {
       y = "608",
       z = ""
     },
-    rectangle = "0x24c00026",
+    rectangle = {
+      A320 = "0x24c00026",
+      A321 = "0x24c00026"
+    },
     toggle = false,
     type = ""
   },
@@ -6418,7 +7899,10 @@ return {
       y = "566",
       z = ""
     },
-    rectangle = "0x24c00033",
+    rectangle = {
+      A320 = "0x24c00033",
+      A321 = "0x24c00033"
+    },
     toggle = false,
     type = ""
   },
@@ -6429,7 +7913,10 @@ return {
       y = "593",
       z = ""
     },
-    rectangle = "0x24c00027",
+    rectangle = {
+      A320 = "0x24c00027",
+      A321 = "0x24c00027"
+    },
     toggle = false,
     type = ""
   },
@@ -6440,7 +7927,10 @@ return {
       y = "669",
       z = ""
     },
-    rectangle = "0x24c00037",
+    rectangle = {
+      A320 = "0x24c00037",
+      A321 = "0x24c00037"
+    },
     toggle = false,
     type = ""
   },
@@ -6451,7 +7941,10 @@ return {
       y = "564",
       z = ""
     },
-    rectangle = "0x24c00034",
+    rectangle = {
+      A320 = "0x24c00034",
+      A321 = "0x24c00034"
+    },
     toggle = false,
     type = ""
   },
@@ -6462,7 +7955,10 @@ return {
       y = "670",
       z = ""
     },
-    rectangle = "0x24c00036",
+    rectangle = {
+      A320 = "0x24c00036",
+      A321 = "0x24c00036"
+    },
     toggle = false,
     type = ""
   },
@@ -6473,7 +7969,10 @@ return {
       y = "593",
       z = ""
     },
-    rectangle = "0x24c00028",
+    rectangle = {
+      A320 = "0x24c00028",
+      A321 = "0x24c00028"
+    },
     toggle = false,
     type = ""
   },
@@ -6484,7 +7983,10 @@ return {
       y = "593",
       z = ""
     },
-    rectangle = "0x24c00029",
+    rectangle = {
+      A320 = "0x24c00029",
+      A321 = "0x24c00029"
+    },
     toggle = false,
     type = ""
   },
@@ -6495,7 +7997,10 @@ return {
       y = "656",
       z = ""
     },
-    rectangle = "0x24c0003b",
+    rectangle = {
+      A320 = "0x24c0003b",
+      A321 = "0x24c0003b"
+    },
     toggle = false,
     type = ""
   },
@@ -6506,7 +8011,10 @@ return {
       y = "627",
       z = ""
     },
-    rectangle = "0x24c00043",
+    rectangle = {
+      A320 = "0x24c00043",
+      A321 = "0x24c00043"
+    },
     toggle = false,
     type = ""
   },
@@ -6517,7 +8025,10 @@ return {
       y = "594",
       z = ""
     },
-    rectangle = "0x24c0002a",
+    rectangle = {
+      A320 = "0x24c0002a",
+      A321 = "0x24c0002a"
+    },
     toggle = false,
     type = ""
   },
@@ -6528,7 +8039,10 @@ return {
       y = "655",
       z = ""
     },
-    rectangle = "0x24c0003d",
+    rectangle = {
+      A320 = "0x24c0003d",
+      A321 = "0x24c0003d"
+    },
     toggle = false,
     type = ""
   },
@@ -6539,7 +8053,10 @@ return {
       y = "564",
       z = ""
     },
-    rectangle = "0x24c0000d",
+    rectangle = {
+      A320 = "0x24c0000d",
+      A321 = "0x24c0000d"
+    },
     toggle = false,
     type = ""
   },
@@ -6550,7 +8067,10 @@ return {
       y = "565",
       z = ""
     },
-    rectangle = "0x24c00032",
+    rectangle = {
+      A320 = "0x24c00032",
+      A321 = "0x24c00032"
+    },
     toggle = false,
     type = ""
   },
@@ -6561,7 +8081,10 @@ return {
       y = "593",
       z = ""
     },
-    rectangle = "0x24c0002b",
+    rectangle = {
+      A320 = "0x24c0002b",
+      A321 = "0x24c0002b"
+    },
     toggle = false,
     type = ""
   },
@@ -6572,7 +8095,10 @@ return {
       y = "579",
       z = ""
     },
-    rectangle = "0x24c0002c",
+    rectangle = {
+      A320 = "0x24c0002c",
+      A321 = "0x24c0002c"
+    },
     toggle = false,
     type = ""
   },
@@ -6583,7 +8109,10 @@ return {
       y = "641",
       z = ""
     },
-    rectangle = "0x24c00044",
+    rectangle = {
+      A320 = "0x24c00044",
+      A321 = "0x24c00044"
+    },
     toggle = false,
     type = ""
   },
@@ -6594,7 +8123,10 @@ return {
       y = "579",
       z = ""
     },
-    rectangle = "0x24c0002d",
+    rectangle = {
+      A320 = "0x24c0002d",
+      A321 = "0x24c0002d"
+    },
     toggle = false,
     type = ""
   },
@@ -6605,7 +8137,10 @@ return {
       y = "579",
       z = ""
     },
-    rectangle = "0x24c0002e",
+    rectangle = {
+      A320 = "0x24c0002e",
+      A321 = "0x24c0002e"
+    },
     toggle = false,
     type = ""
   },
@@ -6616,7 +8151,10 @@ return {
       y = "579",
       z = ""
     },
-    rectangle = "0x24c0002f",
+    rectangle = {
+      A320 = "0x24c0002f",
+      A321 = "0x24c0002f"
+    },
     toggle = false,
     type = ""
   },
@@ -6627,7 +8165,10 @@ return {
       y = "579",
       z = ""
     },
-    rectangle = "0x24c00030",
+    rectangle = {
+      A320 = "0x24c00030",
+      A321 = "0x24c00030"
+    },
     toggle = false,
     type = ""
   },
@@ -6638,7 +8179,10 @@ return {
       y = "565",
       z = ""
     },
-    rectangle = "0x24c00031",
+    rectangle = {
+      A320 = "0x24c00031",
+      A321 = "0x24c00031"
+    },
     toggle = false,
     type = ""
   },
@@ -6649,6 +8193,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   PED_MCDU_L_LSK_L1 = {
@@ -6658,7 +8203,10 @@ return {
       y = "750",
       z = ""
     },
-    rectangle = "0x24c00000",
+    rectangle = {
+      A320 = "0x24c00000",
+      A321 = "0x24c00000"
+    },
     toggle = false,
     type = ""
   },
@@ -6669,7 +8217,10 @@ return {
       y = "738",
       z = ""
     },
-    rectangle = "0x24c00001",
+    rectangle = {
+      A320 = "0x24c00001",
+      A321 = "0x24c00001"
+    },
     toggle = false,
     type = ""
   },
@@ -6680,7 +8231,10 @@ return {
       y = "726",
       z = ""
     },
-    rectangle = "0x24c00002",
+    rectangle = {
+      A320 = "0x24c00002",
+      A321 = "0x24c00002"
+    },
     toggle = false,
     type = ""
   },
@@ -6691,7 +8245,10 @@ return {
       y = "713",
       z = ""
     },
-    rectangle = "0x24c00003",
+    rectangle = {
+      A320 = "0x24c00003",
+      A321 = "0x24c00003"
+    },
     toggle = false,
     type = ""
   },
@@ -6702,7 +8259,10 @@ return {
       y = "701",
       z = ""
     },
-    rectangle = "0x24c00004",
+    rectangle = {
+      A320 = "0x24c00004",
+      A321 = "0x24c00004"
+    },
     toggle = false,
     type = ""
   },
@@ -6713,7 +8273,10 @@ return {
       y = "688",
       z = ""
     },
-    rectangle = "0x24c00005",
+    rectangle = {
+      A320 = "0x24c00005",
+      A321 = "0x24c00005"
+    },
     toggle = false,
     type = ""
   },
@@ -6724,7 +8287,10 @@ return {
       y = "750",
       z = ""
     },
-    rectangle = "0x24c00006",
+    rectangle = {
+      A320 = "0x24c00006",
+      A321 = "0x24c00006"
+    },
     toggle = false,
     type = ""
   },
@@ -6735,7 +8301,10 @@ return {
       y = "738",
       z = ""
     },
-    rectangle = "0x24c00007",
+    rectangle = {
+      A320 = "0x24c00007",
+      A321 = "0x24c00007"
+    },
     toggle = false,
     type = ""
   },
@@ -6746,7 +8315,10 @@ return {
       y = "726",
       z = ""
     },
-    rectangle = "0x24c00008",
+    rectangle = {
+      A320 = "0x24c00008",
+      A321 = "0x24c00008"
+    },
     toggle = false,
     type = ""
   },
@@ -6757,7 +8329,10 @@ return {
       y = "713",
       z = ""
     },
-    rectangle = "0x24c00009",
+    rectangle = {
+      A320 = "0x24c00009",
+      A321 = "0x24c00009"
+    },
     toggle = false,
     type = ""
   },
@@ -6768,7 +8343,10 @@ return {
       y = "701",
       z = ""
     },
-    rectangle = "0x24c0000a",
+    rectangle = {
+      A320 = "0x24c0000a",
+      A321 = "0x24c0000a"
+    },
     toggle = false,
     type = ""
   },
@@ -6779,7 +8357,10 @@ return {
       y = "688",
       z = ""
     },
-    rectangle = "0x24c0000b",
+    rectangle = {
+      A320 = "0x24c0000b",
+      A321 = "0x24c0000b"
+    },
     toggle = false,
     type = ""
   },
@@ -6790,7 +8371,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0080e",
+    rectangle = {
+      A320 = "0x24c0080e",
+      A321 = "0x24c0080e"
+    },
     toggle = false,
     type = ""
   },
@@ -6801,7 +8385,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0080f",
+    rectangle = {
+      A320 = "0x24c0080f",
+      A321 = "0x24c0080f"
+    },
     toggle = false,
     type = ""
   },
@@ -6812,7 +8399,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00810",
+    rectangle = {
+      A320 = "0x24c00810",
+      A321 = "0x24c00810"
+    },
     toggle = false,
     type = ""
   },
@@ -6823,7 +8413,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00811",
+    rectangle = {
+      A320 = "0x24c00811",
+      A321 = "0x24c00811"
+    },
     toggle = false,
     type = ""
   },
@@ -6834,7 +8427,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00812",
+    rectangle = {
+      A320 = "0x24c00812",
+      A321 = "0x24c00812"
+    },
     toggle = false,
     type = ""
   },
@@ -6845,7 +8441,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00813",
+    rectangle = {
+      A320 = "0x24c00813",
+      A321 = "0x24c00813"
+    },
     toggle = false,
     type = ""
   },
@@ -6856,7 +8455,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00814",
+    rectangle = {
+      A320 = "0x24c00814",
+      A321 = "0x24c00814"
+    },
     toggle = false,
     type = ""
   },
@@ -6867,7 +8469,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00815",
+    rectangle = {
+      A320 = "0x24c00815",
+      A321 = "0x24c00815"
+    },
     toggle = false,
     type = ""
   },
@@ -6878,7 +8483,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00816",
+    rectangle = {
+      A320 = "0x24c00816",
+      A321 = "0x24c00816"
+    },
     toggle = false,
     type = ""
   },
@@ -6889,7 +8497,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00817",
+    rectangle = {
+      A320 = "0x24c00817",
+      A321 = "0x24c00817"
+    },
     toggle = false,
     type = ""
   },
@@ -6900,7 +8511,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00818",
+    rectangle = {
+      A320 = "0x24c00818",
+      A321 = "0x24c00818"
+    },
     toggle = false,
     type = ""
   },
@@ -6911,7 +8525,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00840",
+    rectangle = {
+      A320 = "0x24c00840",
+      A321 = "0x24c00840"
+    },
     toggle = false,
     type = ""
   },
@@ -6922,7 +8539,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0083e",
+    rectangle = {
+      A320 = "0x24c0083e",
+      A321 = "0x24c0083e"
+    },
     toggle = false,
     type = ""
   },
@@ -6933,7 +8553,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00819",
+    rectangle = {
+      A320 = "0x24c00819",
+      A321 = "0x24c00819"
+    },
     toggle = false,
     type = ""
   },
@@ -6944,6 +8567,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     toggle = false,
     type = ""
   },
@@ -6954,7 +8578,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00841",
+    rectangle = {
+      A320 = "0x24c00841",
+      A321 = "0x24c00841"
+    },
     toggle = false,
     type = ""
   },
@@ -6965,7 +8592,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000139",
+    rectangle = {
+      A320 = "0x40000137",
+      A321 = "0x40000139"
+    },
     toggle = false,
     type = ""
   },
@@ -6976,7 +8606,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0081a",
+    rectangle = {
+      A320 = "0x24c0081a",
+      A321 = "0x24c0081a"
+    },
     toggle = false,
     type = ""
   },
@@ -6987,7 +8620,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00846",
+    rectangle = {
+      A320 = "0x24c00846",
+      A321 = "0x24c00846"
+    },
     toggle = false,
     type = ""
   },
@@ -6998,7 +8634,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0081b",
+    rectangle = {
+      A320 = "0x24c0081b",
+      A321 = "0x24c0081b"
+    },
     toggle = false,
     type = ""
   },
@@ -7009,7 +8648,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00839",
+    rectangle = {
+      A320 = "0x24c00839",
+      A321 = "0x24c00839"
+    },
     toggle = false,
     type = ""
   },
@@ -7020,7 +8662,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000013b",
+    rectangle = {
+      A320 = "0x40000139",
+      A321 = "0x4000013b"
+    },
     toggle = false,
     type = ""
   },
@@ -7031,7 +8676,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00835",
+    rectangle = {
+      A320 = "0x24c00835",
+      A321 = "0x24c00835"
+    },
     toggle = false,
     type = ""
   },
@@ -7042,7 +8690,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0080c",
+    rectangle = {
+      A320 = "0x24c0080c",
+      A321 = "0x24c0080c"
+    },
     toggle = false,
     type = ""
   },
@@ -7053,7 +8704,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00845",
+    rectangle = {
+      A320 = "0x24c00845",
+      A321 = "0x24c00845"
+    },
     toggle = false,
     type = ""
   },
@@ -7064,7 +8718,10 @@ return {
       y = 636,
       z = ""
     },
-    rectangle = "0x24c0081c",
+    rectangle = {
+      A320 = "0x24c0081c",
+      A321 = "0x24c0081c"
+    },
     toggle = false,
     type = ""
   },
@@ -7075,7 +8732,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0081d",
+    rectangle = {
+      A320 = "0x24c0081d",
+      A321 = "0x24c0081d"
+    },
     toggle = false,
     type = ""
   },
@@ -7086,7 +8746,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0083a",
+    rectangle = {
+      A320 = "0x24c0083a",
+      A321 = "0x24c0083a"
+    },
     toggle = false,
     type = ""
   },
@@ -7097,7 +8760,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0083c",
+    rectangle = {
+      A320 = "0x24c0083c",
+      A321 = "0x24c0083c"
+    },
     toggle = false,
     type = ""
   },
@@ -7108,7 +8774,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0081e",
+    rectangle = {
+      A320 = "0x24c0081e",
+      A321 = "0x24c0081e"
+    },
     toggle = false,
     type = ""
   },
@@ -7119,7 +8788,10 @@ return {
       y = 622,
       z = ""
     },
-    rectangle = "0x24c0081f",
+    rectangle = {
+      A320 = "0x24c0081f",
+      A321 = "0x24c0081f"
+    },
     toggle = false,
     type = ""
   },
@@ -7130,7 +8802,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00820",
+    rectangle = {
+      A320 = "0x24c00820",
+      A321 = "0x24c00820"
+    },
     toggle = false,
     type = ""
   },
@@ -7141,7 +8816,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00838",
+    rectangle = {
+      A320 = "0x24c00838",
+      A321 = "0x24c00838"
+    },
     toggle = false,
     type = ""
   },
@@ -7152,7 +8830,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00821",
+    rectangle = {
+      A320 = "0x24c00821",
+      A321 = "0x24c00821"
+    },
     toggle = false,
     type = ""
   },
@@ -7163,7 +8844,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00822",
+    rectangle = {
+      A320 = "0x24c00822",
+      A321 = "0x24c00822"
+    },
     toggle = false,
     type = ""
   },
@@ -7174,7 +8858,10 @@ return {
       y = 608,
       z = ""
     },
-    rectangle = "0x24c00823",
+    rectangle = {
+      A320 = "0x24c00823",
+      A321 = "0x24c00823"
+    },
     toggle = false,
     type = ""
   },
@@ -7185,7 +8872,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00842",
+    rectangle = {
+      A320 = "0x24c00842",
+      A321 = "0x24c00842"
+    },
     toggle = false,
     type = ""
   },
@@ -7196,7 +8886,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00824",
+    rectangle = {
+      A320 = "0x24c00824",
+      A321 = "0x24c00824"
+    },
     toggle = false,
     type = ""
   },
@@ -7207,7 +8900,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0083f",
+    rectangle = {
+      A320 = "0x24c0083f",
+      A321 = "0x24c0083f"
+    },
     toggle = false,
     type = ""
   },
@@ -7218,7 +8914,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00825",
+    rectangle = {
+      A320 = "0x24c00825",
+      A321 = "0x24c00825"
+    },
     toggle = false,
     type = ""
   },
@@ -7229,7 +8928,10 @@ return {
       y = 608,
       z = ""
     },
-    rectangle = "0x24c00826",
+    rectangle = {
+      A320 = "0x24c00826",
+      A321 = "0x24c00826"
+    },
     toggle = false,
     type = ""
   },
@@ -7240,7 +8942,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00833",
+    rectangle = {
+      A320 = "0x24c00833",
+      A321 = "0x24c00833"
+    },
     toggle = false,
     type = ""
   },
@@ -7251,7 +8956,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00827",
+    rectangle = {
+      A320 = "0x24c00827",
+      A321 = "0x24c00827"
+    },
     toggle = false,
     type = ""
   },
@@ -7262,7 +8970,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00837",
+    rectangle = {
+      A320 = "0x24c00837",
+      A321 = "0x24c00837"
+    },
     toggle = false,
     type = ""
   },
@@ -7273,7 +8984,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00834",
+    rectangle = {
+      A320 = "0x24c00834",
+      A321 = "0x24c00834"
+    },
     toggle = false,
     type = ""
   },
@@ -7284,7 +8998,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00836",
+    rectangle = {
+      A320 = "0x24c00836",
+      A321 = "0x24c00836"
+    },
     toggle = false,
     type = ""
   },
@@ -7295,7 +9012,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00828",
+    rectangle = {
+      A320 = "0x24c00828",
+      A321 = "0x24c00828"
+    },
     toggle = false,
     type = ""
   },
@@ -7306,7 +9026,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00829",
+    rectangle = {
+      A320 = "0x24c00829",
+      A321 = "0x24c00829"
+    },
     toggle = false,
     type = ""
   },
@@ -7317,7 +9040,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0083b",
+    rectangle = {
+      A320 = "0x24c0083b",
+      A321 = "0x24c0083b"
+    },
     toggle = false,
     type = ""
   },
@@ -7328,7 +9054,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00843",
+    rectangle = {
+      A320 = "0x24c00843",
+      A321 = "0x24c00843"
+    },
     toggle = false,
     type = ""
   },
@@ -7339,7 +9068,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0082a",
+    rectangle = {
+      A320 = "0x24c0082a",
+      A321 = "0x24c0082a"
+    },
     toggle = false,
     type = ""
   },
@@ -7350,7 +9082,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0083d",
+    rectangle = {
+      A320 = "0x24c0083d",
+      A321 = "0x24c0083d"
+    },
     toggle = false,
     type = ""
   },
@@ -7361,7 +9096,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0080d",
+    rectangle = {
+      A320 = "0x24c0080d",
+      A321 = "0x24c0080d"
+    },
     toggle = false,
     type = ""
   },
@@ -7372,7 +9110,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00832",
+    rectangle = {
+      A320 = "0x24c00832",
+      A321 = "0x24c00832"
+    },
     toggle = false,
     type = ""
   },
@@ -7383,7 +9124,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0082b",
+    rectangle = {
+      A320 = "0x24c0082b",
+      A321 = "0x24c0082b"
+    },
     toggle = false,
     type = ""
   },
@@ -7394,7 +9138,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0082c",
+    rectangle = {
+      A320 = "0x24c0082c",
+      A321 = "0x24c0082c"
+    },
     toggle = false,
     type = ""
   },
@@ -7405,7 +9152,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00844",
+    rectangle = {
+      A320 = "0x24c00844",
+      A321 = "0x24c00844"
+    },
     toggle = false,
     type = ""
   },
@@ -7416,7 +9166,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0082d",
+    rectangle = {
+      A320 = "0x24c0082d",
+      A321 = "0x24c0082d"
+    },
     toggle = false,
     type = ""
   },
@@ -7427,7 +9180,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0082e",
+    rectangle = {
+      A320 = "0x24c0082e",
+      A321 = "0x24c0082e"
+    },
     toggle = false,
     type = ""
   },
@@ -7438,7 +9194,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0082f",
+    rectangle = {
+      A320 = "0x24c0082f",
+      A321 = "0x24c0082f"
+    },
     toggle = false,
     type = ""
   },
@@ -7449,7 +9208,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00830",
+    rectangle = {
+      A320 = "0x24c00830",
+      A321 = "0x24c00830"
+    },
     toggle = false,
     type = ""
   },
@@ -7460,7 +9222,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00831",
+    rectangle = {
+      A320 = "0x24c00831",
+      A321 = "0x24c00831"
+    },
     toggle = false,
     type = ""
   },
@@ -7471,6 +9236,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   PED_MCDU_R_LSK_L1 = {
@@ -7480,7 +9246,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00800",
+    rectangle = {
+      A320 = "0x24c00800",
+      A321 = "0x24c00800"
+    },
     toggle = false,
     type = ""
   },
@@ -7491,7 +9260,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00801",
+    rectangle = {
+      A320 = "0x24c00801",
+      A321 = "0x24c00801"
+    },
     toggle = false,
     type = ""
   },
@@ -7502,7 +9274,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00802",
+    rectangle = {
+      A320 = "0x24c00802",
+      A321 = "0x24c00802"
+    },
     toggle = false,
     type = ""
   },
@@ -7513,7 +9288,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00803",
+    rectangle = {
+      A320 = "0x24c00803",
+      A321 = "0x24c00803"
+    },
     toggle = false,
     type = ""
   },
@@ -7524,7 +9302,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00804",
+    rectangle = {
+      A320 = "0x24c00804",
+      A321 = "0x24c00804"
+    },
     toggle = false,
     type = ""
   },
@@ -7535,7 +9316,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00805",
+    rectangle = {
+      A320 = "0x24c00805",
+      A321 = "0x24c00805"
+    },
     toggle = false,
     type = ""
   },
@@ -7546,7 +9330,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00806",
+    rectangle = {
+      A320 = "0x24c00806",
+      A321 = "0x24c00806"
+    },
     toggle = false,
     type = ""
   },
@@ -7557,7 +9344,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00807",
+    rectangle = {
+      A320 = "0x24c00807",
+      A321 = "0x24c00807"
+    },
     toggle = false,
     type = ""
   },
@@ -7568,7 +9358,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00808",
+    rectangle = {
+      A320 = "0x24c00808",
+      A321 = "0x24c00808"
+    },
     toggle = false,
     type = ""
   },
@@ -7579,7 +9372,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c00809",
+    rectangle = {
+      A320 = "0x24c00809",
+      A321 = "0x24c00809"
+    },
     toggle = false,
     type = ""
   },
@@ -7590,7 +9386,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0080a",
+    rectangle = {
+      A320 = "0x24c0080a",
+      A321 = "0x24c0080a"
+    },
     toggle = false,
     type = ""
   },
@@ -7601,7 +9400,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x24c0080b",
+    rectangle = {
+      A320 = "0x24c0080b",
+      A321 = "0x24c0080b"
+    },
     toggle = false,
     type = ""
   },
@@ -7616,7 +9418,10 @@ return {
       off = 0,
       on = 100
     },
-    rectangle = "0x40000147",
+    rectangle = {
+      A320 = "0x40000145",
+      A321 = "0x40000147"
+    },
     type = ""
   },
   PED_RADIO_1_ADF_Button = {
@@ -7627,7 +9432,10 @@ return {
       y = "476",
       z = ""
     },
-    rectangle = "0x25c0000a",
+    rectangle = {
+      A320 = "0x25c0000a",
+      A321 = "0x25c0000a"
+    },
     toggle = false,
     type = ""
   },
@@ -7639,7 +9447,10 @@ return {
       y = "499",
       z = ""
     },
-    rectangle = "0x25c00005",
+    rectangle = {
+      A320 = "0x25c00005",
+      A321 = "0x25c00005"
+    },
     toggle = false,
     type = ""
   },
@@ -7651,7 +9462,10 @@ return {
       y = "476",
       z = ""
     },
-    rectangle = "0x25c0000b",
+    rectangle = {
+      A320 = "0x25c0000b",
+      A321 = "0x25c0000b"
+    },
     toggle = false,
     type = ""
   },
@@ -7663,7 +9477,10 @@ return {
       y = "498",
       z = ""
     },
-    rectangle = "0x25c00003",
+    rectangle = {
+      A320 = "0x25c00003",
+      A321 = "0x25c00003"
+    },
     toggle = false,
     type = ""
   },
@@ -7675,7 +9492,10 @@ return {
       y = "498",
       z = ""
     },
-    rectangle = "0x25c00004",
+    rectangle = {
+      A320 = "0x25c00004",
+      A321 = "0x25c00004"
+    },
     toggle = false,
     type = ""
   },
@@ -7687,6 +9507,7 @@ return {
       z = ""
     },
     range = 359,
+    rectangle = {},
     type = ""
   },
   PED_RADIO_1_LOAD_Button = {
@@ -7697,7 +9518,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00009",
+    rectangle = {
+      A321 = "0x25c00009"
+    },
     toggle = false,
     type = ""
   },
@@ -7709,7 +9532,10 @@ return {
       y = "476",
       z = ""
     },
-    rectangle = "0x25c00008",
+    rectangle = {
+      A320 = "0x25c00008",
+      A321 = "0x25c00008"
+    },
     toggle = false,
     type = ""
   },
@@ -7721,7 +9547,10 @@ return {
       y = "476",
       z = ""
     },
-    rectangle = "0x25c00006",
+    rectangle = {
+      A320 = "0x25c00006",
+      A321 = "0x25c00006"
+    },
     toggle = false,
     type = ""
   },
@@ -7733,7 +9562,10 @@ return {
       y = "476",
       z = ""
     },
-    rectangle = "0x4000028d",
+    rectangle = {
+      A320 = "0x40000199",
+      A321 = "0x4000028d"
+    },
     toggle = false,
     type = ""
   },
@@ -7748,7 +9580,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x4000014a",
+    rectangle = {
+      A320 = "0x40000148",
+      A321 = "0x4000014a"
+    },
     type = ""
   },
   PED_RADIO_1_Outer_Knob = {
@@ -7759,6 +9594,7 @@ return {
       z = ""
     },
     range = 359,
+    rectangle = {},
     type = ""
   },
   PED_RADIO_1_VHF1_Button = {
@@ -7769,7 +9605,10 @@ return {
       y = "511",
       z = ""
     },
-    rectangle = "0x25c00000",
+    rectangle = {
+      A320 = "0x25c00000",
+      A321 = "0x25c00000"
+    },
     toggle = false,
     type = ""
   },
@@ -7781,7 +9620,10 @@ return {
       y = "511",
       z = ""
     },
-    rectangle = "0x25c00001",
+    rectangle = {
+      A320 = "0x25c00001",
+      A321 = "0x25c00001"
+    },
     toggle = false,
     type = ""
   },
@@ -7793,7 +9635,10 @@ return {
       y = "511",
       z = ""
     },
-    rectangle = "0x25c00002",
+    rectangle = {
+      A320 = "0x25c00002",
+      A321 = "0x25c00002"
+    },
     toggle = false,
     type = ""
   },
@@ -7805,7 +9650,9 @@ return {
       y = "477",
       z = ""
     },
-    rectangle = "0x25c00007",
+    rectangle = {
+      A321 = "0x25c00007"
+    },
     toggle = false,
     type = ""
   },
@@ -7817,7 +9664,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c0080a",
+    rectangle = {
+      A320 = "0x25c0080a",
+      A321 = "0x25c0080a"
+    },
     toggle = false,
     type = ""
   },
@@ -7829,7 +9679,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00805",
+    rectangle = {
+      A320 = "0x25c00805",
+      A321 = "0x25c00805"
+    },
     toggle = false,
     type = ""
   },
@@ -7841,7 +9694,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c0080b",
+    rectangle = {
+      A320 = "0x25c0080b",
+      A321 = "0x25c0080b"
+    },
     toggle = false,
     type = ""
   },
@@ -7853,7 +9709,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00803",
+    rectangle = {
+      A320 = "0x25c00803",
+      A321 = "0x25c00803"
+    },
     toggle = false,
     type = ""
   },
@@ -7865,7 +9724,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00804",
+    rectangle = {
+      A320 = "0x25c00804",
+      A321 = "0x25c00804"
+    },
     toggle = false,
     type = ""
   },
@@ -7877,6 +9739,7 @@ return {
       z = ""
     },
     range = 359,
+    rectangle = {},
     type = ""
   },
   PED_RADIO_2_LOAD_Button = {
@@ -7887,7 +9750,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00809",
+    rectangle = {
+      A321 = "0x25c00809"
+    },
     toggle = false,
     type = ""
   },
@@ -7899,7 +9764,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00808",
+    rectangle = {
+      A320 = "0x25c00808",
+      A321 = "0x25c00808"
+    },
     toggle = false,
     type = ""
   },
@@ -7911,7 +9779,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00806",
+    rectangle = {
+      A320 = "0x25c00806",
+      A321 = "0x25c00806"
+    },
     toggle = false,
     type = ""
   },
@@ -7923,7 +9794,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x400001c4",
+    rectangle = {
+      A320 = "0x400001c5",
+      A321 = "0x400001c4"
+    },
     toggle = false,
     type = ""
   },
@@ -7938,7 +9812,10 @@ return {
       off = 0,
       on = 10
     },
-    rectangle = "0x40000167",
+    rectangle = {
+      A320 = "0x40000165",
+      A321 = "0x40000167"
+    },
     type = ""
   },
   PED_RADIO_2_Outer_Knob = {
@@ -7949,6 +9826,7 @@ return {
       z = ""
     },
     range = 359,
+    rectangle = {},
     type = ""
   },
   PED_RADIO_2_VHF1_Button = {
@@ -7959,7 +9837,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00800",
+    rectangle = {
+      A320 = "0x25c00800",
+      A321 = "0x25c00800"
+    },
     toggle = false,
     type = ""
   },
@@ -7971,7 +9852,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00801",
+    rectangle = {
+      A320 = "0x25c00801",
+      A321 = "0x25c00801"
+    },
     toggle = false,
     type = ""
   },
@@ -7983,7 +9867,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00802",
+    rectangle = {
+      A320 = "0x25c00802",
+      A321 = "0x25c00802"
+    },
     toggle = false,
     type = ""
   },
@@ -7995,7 +9882,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x25c00807",
+    rectangle = {
+      A320 = "0x25c00807",
+      A321 = "0x25c00807"
+    },
     toggle = false,
     type = ""
   },
@@ -8006,7 +9896,10 @@ return {
       y = "172",
       z = ""
     },
-    rectangle = "0x40000146",
+    rectangle = {
+      A320 = "0x40000144",
+      A321 = "0x40000146"
+    },
     toggle = false,
     type = ""
   },
@@ -8017,7 +9910,10 @@ return {
       y = "177",
       z = ""
     },
-    rectangle = "0x40000145",
+    rectangle = {
+      A320 = "0x40000143",
+      A321 = "0x40000145"
+    },
     toggle = false,
     type = ""
   },
@@ -8036,6 +9932,9 @@ return {
       ARM = 0,
       RET = 10
     },
+    rectangle = {
+      A320 = "0x40000147"
+    },
     type = ""
   },
   PED_SWITCH_AIR_DATA_Knob = {
@@ -8050,7 +9949,10 @@ return {
       fo_3 = 20,
       norm = 10
     },
-    rectangle = "0x4000015f",
+    rectangle = {
+      A320 = "0x4000015f",
+      A321 = "0x4000015f"
+    },
     type = ""
   },
   PED_SWITCH_ATT_HDG_Knob = {
@@ -8065,7 +9967,10 @@ return {
       fo_3 = 20,
       norm = 10
     },
-    rectangle = "0x40000165",
+    rectangle = {
+      A320 = "0x4000015d",
+      A321 = "0x40000165"
+    },
     type = ""
   },
   PED_SWITCH_ECAM_ND_Knob = {
@@ -8080,7 +9985,10 @@ return {
       fo_3 = 20,
       norm = 10
     },
-    rectangle = "0x40000163",
+    rectangle = {
+      A320 = "0x40000163",
+      A321 = "0x40000163"
+    },
     type = ""
   },
   PED_SWITCH_EIS_DMC_Knob = {
@@ -8095,7 +10003,10 @@ return {
       fo_3 = 20,
       norm = 10
     },
-    rectangle = "0x40000161",
+    rectangle = {
+      A320 = "0x40000161",
+      A321 = "0x40000161"
+    },
     type = ""
   },
   PED_WXRadar_GCS_Switch = {
@@ -8109,7 +10020,10 @@ return {
       auto = 10,
       off = 0
     },
-    rectangle = "0x40000190",
+    rectangle = {
+      A320 = "0x4000018e",
+      A321 = "0x40000190"
+    },
     type = ""
   },
   PED_WXRadar_Gain_Knob = {
@@ -8120,7 +10034,10 @@ return {
       z = ""
     },
     range = 270,
-    rectangle = "0x4000015b",
+    rectangle = {
+      A320 = "0x40000159",
+      A321 = "0x4000015b"
+    },
     type = ""
   },
   PED_WXRadar_Mode_Switch = {
@@ -8136,7 +10053,10 @@ return {
       wx = 0,
       wxt = 10
     },
-    rectangle = "0x4000015c",
+    rectangle = {
+      A320 = "0x4000015a",
+      A321 = "0x4000015c"
+    },
     type = ""
   },
   PED_WXRadar_Multiscan_Switch = {
@@ -8150,7 +10070,10 @@ return {
       auto = 10,
       man = 0
     },
-    rectangle = "0x40000191",
+    rectangle = {
+      A320 = "0x4000018f",
+      A321 = "0x40000191"
+    },
     type = ""
   },
   PED_WXRadar_PWS_Switch = {
@@ -8164,7 +10087,10 @@ return {
       auto = 10,
       off = 0
     },
-    rectangle = "0x40000151",
+    rectangle = {
+      A320 = "0x4000014f",
+      A321 = "0x40000151"
+    },
     type = ""
   },
   PED_WXRadar_SYS_Switch = {
@@ -8179,7 +10105,10 @@ return {
       ["2"] = 20,
       off = 10
     },
-    rectangle = "0x4000018f",
+    rectangle = {
+      A320 = "0x4000018d",
+      A321 = "0x4000018f"
+    },
     type = ""
   },
   PED_WXRadar_Tilt_Knob = {
@@ -8190,7 +10119,10 @@ return {
       z = ""
     },
     range = 240,
-    rectangle = "0x4000015e",
+    rectangle = {
+      A320 = "0x4000015c",
+      A321 = "0x4000015e"
+    },
     type = ""
   },
   SEAT_ARMREST_L_CPT = {
@@ -8200,7 +10132,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000005a",
+    rectangle = {
+      A320 = "0x40000058",
+      A321 = "0x4000005a"
+    },
     type = ""
   },
   SEAT_ARMREST_L_FO = {
@@ -8210,7 +10145,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000006e",
+    rectangle = {
+      A320 = "0x4000006e",
+      A321 = "0x4000006e"
+    },
     type = ""
   },
   SEAT_ARMREST_R_CPT = {
@@ -8220,7 +10158,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000057",
+    rectangle = {
+      A320 = "0x40000057",
+      A321 = "0x40000057"
+    },
     type = ""
   },
   SEAT_ARMREST_R_FO = {
@@ -8230,7 +10171,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000006b",
+    rectangle = {
+      A320 = "0x40000069",
+      A321 = "0x4000006b"
+    },
     type = ""
   },
   SEAT_CPT = {
@@ -8240,7 +10184,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000005c",
+    rectangle = {
+      A320 = "0x4000005c",
+      A321 = "0x4000005c"
+    },
     type = ""
   },
   SEAT_FO = {
@@ -8250,7 +10197,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000070",
+    rectangle = {
+      A320 = "0x40000071",
+      A321 = "0x40000070"
+    },
     type = ""
   },
   SEAT_JUMP_CPT = {
@@ -8260,6 +10210,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   SEAT_JUMP_FO = {
@@ -8269,6 +10220,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   SEAT_LFRT_SW_FO = {
@@ -8278,6 +10230,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   SEAT_UPDN_CPT = {
@@ -8287,6 +10240,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   SEAT_UPDN_FO = {
@@ -8296,6 +10250,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   SEAT_UPDN_SW_FO = {
@@ -8305,6 +10260,7 @@ return {
       y = "",
       z = ""
     },
+    rectangle = {},
     type = ""
   },
   TABLE_CPT = {
@@ -8314,7 +10270,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000063",
+    rectangle = {
+      A320 = "0x40000063",
+      A321 = "0x40000063"
+    },
     type = ""
   },
   TABLE_FO = {
@@ -8324,7 +10283,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000064",
+    rectangle = {
+      A320 = "0x40000064",
+      A321 = "0x40000064"
+    },
     type = ""
   },
   WINDOW_CPT = {
@@ -8334,7 +10296,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000025b",
+    rectangle = {
+      A320 = "0x40000260",
+      A321 = "0x4000025b"
+    },
     type = ""
   },
   WINDOW_CPT_LOCK = {
@@ -8344,7 +10309,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000025c",
+    rectangle = {
+      A320 = "0x4000004b",
+      A321 = "0x4000025c"
+    },
     type = ""
   },
   WINDOW_CPT_SAFETY = {
@@ -8354,7 +10322,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x4000004b",
+    rectangle = {
+      A320 = "0x4000004b",
+      A321 = "0x4000004b"
+    },
     type = ""
   },
   WINDOW_ChartLt_CP_Button = {
@@ -8364,7 +10335,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000255",
+    rectangle = {
+      A320 = "0x40000255",
+      A321 = "0x40000255"
+    },
     toggle = false,
     type = ""
   },
@@ -8376,7 +10350,10 @@ return {
       z = ""
     },
     range = 360,
-    rectangle = "0x40000258",
+    rectangle = {
+      A320 = "0x40000258",
+      A321 = "0x40000258"
+    },
     type = ""
   },
   WINDOW_ChartLt_FO_Button = {
@@ -8386,7 +10363,9 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000261",
+    rectangle = {
+      A321 = "0x40000261"
+    },
     toggle = false,
     type = ""
   },
@@ -8398,7 +10377,9 @@ return {
       z = ""
     },
     range = 360,
-    rectangle = "0x40000262",
+    rectangle = {
+      A321 = "0x40000262"
+    },
     type = ""
   },
   WINDOW_FO = {
@@ -8408,7 +10389,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000264",
+    rectangle = {
+      A320 = "0x4000026d",
+      A321 = "0x40000264"
+    },
     type = ""
   },
   WINDOW_FO_LOCK = {
@@ -8418,7 +10402,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000264",
+    rectangle = {
+      A320 = "0x40000240",
+      A321 = "0x40000264"
+    },
     type = ""
   },
   WINDOW_FO_SAFETY = {
@@ -8428,7 +10415,10 @@ return {
       y = "",
       z = ""
     },
-    rectangle = "0x40000240",
+    rectangle = {
+      A320 = "0x40000240",
+      A321 = "0x40000240"
+    },
     type = ""
   }
 }

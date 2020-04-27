@@ -886,11 +886,17 @@ local lightVarList = {
   VC_PED_ECP_WHEEL_Dim_Lt = 0,
 }
 
-package.path = SLNDIR .. "\\Modules\\?.lua;" .. package.path
-local serpent = require "FSL2Lua.libs.serpent"
-local file = require "FSL2Lua.FSL2Lua.file"
+local acType
 
-local FSL = require "FSL2Lua.FSL2Lua.FSL_old"
+if getLvar("AIRCRAFT_A319") == 1 then acType = "A320"
+elseif getLvar("AIRCRAFT_A320") == 1 then acType = "A320"
+elseif getLvar("AIRCRAFT_A321") == 1 then acType = "A321" end
+
+package.path = currentDir .. "?.lua"
+
+local serpent = require "serpent"
+local file = require "file"
+local FSL = require "FSL_old"
 
 for controlName in pairs(LVarList) do
   local newName = controlName:sub(4)
@@ -901,6 +907,7 @@ for controlName in pairs(LVarList) do
   else
     controlTable = FSL[newName]
   end
+  controlTable.rectangle = controlTable.rectangle or {}
   for lightVarName in pairs(lightVarList) do
     local lightVarSubStr
     if lightVarName:find("Brt") or lightVarName:find("Dim") then
@@ -941,7 +948,7 @@ function onMacroDetected(rectangle, param)
   end
   local timeout = getElapsedTime() + 1000
   local found = false
-  print "WAIT UNTIL READY"
+  print("WAIT UNTIL READY")
   repeat
     for _, control in pairs(FSL) do
       if LVarList[control.LVar] then
@@ -950,9 +957,10 @@ function onMacroDetected(rectangle, param)
         if currPos ~= prevPos and not ignore[control] then
           ignore[control] = true
           found = true
-          control.rectangle = rectangle
-          print "--------------------------"
-          print("LVar: " .. control.LVar .. ",\trectangle: " .. rectangle)
+          control.rectangle[acType] = rectangle
+          print "------------------------------------------------------------------------"
+          local msg = "LVar: " .. control.LVar .. ",\trectangle: " .. "0x" .. string.format("%x", tostring(rectangle)):lower()
+          print(msg)
         end
         LVarList[control.LVar] = currPos
       end
@@ -967,14 +975,23 @@ function saveResults()
     if control.type == nil then
       control.type = ""
     end
-    if control.rectangle then
-      control.rectangle = "0x" .. string.format("%x", tostring(control.rectangle)):lower()
+    if control.rectangle[acType] then
+      control.rectangle[acType] = "0x" .. string.format("%x", tostring(control.rectangle[acType])):lower()
     end
   end
-  file.write(SLNDIR .. "Modules\\FSL2Lua\\FSL2Lua\\FSL.lua", "return " .. serpent.block(FSL, {comment = false, sparse = false}),"w")
-  --file.write(SLNDIR .. "Modules\\FSL2Lua\\FSL2Lua\\FSL.json", json.stringify(FSL),"w")
+  file.write(currentDir .. "FSL.lua", "return " .. serpent.block(FSL, {comment = false, sparse = false}),"w")
 end
 
 for LVar in pairs(LVarList) do
   LVarList[LVar] = getLvar(LVar)
 end
+
+print "--------------------------------------------------------------------------------------------"
+print "--------------------------------------------------------------------------------------------"
+print "Hello from FSLSerialize!"
+print "Wait until FSLabs has finished moving the switches before you begin."
+print "Always wait for the READY message in the console before interacting with the next switch."
+print "When you're done, grab FSL.lua from the add-on's directory and place it into FSUIPC Directory\\FSL2Lua\\FSL2Lua\\"
+print "Overwrite the original file in there."
+print "--------------------------------------------------------------------------------------------"
+print "--------------------------------------------------------------------------------------------"

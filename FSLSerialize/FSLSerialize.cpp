@@ -34,6 +34,12 @@ GAUGESIMPORT ImportTable = {
 };
 PPANELS Panels = NULL;
 
+enum EVENT_ID {
+	EVENT_MENU,
+	EVENT_MENU_START,
+	EVENT_MENU_SAVE
+};
+
 struct MACRO {
 	int rectangle;
 	int param;
@@ -83,24 +89,48 @@ int elapsedTime(lua_State* L)
 	return 1;
 }
 
+void displayText(const char* msg)
+{
+	char buff[1024];
+	strcpy(buff, msg);
+	SimConnect_Text(hSimConnect, SIMCONNECT_TEXT_TYPE_MESSAGE_WINDOW, 0, 0, sizeof(buff), (void*)buff);
+}
+
+int displayTextFromLua(lua_State* L)
+{
+	displayText(lua_tostring(L, 1));
+	return 0;
+}
+
+void checkLuaResult(lua_State* L, int result)
+{
+	if (result != 0)
+		std::cout << lua_tostring(L, 1) << std::endl;
+}
+
 void luaThread()
 {
+
+	char lpFilename[MAX_PATH];
+	HMODULE hMod = GetModuleHandleA("FSLSerialize");
+	GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
+	std::string modulePath = lpFilename;
+	std::string currentDir = modulePath.substr(0, modulePath.find("FSLSerialize.dll"));
 
 	L = luaL_newstate();
 
 	luaL_openlibs(L);
 
-	std::string slnDir = "C:\\Users\\Peter\\source\\repos\\FSLabs Copilot\\";
-
-	lua_pushstring(L, slnDir.c_str());
-	lua_setglobal(L, "SLNDIR");
-
+	lua_pushstring(L, currentDir.c_str());
+	lua_setglobal(L, "currentDir");
+	lua_pushcfunction(L, displayTextFromLua);
+	lua_setglobal(L, "displayText");
 	lua_pushcfunction(L, getLvar);
 	lua_setglobal(L, "getLvar");
 	lua_pushcfunction(L, elapsedTime);
 	lua_setglobal(L, "getElapsedTime");
 
-	luaL_dofile(L, (slnDir + "FSLSerialize\\FSLSerialize.lua").c_str());
+	checkLuaResult(L, luaL_dofile(L, (currentDir + "FSLSerialize.lua").c_str()));
 
 	while (!closeThread) {
 		std::unique_lock<std::mutex> lock(simMtx);
@@ -114,7 +144,7 @@ void luaThread()
 			lua_getglobal(L, "onMacroDetected");
 			lua_pushnumber(L, rect);
 			lua_pushnumber(L, param);
-			lua_pcall(L, 2, 0, 0);
+			checkLuaResult(L, lua_pcall(L, 2, 0, 0));
 		}
 	}
 
@@ -142,23 +172,22 @@ void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pCon
 			SIMCONNECT_RECV_EVENT* evt = (SIMCONNECT_RECV_EVENT*)pData;
 			switch (evt->uEventID) 
 			{
-				case 0:
-					switch (evt->dwData) 
-					{
-						case 0: 
-						{
-							std::lock_guard<std::mutex> lock(luaMtx);
-							restartLuaThread();
-							break;
-						}
-						case 1: 
-						{
-							std::lock_guard<std::mutex> lock(luaMtx);
-							lua_getglobal(L, "saveResults");
-							lua_pcall(L, 0, 0, 0);
-							break;
-						}
-					}
+
+				case EVENT_MENU_START:
+				{
+					std::lock_guard<std::mutex> lock(luaMtx);
+					restartLuaThread();
+					break;
+				}
+
+				case EVENT_MENU_SAVE:
+				{
+					std::lock_guard<std::mutex> lock(luaMtx);
+					lua_getglobal(L, "saveResults");
+					checkLuaResult(L, lua_pcall(L, 0, 0, 0));
+					break;
+				}
+
 			}
 		}
 	}
@@ -169,25 +198,25 @@ void DLLStart(__in __notnull IPdk* pPdk)
 
 	if (pPdk != nullptr) {
 		PdkServices::Init(pPdk);
-		std::cout << "PDK initialized" << std::endl;
+		//std::cout << "PDK initialized" << std::endl;
 	} else {
-		std::cout << "PDK not found" << std::endl;
+		std::cout << "FSLSerialize: PDK not found" << std::endl;
 	}
 
 	PdkServices::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(new MouseRectListenerCallback);
 
 	if (Panels != NULL) {
-		std::cout << "Panels are here" << std::endl;
 		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
+	} else {
+		std::cout << "FSLSerialize: Panels not found" << std::endl;
 	}
 
 	if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FSLSerialize", NULL, 0, NULL, 0))) {
 
 		HRESULT hr;
-		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, 0, "SMOKE_ON");
-		hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, 0);
-
-		hr = SimConnect_SetNotificationGroupPriority(hSimConnect, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+		hr = SimConnect_MenuAddItem(hSimConnect, "FSLSerialize", EVENT_MENU, 0);
+		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Start lua", EVENT_MENU_START, 0);
+		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Save the work", EVENT_MENU_SAVE, 0);
 
 		hr = SimConnect_CallDispatch(hSimConnect, MyDispatchProcDLL, NULL);
 
