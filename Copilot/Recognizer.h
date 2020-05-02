@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <atomic>
+#include <sol/sol.hpp>
 
 struct RecoResult {
 	std::string phrase;
@@ -33,10 +34,14 @@ private:
 public:
 	Recognizer();
 	~Recognizer();
-	DWORD addRule(std::vector<std::string> phrases, float confidence);
+	DWORD addRule(const std::vector<std::string> phrases, float confidence);
 	void ignoreRule(DWORD ruleID);
 	void activateRule(DWORD ruleID);
 	void deactivateRule(DWORD ruleID);
+	sol::as_table_t<std::vector<std::string>> getPhrases(DWORD ruleID);
+	void addPhrase(const std::string& phrase, DWORD ruleID);
+	void removePhrase(const std::string& phrase, DWORD ruleID);
+	void setConfidence(float confidence, DWORD ruleID);
 	void resetGrammar();
 	std::optional<RecoResult> getResult();
 };

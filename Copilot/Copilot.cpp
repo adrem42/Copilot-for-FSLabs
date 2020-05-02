@@ -139,6 +139,11 @@ std::optional<std::string> initLua(sol::this_state ts)
 	RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;
 	RecognizerType["resetGrammar"] = &Recognizer::resetGrammar;
 
+	RecognizerType["addPhrase"] = &Recognizer::addPhrase;
+	RecognizerType["removePhrase"] = &Recognizer::removePhrase;
+	RecognizerType["setConfidence"] = &Recognizer::setConfidence;
+	RecognizerType["getPhrases"] = &Recognizer::getPhrases;
+
 	sol::usertype<McduWatcher> McduWatcherType = lua.new_usertype<McduWatcher>("McduWatcher");
 	McduWatcherType["getVar"] = &McduWatcher::getVar;
 	McduWatcherType["resetVars"] = &McduWatcher::resetVars;

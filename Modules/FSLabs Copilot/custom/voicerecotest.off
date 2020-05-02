@@ -1,3 +1,0 @@
-
-copilot.logger:info("Voice recognition is " .. (copilot.isVoiceControlEnabled and "enabled." or "disabled."))
-VoiceCommand:new{phrase = "hello", confidence = 0, persistent = true}:activate()

@@ -23,7 +23,7 @@ end
 
 --- @type Action
 
-Action = {}
+Action = {threads = {}}
 local Action = Action
 
 --- Constructor
@@ -59,20 +59,30 @@ function Action:runCallback(...)
   self.callback(...)
 end
 
+function Action.getActionFromThread(threadID)
+  return Action.threads[threadID]
+end
+
 function Action:createThread()
   if not self.currentThread then
     if self.logMsg then
       copilot.logger:debug("Starting action: " .. self.logMsg)
     end
     self.currentThread = coroutine.create(self.callback)
+    Action.threads[self.currentThread] = self
     return true
   end
+end
+
+function Action:removeThread()
+  Action.threads[self.currentThread] = nil
+  self.currentThread = nil
 end
 
 function Action:resumeThread(...)
   if not self.currentThread then return false end
   if coroutine.status(self.currentThread) == "dead" then
-    self.currentThread = nil
+    self:removeThread()
     return false
   end
   local _, err = coroutine.resume(self.currentThread, ...)
@@ -92,7 +102,7 @@ Action.removeEventRef = removeEventRef
 
 function Action:stopCurrentThread()
   if self.currentThread then
-    self.currentThread = nil
+    self:removeThread()
     if self.logMsg then
       copilot.logger:debug("Stopping action: " .. self.logMsg)
     end
@@ -348,7 +358,7 @@ local recognizer = copilot.recognizer
 -- will also degrade the accuracy.
 --
 --- @type VoiceCommand
-VoiceCommand = {Status = {active = 1, ignore = 2, inactive = 3}}
+VoiceCommand = {Status = {active = 1, ignore = 2, inactive = 3, disabled = 4}}
 setmetatable(VoiceCommand, {__index = Event})
 
 --- Constructor
@@ -375,17 +385,34 @@ function VoiceCommand:new(data)
     voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase, voiceCommand.confidence)
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
   end
+  voiceCommand.phrase = nil
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
   return setmetatable(Event:new(voiceCommand), self)
+end
+
+function VoiceCommand:getPhrases()
+  return recognizer:getPhrases(self.ruleID)
+end
+
+function VoiceCommand:addPhrase(phrase)
+  recognizer:addPhrase(phrase, self.ruleID)
+end
+
+function VoiceCommand:removePhrase(phrase)
+  recognizer:removePhrase(phrase, self.ruleID)
+end
+
+function VoiceCommand:setConfidence(confidence)
+  recognizer:setConfidence(confidence, self.ruleID)
 end
 
 ---<span>
 ---@return self
 
 function VoiceCommand:activate()
-  if copilot.isVoiceControlEnabled and self.status ~= self.Status.active then
-    copilot.logger:debug("Activating voice command: " .. self.phrase[1])
+  if copilot.isVoiceControlEnabled and self.status ~= self.Status.disabled and self.status ~= self.Status.active then
+    copilot.logger:debug("Activating voice command: " .. self:getPhrases()[1])
     recognizer:activateRule(self.ruleID)
     self.status = self.Status.active
   end
@@ -396,8 +423,8 @@ end
 ---@return self
 
 function VoiceCommand:ignore()
-  if copilot.isVoiceControlEnabled and self.status ~= self.Status.ignore then
-    copilot.logger:debug("Starting ignore mode for voice command: " .. self.phrase[1])
+  if copilot.isVoiceControlEnabled and self.status ~= self.Status.disabled and self.status ~= self.Status.ignore then
+    copilot.logger:debug("Starting ignore mode for voice command: " .. self:getPhrases()[1])
     recognizer:ignoreRule(self.ruleID)
     self.status = self.Status.ignore
   end
@@ -408,8 +435,8 @@ end
 ---@return self
 
 function VoiceCommand:deactivate()
-  if copilot.isVoiceControlEnabled and self.status ~= self.Status.inactive then
-    copilot.logger:debug("Deactivating voice command: " .. self.phrase[1])
+  if copilot.isVoiceControlEnabled and self.status ~= self.Status.disabled and self.status ~= self.Status.inactive then
+    copilot.logger:debug("Deactivating voice command: " .. self:getPhrases()[1])
     recognizer:deactivateRule(self.ruleID)
     self.status = self.Status.inactive
   end
@@ -425,9 +452,14 @@ function VoiceCommand:trigger()
   end
 end
 
+function VoiceCommand:disable()
+  self:deactivate()
+  self.status = self.Status.disabled
+end
+
 function VoiceCommand:getAction()
   if self:getActionCount() ~= 1 then
-    error(string.format("Cannot get action of voice command %s - action count isn't 1", self.phrase[1]))
+    error(string.format("Cannot get action of voice command %s - action count isn't 1", self:getPhrases()[1]))
   end
   for action in pairs(self.actions) do return action end
 end

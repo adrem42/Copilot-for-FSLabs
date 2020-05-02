@@ -3,9 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Copilot generated files
-/Modules/FSLabs Copilot/options.ini
-/Modules/FSLabs Copilot/failures
+Copilot.zip
 
 # User-specific files
 *.rsuser

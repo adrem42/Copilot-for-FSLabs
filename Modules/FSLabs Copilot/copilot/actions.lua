@@ -229,13 +229,24 @@ if copilot.isVoiceControlEnabled then
 
 end
 
+local pauseScratchpadClearerThreads = {}
+
+function copilot.dontClearScratchPad(value, thread)
+  pauseScratchpadClearerThreads[thread or coroutine.running()] = value or nil
+end
+
 copilot.addCallback(coroutine.create(function()
   local clearScratchpadTime, scratchpadMsg
+
+  local function dirtyScratchpad()
+    local disp = FSL.MCDU:getString()
+    local scratchpad = disp:sub(313, 330)
+    return scratchpad:find "%S" and not disp:find "MCDU MENU"
+  end
+
   while true do
     copilot.suspend(1000)
-    local disp = FSL.MCDU:getString()
-    local scratchpad = disp:sub(313,330)
-    if scratchpad:find "%S" and not disp:find "MCDU MENU" then
+    if dirtyScratchpad() then
       local now = ipc.elapsedtime()
       if not clearScratchpadTime then
         scratchpadMsg = scratchpad
@@ -243,14 +254,25 @@ copilot.addCallback(coroutine.create(function()
       elseif scratchpad ~= scratchpadMsg then
         clearScratchpadTime = nil
       elseif now > clearScratchpadTime then
-        if not copilot.actions.aboveTenThousand:isThreadRunning() then
-          FSL.PED_MCDU_KEY_CLR()
+        local okToClear = true
+        for thread in pairs(pauseScratchpadClearerThreads) do
+          if Action.getActionFromThread(thread) then
+            okToClear = false
+          else
+            pauseScratchpadClearerThreads[thread] = nil
+          end
+        end
+        if okToClear then
+          repeat
+            FSL.PED_MCDU_KEY_CLR()
+            copilot.sleep(500, 1000)
+          until not dirtyScratchpad()
         end
         clearScratchpadTime = nil
       end
     end
   end
-end))
+end), "scratchpadClearer")
 
 function copilot.sequences:checkFmgcData()
 
@@ -661,6 +683,7 @@ copilot.actions.aboveTenThousand = copilot.events.aboveTenThousand:addAction(fun
     copilot.voiceCommands.gearUp:deactivate()
   end
   if copilot.UserOptions.actions.ten_thousand_dep == 1 then
+    copilot.dontClearScratchPad(true)
     copilot.sequences.tenThousandDep()
   end
 end, "runAsCoroutine")

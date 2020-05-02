@@ -151,8 +151,14 @@ local function setup()
   end
 
   local customDir = APPDIR .. "\\custom"
+  local userFiles = false
   for file in lfs.dir(customDir) do
     if file:find(".lua$") then
+      if not userFiles then
+        userFiles = true
+        copilot.logger:info("Loading user lua files:")
+      end
+      copilot.logger:info(file)
       dofile(customDir .. "\\" .. file)
     end
   end 
