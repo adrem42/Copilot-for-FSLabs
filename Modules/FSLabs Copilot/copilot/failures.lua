@@ -161,7 +161,7 @@ local function setupFailures()
             waitForDisplay("FAILURES LISTING")
             FSL.PED_MCDU_LSK_L1()
             waitForDisplay(FSL.MCDU:getString(), true)
-            if FSL.MCDU:getString():find("CLEAR ALL") then
+            if failureCount == 0 and FSL.MCDU:getString():find("CLEAR ALL") then
               FSL.PED_MCDU_LSK_R6()
               clearAll = true
             end

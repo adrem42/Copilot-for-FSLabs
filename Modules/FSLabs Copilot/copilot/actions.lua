@@ -232,7 +232,7 @@ end
 local pauseScratchpadClearerThreads = {}
 
 function copilot.dontClearScratchPad(value, thread)
-  pauseScratchpadClearerThreads[thread or coroutine.running()] = value or nil
+  pauseScratchpadClearerThreads[thread or coroutine.running()] = not value and nil or true
 end
 
 copilot.addCallback(coroutine.create(function()
@@ -259,7 +259,7 @@ copilot.addCallback(coroutine.create(function()
           if Action.getActionFromThread(thread) then
             okToClear = false
           else
-            pauseScratchpadClearerThreads[thread] = nil
+            copilot.dontClearScratchPad(false, thread)
           end
         end
         if okToClear then
@@ -472,6 +472,8 @@ function copilot.sequences.tenThousandDep()
       FSL.PED_MCDU_LSK_R5()
     end
   end
+
+  copilot.sleep(plusminus(1000))
 
   FSL.PED_MCDU_KEY_SEC()
   copilot.sleep(plusminus(1000))
