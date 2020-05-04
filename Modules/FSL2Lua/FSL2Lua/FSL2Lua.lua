@@ -395,6 +395,55 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
   end
 end
 
+function Button:checkMacro()
+  local t
+  for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
+    for _, control in pairs(_t) do
+      if control == self then 
+        t = _t 
+        break
+      end
+    end
+  end
+
+  local guard = self.guard and t[self.guard]
+  if not guard then
+    for _, control in pairs(t) do
+      if type(control) == "table" and control.FSL_VC_control then
+        local LVar = control.LVar:lower()
+        if LVar:find("guard") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1")) then
+          guard = control
+          break
+        end 
+      end
+    end
+  end
+
+  if guard and not guard:isOpen() then
+    guard:lift()
+    local timeout = ipc.elapsedtime() + 2000
+    local guardOk
+    repeat 
+      guardOk = guard:isOpen()
+    until guardOk or ipc.elapsedtime() > timeout
+    if not guardOk then return false end
+  end
+
+  local timeout = ipc.elapsedtime() + (self.LVar:lower():find("switch") and 2000 or 500)
+  local LVarbefore = self:getLvarValue()
+  ipc.mousemacro(self.rectangle, 3)
+  if self.toggle then
+    ipc.mousemacro(self.rectangle, 13)
+  end
+  repeat
+    if self:getLvarValue() ~= LVarbefore then 
+      ipc.mousemacro(self.rectangle, 13)
+      return true 
+    end
+  until ipc.elapsedtime() > timeout
+  return false
+end
+
 --- Simulates a click of the right mouse button on the VC button.
 
 function Button:rightClick() self(false, 1, 11) end
@@ -406,6 +455,19 @@ function Button:isDown() return ipc.readLvar(self.LVar) == 10 end
 --- @type Guard
 
 local Guard = Control:new()
+
+function Guard:checkMacro()
+  local LVarbefore = self:getLvarValue()
+  if self:isOpen() then self:close()
+  else self:lift() end
+  local timeout = ipc.elapsedtime() + 2000
+  repeat
+    if self:getLvarValue() ~= LVarbefore then
+      return true
+    end
+  until ipc.elapsedtime() > timeout
+  return false
+end
 
 --- <span>
 
@@ -474,6 +536,19 @@ function Switch:new(control)
   end
   self.__index = self
   return setmetatable(control, self)
+end
+
+function Switch:checkMacro()
+  local LVarbefore = self:getLvarValue()
+  if LVarbefore == 0 then self:increase()
+  else self:decrease() end
+  local timeout = ipc.elapsedtime() + 5000
+  repeat
+    if self:getLvarValue() ~= LVarbefore then
+      return true
+    end
+  until ipc.elapsedtime() > timeout
+  return false
 end
 
 --- @function __call
@@ -577,6 +652,20 @@ end
 
 local FcuSwitch = Control:new()
 
+function FcuSwitch:checkMacro()
+  ipc.mousemacro(self.rectangle, 13)
+  ipc.mousemacro(self.rectangle, 11)
+  local LVarbefore = self:getLvarValue()
+  ipc.mousemacro(self.rectangle, 3)
+  local timeout = ipc.elapsedtime() + 5000
+  repeat
+    if self:getLvarValue() ~= LVarbefore then
+      return true
+    end
+  until ipc.elapsedtime() > timeout
+  return false
+end
+
 --- <span>
 function FcuSwitch:push()
   if FSL.areSequencesEnabled then
@@ -606,6 +695,20 @@ end
 local EngineMasterSwitch = Switch:new()
 EngineMasterSwitch.__call = getmetatable(EngineMasterSwitch).__call
 
+function EngineMasterSwitch:checkMacro()
+  ipc.mousemacro(self.rectangle, 13)
+  ipc.mousemacro(self.rectangle, 11)
+  local LVarbefore = self:getLvarValue()
+  ipc.mousemacro(self.rectangle, 1)
+  local timeout = ipc.elapsedtime() + 1000
+  repeat
+    if self:getLvarValue() ~= LVarbefore then
+      return true
+    end
+  until ipc.elapsedtime() > timeout
+  return false
+end
+
 function EngineMasterSwitch:increase()
   ipc.mousemacro(self.rectangle, 1)
   self:waitForLVarChange()
@@ -624,6 +727,48 @@ EngineMasterSwitch.decrease = EngineMasterSwitch.increase
 --- @type KnobWithoutPositions
 
 local KnobWithoutPositions = Switch:new()
+
+function KnobWithoutPositions:checkMacro()
+  if self.LVar:lower():find("comm") then
+    local t
+    for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
+      for _, control in pairs(_t) do
+        if control == self then t = _t end
+      end
+    end
+    for _, control in pairs(t) do
+      
+      if type(control) == "table" and control.FSL_VC_control then
+        
+        local LVar = control.LVar:lower()
+        local switch = LVar:find("switch") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1"))
+        if switch and control.isDown and control:isDown() then
+          control()
+          local timeout = ipc.elapsedtime() + 2000
+          local switchOk = false
+          repeat 
+            if control:isDown() then
+              switchOk = true
+            end
+          until switchOk or ipc.elapsedtime() > timeout
+          if not switchOk then
+            return false
+          end
+          break
+        end
+      end
+    end
+  end
+
+  local LVarbefore = self:getLvarValue()
+  if LVarbefore == 0 then self:rotateRight()
+  else self:rotateLeft() end
+  local timeout = ipc.elapsedtime() + 1000
+  repeat
+    if self:getLvarValue() ~= LVarbefore then return true end
+  until ipc.elapsedtime() > timeout
+  return false
+end
 
 --- @function __call
 --- @number targetPos Relative position from 0-100.
@@ -791,8 +936,11 @@ function FSL:init()
 
   for varname, control in pairs(rawControls) do
 
-    local rect = control.rectangle
-    control.rectangle = FSL:getAcType() == "A321" and rect.A321 or rect.A320
+    if _ALLRECTANGLES then
+      control._rectangle = control.rectangle
+    end
+
+    control.rectangle = control.rectangle[FSL:getAcType()]
 
     control.pos = self:initControlPositions(varname,control)
 

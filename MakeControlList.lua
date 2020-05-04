@@ -1,3 +1,5 @@
+_ALLRECTANGLES = true
+
 local FSL = require "FSL2Lua"
 
 local name = "C:\\Users\\Peter\\source\\repos\\FSLabs Copilot\\topics\\listofcontrols.md"
@@ -30,8 +32,11 @@ function makeList(table,tableName)
   local temp = {}
   for controlName,controlObj in pairs(table) do
     if type(controlObj) == "table" then
-      if controlObj.rectangle or controlObj.FSControl then
-          line = tableName .. "." .. controlName
+      local rect = controlObj._rectangle
+      local A321 = rect and rect.A321
+      local A320 = rect and rect.A320
+      if A321 or A320 or controlObj.FSControl then
+          line = tableName .. "." .. controlName .. (not controlObj.FSControl and ((A321 and not A320 and " (A321 only)") or (A320 and not A321 and " (A319/A320 only)") or "") or "")
         if controlObj.posn then
           line = line .. "\n> Positions: "
           for pos in pairsByKeys(controlObj.posn) do

@@ -241,7 +241,7 @@ return {
       A320 = "0x40000017",
       A321 = "0x40000017"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_CP_EFIS_Baro_Knob = {
@@ -287,7 +287,7 @@ return {
       A320 = "0x4000000b",
       A321 = "0x4000000b"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_CP_EFIS_FD_Button = {
@@ -323,7 +323,7 @@ return {
       A320 = "0x40000007",
       A321 = "0x40000007"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_CP_EFIS_NDB_Button = {
@@ -418,7 +418,7 @@ return {
       A320 = "0x40000011",
       A321 = "0x40000011"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_CP_EFIS_WPT_Button = {
@@ -436,7 +436,7 @@ return {
       A320 = "0x4000000e",
       A321 = "0x4000000e"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_CP_VORADF_2_Switch = {
@@ -527,7 +527,7 @@ return {
       A320 = "0x4000001c",
       A321 = "0x4000001c"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_AP2_Button = {
@@ -545,7 +545,7 @@ return {
       A320 = "0x4000001d",
       A321 = "0x4000001d"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_APPR_Button = {
@@ -563,7 +563,7 @@ return {
       A320 = "0x4000001e",
       A321 = "0x4000001e"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_ATHR_Switch = {
@@ -581,7 +581,7 @@ return {
       A320 = "0x4000001a",
       A321 = "0x4000001a"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_DimLt_Knob = {
@@ -627,7 +627,7 @@ return {
       A320 = "0x4000001b",
       A321 = "0x4000001b"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_HDGTRKVSFPA_Button = {
@@ -653,6 +653,7 @@ return {
     },
     range = 360,
     rectangle = {
+      A320 = "0x4000002c",
       A321 = "0x4000002c"
     },
     type = ""
@@ -686,7 +687,7 @@ return {
       A320 = "0x40000019",
       A321 = "0x40000019"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_METRIC_ALT_Button = {
@@ -711,6 +712,7 @@ return {
     },
     range = 360,
     rectangle = {
+      A320 = "0x4000002b",
       A321 = "0x4000002a"
     },
     type = ""
@@ -856,7 +858,7 @@ return {
       A320 = "0x40000026",
       A321 = "0x40000026"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FO_EFIS_Baro_Knob = {
@@ -902,7 +904,7 @@ return {
       A320 = "0x40000022",
       A321 = "0x40000022"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FO_EFIS_FD_Button = {
@@ -920,7 +922,7 @@ return {
       A320 = "0x40000021",
       A321 = "0x40000021"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FO_EFIS_LS_Button = {
@@ -938,7 +940,7 @@ return {
       A320 = "0x40000020",
       A321 = "0x40000020"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FO_EFIS_NDB_Button = {
@@ -956,7 +958,7 @@ return {
       A320 = "0x40000025",
       A321 = "0x40000025"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FO_EFIS_ND_Mode_Knob = {
@@ -1748,6 +1750,7 @@ return {
       y = "98",
       z = ""
     },
+    orientation = 2,
     posn = {
       adf = 10,
       vor = 0
@@ -2501,6 +2504,7 @@ return {
   },
   OVHD_CALLS_EMER_Button = {
     LVar = "VC_OVHD_CALLS_EMER_Button",
+    
     pos = {
       x = "-11",
       y = "106",
@@ -3361,7 +3365,7 @@ return {
       A320 = "0x24403005",
       A321 = "0x24403005"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   OVHD_ELEC_IDG_1_Button = {
@@ -4296,7 +4300,7 @@ return {
       A320 = "0x24401800",
       A321 = "0x24401800"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   OVHD_HYD_ENG_2_PUMP_Button = {
@@ -4310,7 +4314,7 @@ return {
       A320 = "0x24401803",
       A321 = "0x24401803"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   OVHD_HYD_LK_B_Button = {
@@ -4390,7 +4394,7 @@ return {
       A320 = "0x24401802",
       A321 = "0x24401802"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   OVHD_HYD_RAT_MAN_ON_Button = {
@@ -4797,7 +4801,7 @@ return {
       A320 = "0x400000b8",
       A321 = "0x400000b6"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   OVHD_RADIO_3_ON_OFF_Switch = {
@@ -6097,8 +6101,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x400001df",
-      A321 = "0x25800000"
+      A320 = "0x25800001",
+      A321 = "0x25800001"
     },
     toggle = true,
     type = ""
@@ -6187,8 +6191,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x400001e5",
-      A321 = "0x400001f7"
+      A320 = "0x25800008",
+      A321 = "0x25800008"
     },
     toggle = true,
     type = ""
@@ -6217,8 +6221,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x400001e8",
-      A321 = "0x400001f7"
+      A320 = "0x25800009",
+      A321 = "0x25800009"
     },
     toggle = true,
     type = ""
@@ -6980,6 +6984,7 @@ return {
   },
   PED_ECP_EMER_CANC_Button = {
     LVar = "VC_PED_ECP_EMER_CANC_Button",
+    guard = "PED_EMER_CANC_Guard",
     pos = {
       x = "222",
       y = "697",
@@ -7318,6 +7323,7 @@ return {
       A320 = "0x40000152",
       A321 = "0x40000154"
     },
+    orientation = 2,
     toggle = false,
     type = ""
   },
@@ -9566,7 +9572,7 @@ return {
       A320 = "0x40000199",
       A321 = "0x4000028d"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   PED_RADIO_1_ON_OFF_Switch = {
@@ -9798,7 +9804,7 @@ return {
       A320 = "0x400001c5",
       A321 = "0x400001c4"
     },
-    toggle = false,
+    toggle = true,
     type = ""
   },
   PED_RADIO_2_ON_OFF_Switch = {
