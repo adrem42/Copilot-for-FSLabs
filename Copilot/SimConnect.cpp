@@ -6,6 +6,19 @@ enum MuteKeyStatus {
 	Released
 };
 
+std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink;
+
+void attachLogToConsole()
+{
+	auto& sinks = copilot::logger->sinks();
+	auto it = std::find(sinks.begin(), sinks.end(), consoleSink);
+	if (it != sinks.end())
+		sinks.erase(it);
+	consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+	consoleSink->set_pattern("[%T] %^[%n]%$ %v");
+	copilot::logger->sinks().push_back(consoleSink);
+}
+
 void SimConnect::dispatchCallback(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
 {
 	SimConnect* pThis = reinterpret_cast<SimConnect*>(pContext);
@@ -47,12 +60,11 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 						hr = SimConnect_MenuAddItem(hSimConnect, "Copilot for FSLabs", EVENT_MENU, 0);
 						hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Restart", EVENT_MENU_START, 0);
 						hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Stop", EVENT_MENU_STOP, 0);
+						hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Output log to console", EVENT_MENU_ATTACH_CONSOLE, 0);
 
 						hr = SimConnect_SetNotificationGroupPriority(hSimConnect, GROUP0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
-						auto console = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-						console->set_pattern("[%T] [%n] %^[%l]%$ %v");
-						copilot::logger->sinks().push_back(console);
+						attachLogToConsole();
 
 						std::thread(copilot::autoStartLua).detach();
 					}
@@ -65,6 +77,10 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 
 				case EVENT_MENU_STOP:
 					copilot::stopLuaThread();
+					break;
+
+				case EVENT_MENU_ATTACH_CONSOLE:
+					attachLogToConsole();
 					break;
 			}
 			break;

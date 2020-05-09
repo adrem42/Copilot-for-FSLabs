@@ -478,11 +478,11 @@ function copilot.callouts:start()
       end
     end, "runAsCoroutine")
       :stopOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
-      :addCleanup(function() self.flightControlsCheck.checkingFlightControls = false end)
       :addLogMsg("Waiting for the flight controls check")
 
     copilot.events.enginesStarted:addAction(flightControlsCheck)
     copilot.events.takeoffCancelled:addAction(flightControlsCheck)
+    copilot.events.engineShutdown:addAction(function() self.flightControlsChecked = false end)
     
   end
 

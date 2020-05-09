@@ -9,8 +9,13 @@ RecoResultFetcher::RecoResultFetcher(std::shared_ptr<Recognizer> recognizer)
 void RecoResultFetcher::onMuteKeyEvent(bool isMuteKeyPressed)
 {
 	std::lock_guard<std::mutex> lock(mtx);
-	if (!isMuteKeyPressed) muteKeyRelasedTime = std::chrono::system_clock::now();
-	else muted = true;
+	if (!isMuteKeyPressed) {
+		muteKeyRelasedTime = std::chrono::system_clock::now();
+		copilot::logger->info("Unmuted");
+	} else { 
+		muted = true;
+		copilot::logger->info("Muted");
+	}
 }
 
 void RecoResultFetcher::fetchResults()

@@ -68,12 +68,16 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#addCallback">addCallback(func, name)</a></td>
-	<td class="summary">adds function or couroutine func to the main callback loop</td>
+	<td class="name" nowrap><a href="#addCallback">addCallback(callback[, name])</a></td>
+	<td class="summary">Adds function or coroutine callback to the main callback loop.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#callOnce">callOnce(callback[, delay])</a></td>
+	<td class="summary">Adds function or coroutine callback to the main callback loop which will be removed after being called once (if it&rsquo;s a coroutine &ndash; when the coroutine ends).</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#removeCallback">removeCallback(key)</a></td>
-	<td class="summary">removes a previously added callback</td>
+	<td class="summary">Removes a previously added callback.</td>
 	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
@@ -99,47 +103,47 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#sleep">sleep(time1, time2)</a></td>
-	<td class="summary">if both parameters omitted: ipc.sleep(100)
- if time1 specified: ipc.sleep(time1)
- if both are specified: ipc.sleep(math.random(time1, time2))</td>
+	<td class="summary">If both parameters omitted: <code>ipc.sleep</code>(100)<br><br>
+ If time1 specified: <code>ipc.sleep(time1)</code><br><br>
+ If both are specified: <code>ipc.sleep(math.random(time1, time2))</code></td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#suspend">suspend(time1, time2)</a></td>
-	<td class="summary">if both parameters omitted: coroutine.yield()
- if time1 specified: couroutine.yield() until time1 milliseconds pass
- if both are specified: couroutine.yield() a random amount of ms between time1 and time2</td>
+	<td class="summary">If both parameters omitted: <code>coroutine.yield()</code><br><br>
+ If time1 specified: <code>couroutine.yield()</code> until time1 milliseconds pass<br><br>
+ If both are specified: <code>couroutine.yield()</code> a random amount of milliseconds between time1 and time2</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#onGround">onGround()</a></td>
-	<td class="summary">returns true if you're on the ground</td>
+	<td class="summary">Returns true if you're on the ground.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#GS">GS()</a></td>
-	<td class="summary">returns the ground speed in knots</td>
+	<td class="summary">Returns the ground speed in knots.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#radALT">radALT()</a></td>
-	<td class="summary">returns the radio altitude in meters</td>
+	<td class="summary">Returns the radio altitude in meters.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#IAS">IAS()</a></td>
-	<td class="summary">returns the IAS in knots</td>
+	<td class="summary">Returns the IAS in knots.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#reverseThrustSelected">reverseThrustSelected()</a></td>
-	<td class="summary">returns true if the thrust levers are below the IDLE position</td>
+	<td class="summary">Returns true if the thrust levers are below the IDLE position.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ALT">ALT()</a></td>
-	<td class="summary">returns the altitude in feet referenced to 1013 hPa</td>
+	<td class="summary">Returns the altitude in feet referenced to 1013 hPa.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#thrustLeversSetForTakeoff">thrustLeversSetForTakeoff()</a></td>
-	<td class="summary">returns true if the thrust levers in the CLB detent or above</td>
+	<td class="summary">Returns true if the thrust levers in the CLB detent or above.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#enginesRunning">enginesRunning(both)</a></td>
-	<td class="summary">returns true if the engines are running</td>
+	<td class="summary">Returns true if the engines are running.</td>
 	</tr>
 </table>
 
@@ -152,27 +156,55 @@
     <dl class="function">
     <dt>
     <a name = "addCallback"></a>
-    <strong>addCallback(func, name)</strong>
+    <strong>addCallback(callback[, name])</strong>
     </dt>
     <dd>
-    adds function or couroutine func to the main callback loop
+    Adds function or coroutine callback to the main callback loop.
+ Dead coroutines are removed automatically.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">func</span>
-         a function or thread
+        <li><span class="parameter">callback</span>
+         A function or thread
         </li>
         <li><span class="parameter">name</span>
-         optional string which can be used to remove the callback with <a href="../libraries/copilot.html#removeCallback">removeCallback</a>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Can be used later to remove the callback with <a href="../libraries/copilot.html#removeCallback">removeCallback</a>
+         (<em>optional</em>)
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        func
+        callback
     </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "callOnce"></a>
+    <strong>callOnce(callback[, delay])</strong>
+    </dt>
+    <dd>
+    Adds function or coroutine callback to the main callback loop which will be removed after being called once (if it&rsquo;s a coroutine &ndash; when the coroutine ends).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">callback</span>
+         A function or thread.
+        </li>
+        <li><span class="parameter">delay</span>
+            <span class="types"><span class="type">number</span></span>
+         Milliseconds by which to delay calling the callback.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
 
 
 
@@ -183,7 +215,7 @@
     <strong>removeCallback(key)</strong>
     </dt>
     <dd>
-    removes a previously added callback
+    Removes a previously added callback.
 
 
     <h3>Parameters:</h3>
@@ -267,9 +299,9 @@
     <strong>sleep(time1, time2)</strong>
     </dt>
     <dd>
-    if both parameters omitted: ipc.sleep(100)
- if time1 specified: ipc.sleep(time1)
- if both are specified: ipc.sleep(math.random(time1, time2))
+    If both parameters omitted: <code>ipc.sleep</code>(100)<br><br>
+ If time1 specified: <code>ipc.sleep(time1)</code><br><br>
+ If both are specified: <code>ipc.sleep(math.random(time1, time2))</code>
 
 
     <h3>Parameters:</h3>
@@ -294,9 +326,9 @@
     <strong>suspend(time1, time2)</strong>
     </dt>
     <dd>
-    if both parameters omitted: coroutine.yield()
- if time1 specified: couroutine.yield() until time1 milliseconds pass
- if both are specified: couroutine.yield() a random amount of ms between time1 and time2
+    If both parameters omitted: <code>coroutine.yield()</code><br><br>
+ If time1 specified: <code>couroutine.yield()</code> until time1 milliseconds pass<br><br>
+ If both are specified: <code>couroutine.yield()</code> a random amount of milliseconds between time1 and time2
 
 
     <h3>Parameters:</h3>
@@ -321,7 +353,7 @@
     <strong>onGround()</strong>
     </dt>
     <dd>
-    returns true if you're on the ground
+    Returns true if you're on the ground.
 
 
 
@@ -335,7 +367,7 @@
     <strong>GS()</strong>
     </dt>
     <dd>
-    returns the ground speed in knots
+    Returns the ground speed in knots.
 
 
 
@@ -349,7 +381,7 @@
     <strong>radALT()</strong>
     </dt>
     <dd>
-    returns the radio altitude in meters
+    Returns the radio altitude in meters.
 
 
 
@@ -363,7 +395,7 @@
     <strong>IAS()</strong>
     </dt>
     <dd>
-    returns the IAS in knots
+    Returns the IAS in knots.
 
 
 
@@ -377,7 +409,7 @@
     <strong>reverseThrustSelected()</strong>
     </dt>
     <dd>
-    returns true if the thrust levers are below the IDLE position
+    Returns true if the thrust levers are below the IDLE position.
 
 
 
@@ -391,7 +423,7 @@
     <strong>ALT()</strong>
     </dt>
     <dd>
-    returns the altitude in feet referenced to 1013 hPa
+    Returns the altitude in feet referenced to 1013 hPa.
 
 
 
@@ -405,7 +437,7 @@
     <strong>thrustLeversSetForTakeoff()</strong>
     </dt>
     <dd>
-    returns true if the thrust levers in the CLB detent or above
+    Returns true if the thrust levers in the CLB detent or above.
 
 
 
@@ -419,14 +451,14 @@
     <strong>enginesRunning(both)</strong>
     </dt>
     <dd>
-    returns true if the engines are running
+    Returns true if the engines are running.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">both</span>
             <span class="types"><span class="type">bool</span></span>
-          if true, will return true if both engines are running. If omitted or false, returns true if either engine is running.
+         If true, will return true if both engines are running. If omitted or false, returns true if either engine is running.
         </li>
     </ul>
 
@@ -442,7 +474,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-04-25 12:43:03 </i>
+<i style="float:right;">Last updated 2020-05-09 02:33:36 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

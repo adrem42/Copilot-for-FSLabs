@@ -281,7 +281,7 @@ if not ipc.get("FSLC_failures") then
   FSL:disableSequences()
   local pilotBefore = FSL:getPilot()
   FSL:setPilot(coldAndDark and 1 or 2)
-
+  copilot.logger:info("Setting up failures")
   if not debugging then 
     dimDisplay() 
     ipc.set("FSLC_failures", 1)

@@ -948,7 +948,7 @@ function onMacroDetected(rectangle, param)
   end
   local timeout = getElapsedTime() + 1000
   local found = false
-  print("WAIT UNTIL READY")
+  warn("WAIT UNTIL READY")
   repeat
     for _, control in pairs(FSL) do
       if LVarList[control.LVar] then
@@ -958,19 +958,19 @@ function onMacroDetected(rectangle, param)
           ignore[control] = true
           found = true
           control.rectangle[acType] = rectangle
-          print "------------------------------------------------------------------------"
+          info "------------------------------------------------------------------------"
           local msg = "LVar: " .. control.LVar .. ",\trectangle: " .. "0x" .. string.format("%x", tostring(rectangle)):lower()
-          print(msg)
+          info(msg)
         end
         LVarList[control.LVar] = currPos
       end
     end
   until found or getElapsedTime() > timeout
-  print "READY"
+  info "READY"
 end
 
 function saveResults()
-  print "saving"
+  info "saving"
   for _, control in pairs(FSL) do
     if control.type == nil then
       control.type = ""
@@ -986,12 +986,11 @@ for LVar in pairs(LVarList) do
   LVarList[LVar] = getLvar(LVar)
 end
 
-print "--------------------------------------------------------------------------------------------"
-print "--------------------------------------------------------------------------------------------"
-print "Hello from FSLSerialize!"
-print "Wait until FSLabs has finished moving the switches before you begin."
-print "Always wait for the READY message in the console before interacting with the next switch."
-print "When you're done, grab FSL.lua from the add-on's directory and place it into FSUIPC Directory\\FSL2Lua\\FSL2Lua\\"
-print "Overwrite the original file in there."
-print "--------------------------------------------------------------------------------------------"
-print "--------------------------------------------------------------------------------------------"
+info "--------------------------------------------------------------------------------------------"
+info "--------------------------------------------------------------------------------------------"
+info "Wait until FSLabs has finished moving the switches before you begin."
+info "Always wait for the READY message in the console before interacting with the next switch."
+info "When you're done, grab FSL.lua from the add-on's directory and place it into FSUIPC Directory\\FSL2Lua\\FSL2Lua\\"
+info "Overwrite the original file in there."
+info "--------------------------------------------------------------------------------------------"
+info "--------------------------------------------------------------------------------------------"

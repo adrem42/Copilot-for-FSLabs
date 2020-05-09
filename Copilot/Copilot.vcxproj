@@ -119,11 +119,16 @@ copytosim</Command>
     <ClInclude Include="McduWatcher.h" />
     <ClInclude Include="Recognizer.h" />
     <ClInclude Include="RecoResultFetcher.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SimConnect.h" />
     <ClInclude Include="Sound.h" />
+    <ClInclude Include="versioninfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Copilot.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Copilot.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

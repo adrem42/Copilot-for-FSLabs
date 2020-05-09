@@ -192,7 +192,7 @@ function flightPhases.airborne:update()
       copilot.suspend()
     end
   else
-    if self ~= flightPhases.aboveTenThousand then
+    if self == flightPhases.flyingCircuits or self == flightPhases.belowTenThousand then
       if FSL:getThrustLeversPos() == "TOGA" and not flightPhases.airborne.triggeredGoAround then
         events.goAround:trigger()
         flightPhases.airborne.triggeredGoAround = true

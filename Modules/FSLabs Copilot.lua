@@ -69,29 +69,42 @@ local FlightPhaseProcessor = FlightPhaseProcessor
 
 local callbacks = {}
 
---- adds function or couroutine func to the main callback loop
---- @param func a function or thread
---- @param name optional string which can be used to remove the callback with @{removeCallback}
---- @return func
-
-function copilot.addCallback(func, name)
-  callbacks[name or func] = func
-  return func
+--- Adds function or coroutine callback to the main callback loop.
+--- Dead coroutines are removed automatically.
+--- @param callback A function or thread
+--- @string[opt] name Can be used later to remove the callback with @{removeCallback}
+--- @return callback
+function copilot.addCallback(callback, name)
+  callbacks[name or callback] = callback
+  return callback
 end
 
-function copilot.callOnce(func, timeOffset)
+--- Adds function or coroutine callback to the main callback loop which will be removed after being called once (if it's a coroutine - when the coroutine ends).
+--- @param callback A function or thread.
+--- @number[opt] delay Milliseconds by which to delay calling the callback.
+function copilot.callOnce(callback, delay)
   local deletthis
-  local callAt = ipc.elapsedtime() + (timeOffset or 0) 
-  deletthis = function(...)
-    if ipc.elapsedtime() > callAt then
-      func(...)
-      copilot.removeCallback(deletthis)
+  local callTime = delay and ipc.elapsedtime() + delay
+  if type(callback) == "function" then
+    deletthis = function(...)
+      if not callTime or ipc.elapsedtime() > callTime then
+        callback(...)
+        copilot.removeCallback(deletthis)
+      end
+    end
+  else
+    local itsTime = not delay
+    deletthis = function(...)
+      itsTime = itsTime or ipc.elapsedtime() > callTime
+      if itsTime and not coroutine.resume(callback, ...) then
+        copilot.removeCallback(deletthis)
+      end
     end
   end
   copilot.addCallback(deletthis)
 end
 
---- removes a previously added callback
+--- Removes a previously added callback.
 --- @param key Either the function or thread itself or the name argument passed to @{addCallback}
 function copilot.removeCallback(key)
   callbacks[key] = nil
@@ -102,11 +115,14 @@ function copilot.update(time)
     if type(callback) == "function" then
       callback(time)
     elseif type(callback) == "thread" then
+      local _, err = coroutine.resume(callback, time)
+      if err then
+        error(err) 
+        copilot.removeCallback(key)
+      end
       if coroutine.status(callback) == "dead" then
         copilot.removeCallback(key)
       end
-      local _, err = coroutine.resume(callback, time)
-      if err then error(err) end
     end
   end
 end
@@ -150,21 +166,31 @@ local function setup()
     require "copilot.actions"
   end
 
-  local customDir = APPDIR .. "\\custom"
+  if copilot.isVoiceControlEnabled then
+    copilot.recognizer:resetGrammar()
+  end
+
+  local customDir = APPDIR .. "\\custom\\"
   local userFiles = false
   for file in lfs.dir(customDir) do
     if file:find(".lua$") then
       if not userFiles then
         userFiles = true
-        copilot.logger:info("Loading user lua files:")
+        copilot.logger:info "Loading user lua files:"
       end
       copilot.logger:info(file)
-      dofile(customDir .. "\\" .. file)
+      dofile(customDir .. file)
     end
-  end 
+  end
 
-  if copilot.isVoiceControlEnabled then
+  if copilot.isVoiceControlEnabled and userFiles then
     copilot.recognizer:resetGrammar()
+  end
+
+  for _, event in pairs(copilot.events) do 
+    if not event.areActionsSorted then
+      event:sortActions()
+    end
   end
 
   if copilot.UserOptions.failures.enable == 1 and not debugger.enable then 
@@ -175,5 +201,4 @@ end
 
 setup()
 event.timer(30, "copilot.update")
-
-copilot.logger:info(">>>>>> Script started <<<<<<")
+copilot.logger:info ">>>>>> Setup finished <<<<<<"

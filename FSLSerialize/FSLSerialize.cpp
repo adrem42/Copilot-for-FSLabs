@@ -17,8 +17,13 @@ extern "C"
 #include "../lua515/include/lualib.h"
 }
 
+#include <spdlog/spdlog.h>
+
 auto startTime = std::chrono::high_resolution_clock::now();
 std::thread* myThread;
+
+std::shared_ptr<spdlog::logger> logger;
+std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink;
 
 using namespace P3D;
 
@@ -37,6 +42,7 @@ PPANELS Panels = NULL;
 enum EVENT_ID {
 	EVENT_MENU,
 	EVENT_MENU_START,
+	EVENT_MENU_STOP,
 	EVENT_MENU_SAVE
 };
 
@@ -45,6 +51,17 @@ struct MACRO {
 	int param;
 };
 std::shared_ptr<MACRO> currMacro = nullptr;
+
+void attachLogToConsole()
+{
+	auto& sinks = logger->sinks();
+	auto it = std::find(sinks.begin(), sinks.end(), consoleSink);
+	if (it != sinks.end())
+		sinks.erase(it);
+	consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+	consoleSink->set_pattern("[%T] %^[%n]%$ %v");
+	logger->sinks().push_back(consoleSink);
+}
 
 class MouseRectListenerCallback : public IMouseRectListenerCallback {
 	DEFAULT_REFCOUNT_INLINE_IMPL()
@@ -105,12 +122,24 @@ int displayTextFromLua(lua_State* L)
 void checkLuaResult(lua_State* L, int result)
 {
 	if (result != 0)
-		std::cout << lua_tostring(L, 1) << std::endl;
+		logger->error(lua_tostring(L, 1));
+}
+
+int luaWarn(lua_State* L)
+{
+	logger->warn(lua_tostring(L, 1));
+	return 0;
+}
+
+int luaInfo(lua_State* L)
+{
+	logger->info(lua_tostring(L, 1));
+	return 0;
 }
 
 void luaThread()
 {
-
+	attachLogToConsole();
 	char lpFilename[MAX_PATH];
 	HMODULE hMod = GetModuleHandleA("FSLSerialize");
 	GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
@@ -129,6 +158,10 @@ void luaThread()
 	lua_setglobal(L, "getLvar");
 	lua_pushcfunction(L, elapsedTime);
 	lua_setglobal(L, "getElapsedTime");
+	lua_pushcfunction(L, luaWarn);
+	lua_setglobal(L, "warn");
+	lua_pushcfunction(L, luaInfo);
+	lua_setglobal(L, "info");
 
 	checkLuaResult(L, luaL_dofile(L, (currentDir + "FSLSerialize.lua").c_str()));
 
@@ -147,9 +180,8 @@ void luaThread()
 			checkLuaResult(L, lua_pcall(L, 2, 0, 0));
 		}
 	}
-
+	
 	lua_close(L);
-
 }
 
 void restartLuaThread()
@@ -188,6 +220,15 @@ void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pCon
 					break;
 				}
 
+				case EVENT_MENU_STOP:
+				{
+					if (myThread && myThread->joinable()) {
+						closeThread = true;
+						myThread->join();
+					}
+					break;
+				}
+
 			}
 		}
 	}
@@ -196,11 +237,17 @@ void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pCon
 void DLLStart(__in __notnull IPdk* pPdk)
 {
 
+	logger = std::make_shared<spdlog::logger>("FSLSerialize");
+	logger->flush_on(spdlog::level::trace);
+
+	attachLogToConsole();
+
 	if (pPdk != nullptr) {
 		PdkServices::Init(pPdk);
-		//std::cout << "PDK initialized" << std::endl;
+		logger->info("PDK initialized");
 	} else {
-		std::cout << "FSLSerialize: PDK not found" << std::endl;
+		logger->error("PDK not found");
+		return;
 	}
 
 	PdkServices::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(new MouseRectListenerCallback);
@@ -208,7 +255,8 @@ void DLLStart(__in __notnull IPdk* pPdk)
 	if (Panels != NULL) {
 		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
 	} else {
-		std::cout << "FSLSerialize: Panels not found" << std::endl;
+		logger->error("FSLSerialize: No panels");
+		return;
 	}
 
 	if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FSLSerialize", NULL, 0, NULL, 0))) {
@@ -216,11 +264,13 @@ void DLLStart(__in __notnull IPdk* pPdk)
 		HRESULT hr;
 		hr = SimConnect_MenuAddItem(hSimConnect, "FSLSerialize", EVENT_MENU, 0);
 		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Start lua", EVENT_MENU_START, 0);
+		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Stop lua", EVENT_MENU_STOP, 0);
 		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Save the work", EVENT_MENU_SAVE, 0);
 
 		hr = SimConnect_CallDispatch(hSimConnect, MyDispatchProcDLL, NULL);
 
-		std::cout << "Link to SimConnect established" << std::endl;
+	} else {
+		logger->error("Failed to initialize SimConnect");
 	}
 
 }

@@ -23,6 +23,7 @@ extern "C"
 #include "Recognizer.h"
 #include "McduWatcher.h"
 #include "SimConnect.h"
+#include "versioninfo.h"
 
 using namespace std::literals::chrono_literals;
 
@@ -78,6 +79,13 @@ namespace copilot {
 		DWORD dwResult;
 		FSUIPC_Write(0x0D70, strlen(request) + 1, (void*)request, &dwResult);
 		FSUIPC_Process(&dwResult);
+		if (copilotThread && copilotThread->joinable()) {
+			stopThread = true;
+			copilotThread->join();
+			stopThread = false;
+		}
+		recoResultFetcher.reset();
+		recognizer.reset();
 	}
 
 	void autoStartLua()
@@ -141,6 +149,7 @@ std::optional<std::string> initLua(sol::this_state ts)
 
 	RecognizerType["addPhrase"] = &Recognizer::addPhrase;
 	RecognizerType["removePhrase"] = &Recognizer::removePhrase;
+	RecognizerType["removeAllPhrases"] = &Recognizer::removeAllPhrases;
 	RecognizerType["setConfidence"] = &Recognizer::setConfidence;
 	RecognizerType["getPhrases"] = &Recognizer::getPhrases;
 
@@ -195,7 +204,7 @@ void init()
 #endif
 		copilot::logger = std::make_shared<spdlog::logger>(logName, fileSink);
 		copilot::logger->flush_on(spdlog::level::trace);
-
+		copilot::logger->info("Copilot for FSLabs {}\r\n", COPILOT_VERSION);
 		sol::state lua;
 		lua.open_libraries();
 		lua["FSUIPC_DIR"] = FSUIPC_DIR;
@@ -214,9 +223,10 @@ void init()
 								  i, info.name,
 								  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
 		copilot::logger->info("---------------------------------------------------------------------");
+
+
 	}
 
-	
 }
 
 void DLLStart(void)
@@ -250,6 +260,7 @@ __declspec(dllexport) int luaopen_FSLCopilot(lua_State* L)
 	LoggerType["info"] = static_cast<void (logger::*)(const std::string&)>(&logger::info);
 	LoggerType["warn"] = static_cast<void (logger::*)(const std::string&)>(&logger::warn);
 	LoggerType["error"] = static_cast<void (logger::*)(const std::string&)>(&logger::error);
+	LoggerType["setLevel"] = &logger::set_level;
 	
 	auto copilot = lua.create_table();
 	copilot["init"] = initLua;

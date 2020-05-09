@@ -36,7 +36,10 @@ function makeList(table,tableName)
       local A321 = rect and rect.A321
       local A320 = rect and rect.A320
       if A321 or A320 or controlObj.FSControl then
-          line = tableName .. "." .. controlName .. (not controlObj.FSControl and ((A321 and not A320 and " (A321 only)") or (A320 and not A321 and " (A319/A320 only)") or "") or "")
+        local class = getmetatable(controlObj).__class
+        local classLink = string.format("<a href='../libraries/FSL2Lua.html#Class_%s'>%s</a>", class, class)
+        line = tableName .. "." .. controlName .. (not controlObj.FSControl and ((A321 and not A320 and " (A321 only)") or (A320 and not A321 and " (A319/A320 only)") or "") or "")
+          .. "\n> Class: " .. classLink .. "\n"
         if controlObj.posn then
           line = line .. "\n> Positions: "
           for pos in pairsByKeys(controlObj.posn) do
@@ -55,7 +58,7 @@ function makeList(table,tableName)
   end
 end
 
-io.write("# FSLabs cockpit controls\nSee @{FSL2Lua} on how to use these<br><br><br>")
+io.write("# FSLabs cockpit controls\n*See @{FSL2Lua} on how to use these*<br><br>")
 makeList(FSL,"FSL")
 makeList(FSL.FO, "FSL.FO")
 makeList(FSL.CPT, "FSL.CPT")

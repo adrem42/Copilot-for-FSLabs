@@ -375,8 +375,7 @@ function copilot.sequences:afterStart()
 end
 
 function copilot.sequences:taxiSequence()
-  if FSL:getPilot() == 1 then FSL.PED_WXRadar_SYS_Switch("2")
-  elseif FSL:getPilot() == 2 then FSL.PED_WXRadar_SYS_Switch("1") end
+  FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == 1 and "2" or "1")
   FSL.PED_WXRadar_PWS_Switch("AUTO")
   copilot.sleep(100)
   FSL.PED_WXRadar_PWS_Switch("AUTO")
@@ -426,10 +425,7 @@ function copilot.sequences:afterTakeoffSequence()
   if not FSL.OVHD_AC_Pack_1_Button:isDown() then FSL.OVHD_AC_Pack_1_Button() end
   copilot.suspend(plusminus(10000,0.2))
   if not FSL.OVHD_AC_Pack_2_Button:isDown() then FSL.OVHD_AC_Pack_2_Button() end
-  repeat
-    copilot.suspend()
-    if copilot.onGround() then return end
-  until ipc.readLvar("FSLA320_slat_l_1") == 0
+  repeat copilot.suspend() until ipc.readLvar("FSLA320_slat_l_1") == 0
   copilot.suspend(plusminus(2000, 0.5))
   FSL.PED_SPD_BRK_LEVER("RET")
 end
@@ -648,20 +644,23 @@ do
 
   copilot.actions.takeoff = copilot.events.takeoffInitiated2:addAction(function()
     if copilot.UserOptions.actions.takeoff_sequence == 1 then
-      copilot.callOnce(copilot.sequences.takeoffSequence)
+      copilot.sequences.takeoffSequence()
     end
     if copilot.isVoiceControlEnabled then
       if copilot.UserOptions.actions.lineup == 1 then
         copilot.voiceCommands.lineup:deactivate()
       end
     end
-    if copilot.UserOptions.actions.after_takeoff == 1 then
-      repeat copilot.suspend() until not copilot.onGround() and FSL:getThrustLeversPos() == "CLB"
+  end)
+
+  if copilot.UserOptions.actions.after_takeoff == 1 then
+    copilot.actions.afterTakeoff = copilot.events.airborne:addAction(function()
+      repeat copilot.suspend() until FSL:getThrustLeversPos() == "CLB"
       copilot.suspend(plusminus(2000))
-      copilot.sequences:afterTakeoffSequence()
-    end
-  end, "runAsCoroutine")
-    :stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
+      copilot.sequences.afterTakeoffSequence()
+    end, "runAsCoroutine")
+      :stopOn(copilot.events.landing)
+  end
 
   copilot.actions.noVoiceTakeoffTrigger = copilot.events.enginesStarted:addAction(function()
     repeat copilot.suspend()

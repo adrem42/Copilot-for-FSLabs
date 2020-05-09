@@ -53,6 +53,7 @@ Recognizer::~Recognizer()
 	recoGrammar.Release();
 	recoContext.Release();
 	recognizer.Release();
+	CoUninitialize();
 }
 
 DWORD Recognizer::addRule(const std::vector<std::string> phrases, float confidence)
@@ -100,6 +101,11 @@ void Recognizer::removePhrase(const std::string& phrase, DWORD ruleID)
 	auto it = std::find(phrases.begin(), phrases.end(), phrase);
 	if (it != phrases.end())
 		phrases.erase(it);
+}
+
+void Recognizer::removeAllPhrases(DWORD ruleID)
+{
+	rules[ruleID - 1].phrases.clear();
 }
 
 void Recognizer::setConfidence(float confidence, DWORD ruleID)

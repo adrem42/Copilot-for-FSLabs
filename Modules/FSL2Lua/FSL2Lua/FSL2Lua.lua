@@ -1,11 +1,15 @@
---- You can use this library in any script. To import, type `local FSL = require 'FSL2Lua'`
--- Click @{listofcontrols.md | here} to see the list of cockpit controls contained in the returned FSL table.
+--- Library for interacting with FSLabs cockpit controls based on Lvars and mouse macros.
+-- To import, type `local FSL = require 'FSL2Lua'`.
+-- You don't need to do that in a file loaded by Copilot in the custom directory since FSL2Lua will already be included.
+--
+-- Click @{listofcontrols.md | here} to see the list of cockpit controls contained in the exported table.
 -- @module FSL2Lua
 
 local maf = require "FSL2Lua.libs.maf"
 local file = require "FSL2Lua.FSL2Lua.file"
 local ipc = ipc
 local math = math
+local copilot = package.loaded["FSLabs Copilot"] and copilot
 
 local FSL2LuaDir = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1")
 package.cpath = FSL2LuaDir .. "\\?.dll;" .. package.cpath
@@ -336,6 +340,7 @@ end
 --- @type Button
 
 local Button = Control:new()
+Button.__class = "Button"
 
 function Button:new(control)
   control = getmetatable(self):new(control)
@@ -353,6 +358,7 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     self:moveHandHere()
   end
   local sleepAfterPress
+  local LVarbefore = self:getLvarValue()
   ipc.mousemacro(self.rectangle, pressClickType or 3)
   if self.toggle then
     sleepAfterPress = 0
@@ -366,17 +372,17 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     else
       sleepAfterPress = 100
     end
-    local timeout = ipc.elapsedtime() + 200
+    local timeout = ipc.elapsedtime() + 1000
     if twoSwitches then
       repeat 
         coroutine.yield()
-      until self:isDown() or ipc.elapsedtime() > timeout
+      until self:getLvarValue() ~= LVarbefore or ipc.elapsedtime() > timeout
       local time = ipc.elapsedtime()
       repeat coroutine.yield() until ipc.elapsedtime() - time >= sleepAfterPress
     else
       repeat 
         sleep(10) 
-      until self:isDown() or ipc.elapsedtime() > timeout
+      until self:getLvarValue() ~= LVarbefore or ipc.elapsedtime() > timeout
       sleep(sleepAfterPress)
     end
     ipc.mousemacro(self.rectangle, releaseClickType or 13)
@@ -455,6 +461,7 @@ function Button:isDown() return ipc.readLvar(self.LVar) == 10 end
 --- @type Guard
 
 local Guard = Control:new()
+Guard.__class = "Guard"
 
 function Guard:checkMacro()
   local LVarbefore = self:getLvarValue()
@@ -511,6 +518,7 @@ end
 --- @type Switch
 
 local Switch = Control:new()
+Switch.__class = "Switch"
 
 function Switch:new(control)
   control = getmetatable(self):new(control)
@@ -599,7 +607,12 @@ function Switch:set(targetPos, twoSwitches)
       else
         self:interact(plusminus(self.interactionLength or 100))
       end
-    else repeat sleep(5) until self:getLvarValue() ~= currPos
+    else 
+      local timeout = ipc.elapsedtime() + 1000
+      repeat 
+        sleep(5)
+        if ipc.elapsedtime() > timeout then return end
+      until self:getLvarValue() ~= currPos
     end
   end
 end
@@ -651,6 +664,7 @@ end
 --- @type FcuSwitch
 
 local FcuSwitch = Control:new()
+FcuSwitch.__class = "FcuSwitch"
 
 function FcuSwitch:checkMacro()
   ipc.mousemacro(self.rectangle, 13)
@@ -692,8 +706,10 @@ function FcuSwitch:pull()
   end
 end
 
+--- @type EngineMasterSwitch
 local EngineMasterSwitch = Switch:new()
 EngineMasterSwitch.__call = getmetatable(EngineMasterSwitch).__call
+EngineMasterSwitch.__class = "EngineMasterSwitch"
 
 function EngineMasterSwitch:checkMacro()
   ipc.mousemacro(self.rectangle, 13)
@@ -727,6 +743,7 @@ EngineMasterSwitch.decrease = EngineMasterSwitch.increase
 --- @type KnobWithoutPositions
 
 local KnobWithoutPositions = Switch:new()
+KnobWithoutPositions.__class = "KnobWithoutPositions"
 
 function KnobWithoutPositions:checkMacro()
   if self.LVar:lower():find("comm") then
@@ -747,7 +764,7 @@ function KnobWithoutPositions:checkMacro()
           local timeout = ipc.elapsedtime() + 2000
           local switchOk = false
           repeat 
-            if control:isDown() then
+            if not control:isDown() then
               switchOk = true
             end
           until switchOk or ipc.elapsedtime() > timeout
@@ -797,16 +814,26 @@ end
 function KnobWithoutPositions:set(targetPos)
   local timeStarted = ipc.elapsedtime()
   local tolerance = (targetPos == 0 or targetPos == self.range) and 0 or 5
+  local wasLower, wasGreater
   local tick = 1
   while true do
     currPos = self:getLvarValue()
     if math.abs(currPos - targetPos) > tolerance then
       if currPos < targetPos then
+        if wasGreater then break end
         self:rotateRight()
+        wasLower = true
       elseif currPos > targetPos then
+        if wasLower then break end
         self:rotateLeft()
+        wasGreater = true
       end
-      repeat until self:getLvarValue() ~= currPos
+      local timeout = ipc.elapsedtime() + 1000
+      repeat 
+        if ipc.elapsedtime() > timeout then
+          return
+        end
+      until self:getLvarValue() ~= currPos
     else
       self:hideCursor()
       if FSL.areSequencesEnabled then log("Interaction with the control took " .. ipc.elapsedtime() - timeStarted .. " ms") end
@@ -816,9 +843,6 @@ function KnobWithoutPositions:set(targetPos)
       sleep(1) 
     end
     tick = tick + 1
-  end
-  if FSL.areSequencesEnabled and not twoSwitches then
-    self:interact(plusminus(300))
   end
 end
 
@@ -962,7 +986,9 @@ function FSL:init()
     do
       local name = control.LVar:lower()
       local _type = control.type:lower()
-      if _type == "enginemasterswitch" then
+      if _type == "unknown" then
+        control = Control:new(control)
+      elseif _type == "enginemasterswitch" then
         control = EngineMasterSwitch:new(control)
       elseif _type == "fcuswitch" then
         control = FcuSwitch:new(control)
@@ -972,10 +998,13 @@ function FSL:init()
         control = Switch:new(control)
       elseif name:find("guard") then
         control = Guard:new(control)
-      elseif name:find("button") or name:find("switch") or name:find("mcdu") then
+      elseif name:find("button") or name:find("switch") or name:find("mcdu") or name:find("key") then
         control = Button:new(control)
       else
         control = Control:new(control)
+      end
+      if not control.checkMacro and not FSL2LUA_IGNORE_UNCHECKED then
+        control = nil
       end
     end
 
@@ -1235,6 +1264,56 @@ function atsuLog:test()
   self.path = self.path:gsub("ATSU.log", "test.log")
 end
 
+function FSL.CheckMacros()
+
+  local checked = {}
+  local missing = {}
+
+  local function checkControl(control)
+    if type(control) == "table" and control.FSL_VC_control and control.checkMacro then
+      if control.rectangle then
+        if not control:checkMacro() then
+          print("The macro of control " .. control.LVar .. " appears to be invalid")
+        end
+      elseif not control.FSControl then
+        table.insert(missing, control)
+      end
+    end
+  end
+
+  local function checkMacros(table)
+    for _, control in pairs(table) do
+      if type(control) == "table" and control.LVar and control.LVar:lower():find("guard") then
+        checkControl(control)
+        checked[control] = true
+      end
+    end
+
+    for _, control in pairs(table) do
+      if not checked[control] then checkControl(control) end
+    end
+  end
+
+  print "------------------------------------------------------"
+  print "Checking macros!"
+
+  for _, button in ipairs {FSL.OVHD_FIRE_ENG1_PUSH_Button, FSL.OVHD_FIRE_ENG2_PUSH_Button, FSL.OVHD_FIRE_APU_PUSH_Button} do
+    if not button:isDown() then
+      checkControl(button)
+    end
+  end
+
+  checkMacros(FSL)
+  checkMacros(FSL.CPT)
+  checkMacros(FSL.FO)
+
+  --print("The following controls are missing rectangles:")
+  --for _, control in ipairs(missing) do print(control.LVar) end
+
+  print "Finished checking macros!"
+
+end
+
 local keyList = {
   Backspace = 8,
   Enter = 13,
@@ -1457,10 +1536,17 @@ setmetatable(Bind, Bind)
 
 --- @section Bind
 
+--- This function is a wrapper around event.key and event.button from the FSUIPC Lua library.
+--
+--- Don't use this inside Copilot since Copilot can block for several seconds - unless you want to trigger Copilot's actions with keys or buttons.
+--- Import FSL2Lua in a separate script instead and auto-launch it using FSUIPC's lua auto-launching facility.
 --- @function Bind
 --- @tparam table data A table containing the following fields: 
 --- @tparam function data.onPress (see usage below)
+--
 --- @tparam function data.onPressRepeat (see usage below)
+--
+--- **Warning**: for buttons, onPressRepeat uses event.timer. There is only one timer available in a lua script so don't use onPressRepeat with buttons if you need a timer for something else.<br><br>
 --- @tparam function data.onRelease (see usage below)
 --- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
 --- @string data.key Define this field for a key bind. The following values for are accepted:<br><br>

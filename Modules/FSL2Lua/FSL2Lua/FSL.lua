@@ -20,7 +20,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x4000012b"
+      A320 = "0x4000012b",
+      A321 = "0x4000012d"
     },
     type = ""
   },
@@ -32,7 +33,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x4000026f"
+      A320 = "0x4000026f",
+      A321 = "0x40000286"
     },
     type = ""
   },
@@ -57,7 +59,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x4000012d"
+      A320 = "0x4000012d",
+      A321 = "0x4000012f"
     },
     type = ""
   },
@@ -69,7 +72,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x40000127"
+      A320 = "0x40000127",
+      A321 = "0x40000287"
     },
     type = ""
   },
@@ -305,7 +309,7 @@ return {
       A320 = "0x40000004",
       A321 = "0x40000004"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_CP_EFIS_LS_Button = {
@@ -478,8 +482,13 @@ return {
       y = "41",
       z = ""
     },
+    posn = {
+      ["100"] = 0,
+      ["1000"] = 10
+    },
     rectangle = {
-      A320 = "0x4000002f"
+      A320 = "0x4000002f",
+      A321 = "0x4000002f"
     },
     toggle = false,
     type = ""
@@ -641,7 +650,7 @@ return {
       A320 = "0x40000034",
       A321 = "0x40000034"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_HDG_Knob = {
@@ -698,9 +707,10 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x40000036"
+      A320 = "0x40000036",
+      A321 = "0x40000036"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_SPD_Knob = {
@@ -728,7 +738,7 @@ return {
       A320 = "0x40000035",
       A321 = "0x40000035"
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   GSLD_FCU_SPD_Switch = {
@@ -810,7 +820,7 @@ return {
       inhg = 0
     },
     rectangle = {
-      A320 = "0x40000122",
+      A320 = "0x40000029",
       A321 = "0x40000029"
     },
     type = ""
@@ -1745,12 +1755,12 @@ return {
   },
   MIP_DDRMI_VORADF_R_Switch = {
     LVar = "VC_MIP_DDRMI_VORADF_R_Switch",
+    orientation = 2,
     pos = {
       x = "156",
       y = "98",
       z = ""
     },
-    orientation = 2,
     posn = {
       adf = 10,
       vor = 0
@@ -1854,7 +1864,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x22002008"
+      A320 = "0x22002008",
+      A321 = "0x22002008"
     },
     toggle = false,
     type = ""
@@ -1867,7 +1878,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x40000227"
+      A320 = "0x40000227",
+      A321 = "0x40000227"
     },
     toggle = false,
     type = ""
@@ -1880,6 +1892,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x22002009",
       A321 = "0x22002009"
     },
     toggle = false,
@@ -2504,7 +2517,6 @@ return {
   },
   OVHD_CALLS_EMER_Button = {
     LVar = "VC_OVHD_CALLS_EMER_Button",
-    
     pos = {
       x = "-11",
       y = "106",
@@ -2918,6 +2930,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x2580100a",
       A321 = "0x2580100a"
     },
     type = ""
@@ -3243,7 +3256,8 @@ return {
       z = ""
     },
     rectangle = {
-      A320 = "0x24403002"
+      A320 = "0x24403002",
+      A321 = "0x24403002"
     },
     toggle = true,
     type = ""
@@ -4270,6 +4284,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x24401801",
       A321 = "0x24401801"
     },
     toggle = true,
@@ -5983,6 +5998,7 @@ return {
     },
     range = 270,
     rectangle = {
+      A320 = "0x25800007",
       A321 = "0x25800007"
     },
     type = ""
@@ -6668,6 +6684,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x25800800",
       A321 = "0x25800800"
     },
     toggle = true,
@@ -6991,6 +7008,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x40000176",
       A321 = "0x40000178"
     },
     toggle = false,
@@ -7186,6 +7204,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x400001c9",
       A321 = "0x400001c9"
     },
     toggle = false,
@@ -7323,9 +7342,7 @@ return {
       A320 = "0x40000152",
       A321 = "0x40000154"
     },
-    orientation = 2,
-    toggle = false,
-    type = ""
+    type = "unknown"
   },
   PED_MCDU_L_KEY_0 = {
     LVar = "VC_PED_MCDU_L_KEY_0",
@@ -10370,6 +10387,7 @@ return {
       z = ""
     },
     rectangle = {
+      A320 = "0x40000267",
       A321 = "0x40000261"
     },
     toggle = false,
@@ -10384,6 +10402,7 @@ return {
     },
     range = 360,
     rectangle = {
+      A320 = "0x40000268",
       A321 = "0x40000262"
     },
     type = ""

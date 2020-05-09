@@ -41,6 +41,7 @@ public:
 	sol::as_table_t<std::vector<std::string>> getPhrases(DWORD ruleID);
 	void addPhrase(const std::string& phrase, DWORD ruleID);
 	void removePhrase(const std::string& phrase, DWORD ruleID);
+	void removeAllPhrases(DWORD ruleID);
 	void setConfidence(float confidence, DWORD ruleID);
 	void resetGrammar();
 	std::optional<RecoResult> getResult();

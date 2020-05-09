@@ -1,5 +1,7 @@
 # Installation
 
+<a href="https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432">Which FSLabs version is the latest Copilot version compatible with?</a>
+
 1. Unzip the content of the Modules folder into the the FSUIPC installation directory.
 
 2. Unzip the content of the Prepar3D vx Add-ons folder into your Add-ons folder (eg *C:\Users\Username\Documents\Prepar3D v4 Add-ons*).
@@ -10,7 +12,11 @@
 
 The script will auto-run after you load a flight with FSLabs.
 
-If you want to extend the functionality of the script, see @{custom.lua | this example.}
+You can restart or stop (no need to do either during normal operation :) the script and output its log to the console (which needs to be enabled in the FSUIPC settings first) from its Add-ons submenu.
+
+**If anything goes wrong during its operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make it more verbose by setting log_level to 1).
+
+If you want to extend the functionality of the script, see @{custom.lua | some examples here.}
 
 ## Setting up speech recognition
 
