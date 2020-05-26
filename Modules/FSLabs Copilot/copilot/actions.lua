@@ -148,7 +148,10 @@ if copilot.isVoiceControlEnabled then
       if (copilot.airborneTime and ipc.elapsedtime() - copilot.airborneTime < 60000) or flyingCircuits then
         local flaps = FSL.PED_FLAP_LEVER:getPosn()
         if flaps == "3" then
-          copilot.voiceCommands.flapsTwo:activate()
+          copilot.voiceCommands.flapsOne:activate()
+          if flyingCircuits then
+            copilot.voiceCommands.flapsTwo:activate()
+          end
         elseif flaps == "2" then
           copilot.voiceCommands.flapsOne:activate()
           if flyingCircuits then
@@ -212,6 +215,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.gearDown = VoiceCommand:new {
     phrase = "gear down",
+    confidence = recoConfidence(0.95),
     action = function()
       copilot.voiceCommands.gearDown:ignore()
       VoiceCommand:react()
@@ -221,7 +225,6 @@ if copilot.isVoiceControlEnabled then
     persistent = true
   }
 
-  copilot.voiceCommands.takeoff = VoiceCommand:new {phrase = "takeoff", confidence = recoConfidence(0.95)}
   copilot.voiceCommands.taxiLightOff = VoiceCommand:new {
     phrase = {"taxi light off", "taxilightoff"},
     action = function() FSL.OVHD_EXTLT_Nose_Switch("OFF") end
@@ -380,10 +383,10 @@ function copilot.sequences:taxiSequence()
   copilot.sleep(100)
   FSL.PED_WXRadar_PWS_Switch("AUTO")
   FSL.MIP_BRAKES_AUTOBRK_MAX_Button()
-  FSL.PED_ECP_TO_CONFIG_Button()
-  FSL.PED_ECP_TO_CONFIG_Button()
-  FSL.PED_ECP_TO_CONFIG_Button()
-  FSL.PED_ECP_TO_CONFIG_Button()
+  for _ = 1, 5 do
+    FSL.PED_ECP_TO_CONFIG_Button()
+    copilot.sleep(50, 100)
+  end
 end
 
 function copilot.sequences:waitForLineup()
@@ -524,7 +527,7 @@ function copilot.sequences.afterLanding:__call()
   FSL.PED_ATCXPDR_MODE_Switch("STBY")
 
   FSL.MIP_CHRONO_ELAPS_SEL_Switch("STP")
-  if takeoff_sequence == 1 then FSL.GSLD_Chrono_Button() end
+  if copilot.UserOptions.actions.takeoff_sequence == 1 then FSL.GSLD_Chrono_Button() end
 
   FSL.OVHD_EXTLT_Strobe_Switch("AUTO")
   FSL.OVHD_EXTLT_RwyTurnoff_Switch("OFF")
@@ -612,6 +615,7 @@ if copilot.UserOptions.actions.lineup == 1 then
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.lineup = VoiceCommand:new {
       phrase = "lineup procedure",
+      confidence = recoConfidence(0.94),
       action = {function()
         if copilot.UserOptions.actions.takeoff_sequence == 1 then
           copilot.voiceCommands.takeoff:activate()
@@ -635,6 +639,7 @@ do
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.takeoff = VoiceCommand:new{
       phrase = "takeoff",
+      dummy = {"takeoffrunway", "takeoff runway","take off runway", "taykoffrunway"},
       action = function()
         copilot.actions.noVoiceTakeoffTrigger:stopCurrentThread()
         copilot.events.takeoffInitiated2:trigger()

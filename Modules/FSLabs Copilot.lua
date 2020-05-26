@@ -1,5 +1,5 @@
 --[[--
-Main module.
+Stuff you can use in Copilot.
 ]]
 --- @module copilot
 
@@ -79,6 +79,8 @@ function copilot.addCallback(callback, name)
   return callback
 end
 
+local coroutine = coroutine
+
 --- Adds function or coroutine callback to the main callback loop which will be removed after being called once (if it's a coroutine - when the coroutine ends).
 --- @param callback A function or thread.
 --- @number[opt] delay Milliseconds by which to delay calling the callback.
@@ -117,8 +119,8 @@ function copilot.update(time)
     elseif type(callback) == "thread" then
       local _, err = coroutine.resume(callback, time)
       if err then
-        error(err) 
-        copilot.removeCallback(key)
+        event.cancel("copilot.update")
+        error(err)
       end
       if coroutine.status(callback) == "dead" then
         copilot.removeCallback(key)
@@ -151,10 +153,10 @@ local function setup()
     copilot.UserOptions.actions.during_taxi = 0
   end
 
-  copilot.addCallback(coroutine.create(function() FlightPhaseProcessor:update() end))
+  copilot.addCallback(coroutine.create(function() FlightPhaseProcessor:update() end), "FlightPhaseProcessor")
   copilot.addCallback(Event.resumeThreads)
   if copilot.isVoiceControlEnabled then
-    copilot.addCallback(Event.fetchRecoResult)
+    event.flag(0, "Event.fetchRecoResults")
   end
 
   if copilot.UserOptions.callouts.enable == 1 then
@@ -166,14 +168,28 @@ local function setup()
     require "copilot.actions"
   end
 
-  if copilot.isVoiceControlEnabled then
-    copilot.recognizer:resetGrammar()
+  for _, voiceCommand in pairs(copilot.voiceCommands) do
+    local function addPlus(phrase)
+      return phrase:gsub("%S+", function(word) 
+        return "+" .. word
+      end)
+    end
+    local phrases = voiceCommand:getPhrases()
+    voiceCommand:removeAllPhrases()
+    for _, phrase in ipairs(phrases) do
+      voiceCommand:addPhrase(addPlus(phrase))
+    end
+    local dummyPhrases = voiceCommand:getPhrases(true)
+    voiceCommand:removeAllPhrases(true)
+    for _, phrase in ipairs(dummyPhrases) do
+      voiceCommand:addPhrase(addPlus(phrase), true)
+    end
   end
 
   local customDir = APPDIR .. "\\custom\\"
   local userFiles = false
   for file in lfs.dir(customDir) do
-    if file:find(".lua$") then
+    if file:find("%.lua$") then
       if not userFiles then
         userFiles = true
         copilot.logger:info "Loading user lua files:"
@@ -183,8 +199,8 @@ local function setup()
     end
   end
 
-  if copilot.isVoiceControlEnabled and userFiles then
-    copilot.recognizer:resetGrammar()
+  if copilot.isVoiceControlEnabled then
+    VoiceCommand.resetGrammar()
   end
 
   for _, event in pairs(copilot.events) do 

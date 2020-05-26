@@ -1,8 +1,9 @@
 #include "McduWatcher.h"
+#include <algorithm>
 
 bool isNumber(const std::string& str) 
 {
-	return all_of(str.begin(), str.end(), isdigit);
+	return std::all_of(str.begin(), str.end(), isdigit);
 }
 
 LuaVar toNumber(const std::string& str)

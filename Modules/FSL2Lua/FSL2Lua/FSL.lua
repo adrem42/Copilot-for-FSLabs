@@ -3223,8 +3223,8 @@ return {
   OVHD_ELAC_1_Button = {
     LVar = "VC_OVHD_ELAC_1_Button",
     pos = {
-      x = "378",
-      y = "-75",
+      x = "-76",
+      y = "373",
       z = ""
     },
     rectangle = {
@@ -3738,8 +3738,8 @@ return {
   OVHD_FAC_1_Button = {
     LVar = "VC_OVHD_FAC_1_Button",
     pos = {
-      x = "374",
-      y = "-23",
+      x = "-23",
+      y = "374",
       z = ""
     },
     rectangle = {
@@ -3752,8 +3752,8 @@ return {
   OVHD_FAC_2_Button = {
     LVar = "VC_OVHD_FAC_2_Button",
     pos = {
-      x = "333",
-      y = "452",
+      x = "452",
+      y = "333",
       z = ""
     },
     rectangle = {
@@ -4030,8 +4030,8 @@ return {
   OVHD_FUEL_CTR_TK_1_VALVE_Button = {
     LVar = "VC_OVHD_FUEL_CTR_TK_1_VALVE_Button",
     pos = {
-      x = "",
-      y = "",
+      x = "146",
+      y = "377",
       z = ""
     },
     rectangle = {
@@ -4056,8 +4056,8 @@ return {
   OVHD_FUEL_CTR_TK_2_VALVE_Button = {
     LVar = "VC_OVHD_FUEL_CTR_TK_2_VALVE_Button",
     pos = {
-      x = "",
-      y = "",
+      x = "206",
+      y = "377",
       z = ""
     },
     rectangle = {
@@ -5000,8 +5000,8 @@ return {
   OVHD_SEC_1_Button = {
     LVar = "VC_OVHD_SEC_1_Button",
     pos = {
-      x = "373",
-      y = "-49",
+      x = "-49",
+      y = "373",
       z = ""
     },
     rectangle = {

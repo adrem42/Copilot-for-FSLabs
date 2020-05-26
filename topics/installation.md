@@ -1,6 +1,6 @@
 # Installation
 
-<a href="https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432">Which FSLabs version is the latest Copilot version compatible with?</a>
+<a href="https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432">Copilot and FSLabs version compatibility</a>
 
 1. Unzip the content of the Modules folder into the the FSUIPC installation directory.
 
@@ -12,11 +12,13 @@
 
 The script will auto-run after you load a flight with FSLabs.
 
-You can restart or stop (no need to do either during normal operation :) the script and output its log to the console (which needs to be enabled in the FSUIPC settings first) from its Add-ons submenu.
+You can restart or stop the script (no need to do either during normal operation :) and output its log to the console (which needs to be enabled in the FSUIPC settings first) from its Add-ons submenu.
 
-**If anything goes wrong during its operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make it more verbose by setting log_level to 1).
+**If anything goes wrong during the script's operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make it more verbose by setting log_level to 1).
 
 If you want to extend the functionality of the script, see @{custom.lua | some examples here.}
+
+@{cockpit_control_binds.lua | A few examples of binding cockpit controls to keyboard keys and joystick buttons}
 
 ## Setting up speech recognition
 

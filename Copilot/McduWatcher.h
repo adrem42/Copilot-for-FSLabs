@@ -1,16 +1,9 @@
 #pragma once
-
-extern "C"
-{
-#include "../lua515/include/lua.h"
-#include "../lua515/include/lauxlib.h"
-#include "../lua515/include/lualib.h"
-}
-
 #include <memory>
 #include <variant>
 #include <optional>
 #include <mutex>
+#include <map>
 #include "../HttpRequest/HttpRequest.h"
 
 using LuaVar = std::optional<std::variant<std::string, bool, int>>;

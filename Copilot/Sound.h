@@ -17,7 +17,7 @@ class Sound {
 	static TimePoint nextFreeSlot;
 	static std::queue<std::pair<Sound*, TimePoint>> soundQueue;
 	static std::mutex mtx;
-	static double globalVolume;
+	static double globalVolume, volKnobPos;
 	static double getVolumeKnobPos();
 	static constexpr double zeroVolumeThreshold = 0.7;
 	static Sound* prevSound;

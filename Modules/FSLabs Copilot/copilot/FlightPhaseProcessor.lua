@@ -1,3 +1,4 @@
+local copilot = copilot
 local events = copilot.events
 local flightPhases = copilot.flightPhases
 local Event = Event
@@ -9,7 +10,8 @@ function FlightPhaseProcessor:init()
   if self.initialFlightPhase then
     self:setFlightPhase(self.initialFlightPhase)
   elseif not copilot.enginesRunning() then
-    self:setFlightPhase(flightPhases.engineShutdown)
+    local flightPhase = ipc.readLvar("FSLA320_Wheel_Chocks") == 1  and flightPhases.onChocks or flightPhases.engineShutdown
+    self:setFlightPhase(flightPhase)
   elseif copilot.onGround() then
     self:setFlightPhase(flightPhases.taxi:setCtxEvent(events.enginesStarted))
   else
@@ -35,7 +37,7 @@ function FlightPhaseProcessor:setFlightPhase(newFlightPhase)
   self.currFlightPhase = newFlightPhase
   local name = self.currFlightPhase.name
   if name then
-    copilot.logger:debug("Flight phase: " .. name)
+    copilot.logger:info("Flight phase: " .. name)
   end
   if newFlightPhase.event then
     newFlightPhase.event:trigger()

@@ -1,7 +1,9 @@
-----
+---- Copilot's event library.
 -- @module Event
 
 local Ouroboros = require "FSLabs Copilot.libs.ouroboros"
+local coroutine = coroutine
+local copilot = copilot
 
 local function removeEventRef(self, refType, ...)
   if refType == "all" then
@@ -34,10 +36,11 @@ local Action = Action
 
 function Action:new(callback, flags)
   self.__index = self
-  assert(type(callback) == "function" or getmetatable(callback) and getmetatable(callback).__call, "Action callback must be a callable")
+  if not (type(callback) == "function" or getmetatable(callback) and getmetatable(callback).__call) then
+    error("Action callback must be a callable", 2)
+  end
   return setmetatable ({
     callback = type(callback) == "function" and callback or function(...) getmetatable(callback).__call(callback, ...) end,
-    runBefore = {},
     isEnabled = true,
     runAsCoroutine = flags == "runAsCoroutine",
     eventRefs = {stop = {}}
@@ -240,7 +243,9 @@ function Event:addAction(...)
   elseif type(args[1]) == "function" or (type(args[1]) == "table" and getmetatable(args[1]).__call) then
     action = Action:new(...)
   end
-  assert(action ~= nil, "Failed to create action")
+  if action == nil then
+    error("Failed to create action", 2)
+  end
   self.actions.nodes[action] = {}
   if self.areActionsSorted then
     self.sortedActions[#self.sortedActions+1] = action
@@ -250,16 +255,22 @@ function Event:addAction(...)
 end
 
 function Event:sortActions()
-  assert(not self.runningActions, "Can't sort actions while actions are running")
+  if (self.runningActions) then
+    error("Can't sort actions while actions are running", 2)
+  end
   self.sortedActions = self.actions:sort()
-  assert(self.sortedActions ~= nil, "Unable to sort actions in event '" .. self:toString() .. "' due to cyclic dependencies.")
+  if self.sortedActions == nil then
+    error("Unable to sort actions in event '" .. self:toString() .. "' due to cyclic dependencies.", 2)
+  end
   self.areActionsSorted = true
 end
 
 local OrderSetter = {}
 
 function OrderSetter._assertCoro(action)
-  assert(action.runAsCoroutine, "Action " .. action:toString() .. " needs to be a coroutine in order to wait for other coroutines to complete")
+  if not action.runAsCoroutine then
+    error("Action " .. action:toString() .. " needs to be a coroutine in order to wait for other coroutines to complete", 3)
+  end
 end
 
 function OrderSetter:front(wait)
@@ -479,9 +490,8 @@ function Event:trigger(...)
   self.runningActions = false
 end
 
-function Event.fetchRecoResult()
-  local ruleID = copilot.recoResultFetcher:getResult()
-  if ruleID then
+function Event.fetchRecoResults()
+  for _, ruleID in ipairs(copilot.recoResultFetcher:getResults()) do
     Event.voiceCommands[ruleID]:trigger()
   end
 end
@@ -572,12 +582,30 @@ local recognizer = copilot.recognizer
 -- will also degrade the quality of recognition.<br>
 --
 --- @type VoiceCommand
-VoiceCommand = {Status = {active = 1, ignore = 2, inactive = 3, disabled = 4}}
+VoiceCommand = {}
 setmetatable(VoiceCommand, {__index = Event})
+
+local PersistenceMode = {
+  ignore = RulePersistenceMode.Ignore,
+  [true] = RulePersistenceMode.Persistent,
+  [false] = RulePersistenceMode.NonPersistent
+}
+
+local function _persistenceMode(persistence)
+  if persistence == nil then
+    return RulePersistenceMode.NonPersistent
+  else
+    return PersistenceMode[persistence] or error("Invalid persistence mode", 3)
+  end
+end
 
 --- Constructor
 --- @param data A table containing the following fields (also the fields taken by @{Event:new|the parent constructor}):
 --  @param data.phrase string or array of strings. @{addPhrase|You can modify the required confidence of each word in the phrase}
+--  @param data.dummy string or array of strings. One or multiple dummy phrase variants which will activated and deactivated 
+-- synchronously with the voice command's actual phrase variants to help the recognizer discriminate between them and similarly 
+-- sounding phrases. For example, the default 'takeoff' voice command has a 'takeoff runway' dummy phrase which is an item on the
+-- standard takeoff checklist. 
 --  @number[opt=0.93] data.confidence between 0 and 1
 --  @param[opt=false] data.persistent
 -- * omitted or false: the voice command will be deactivated after being triggered.
@@ -592,50 +620,93 @@ setmetatable(VoiceCommand, {__index = Event})
 
 function VoiceCommand:new(data)
   local voiceCommand = data
-  voiceCommand.confidence = voiceCommand.confidence or copilot.UserOptions.voice_control.confidence_threshold
+  voiceCommand.confidence = data.confidence or copilot.UserOptions.voice_control.confidence_threshold
   voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
-  voiceCommand.status = self.Status.inactive
   if copilot.isVoiceControlEnabled then
-    voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase, voiceCommand.confidence)
+    voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase,
+                                             voiceCommand.confidence,
+                                             _persistenceMode(data.persistent))
+    voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
   end
   voiceCommand.phrase = nil
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
-  return setmetatable(Event:new(voiceCommand), self)
+  voiceCommand = setmetatable(Event:new(voiceCommand), self)
+  if data.dummy then
+    voiceCommand:addPhrase(data.dummy, true)
+    voiceCommand.dummy = nil
+  end
+  return voiceCommand
 end
 
---- Returns all phrase variants of the voice commands.
+--- Call this static function inside a plugin lua file before activating or deactivating voice commands.
+---@static
+function VoiceCommand.resetGrammar()
+  if not VoiceCommand.isGrammarReset then
+    recognizer:resetGrammar()
+    VoiceCommand.isGrammarReset = true
+  end
+end
+
+--- Returns all phrase variants of a voice command.
+---@bool dummy True to return dummy phrase variants, omitted or false to return actual phrase variants.
 ---@return Array of strings.
-function VoiceCommand:getPhrases()
-  return recognizer:getPhrases(self.ruleID)
+function VoiceCommand:getPhrases(dummy)
+  return recognizer:getPhrases(self.ruleID, dummy == true and true or false)
 end
 
---- Adds a phrase variant to the voice command.
----@string phrase The SAPI recognizer has two confidence metrics - a float from 0-1 and another one that has three states: low, normal and high.
----If a word is preceded by a '+' or '-', its required confidence is set to 'high' or 'low', respectively, otherwise, it has the default required confidence 'normal'.
-function VoiceCommand:addPhrase(phrase)
-  recognizer:addPhrase(phrase, self.ruleID)
+--- Sets persistence mode of a voice command.
+---@param persistenceMode
+-- * omitted or false: the voice command will be deactivated after being triggered.
+-- * 'ignore': the voice command will be put into ignore mode after being triggered.
+-- * true: the voice command will stay active after being triggered.
+---@return self
+function VoiceCommand:setPersistence(persistenceMode)
+  recognizer:setRulePersistence(_persistenceMode(persistenceMode), self.ruleID)
   return self
 end
 
---- Removes a phrase variant of the voice command.
+--- Adds phrase variants to a voice command.
+--
+---The SAPI recognizer has two confidence metrics - a float from 0-1 and another one that has three states: low, normal and high.
+---If a word is preceded by a '+' or '-', its required confidence is set to 'high' or 'low', respectively, otherwise, it has the default required confidence 'normal'.
+---@param phrase string or array of strings
+---@bool dummy True to add dummy phrase variants, omitted or false to add actual phrase variants.
+---@return self
+function VoiceCommand:addPhrase(phrase, dummy)
+  phrase = type(phrase) == "table" and phrase or {phrase}
+  recognizer:addPhrases(phrase, self.ruleID, dummy == true and true or false)
+  return self
+end
+
+local function trimPhrase(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
+
+--- Removes phrase variants from a voice command.
 --- + and - in front of a word are ignored. For example, removePhrase("hello world") will remove both "+hello -world" and "hello world".
-function VoiceCommand:removePhrase(phrase)
-  local function trim(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
-  phrase = trim(phrase)
-  for _, _phrase in ipairs(self:getPhrases()) do
-    if trim(_phrase) == phrase then
-      recognizer:removePhrase(_phrase, self.ruleID)
+---@param phrase string or array of strings
+---@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
+---@return self
+function VoiceCommand:removePhrase(phrase, dummy)
+  local phrasesToRemove = type(phrase) == "table" and phrase or {phrase}
+  local deletthis = {}
+  for _, phraseToRemove in ipairs(phrasesToRemove) do
+   phraseToRemove = trimPhrase(phraseToRemove)
+    for _, _phrase in ipairs(self:getPhrases(dummy == true and true or false)) do
+      if phraseToRemove == _phrase then
+        deletthis[#deletthis+1] = _phrase
+      end
     end
   end
+  recognizer:removePhrases(deletthis, self.ruleID, dummy == true and true or false)
   return self
 end
 
---- Removes all phrases from a voice command.
+--- Removes all phrase variants from a voice command.
+---@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
 ---@return self
-function VoiceCommand:removeAllPhrases()
-  recognizer:removeAllPhrases(self.ruleID)
+function VoiceCommand:removeAllPhrases(dummy)
+  recognizer:removeAllPhrases(self.ruleID, dummy == true and true or false)
   return self
 end
 
@@ -650,10 +721,8 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:activate()
-  if copilot.isVoiceControlEnabled and self.status ~= self.Status.disabled and self.status ~= self.Status.active then
-    copilot.logger:debug("Activating voice command: " .. self:getPhrases()[1])
+  if copilot.isVoiceControlEnabled then
     recognizer:activateRule(self.ruleID)
-    self.status = self.Status.active
   end
   return self
 end
@@ -661,10 +730,8 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:ignore()
-  if copilot.isVoiceControlEnabled and self.status ~= self.Status.disabled and self.status ~= self.Status.ignore then
-    copilot.logger:debug("Starting ignore mode for voice command: " .. self:getPhrases()[1])
+  if copilot.isVoiceControlEnabled then
     recognizer:ignoreRule(self.ruleID)
-    self.status = self.Status.ignore
   end
   return self
 end
@@ -672,36 +739,24 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:deactivate()
-  if copilot.isVoiceControlEnabled and self.status ~= self.Status.disabled and self.status ~= self.Status.inactive then
-    copilot.logger:debug("Deactivating voice command: " .. self:getPhrases()[1])
+  if copilot.isVoiceControlEnabled then
     recognizer:deactivateRule(self.ruleID)
-    self.status = self.Status.inactive
   end
   return self
 end
 
-function VoiceCommand:trigger()
-  Event.trigger(self)
-  if not self.persistent then
-    self:deactivate()
-  elseif self.persistent == "ignore" then
-    self:ignore()
-  end
-end
-
----Disables the voice command.
+---Deactivates the voice command and makes successive calls to @{activate} and @{ignore} have no effect.
 function VoiceCommand:disable()
-  self:deactivate()
-  self.status = self.Status.disabled
+  recognizer:disableRule(self.ruleID)
   return self
 end
 
----If the voice command has only one action, return that action. All default voice commands have only one action.
+---If the voice command has only one action, returns that action. All default voice commands have only one action.
 function VoiceCommand:getAction()
   if self:getActionCount() ~= 1 then
-    error(string.format("Cannot get action of voice command %s - action count isn't 1", self:getPhrases()[1]))
+    error(string.format("Cannot get action of voice command %s - action count isn't 1", self:getPhrases()[1]), 2)
   end
-  for action in pairs(self.actions) do return action end
+  for action in pairs(self.actions.nodes) do return action end
 end
 
 function VoiceCommand:react(plus)

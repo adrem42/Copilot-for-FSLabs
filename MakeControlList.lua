@@ -1,14 +1,15 @@
-_ALLRECTANGLES = true
-
+ipc = {readLvar = function() end}
+package.path = "Modules\\?.lua;Modules\\?\\init.lua"
+FSL2LUA_STANDALONE = true
 local FSL = require "FSL2Lua"
 
-local name = "C:\\Users\\Peter\\source\\repos\\FSLabs Copilot\\topics\\listofcontrols.md"
-io.open(name,"w"):close()
-local file = io.open(name,"a")
+local path = "topics\\listofcontrols.md"
+io.open(path,"w"):close()
+local file = io.open(path,"a")
 io.input(file)
 io.output(file)
 
-function pairsByKeys (t, f)
+local function pairsByKeys (t, f)
   local a = {}
   for n in pairs(t) do table.insert(a, n) end
   table.sort(a, function(a, b) 
@@ -28,7 +29,7 @@ function pairsByKeys (t, f)
   return iter
 end
 
-function makeList(table,tableName)
+local function makeList(table,tableName)
   local temp = {}
   for controlName,controlObj in pairs(table) do
     if type(controlObj) == "table" then
@@ -46,6 +47,7 @@ function makeList(table,tableName)
             if pos == pos:upper() then line = line .. "\"" .. pos:upper() .. "\", " end
           end
           if line:sub(#line-1,#line-1) == "," then line = line:sub(1, #line-2) end
+          line = line .. "\n"
         end
       end
     elseif type(controlObj) == "function" and not controlName:sub(1,1):find("%W") and not controlName:sub(1,1):find("%l") then
@@ -54,7 +56,7 @@ function makeList(table,tableName)
     if line then temp[line] = "" end
   end
   for line in pairsByKeys(temp) do
-    io.write(line .. "\n\n")
+    io.write(line .. "\n")
   end
 end
 

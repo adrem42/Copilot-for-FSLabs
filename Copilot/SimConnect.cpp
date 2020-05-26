@@ -1,4 +1,5 @@
 #include "SimConnect.h"
+#include "Copilot.h"
 #include <mutex>
 
 enum MuteKeyStatus {
@@ -15,7 +16,7 @@ void attachLogToConsole()
 	if (it != sinks.end())
 		sinks.erase(it);
 	consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-	consoleSink->set_pattern("[%T] %^[%n]%$ %v");
+	consoleSink->set_pattern("[%T] %^[FSL Copilot]%$ %v");
 	copilot::logger->sinks().push_back(consoleSink);
 }
 
@@ -49,34 +50,39 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 
 				case EVENT_SIM_START:
 				{
-					if (fslAircraftLoaded && !simStarted) {
-						simStarted = true;
+					simPaused = false;
+					if (m_fslAircraftLoaded && !m_simStarted) {
+
+						m_simStarted = true;
 
 						HRESULT hr;
 
-						hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_MUTE_CONTROL, "SMOKE_TOGGLE");
-						hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, GROUP0, EVENT_MUTE_CONTROL);
+						hr = SimConnect_MapClientEventToSimEvent(m_hSimConnect, EVENT_MUTE_CONTROL, "SMOKE_TOGGLE");
+						hr = SimConnect_AddClientEventToNotificationGroup(m_hSimConnect, GROUP0, EVENT_MUTE_CONTROL);
 
-						hr = SimConnect_MenuAddItem(hSimConnect, "Copilot for FSLabs", EVENT_MENU, 0);
-						hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Restart", EVENT_MENU_START, 0);
-						hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Stop", EVENT_MENU_STOP, 0);
-						hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Output log to console", EVENT_MENU_ATTACH_CONSOLE, 0);
+						hr = SimConnect_MenuAddItem(m_hSimConnect, "Copilot for FSLabs", EVENT_MENU, 0);
+						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Restart", EVENT_MENU_START, 0);
+						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Stop", EVENT_MENU_STOP, 0);
+						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Output log to console", EVENT_MENU_ATTACH_CONSOLE, 0);
 
-						hr = SimConnect_SetNotificationGroupPriority(hSimConnect, GROUP0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+						hr = SimConnect_SetNotificationGroupPriority(m_hSimConnect, GROUP0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
 						attachLogToConsole();
-
-						std::thread(copilot::autoStartLua).detach();
+						copilot::autoStartLua();
 					}
 					break;
 				}
+
+				case EVENT_SIM_STOP:
+					simPaused = true;
+					break;
 
 				case EVENT_MENU_START:
 					copilot::startLuaThread();
 					break;
 
 				case EVENT_MENU_STOP:
-					copilot::stopLuaThread();
+					copilot::shutDown();
 					break;
 
 				case EVENT_MENU_ATTACH_CONSOLE:
@@ -94,7 +100,7 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 				case EVENT_AIRCRAFT_LOADED:
 				{
 					std::string path(evt->szFileName);
-					fslAircraftLoaded = path.find("FSLabs") != std::string::npos;
+					m_fslAircraftLoaded = path.find("FSLabs") != std::string::npos;
 					break;
 				}
 				default:
@@ -108,24 +114,26 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 
 bool SimConnect::init()
 {
-	if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FSLabs Copilot", NULL, 0, NULL, 0))) {
+	if (SUCCEEDED(SimConnect_Open(&m_hSimConnect, "FSLabs Copilot", NULL, 0, NULL, 0))) {
 
 		HRESULT hr = S_OK;
 
-		hr += SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_AIRCRAFT_LOADED, "AircraftLoaded");
-		hr += SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_START, "SimStart");
+		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_AIRCRAFT_LOADED, "AircraftLoaded");
+		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_SIM_START, "SimStart");
+		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_SIM_STOP, "SimStop");
 
-		hr += SimConnect_CallDispatch(hSimConnect, dispatchCallback, this);
+		hr = SimConnect_CallDispatch(m_hSimConnect, dispatchCallback, this);
 
-		return SUCCEEDED(hr);
+		return true;
 
 	}
 	return false;
 }
 
-SimConnect::~SimConnect()
+void SimConnect::close()
 {
-	if (hSimConnect != NULL) {
-		SimConnect_Close(hSimConnect);
+	if (m_hSimConnect != NULL) {
+		SimConnect_Close(m_hSimConnect);
+		m_hSimConnect = NULL;
 	}
 }

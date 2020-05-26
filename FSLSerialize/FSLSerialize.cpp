@@ -277,4 +277,5 @@ void DLLStart(__in __notnull IPdk* pPdk)
 
 void __stdcall DLLStop(void)
 {
+	if (hSimConnect) SimConnect_Close(hSimConnect);
 }

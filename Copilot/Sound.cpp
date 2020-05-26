@@ -6,7 +6,7 @@ TimePoint Sound::nextFreeSlot = std::chrono::system_clock::now();
 std::queue<std::pair<Sound*, TimePoint>> Sound::soundQueue;
 Sound* Sound::prevSound;
 std::mutex Sound::mtx;
-double Sound::globalVolume = 1;
+double Sound::globalVolume = 0, Sound::volKnobPos = -1;
 
 Sound::Sound(const std::string& path, int length, double fileRelVolume)
 	:length(length), fileRelVolume(fileRelVolume)
@@ -76,23 +76,26 @@ void Sound::init(int device, int pmSide)
 
 void Sound::processQueue()
 {
-	std::lock_guard<std::mutex> lock(mtx);
-	double pos = getVolumeKnobPos() / 270;
-	double newVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * pos + zeroVolumeThreshold) * 5.757);
-	if (!soundQueue.empty()) {
-		auto currSound = soundQueue.front();
-		if (std::chrono::system_clock::now() > currSound.second) {
-			currSound.first->playNow();
-			prevSound = currSound.first;
-			soundQueue.pop();
+	double newVolKnobPos = getVolumeKnobPos() / 270;
+	bool volumeChanged = volKnobPos != newVolKnobPos;
+	if (!soundQueue.empty() || volumeChanged) {
+		std::lock_guard<std::mutex> lock(mtx);
+		if (!soundQueue.empty()) {
+			auto currSound = soundQueue.front();
+			if (std::chrono::system_clock::now() > currSound.second) {
+				currSound.first->playNow();
+				prevSound = currSound.first;
+				soundQueue.pop();
+			}
 		}
-	}
-	if (newVolume != globalVolume) {
-		globalVolume = newVolume;
-		if (!soundQueue.empty())
-			soundQueue.front().first->setVolume(globalVolume);
-		if (prevSound != nullptr) {
-			prevSound->setVolume(globalVolume);
+		if (volumeChanged) {
+			volKnobPos = newVolKnobPos;
+			globalVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * volKnobPos + zeroVolumeThreshold) * 5.757);
+			if (!soundQueue.empty())
+				soundQueue.front().first->setVolume(globalVolume);
+			if (prevSound != nullptr) {
+				prevSound->setVolume(globalVolume);
+			}
 		}
 	}
 }

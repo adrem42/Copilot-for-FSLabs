@@ -9,11 +9,42 @@ local maf = require "FSL2Lua.libs.maf"
 local file = require "FSL2Lua.FSL2Lua.file"
 local ipc = ipc
 local math = math
-local copilot = package.loaded["FSLabs Copilot"] and copilot
+local FSUIPCversion = not FSL2LUA_STANDALONE and ipc.readUW(0x3306)
+local copilot = type(copilot) == "table" and copilot.logger and copilot
+
+local function handleError(msg, critical, errLevel)
+  if copilot then
+    local logFile = string.format("FSUIPC%s.log", ("%x"):format(FSUIPCversion):sub(1, 1))
+    copilot.logger:error("FSL2Lua: something went wrong. Check " .. logFile)
+    if critical then copilot.logger:error("Copilot cannot continue") end
+  end
+  if critical then
+    table.insert(msg, 1, "")
+    error(table.concat(msg, "\n"), errLevel or 2)
+  else
+    for _, line in ipairs(msg) do
+      print("FSL2Lua: " .. line)
+    end
+  end
+end
+
+local function handleTimeout(control)
+  handleError {
+    "Control " .. control.LVar .. " isn't responding to mouse macro commands",
+    "Most likely its macro is invalid",
+    "FSL2Lua version: " .. _FSL2LUA_VERSION,
+    "Check compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432"
+  }
+end
+
+if not FSL2LUA_STANDALONE and FSUIPCversion < 0x5154 then
+  handleError({"FSUIPC version 5.154 or later is required"}, true, 2)
+end
 
 local FSL2LuaDir = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1")
 package.cpath = FSL2LuaDir .. "\\?.dll;" .. package.cpath
-require "FSL2LuaDLL"
+if not FSL2LUA_STANDALONE then require "FSL2LuaDLL" end
+local elapsedTime = elapsedTime
 
 --- @field CPT table containing controls on the left side
 --- @field FO table containing controls on the right side
@@ -68,9 +99,8 @@ end
 
 local function think(dist)
   local time = 0
-  if dist > 200 then
+  if dist > 200 and prob(0.2) then
     time = time + plusminus(300)
-    if prob(0.5) then time = time + plusminus(300) end
   end
   if prob(0.2) then time = time + plusminus(300) end
   if prob(0.05) then time = time + plusminus(1000) end
@@ -93,7 +123,7 @@ function hand:getSpeed(dist)
   log("Distance: " .. math.floor(dist) .. " mm")
   if dist < 80 then dist = 80 end
   local speed = 5.54785 + (-218.97685 / (1 + (dist / (3.62192 * 10^-19))^0.0786721))
-  speed = plusminus(speed, 0.1)
+  speed = plusminus(speed, 0.1) * 0.8
   log("Speed: " .. math.floor(speed * 1000) .. " mm/s")
   return speed
 end
@@ -103,11 +133,13 @@ function hand:moveTo(newpos)
     self.pos = self.home
   end
   local dist = (newpos - self.pos):length()
-  if self.pos ~= self.home and newpos ~= self.home and dist > 50 then think(dist) end
+  if self.pos ~= self.home and newpos ~= self.home and dist > 50 then 
+    think(dist) 
+  end
   local time
+  local startTime = ipc.elapsedtime()
   if self.pos ~= newpos then
     time = dist / self:getSpeed(dist)
-    local startTime = ipc.elapsedtime()
     if coroutine.running() and time > 100 then
       coroutine.yield()
     end
@@ -134,7 +166,7 @@ local MCDU = {
 function MCDU:new(side)
   self.__index = self
   return setmetatable ({
-    request = HttpRequest:new("", 8080, "MCDU/Display/3CA" .. side),
+    request = McduHttpRequest and McduHttpRequest:new(side, 8080),
     sideStr = side == 1 and "CPT" or side == 2 and "FO"
   }, self)
 end
@@ -155,7 +187,7 @@ end
 
 function MCDU:getArray()
     local display = {}
-    for unitArray in self.request:get():gmatch("%[(.-)%]") do
+    for unitArray in self.request:getRaw():gmatch("%[(.-)%]") do
       local unit = {}
       if unitArray:find(",") then
         local char, color, isBold = unitArray:match("(%d+),(%d),(%d)")
@@ -173,13 +205,12 @@ end
 --- @number[opt] endpos
 
 function MCDU:getString(startpos, endpos)
-  local display = {}
-  for cell in self.request:get():gmatch("%[(.-)%]") do
-    local char = cell:match("(%d+),")
-    char = char and string.char(char) or " "
-    display[#display+1] = char
+  local display = self.request:getString()
+  if startpos or endpos then
+    return string.sub(display, startpos, endpos)
+  else
+    return display
   end
-  return table.concat(display, nil, startpos, endpos)
 end
 
 --- @treturn string Only the last line.
@@ -212,18 +243,20 @@ function MCDU:type(str)
   end
 end
 
---- @treturn bool True if the display is blank.
+--- @treturn bool False if the display is blank.
 
 function MCDU:isOn()
   return self:getString():find("%S") ~= nil
 end
 
---- Prints information about each cell into the console.
+--- Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold.
+--
+--- The output will be in the console and the FSUIPC log file.
 
 function MCDU:printCells()
   for pos,cell in ipairs(self:getArray()) do
     print(pos, 
-          cell.char or "", 
+          cell.char and string.format("%s (%s)", cell.char, string.byte(cell.char)) or "", 
           cell.color or "", 
           cell.isBold and "bold" or cell.isBold == false and "not bold" or "")
   end
@@ -231,8 +264,9 @@ end
 
 FSL.CPT.MCDU = MCDU:new(1)
 FSL.FO.MCDU = MCDU:new(2)
+MCDU.new = nil
 
-local FCU = {request = HttpRequest:new("", 8080, "FCU/Display")}
+local FCU = {request = HttpRequest and HttpRequest:new("http://localhost:8080/FCU/Display")}
 FSL.FCU = FCU
 
 function FCU:getField(json, fieldName)
@@ -329,8 +363,8 @@ function Control:waitForLVarChange(timeout)
   repeat until self:getLvarValue() ~= startPos or ipc.elapsedtime() > timeout
 end
 
-function Control:hideCursor()
-  local x,y = mouse.getpos()
+local function hideCursor()
+  local x, y = mouse.getpos()
   mouse.move(x + 1, y + 1)
   mouse.move(x, y)
   sleep(10)
@@ -357,6 +391,7 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
   if FSL.areSequencesEnabled and not twoSwitches then
     self:moveHandHere()
   end
+  local startTime = ipc.elapsedtime()
   local sleepAfterPress
   local LVarbefore = self:getLvarValue()
   ipc.mousemacro(self.rectangle, pressClickType or 3)
@@ -365,16 +400,10 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     ipc.mousemacro(self.rectangle, releaseClickType or 13)
   else
     local FPS = frameRate()
-    if FPS > 30 then
-      sleepAfterPress = 50
-    elseif FPS > 20 then
-      sleepAfterPress = 70
-    else
-      sleepAfterPress = 100
-    end
+    sleepAfterPress = FPS > 30 and 50 or FPS > 20 and 70 or 100
     local timeout = ipc.elapsedtime() + 1000
     if twoSwitches then
-      repeat 
+      repeat
         coroutine.yield()
       until self:getLvarValue() ~= LVarbefore or ipc.elapsedtime() > timeout
       local time = ipc.elapsedtime()
@@ -382,13 +411,16 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     else
       repeat 
         sleep(10) 
-      until self:getLvarValue() ~= LVarbefore or ipc.elapsedtime() > timeout
+        if ipc.elapsedtime() > timeout then
+          break
+        end
+      until self:getLvarValue() ~= LVarbefore
       sleep(sleepAfterPress)
     end
     ipc.mousemacro(self.rectangle, releaseClickType or 13)
   end
   if FSL.areSequencesEnabled then
-    local interactionLength = plusminus(self.interactionLength or 300) - sleepAfterPress
+    local interactionLength = plusminus(self.interactionLength or 150) - ipc.elapsedtime() + startTime
     if twoSwitches then
       local time = ipc.elapsedtime()
       while ipc.elapsedtime() - time < interactionLength do
@@ -397,7 +429,7 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     else
       sleep(interactionLength)
     end
-    log("Interaction with the control took " .. interactionLength + sleepAfterPress .. " ms")
+    log("Interaction with the control took " .. interactionLength .. " ms")
   end
 end
 
@@ -435,7 +467,7 @@ function Button:checkMacro()
     if not guardOk then return false end
   end
 
-  local timeout = ipc.elapsedtime() + (self.LVar:lower():find("switch") and 2000 or 500)
+  local timeout = ipc.elapsedtime() + 2000
   local LVarbefore = self:getLvarValue()
   ipc.mousemacro(self.rectangle, 3)
   if self.toggle then
@@ -572,7 +604,7 @@ function Switch:__call(targetPos, twoSwitches)
   local currPos = self:getLvarValue()
   if currPos ~= targetPos then
     if FSL.areSequencesEnabled and not twoSwitches then
-      self:interact(plusminus(300))
+      self:interact(plusminus(100))
     end
     self:set(targetPos, twoSwitches)
   end
@@ -584,36 +616,39 @@ end
 
 function Switch:set(targetPos, twoSwitches)
   while true do
-    currPos = self:getLvarValue()
+    local currPos = self:getLvarValue()
     if currPos < targetPos then
       self:increase()
     elseif currPos > targetPos then
       self:decrease()
     else
       if self.springLoaded[targetPos] then self.letGo = true end
-      if self.shouldHideCursor then
-        self:hideCursor()
-      end
+      hideCursor()
       break
     end
     if FSL.areSequencesEnabled then
+      local interactionLength = plusminus(self.interactionLength or 100)
       if twoSwitches then
         local time = ipc.elapsedtime()
-        local interactionLength = plusminus(self.interactionLength or 100)
         while ipc.elapsedtime() - time < interactionLength do
           coroutine.yield()
         end
         log("Interaction with the control took " .. interactionLength .. " ms")
       else
-        self:interact(plusminus(self.interactionLength or 100))
+        self:interact(interactionLength)
       end
-    else 
-      local timeout = ipc.elapsedtime() + 1000
-      repeat 
-        sleep(5)
-        if ipc.elapsedtime() > timeout then return end
-      until self:getLvarValue() ~= currPos
     end
+    local timeout = ipc.elapsedtime() + 1000
+    while self:getLvarValue() == currPos do
+      sleep(5)
+      if ipc.elapsedtime() > timeout then 
+        handleTimeout(self)
+        return 
+      end
+    end
+  end
+  if FSL.areSequencesEnabled and not twoSwitches then
+    self:interact(plusminus(100))
   end
 end
 
@@ -734,7 +769,7 @@ function EngineMasterSwitch:increase()
   ipc.sleep(plusminus(100))
   ipc.mousemacro(self.rectangle, 11)
   ipc.mousemacro(self.rectangle, 13)
-  self:hideCursor()
+  hideCursor()
 end
 
 EngineMasterSwitch.decrease = EngineMasterSwitch.increase
@@ -817,7 +852,7 @@ function KnobWithoutPositions:set(targetPos)
   local wasLower, wasGreater
   local tick = 1
   while true do
-    currPos = self:getLvarValue()
+    local currPos = self:getLvarValue()
     if math.abs(currPos - targetPos) > tolerance then
       if currPos < targetPos then
         if wasGreater then break end
@@ -829,20 +864,23 @@ function KnobWithoutPositions:set(targetPos)
         wasGreater = true
       end
       local timeout = ipc.elapsedtime() + 1000
-      repeat 
+      while self:getLvarValue() == currPos do
         if ipc.elapsedtime() > timeout then
+          handleTimeout(self)
           return
         end
-      until self:getLvarValue() ~= currPos
+      end
     else
-      self:hideCursor()
-      if FSL.areSequencesEnabled then log("Interaction with the control took " .. ipc.elapsedtime() - timeStarted .. " ms") end
       break
     end
     if FSL.areSequencesEnabled and tick % 2 == 0 then
-      sleep(1) 
+      sleep(1)
     end
     tick = tick + 1
+  end
+  hideCursor()
+  if FSL.areSequencesEnabled then 
+    log("Interaction with the control took " .. ipc.elapsedtime() - timeStarted .. " ms") 
   end
 end
 
@@ -878,7 +916,7 @@ function KnobWithoutPositions:rotateBy(ticks, pause)
   if FSL.areSequencesEnabled then
     log("Interaction with the control took " .. (ipc.elapsedtime() - startTime) .. " ms")
   end
-  self:hideCursor()
+  hideCursor()
 end
 
 --- Sets the knob to random position between lower and upper.
@@ -892,7 +930,7 @@ end
 function moveTwoSwitches(switch1,pos1,switch2,pos2,chance)
   if prob(chance or 1) then
     hand:moveTo((switch1.pos + switch2.pos) / 2)
-    sleep(plusminus(500,0.1))
+    sleep(plusminus(100))
     local co1 = coroutine.create(function() switch1(pos1,true) end)
     local co2 = coroutine.create(function() sleep(plusminus(30)) switch2(pos2,true) end)
     repeat
@@ -903,13 +941,14 @@ function moveTwoSwitches(switch1,pos1,switch2,pos2,chance)
   else
     switch1(pos1)
     switch2(pos2)
+    sleep(plusminus(100))
   end
 end
 
 function pressTwoButtons(butt1,butt2,chance)
   if prob(chance or 1) then
     hand:moveTo((butt1.pos + butt1.pos) / 2)
-    sleep(plusminus(500,0.1))
+    sleep(plusminus(200,0.1))
     local co1 = coroutine.create(function() butt1(true) end)
     local co2 = coroutine.create(function() sleep(plusminus(10)) butt2(true) end)
     repeat
@@ -960,11 +999,12 @@ function FSL:init()
 
   for varname, control in pairs(rawControls) do
 
-    if _ALLRECTANGLES then
+    if FSL2LUA_STANDALONE then
       control._rectangle = control.rectangle
     end
 
-    control.rectangle = control.rectangle[FSL:getAcType()]
+    local rect = control.rectangle
+    control.rectangle = FSL:getAcType() == "A321" and rect.A321 or rect.A320
 
     control.pos = self:initControlPositions(varname,control)
 
@@ -1058,6 +1098,23 @@ function FSL:getAcType()
   return self.acType
 end
 
+---This makes references in the root FSL table to all fields in either FSL.CPT or FSL.FO, if the 'pilot' parameter is 1 or 2, respectively. For the other side's controls, it makes
+---references in the FSL.PF table.
+--
+---Copilot will set it depending on the 'PM_seat' option.
+---@within FSL
+---@usage
+-- local FSL = require "FSL2Lua"
+--
+-- print(FSL.MCDU) -- nil
+-- print(FSL.GSLD_Chrono_Button) -- nil
+--
+-- FSL:setPilot(1)
+--
+-- print(FSL.MCDU:getString() == FSL.CPT.MCDU:getString()) -- true
+-- print(FSL.GSLD_Chrono_Button == FSL.CPT.GSLD_Chrono_Button) -- true
+-- print(FSL.PF.MCDU:getString() == FSL.FO.MCDU:getString()) -- true
+-- print(FSL.PF.GSLD_Chrono_Button == FSL.FO.GSLD_Chrono_Button) -- true
 function FSL:setPilot(pilot)
   self.pilot = pilot
   for controlName, control in pairs(self) do
@@ -1085,9 +1142,9 @@ function FSL:getPilot()
   return self.pilot
 end
 
-function FSL:enableLogging()
+function FSL:enableLogging(startNewLog)
   self.logging = true
-  if not ipc.get("FSL2LuaLog") then
+  if not ipc.get("FSL2LuaLog") or startNewLog then
     file.create(logFilePath)
     ipc.set("FSL2LuaLog", 1)
   end
@@ -1238,7 +1295,7 @@ function trimwheel:set(CG, step)
 end
 
 local atsuLog = {
-  path = ipc.readSTR(0x3C00,256):gsub("FSLabs\\SimObjects.+", "FSLabs\\" .. FSL:getAcType() .. "\\Data\\ATSU\\ATSU.log")
+  path = not FSL2LUA_STANDALONE and ipc.readSTR(0x3C00, 256):gsub("FSLabs\\SimObjects.+", "FSLabs\\" .. FSL:getAcType() .. "\\Data\\ATSU\\ATSU.log")
 }
 
 FSL.atsuLog = atsuLog
@@ -1344,10 +1401,10 @@ local keyList = {
   NumpadMult = 106
 }
 
-for i = 1,22 do
+for i = 1, 22 do
   keyList["F" .. i] = i +  111
 end
-for i = 0,9 do
+for i = 0, 9 do
   keyList["NumPad" .. i] = i +  96
 end
 
@@ -1376,8 +1433,12 @@ function keyBind:new(data)
   return bind
 end
 
+local function assert(val, msg, level)
+  if not val then error(msg, level and level + 1) end
+end
+
 function keyBind:prepareData(data)
-  assert(type(data.key) == "string", "The key combination must be a string")
+  assert(type(data.key) == "string", "The key combination must be a string", 4)
   local keys = {}
   local shifts = {}
   local keyCount = 0
@@ -1397,12 +1458,12 @@ function keyBind:prepareData(data)
         end
       end
       if not keys.key then
-        keys.key = string.byte(key) or error("Not a valid key")
+        keys.key = string.byte(key) or error("Not a valid key", 4)
       end
     end
   end
-  assert(keyCount ~= #shifts, "Can't have only modifier keys")
-  assert(keyCount - #shifts == 1, "Can't have more than one non-modifier key")
+  assert(keyCount ~= #shifts, "Can't have only modifier keys", 4)
+  assert(keyCount - #shifts == 1, "Can't have more than one non-modifier key", 4)
   if #shifts > 0 then
     keys.shifts = shifts
   end
@@ -1485,12 +1546,12 @@ function joyBind:new(data)
 end
 
 function joyBind:prepareData(data)
-  assert(type(data.btn) == "string", "Wrong joystick button format")
+  assert(type(data.btn) == "string", "Wrong joystick button format", 4)
   data.joyLetter = data.btn:sub(1,1)
   data.btnNum = tostring(data.btn:sub(2, #data.btn))
   data.btn = nil
-  assert(data.joyLetter:find("%A") == nil, "Wrong joystick button format")
-  assert(tostring(data.btnNum):find("%D") == nil, "Wrong joystick button format")
+  assert(data.joyLetter:find("%A") == nil, "Wrong joystick button format", 4)
+  assert(tostring(data.btnNum):find("%D") == nil, "Wrong joystick button format", 4)
   return data
 end
 
@@ -1539,7 +1600,7 @@ setmetatable(Bind, Bind)
 --- This function is a wrapper around event.key and event.button from the FSUIPC Lua library.
 --
 --- Don't use this inside Copilot since Copilot can block for several seconds - unless you want to trigger Copilot's actions with keys or buttons.
---- Import FSL2Lua in a separate script instead and auto-launch it using FSUIPC's lua auto-launching facility.
+--- @{cockpit_control_binds.lua|Import FSL2Lua in a separate script} instead and auto-launch it in a separate thread (look up 'Automatic running of Macros and Lua plugins' in FSUIPC5 For Advanced Users.pdf)
 --- @function Bind
 --- @tparam table data A table containing the following fields: 
 --- @tparam function data.onPress (see usage below)
@@ -1606,7 +1667,7 @@ setmetatable(Bind, Bind)
 --- Bind {key = "Backspace", onPress = function () ipc.control(66807) end}
 
 function Bind:__call(data)
-  assert(data.key or data.btn, "Attempt to create a bind without a key or button :D")
+  assert(data.key or data.btn, "Attempt to create a bind without a key or button", 2)
   data = self:prepareData(data)
   local _keyBind = data.key and keyBind:new(data)
   local _joyBind = data.btn and joyBind:new(data)
@@ -1653,7 +1714,7 @@ function Bind:makeSingleFunc(funcs)
             local valid = false
             if type(func) == "table" then
               local control = func
-              assert(control.FSL_VC_control, tostring(control) .. " is not an FSL2Lua cockpit control.")
+              assert(control.FSL_VC_control, tostring(control) .. " is not an FSL2Lua cockpit control.", 4)
               if control[nextElem] then
                 _func = function() control[nextElem](func) end
                 valid = true
@@ -1665,7 +1726,7 @@ function Bind:makeSingleFunc(funcs)
                   end
                 end
               end
-              assert(valid, string.format("%s is neither a position or method of control %s", nextElem, control.name))
+              assert(valid, string.format("%s is neither a position or method of control %s", nextElem, control.name), 4)
             end
           else
             _func = func

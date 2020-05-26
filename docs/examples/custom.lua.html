@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 1.1.0</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 1.1.0</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
+  <li><strong>custom.lua</strong></li>
+</ul>
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/flows.md.html">Flows</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>custom.lua</h2>
+<pre>
+<span class="comment">-- A few examples of adding <a href="../libraries/Event.html#">actions and voice commands</a> to Copilot.
+</span><span class="comment">-- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
+</span><span class="comment">-- any lua files in that directory
+</span>
+<span class="keyword">local</span> FSL = FSL
+<span class="keyword">local</span> copilot = copilot
+copilot.logger:setLevel(<span class="number">1</span>)
+
+<span class="comment">------------------------------------------------------------------------------
+</span><span class="comment">-- Changing a default sequence
+</span><span class="comment">------------------------------------------------------------------------------
+</span>
+<span class="comment">-- Let's add something to the default lineup sequence:
+</span>
+<span class="keyword">local</span> oldLineupSequence = copilot.sequences.lineUpSequence
+
+<span class="keyword">function</span> copilot.sequences.lineUpSequence()
+  oldLineupSequence()
+  FSL.OVHD_EXTLT_Nose_Switch(<span class="string">"TO"</span>)
+  FSL.OVHD_EXTLT_Strobe_Switch(<span class="string">"AUTO"</span>)
+<span class="keyword">end</span>
+
+<span class="comment">-- If you want to remove something from a default sequence
+</span><span class="comment">-- or add something in the middle of it, you need to reimplement the function.
+</span><span class="comment">-- This example shows how to shut off an engine in the middle of the taxi
+</span><span class="comment">-- sequence:
+</span>
+<span class="keyword">function</span> copilot.sequences.taxiSequence()
+  FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == <span class="number">1</span> <span class="keyword">and</span> <span class="string">"2"</span> <span class="keyword">or</span> <span class="string">"1"</span>)
+  FSL.PED_WXRadar_PWS_Switch(<span class="string">"AUTO"</span>)
+  copilot.sleep(<span class="number">100</span>)
+  FSL.PED_WXRadar_PWS_Switch(<span class="string">"AUTO"</span>)
+  FSL.MIP_BRAKES_AUTOBRK_MAX_Button()
+  FSL.PED_ENG_2_MSTR_Switch(<span class="string">"OFF"</span>)
+  <span class="comment">-- Even the best of us struggle with this button
+</span>  <span class="keyword">for</span> _ = <span class="number">1</span>, <span class="number">5</span> <span class="keyword">do</span>
+    FSL.PED_ECP_TO_CONFIG_Button()
+    copilot.sleep(<span class="number">50</span>, <span class="number">100</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="comment">------------------------------------------------------------------------------
+</span><span class="comment">-- Changing a default voice command
+</span><span class="comment">------------------------------------------------------------------------------
+</span>
+<span class="keyword">local</span> startApu = copilot.voiceCommands.startApu
+
+copilot.logger:info <span class="string">"Replacing these phrase variants with just 'start apu':"</span>
+<span class="keyword">for</span> _, phrase <span class="keyword">in</span> <span class="global">ipairs</span>(startApu:getPhrases()) <span class="keyword">do</span>
+  copilot.logger:info(<span class="string">"'"</span> .. phrase .. <span class="string">"'"</span>)
+<span class="keyword">end</span>
+
+startApu:removeAllPhrases():addPhrase(<span class="string">"start apu"</span>):setConfidence(<span class="number">0.90</span>)
+
+<span class="comment">------------------------------------------------------------------------------
+</span><span class="comment">-- Adding a new action and voice command
+</span><span class="comment">------------------------------------------------------------------------------
+</span>
+<span class="keyword">local</span> pleaseStop = VoiceCommand:new {phrase = <span class="string">"please stop"</span>}
+
+<span class="keyword">local</span> newAction = copilot.events.enginesStarted:addAction(<span class="keyword">function</span>()
+  <span class="comment">-- wait a random amount of time between 5 and 10 seconds
+</span>  copilot.suspend(<span class="number">5000</span>, <span class="number">10000</span>)
+  pleaseStop:activate()
+
+  FSL.OVHD_WIPER_KNOB_LEFT_Knob(<span class="string">"FAST"</span>)
+  FSL.OVHD_GPWS_TERR_Button()
+  FSL.OVHD_GPWS_SYS_Button()
+  FSL.OVHD_GPWS_GS_MODE_Button()
+  FSL.OVHD_GPWS_FLAP_MODE_Button()
+  FSL.OVHD_GPWS_LDG_FLAP_3_Button()
+  FSL.OVHD_ELAC_1_Button()
+  FSL.OVHD_SEC_1_Button()
+  FSL.OVHD_FAC_1_Button()
+  FSL.OVHD_ADIRS_1_Knob(<span class="string">"OFF"</span>)
+  FSL.OVHD_ADIRS_3_Knob(<span class="string">"OFF"</span>)
+  FSL.OVHD_ADIRS_2_Knob(<span class="string">"OFF"</span>)
+  FSL.OVHD_AC_Cockpit_Knob(<span class="number">0</span>)
+  FSL.OVHD_AC_Fwd_Cabin_Knob(<span class="number">0</span>)
+  FSL.OVHD_AC_Aft_Cabin_Knob(<span class="number">0</span>)
+  FSL.OVHD_ELEC_BAT_1_Button()
+  FSL.OVHD_ELEC_BAT_2_Button()
+  FSL.OVHD_FUEL_L_TK_1_PUMP_Button()
+  FSL.OVHD_FUEL_L_TK_2_PUMP_Button()
+  FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button()
+  FSL.OVHD_FUEL_CTR_TK_2_VALVE_Button()
+  FSL.OVHD_FUEL_R_TK_1_PUMP_Button()
+  FSL.OVHD_FUEL_R_TK_2_PUMP_Button()
+  FSL.OVHD_INTLT_AnnLt_Switch(<span class="string">"TEST"</span>)
+  FSL.OVHD_WIPER_KNOB_RIGHT_Knob(<span class="string">"SLOW"</span>)
+  FSL.MIP_DU_PNL_PFD_BRT_Knob(<span class="number">0</span>)
+  FSL.MIP_DU_PNL_ND_BRT_Knob(<span class="number">0</span>)
+  FSL.PF.MIP_DU_PNL_PFD_BRT_Knob(<span class="number">0</span>)
+  FSL.PF.MIP_DU_PNL_ND_BRT_Knob(<span class="number">0</span>)
+
+<span class="keyword">end</span>, <span class="string">"runAsCoroutine"</span>) <span class="comment">-- For this action to be stoppable through a voice
+</span><span class="comment">-- command, we need to run it as a coroutine and yield periodically so that
+</span><span class="comment">-- the code that triggers the voice commands has a chance to run.
+</span><span class="comment">-- The action will stop when our 'please stop' voice command is triggered.
+</span><span class="comment">-- Even though you don't see any coroutine.yield() calls inside the function,
+</span><span class="comment">-- FSL2Lua yields automatically in between control interactions when it sees
+</span><span class="comment">-- that it's inside a coroutine.
+</span>newAction:stopOn(pleaseStop)
+
+<span class="comment">-- Since both the newly added action and the default after start sequence are
+</span><span class="comment">-- coroutines, we may want to make sure that the after start sequence ends
+</span><span class="comment">-- before we proceed.
+</span>copilot.events.enginesStarted:setActionOrder(newAction)
+  :after(copilot.actions.afterStart)
+
+<span class="comment">------------------------------------------------------------------------------
+</span><span class="comment">-- Another voice command that triggers an interaction with the MCDU
+</span><span class="comment">------------------------------------------------------------------------------
+</span>
+<span class="keyword">local</span> getMetar = VoiceCommand:new {
+
+  phrase = {<span class="string">"get the metar please"</span>, <span class="string">"get the metar"</span>},
+
+  <span class="comment">-- persistent = false can be omitted as voice commands are created
+</span>  <span class="comment">-- non-persistent by default, meaning they deactivate after being recognized.
+</span>  <span class="comment">-- We don't want this voice command to be persistent because it wouldn't make
+</span>  <span class="comment">-- sense to trigger it again during the execution of the action.
+</span>  persistent = <span class="keyword">false</span>,
+
+  action = <span class="keyword">function</span>(voiceCommand) <span class="comment">-- Voice commands and events pass a reference
+</span>    <span class="comment">-- to themselves as the first argument to their action callbacks.
+</span>    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
+    <span class="keyword">if</span> <span class="keyword">not</span> FSL.MCDU:getString():find(<span class="string">"MCDU MENU"</span>) <span class="keyword">then</span>
+      FSL.PED_MCDU_KEY_MENU()
+    <span class="keyword">end</span>
+    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
+    FSL.PED_MCDU_LSK_L6()
+    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
+    FSL.PED_MCDU_LSK_L6()
+    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
+    FSL.PED_MCDU_LSK_R2()
+    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
+    FSL.PED_MCDU_LSK_R2()
+    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
+    FSL.PED_MCDU_LSK_R6()
+    <span class="comment">-- Reactivate the voice command
+</span>    voiceCommand:activate()
+  <span class="keyword">end</span>
+
+}
+
+<span class="comment">--- It's necessary to call this before activating any voice commands here
+</span>VoiceCommand.resetGrammar()
+
+getMetar:activate()</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2020-05-26 18:43:00 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

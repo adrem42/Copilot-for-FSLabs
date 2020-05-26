@@ -453,7 +453,7 @@ function copilot.callouts:start()
           end
         end
         if self:brakeCheck() then
-          copilot.voiceCommands.brakeCheck:deactivate()
+          copilot.voiceCommands.brakeCheck:ignore()
         end
       end, "runAsCoroutine")
 

@@ -76,5 +76,5 @@ function copilot.exit(msg)
     copilot.logger:error(msg) 
     copilot.logger:error("Exiting...") 
   end
-  error(msg)
+  error(msg, 2)
 end

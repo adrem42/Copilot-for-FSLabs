@@ -5,44 +5,55 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <optional>
 #include <atomic>
 #include <sol/sol.hpp>
+
+using RuleID = DWORD;
 
 struct RecoResult {
 	std::string phrase;
 	float confidence;
-	DWORD ruleID;
+	RuleID ruleID;
 };
 
 class Recognizer {
+public:
+	enum class RulePersistenceMode { NonPersistent, Persistent, Ignore };
 private:
-	enum RuleState { Active, Inactive, Ignore };
+	enum class RuleState { Active, Inactive, Ignore, Disabled };
 	struct Rule {
 		std::vector<std::string> phrases;
 		float confidence;
-		DWORD ruleID;
-		RuleState state = Inactive;
+		RuleID ruleID;
+		RulePersistenceMode persistenceMode;
+		RuleState state = RuleState::Inactive;
+		RuleID dummyRuleID;
 	};
+	Rule& getRuleById(RuleID ruleID);
+	void changeRuleState(Rule& rule, RuleState newRuleState, SPRULESTATE spRuleState, std::string&& logMsg, std::string&& dummyLogMsg);
 	CComPtr<ISpRecognizer> recognizer;
 	CComPtr<ISpRecoGrammar> recoGrammar;
 	CComPtr<ISpRecoContext> recoContext;
 	CComPtr<ISpAudio> audio;
-	DWORD ruleID = 0;
+	RuleID CurrRuleId = 0;
+	void logRuleStatus(std::string& prefix, const Rule& rule);
 	std::vector<Rule> rules;
-	std::mutex mtx;
+	std::recursive_mutex mtx;
 public:
-	Recognizer();
+	bool init();
 	~Recognizer();
-	DWORD addRule(const std::vector<std::string> phrases, float confidence);
-	void ignoreRule(DWORD ruleID);
-	void activateRule(DWORD ruleID);
-	void deactivateRule(DWORD ruleID);
-	sol::as_table_t<std::vector<std::string>> getPhrases(DWORD ruleID);
-	void addPhrase(const std::string& phrase, DWORD ruleID);
-	void removePhrase(const std::string& phrase, DWORD ruleID);
-	void removeAllPhrases(DWORD ruleID);
-	void setConfidence(float confidence, DWORD ruleID);
+	bool registerCallback(ISpNotifyCallback* callback);
+	RuleID addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode);
+	void ignoreRule(RuleID ruleID);
+	void activateRule(RuleID ruleID);
+	void deactivateRule(RuleID ruleID);
+	void disableRule(RuleID ruleID);
+	sol::as_table_t<std::vector<std::string>> getPhrases(RuleID ruleID, bool dummy);
+	void addPhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy);
+	void removePhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy);
+	void removeAllPhrases(RuleID ruleID, bool dummy);
+	void setConfidence(float confidence, RuleID ruleID);
+	void setRulePersistence(RulePersistenceMode persistenceMode, RuleID ruleID);
 	void resetGrammar();
-	std::optional<RecoResult> getResult();
+	RecoResult getResult();
 };

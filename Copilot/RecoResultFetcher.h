@@ -1,28 +1,25 @@
 #pragma once
-extern "C"
-{
-#include "../lua515/include/lua.h"
-#include "../lua515/include/lauxlib.h"
-#include "../lua515/include/lualib.h"
-}
-
+#include "../lua515/include/lua.hpp"
 #include <chrono>
 #include <atomic>
-#include <queue>
+#include <vector>
+#include <Windows.h>
 #include "Recognizer.h"
 
-using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
-
-class RecoResultFetcher {
-	std::shared_ptr<Recognizer> recognizer;
-	bool muted = false;
-	std::chrono::milliseconds delayBeforeUnmute = std::chrono::milliseconds(1000);
-	std::mutex mtx;
-	TimePoint muteKeyRelasedTime = std::chrono::system_clock::now();
-public:
-	void onMuteKeyEvent(bool isMuteKeyPressed);
-	std::queue<DWORD> recoResults;
-	RecoResultFetcher(std::shared_ptr<Recognizer> recognizer);
+class RecoResultFetcher : ISpNotifyCallback {
+	Recognizer* m_recognizer;
+	std::vector<RuleID> m_recoResults;
+	bool m_muted = false;
+	std::atomic_bool m_luaNotified;
+	std::chrono::milliseconds m_delayBeforeUnmute = std::chrono::milliseconds(1000);
+	std::mutex m_mutex;
+	std::chrono::time_point<std::chrono::system_clock> m_muteKeyReleasedTime = std::chrono::system_clock::now();
+	void notifyLua();
 	void fetchResults();
-	std::optional<DWORD> getResult();
+	HRESULT NotifyCallback(WPARAM wParam, LPARAM lParam) override;
+public:
+	RecoResultFetcher(Recognizer* recognizer);
+	bool registerCallback();
+	void onMuteKeyEvent(bool isMuteKeyPressed);
+	sol::as_table_t<std::vector<RuleID>> getResults();
 };

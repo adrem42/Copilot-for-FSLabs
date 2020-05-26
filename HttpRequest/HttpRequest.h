@@ -4,27 +4,29 @@
 #include <windows.h>
 #include <Winhttp.h>
 #include <string>
-#include <nlohmann/json.hpp>
 #include <optional>
+#include <iostream>
+#include <cmath>
 
-using json = nlohmann::json;
-
-class HttpRequest {
+class HttpRequest{
 
     HINTERNET  hSession = NULL;
     HINTERNET  hConnect = NULL;
     HINTERNET hRequest = NULL;
+    std::wstring urlWstr;
+    URL_COMPONENTS urlComp;
 
-    std::wstring objectNameWstr;
-
-    void initRequest(int port)
+    void initRequest()
     {
+        auto lpwHostName = urlComp.lpszHostName;
+        auto hostName = std::wstring(lpwHostName);
+        auto serverName = hostName.substr(0, urlComp.dwHostNameLength);
         if (hSession)
-            hConnect = WinHttpConnect(hSession, L"localhost",
-                                      port, 0);
+            hConnect = WinHttpConnect(hSession, serverName.c_str(),
+                                      urlComp.nPort, 0);
 
         if (hConnect)
-            hRequest = WinHttpOpenRequest(hConnect, L"GET", objectNameWstr.c_str(),
+            hRequest = WinHttpOpenRequest(hConnect, L"GET", urlComp.lpszUrlPath,
                                           NULL, WINHTTP_NO_REFERER,
                                           WINHTTP_DEFAULT_ACCEPT_TYPES,
                                           NULL);
@@ -32,16 +34,32 @@ class HttpRequest {
 
 public:
 
-    HttpRequest(const std::string& sessionName, int port, const std::string& objectName)
+    HttpRequest(const std::string& url)
     {
-        auto sessionWstr = std::wstring(sessionName.begin(), sessionName.end());
-        hSession = WinHttpOpen(sessionWstr.c_str(),
+
+        urlWstr = std::wstring(url.begin(), url.end());
+
+        // Initialize the URL_COMPONENTS structure.
+        ZeroMemory(&urlComp, sizeof(urlComp));
+        urlComp.dwStructSize = sizeof(urlComp);
+
+        // Set required component lengths to non-zero 
+        // so that they are cracked.
+        urlComp.dwSchemeLength = (DWORD)-1;
+        urlComp.dwHostNameLength = (DWORD)-1;
+        urlComp.dwUrlPathLength = (DWORD)-1;
+        urlComp.dwExtraInfoLength = (DWORD)-1;
+
+        LPCWSTR lpwstrUrl = urlWstr.c_str();
+
+        WinHttpCrackUrl(lpwstrUrl, (DWORD)wcslen(lpwstrUrl), 0, &urlComp);
+
+        hSession = WinHttpOpen(L"",
                                WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                                WINHTTP_NO_PROXY_NAME,
                                WINHTTP_NO_PROXY_BYPASS, 0);
-        objectNameWstr = std::wstring(objectName.begin(), objectName.end()).c_str();
-        initRequest(port);
-
+        WinHttpSetTimeouts(hSession, 0, 60000, 30000, 1000);
+        initRequest();
     }
 
     ~HttpRequest()
@@ -56,13 +74,12 @@ public:
 
         if (hRequest) WinHttpCloseHandle(hRequest);
         if (hConnect) WinHttpCloseHandle(hConnect);
-        initRequest(newPort);
-
+        urlComp.nPort = newPort;
+        initRequest();
     }
 
     std::string get()
     {
-
         BOOL  bResults = FALSE;
         DWORD dwSize = 0;
         DWORD dwDownloaded = 0;
@@ -119,22 +136,14 @@ class Mcdu {
 
     std::unique_ptr<HttpRequest> request;
 
-    std::optional<json> getJson()
-    {
-        auto response = request->get();
-        if (response != "") {
-            return std::optional<json>(json::parse(response).at("Value"));
-        }
-        return {};
-    }
-
 public:
     static constexpr int defaultPort = 8080;
 
     Mcdu(int side, int port = defaultPort)
     {
-        std::string objectName = "MCDU/Display/3CA";
-        request = std::make_unique<HttpRequest>("Mcdu", port, objectName + std::to_string(side));
+        std::string url = "http://localhost:";
+        url += std::to_string(port) + "/MCDU/Display/3CA" + std::to_string(side);
+        request = std::make_unique<HttpRequest>(url);
     }
 
     void setPort(int port)
@@ -144,20 +153,48 @@ public:
 
     std::optional<std::string> getString()
     {
-        std::string s;
-        s.reserve(340);
-        auto j = getJson();
-        if (j) {
-            for (auto it = j->begin(); it != j->end(); it++) {
-                auto c = it.value()[0];
-                s += c.is_null() ? ' ' : (char)atoi(c.dump().c_str());
+        auto response = request->get();
+
+        if (response == "") return {};
+
+        const char* jsonChar = response.c_str() + response.length() - 2;
+        char curr;
+        char prev = 0;
+        const static int length = 337;
+        char buff[length];
+        int pos = length;
+        buff[--pos] = '\0';
+
+        do {
+            curr = *--jsonChar;
+            switch (prev) {
+                case ']':
+                    if (curr == '[') {
+                        buff[--pos] = ' ';
+                    } else {
+                        curr = *(jsonChar -= 4);
+                        int i = 0;
+                        char _char = 0;
+                        do {
+                            _char += (curr - '0') * pow(10, i++);
+                            curr = *--jsonChar;
+                        } while (curr != '[');
+                        buff[--pos] = _char;
+                    }
+                    break;
+                case '[':
+                    if (curr == '[') pos = 0;
+                    break;
+                default:
+                    break;
             }
-            return std::optional<std::string>(s);
-        }
-        return {};
+            prev = curr == ',' ? prev : curr;
+        } while (pos > 0);
+
+        return buff;
     }
 
-    std::string getFromLua()
+    std::string getRaw()
     {
         return request->get();
     }
