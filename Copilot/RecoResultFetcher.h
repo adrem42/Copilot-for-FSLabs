@@ -9,8 +9,8 @@
 class RecoResultFetcher : ISpNotifyCallback {
 	Recognizer* m_recognizer;
 	std::vector<RuleID> m_recoResults;
-	bool m_muted = false;
-	std::atomic_bool m_luaNotified;
+	bool m_muted = false, m_muteKeyDepressed = false;
+	std::atomic_bool m_luaNotified = false;
 	std::chrono::milliseconds m_delayBeforeUnmute = std::chrono::milliseconds(1000);
 	std::mutex m_mutex;
 	std::chrono::time_point<std::chrono::system_clock> m_muteKeyReleasedTime = std::chrono::system_clock::now();

@@ -5,13 +5,9 @@
 
 bool checkResult(const std::string& msg, HRESULT hr)
 {
-	if (FAILED(hr)) {
-		std::stringstream ss;
-		ss << "0x" << std::hex << hr;
-		copilot::logger->error("{}: {}", msg, ss.str());
-		return false;
-	}
-	return true;
+	if (SUCCEEDED(hr)) return true;
+	copilot::logger->error("{}: 0x{:X}", msg, (unsigned long)hr);
+	return false;
 }
 
 bool Recognizer::init()
@@ -271,6 +267,18 @@ void Recognizer::resetGrammar()
 	}
 }
 
+void Recognizer::afterRecoEvent(RuleID ruleID)
+{
+	switch (getRuleById(ruleID).persistenceMode) {
+		case RulePersistenceMode::Ignore:
+			ignoreRule(ruleID);
+			break;
+		case RulePersistenceMode::NonPersistent:
+			deactivateRule(ruleID);
+			break;
+	}
+}
+
 RecoResult Recognizer::getResult()
 {
 	CSpEvent event;
@@ -289,14 +297,6 @@ RecoResult Recognizer::getResult()
 			std::lock_guard<std::recursive_mutex> lock(mtx);
 			const Rule& rule = getRuleById(ruleID);
 			if (rule.state != RuleState::Ignore && confidence >= rule.confidence) {
-				switch (rule.persistenceMode) {
-					case RulePersistenceMode::Ignore:
-						ignoreRule(ruleID);
-						break;
-					case RulePersistenceMode::NonPersistent:
-						deactivateRule(ruleID);
-						break;
-				}
 				return RecoResult{ phrase, confidence, ruleID };
 			}
 		}

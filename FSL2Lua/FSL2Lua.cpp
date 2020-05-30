@@ -6,11 +6,12 @@
 #include "../HttpRequest/HttpRequest.h"
 #include "../Copilot/versioninfo.h"
 
-auto startTime = std::chrono::high_resolution_clock::now();
+int HttpRequest::receiveTimeout = 0;
+auto startTime = std::chrono::system_clock::now();
 
 int elapsedTime(lua_State* L)
 {
-    lua_pushnumber(L, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime).count());
+    lua_pushnumber(L, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - startTime).count());
     return 1;
 }
 
@@ -23,12 +24,14 @@ __declspec(dllexport) int luaopen_FSL2LuaDLL(lua_State * L)
                                   sol::constructors<HttpRequest(const std::string&)>());
     HttpRequestType["get"] = &HttpRequest::get;
     HttpRequestType["setPort"] = &HttpRequest::setPort;
+    HttpRequestType["lastError"] = &HttpRequest::lastError;
 
     auto McduType = lua.new_usertype<Mcdu>("McduHttpRequest",
                            sol::constructors<HttpRequest(int, int)>());
     McduType["getString"] = &Mcdu::getString;
     McduType["getRaw"] = &Mcdu::getRaw;
     McduType["setPort"] = &Mcdu::setPort;
+    McduType["lastError"] = &Mcdu::lastError;
 
     lua["elapsedTime"] = &elapsedTime;
     lua["_FSL2LUA_VERSION"] = COPILOT_VERSION;

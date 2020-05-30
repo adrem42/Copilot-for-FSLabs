@@ -8,13 +8,14 @@
 #include <iostream>
 #include <cmath>
 
-class HttpRequest{
+class HttpRequest {
 
     HINTERNET  hSession = NULL;
     HINTERNET  hConnect = NULL;
     HINTERNET hRequest = NULL;
     std::wstring urlWstr;
     URL_COMPONENTS urlComp;
+    static int receiveTimeout;
 
     void initRequest()
     {
@@ -33,6 +34,8 @@ class HttpRequest{
     }
 
 public:
+
+    DWORD lastError;
 
     HttpRequest(const std::string& url)
     {
@@ -58,7 +61,9 @@ public:
                                WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                                WINHTTP_NO_PROXY_NAME,
                                WINHTTP_NO_PROXY_BYPASS, 0);
-        WinHttpSetTimeouts(hSession, 0, 60000, 30000, 1000);
+        if (receiveTimeout) {
+            WinHttpSetTimeouts(hSession, 0, 60000, 30000, receiveTimeout);
+        }
         initRequest();
     }
 
@@ -127,6 +132,8 @@ public:
                     break;
 
             } while (dwSize > 0);
+        } else {
+            lastError = GetLastError();
         }
         return result;
     }
@@ -197,6 +204,11 @@ public:
     std::string getRaw()
     {
         return request->get();
+    }
+
+    DWORD lastError()
+    {
+        return request->lastError;
     }
 
 };

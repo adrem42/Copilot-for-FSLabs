@@ -18,6 +18,7 @@ namespace copilot {
 	void startLuaThread();
 	void shutDown();
 	void autoStartLua();
+	void onSimEvent(SimConnect::EVENT_ID event);
 
 	class Timer {
 		using TimePoint = std::chrono::time_point<std::chrono::system_clock>;

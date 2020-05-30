@@ -6,13 +6,13 @@ TimePoint Sound::nextFreeSlot = std::chrono::system_clock::now();
 std::queue<std::pair<Sound*, TimePoint>> Sound::soundQueue;
 Sound* Sound::prevSound;
 std::mutex Sound::mtx;
-double Sound::globalVolume = 0, Sound::volKnobPos = -1;
+double Sound::userVolume = 1, Sound::globalVolume = 0, Sound::volKnobPos = -1;
 
 Sound::Sound(const std::string& path, int length, double fileRelVolume)
 	:length(length), fileRelVolume(fileRelVolume)
 {
 	stream = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, 0);
-	BASS_ChannelSetAttribute(stream, BASS_ATTRIB_VOL, (float)(fileRelVolume * globalVolume));
+	adjustVolumeFromGlobal();
 }
 
 Sound::Sound(const std::string& path, int length)
@@ -49,17 +49,12 @@ void Sound::play()
 
 void Sound::playNow()
 {
-	setVolume(fileRelVolume * globalVolume);
+	adjustVolumeFromGlobal();
 	BASS_ChannelPlay(stream, true);
 	prevSound = this;
 }
 
-void Sound::setGlobalVolume(double volume)
-{
-	globalVolume = volume / 100;
-}
-
-void Sound::init(int device, int pmSide)
+void Sound::init(int devNum, int pmSide, double userVolume)
 {
 	if (pmSide == 1) {
 		volumeKnob.knobLvar = "VC_PED_COMM_2_INT_Knob";
@@ -70,8 +65,9 @@ void Sound::init(int device, int pmSide)
 	}
 
 	nextFreeSlot = std::chrono::system_clock::now();
-	
-	BASS_Init(device, 44100, BASS_DEVICE_STEREO, 0, NULL);
+	Sound::userVolume = userVolume;
+	volKnobPos = -1; // to force a volume update
+	BASS_Init(devNum, 44100, BASS_DEVICE_STEREO, 0, NULL);
 }
 
 void Sound::processQueue()
@@ -90,19 +86,19 @@ void Sound::processQueue()
 		}
 		if (volumeChanged) {
 			volKnobPos = newVolKnobPos;
-			globalVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * volKnobPos + zeroVolumeThreshold) * 5.757);
+			globalVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * volKnobPos + zeroVolumeThreshold) * 5.757) * userVolume;
 			if (!soundQueue.empty())
-				soundQueue.front().first->setVolume(globalVolume);
+				soundQueue.front().first->adjustVolumeFromGlobal();
 			if (prevSound != nullptr) {
-				prevSound->setVolume(globalVolume);
+				prevSound->adjustVolumeFromGlobal();
 			}
 		}
 	}
 }
 
-void Sound::setVolume(double volume)
+void Sound::adjustVolumeFromGlobal()
 {
-	BASS_ChannelSetAttribute(stream, BASS_ATTRIB_VOL, (float)(volume * fileRelVolume));
+	BASS_ChannelSetAttribute(stream, BASS_ATTRIB_VOL, (float)(globalVolume * fileRelVolume));
 }
 
 double Sound::getVolumeKnobPos()

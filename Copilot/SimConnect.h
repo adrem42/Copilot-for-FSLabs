@@ -1,9 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <SimConnect.h>
-#include <map>
-
-#include "RecoResultFetcher.h"
+#include <atomic>
 
 class SimConnect {
 	enum GROUP_ID {
@@ -23,6 +21,8 @@ public:
 		EVENT_MENU_START,
 		EVENT_MENU_STOP,
 		EVENT_MENU_ATTACH_CONSOLE,
+		EVENT_EXIT,
+		EVENT_ABORT
 	};
 	std::atomic_bool simPaused;
 	bool init();

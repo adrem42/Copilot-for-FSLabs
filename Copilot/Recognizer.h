@@ -55,5 +55,6 @@ public:
 	void setConfidence(float confidence, RuleID ruleID);
 	void setRulePersistence(RulePersistenceMode persistenceMode, RuleID ruleID);
 	void resetGrammar();
+	void afterRecoEvent(RuleID ruleID);
 	RecoResult getResult();
 };

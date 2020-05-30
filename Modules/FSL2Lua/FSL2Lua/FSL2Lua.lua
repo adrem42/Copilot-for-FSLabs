@@ -12,33 +12,31 @@ local math = math
 local FSUIPCversion = not FSL2LUA_STANDALONE and ipc.readUW(0x3306)
 local copilot = type(copilot) == "table" and copilot.logger and copilot
 
-local function handleError(msg, critical, errLevel)
+local function handleError(msg, level, critical)
+  level = level and level + 1 or 2
+  msg = "FSL2Lua: " .. msg
   if copilot then
     local logFile = string.format("FSUIPC%s.log", ("%x"):format(FSUIPCversion):sub(1, 1))
-    copilot.logger:error("FSL2Lua: something went wrong. Check " .. logFile)
+    copilot.logger[critical and "error" or "warn"](copilot.logger, "FSL2Lua: something went wrong. Check " .. logFile)
     if critical then copilot.logger:error("Copilot cannot continue") end
   end
   if critical then
-    table.insert(msg, 1, "")
-    error(table.concat(msg, "\n"), errLevel or 2)
+    error(msg, level)
   else
-    for _, line in ipairs(msg) do
-      print("FSL2Lua: " .. line)
-    end
+    local trace = debug.getinfo(level, "Sl")
+    ipc.log(string.format("%s\r\nsource: %s:%s", msg, trace.short_src, trace.currentline))
   end
 end
 
-local function handleTimeout(control)
-  handleError {
-    "Control " .. control.LVar .. " isn't responding to mouse macro commands",
-    "Most likely its macro is invalid",
-    "FSL2Lua version: " .. _FSL2LUA_VERSION,
-    "Check compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432"
-  }
+local function handleControlTimeout(control, level)
+  handleError ("Control " .. control.LVar .. " isn't responding to mouse macro commands\r\n" ..
+              "Most likely its macro is invalid\r\n" ..
+              "FSL2Lua version: " .. _FSL2LUA_VERSION ..
+              "\r\nCheck compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432", level + 1)
 end
 
 if not FSL2LUA_STANDALONE and FSUIPCversion < 0x5154 then
-  handleError({"FSUIPC version 5.154 or later is required"}, true, 2)
+  handleError("FSUIPC version 5.154 or later is required", nil, true)
 end
 
 local FSL2LuaDir = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1")
@@ -171,6 +169,11 @@ function MCDU:new(side)
   }, self)
 end
 
+function MCDU:_onHttpError()
+  handleError(string.format("%s MCDU HTTP request error %s, retrying...",
+                            self.sideStr, self.request:lastError()), 3)
+end
+
 --- @treturn table Array of tables representing display cells.
 --
 --- Each cell table has three fields:
@@ -186,8 +189,14 @@ end
 -- * isBold: bool
 
 function MCDU:getArray()
+    local response
+    while true do
+      response = self.request:getRaw()
+      if response ~= "" then break
+      else self:_onHttpError() end
+    end
     local display = {}
-    for unitArray in self.request:getRaw():gmatch("%[(.-)%]") do
+    for unitArray in response:gmatch("%[(.-)%]") do
       local unit = {}
       if unitArray:find(",") then
         local char, color, isBold = unitArray:match("(%d+),(%d),(%d)")
@@ -205,7 +214,12 @@ end
 --- @number[opt] endpos
 
 function MCDU:getString(startpos, endpos)
-  local display = self.request:getString()
+  local display
+  while true do
+    display = self.request:getString()
+    if display then break
+    else self:_onHttpError() end
+  end
   if startpos or endpos then
     return string.sub(display, startpos, endpos)
   else
@@ -224,7 +238,7 @@ end
 
 function MCDU:type(str)
   str = tostring(str)
-  local FSL = FSL[self.sideStr]
+  local _FSL = FSL[self.sideStr]
   for i = 1, #str do
     local chars = {
       [" "] = "SPACE",
@@ -235,10 +249,10 @@ function MCDU:type(str)
     local char = str:sub(i,i):upper()
     char = chars[char] or char
     if char == "+" then
-      FSL.PED_MCDU_KEY_PLUSMINUS()
-      FSL.PED_MCDU_KEY_PLUSMINUS()
+      _FSL.PED_MCDU_KEY_PLUSMINUS()
+      _FSL.PED_MCDU_KEY_PLUSMINUS()
     else
-      FSL["PED_MCDU_KEY_" .. char]()
+      _FSL["PED_MCDU_KEY_" .. char]()
     end
   end
 end
@@ -274,7 +288,12 @@ function FCU:getField(json, fieldName)
 end
 
 function FCU:get()
-  local json = self.request:get()
+  local json
+  while true do
+    json = self.request:get()
+    if json ~= "" then break
+    else handleError(string.format("FCU HTTP request error %s, retrying...", self.request.lastError), 2) end
+  end
   local SPD = self:getField(json, "SPD")
   local HDG = self:getField(json, "HDG")
   local ALT = self:getField(json, "ALT")
@@ -642,7 +661,7 @@ function Switch:set(targetPos, twoSwitches)
     while self:getLvarValue() == currPos do
       sleep(5)
       if ipc.elapsedtime() > timeout then 
-        handleTimeout(self)
+        handleControlTimeout(self, 3)
         return 
       end
     end
@@ -866,7 +885,7 @@ function KnobWithoutPositions:set(targetPos)
       local timeout = ipc.elapsedtime() + 1000
       while self:getLvarValue() == currPos do
         if ipc.elapsedtime() > timeout then
-          handleTimeout(self)
+          handleControlTimeout(self, 3)
           return
         end
       end
@@ -1197,7 +1216,7 @@ function FSL:startTheApu()
   if not self.OVHD_APU_Master_Button:isDown() then
     self.OVHD_APU_Master_Button()
   end
-  sleep(plusminus(2000,0.3))
+  sleep(plusminus(3000,0.2))
   self.OVHD_APU_Start_Button()
 end
 

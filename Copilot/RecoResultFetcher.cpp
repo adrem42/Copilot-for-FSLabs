@@ -15,6 +15,7 @@ bool RecoResultFetcher::registerCallback()
 void RecoResultFetcher::onMuteKeyEvent(bool isMuteKeyPressed)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
+	m_muteKeyDepressed = isMuteKeyPressed;
 	if (!isMuteKeyPressed) {
 		m_muteKeyReleasedTime = std::chrono::system_clock::now();
 		copilot::logger->info("Unmuted");
@@ -40,10 +41,11 @@ void RecoResultFetcher::fetchResults()
 	RecoResult recoResult = m_recognizer->getResult();
 	if (recoResult.ruleID > 0) {
 		std::lock_guard<std::mutex> lock(m_mutex);
-		if (m_muted && std::chrono::system_clock::now() - m_muteKeyReleasedTime > m_delayBeforeUnmute)
+		if (!m_muteKeyDepressed && m_muted && std::chrono::system_clock::now() - m_muteKeyReleasedTime > m_delayBeforeUnmute)
 			m_muted = false;
 		if (!m_muted) {
 			copilot::logger->info("Recognized phrase '{}', confidence: {:.4f}", recoResult.phrase, recoResult.confidence);
+			m_recognizer->afterRecoEvent(recoResult.ruleID);
 			m_recoResults.emplace_back(recoResult.ruleID);
 			if (!copilot::simConnect->simPaused && !m_luaNotified) {
 				notifyLua();

@@ -9,18 +9,11 @@
 #include <mutex>
 #include <chrono>
 #include <atomic>
-
-extern "C"
-{
-#include "../lua515/include/lua.h"
-#include "../lua515/include/lauxlib.h"
-#include "../lua515/include/lualib.h"
-}
-
+#include "../lua515/include/lua.hpp"
 #include <spdlog/spdlog.h>
 
 auto startTime = std::chrono::high_resolution_clock::now();
-std::thread* myThread;
+std::thread myThread;
 
 std::shared_ptr<spdlog::logger> logger;
 std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink;
@@ -186,13 +179,12 @@ void luaThread()
 
 void restartLuaThread()
 {
-	if (myThread != nullptr) {
+	if (myThread.joinable()) {
 		closeThread = true;
-		myThread->join();
-		delete myThread;
+		myThread.join();
 		closeThread = false;
 	}
-	myThread = new std::thread(luaThread);
+	myThread = std::thread(luaThread);
 }
 
 void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
@@ -222,9 +214,9 @@ void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pCon
 
 				case EVENT_MENU_STOP:
 				{
-					if (myThread && myThread->joinable()) {
+					if (myThread.joinable()) {
 						closeThread = true;
-						myThread->join();
+						myThread.join();
 					}
 					break;
 				}

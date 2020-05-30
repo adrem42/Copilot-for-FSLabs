@@ -33,7 +33,9 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 		case SIMCONNECT_RECV_ID_EVENT:
 		{
 			SIMCONNECT_RECV_EVENT* evt = (SIMCONNECT_RECV_EVENT*)pData;
-			switch (evt->uEventID) {
+			EVENT_ID eventID = (EVENT_ID)evt->uEventID;
+			copilot::onSimEvent(eventID);
+			switch (eventID) {
 
 				case EVENT_MUTE_CONTROL:
 					if (copilot::recoResultFetcher) {
@@ -64,8 +66,6 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Restart", EVENT_MENU_START, 0);
 						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Stop", EVENT_MENU_STOP, 0);
 						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Output log to console", EVENT_MENU_ATTACH_CONSOLE, 0);
-
-						hr = SimConnect_SetNotificationGroupPriority(m_hSimConnect, GROUP0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
 						attachLogToConsole();
 						copilot::autoStartLua();
@@ -121,6 +121,14 @@ bool SimConnect::init()
 		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_AIRCRAFT_LOADED, "AircraftLoaded");
 		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_SIM_START, "SimStart");
 		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_SIM_STOP, "SimStop");
+
+		hr = SimConnect_MapClientEventToSimEvent(m_hSimConnect, EVENT_EXIT, "Exit");
+		hr = SimConnect_AddClientEventToNotificationGroup(m_hSimConnect, GROUP0, EVENT_EXIT);
+
+		hr = SimConnect_MapClientEventToSimEvent(m_hSimConnect, EVENT_ABORT, "Abort");
+		hr = SimConnect_AddClientEventToNotificationGroup(m_hSimConnect, GROUP0, EVENT_ABORT);
+
+		hr = SimConnect_SetNotificationGroupPriority(m_hSimConnect, GROUP0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
 		hr = SimConnect_CallDispatch(m_hSimConnect, dispatchCallback, this);
 

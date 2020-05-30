@@ -88,7 +88,7 @@
       <AdditionalLibraryDirectories>$(solutiondir)lua515</AdditionalLibraryDirectories>
     </Link>
     <CustomBuildStep>
-      <Command>copy "$(SolutionDir)x64\$(Configuration)\$(TargetName).dll"  "$(solutiondir)Modules\FSL2Lua\FSL2Lua" /y</Command>
+      <Command>copy "$(SolutionDir)x64\$(Configuration)\$(TargetName).dll"  "$(solutiondir)Modules\FSL2Lua\FSL2Lua" /y &amp;&amp; cd $(solutiondir) &amp;&amp; copytosim</Command>
       <Outputs>$(ProjectName).dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>

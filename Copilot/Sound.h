@@ -13,11 +13,11 @@ class Sound {
 	HSTREAM stream;
 	int length;
 	float fileRelVolume;
-	void setVolume(double volume);
+	void adjustVolumeFromGlobal();
 	static TimePoint nextFreeSlot;
 	static std::queue<std::pair<Sound*, TimePoint>> soundQueue;
 	static std::mutex mtx;
-	static double globalVolume, volKnobPos;
+	static double userVolume, globalVolume, volKnobPos;
 	static double getVolumeKnobPos();
 	static constexpr double zeroVolumeThreshold = 0.7;
 	static Sound* prevSound;
@@ -32,8 +32,6 @@ public:
 	Sound(const std::string& path);
 	void play(int delay);
 	void play();
-
-	static void setGlobalVolume(double volume);
-	static void init(int side, int device = -1);
+	static void init(int devNum, int side, double userVolume);
 	static void processQueue();
 };

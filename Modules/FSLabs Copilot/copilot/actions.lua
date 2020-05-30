@@ -178,13 +178,13 @@ if copilot.isVoiceControlEnabled then
     :activateOn(copilot.events.goAround, copilot.events.takeoffInitiated)
 
   copilot.actions.airborne = copilot.events.airborne:addAction(function()
+    copilot.voiceCommands.lineup:deactivate()
     copilot.voiceCommands.gearDown:ignore()
     copilot.voiceCommands.flapsOne:ignore()
     copilot.voiceCommands.flapsTwo:ignore()
     copilot.voiceCommands.flapsThree:ignore()
     copilot.voiceCommands.flapsFull:ignore()
     copilot.voiceCommands.flapsUp:ignore()
-    
   end)
 
   copilot.voiceCommands.goAroundFlaps = VoiceCommand:new {
@@ -615,6 +615,7 @@ if copilot.UserOptions.actions.lineup == 1 then
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.lineup = VoiceCommand:new {
       phrase = "lineup procedure",
+      persistent = "ignore",
       confidence = recoConfidence(0.94),
       action = {function()
         if copilot.UserOptions.actions.takeoff_sequence == 1 then
@@ -639,6 +640,7 @@ do
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.takeoff = VoiceCommand:new{
       phrase = "takeoff",
+      confidence = recoConfidence(0.94),
       dummy = {"takeoffrunway", "takeoff runway","take off runway", "taykoffrunway"},
       action = function()
         copilot.actions.noVoiceTakeoffTrigger:stopCurrentThread()
@@ -648,13 +650,11 @@ do
   end
 
   copilot.actions.takeoff = copilot.events.takeoffInitiated2:addAction(function()
+    if copilot.isVoiceControlEnabled and copilot.UserOptions.actions.lineup == 1 then
+      copilot.voiceCommands.lineup:deactivate()
+    end
     if copilot.UserOptions.actions.takeoff_sequence == 1 then
       copilot.sequences.takeoffSequence()
-    end
-    if copilot.isVoiceControlEnabled then
-      if copilot.UserOptions.actions.lineup == 1 then
-        copilot.voiceCommands.lineup:deactivate()
-      end
     end
   end)
 
@@ -696,12 +696,21 @@ end, "runAsCoroutine")
 
 copilot.actions.belowTenThousand = copilot.events.belowTenThousand:addAction(function()
   if copilot.isVoiceControlEnabled then
-    copilot.voiceCommands.flapsOne:activate()
+    local flapsPos = FSL.PED_FLAP_LEVER:getPosn()
+    local flapsVoiceCommand = {
+      ["0"] = "flapsOne",
+      ["1"] = "flapsTwo",
+      ["2"] = "flapsThree",
+      ["3"] = "flapsFull",
+    }
+    if flapsPos ~= "FULL" then
+      copilot.voiceCommands[flapsVoiceCommand[flapsPos]]:activate()
+    end
+    flapsVoiceCommand[flapsPos] = nil
+    for _, v in pairs(flapsVoiceCommand) do
+      copilot.voiceCommands[v]:ignore()
+    end
     copilot.voiceCommands.gearDown:activate()
-
-    copilot.voiceCommands.flapsTwo:ignore()
-    copilot.voiceCommands.flapsThree:ignore()
-    copilot.voiceCommands.flapsFull:ignore()
     copilot.voiceCommands.flapsUp:ignore()
     copilot.voiceCommands.gearUp:ignore()
   end

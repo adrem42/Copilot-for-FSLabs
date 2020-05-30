@@ -1,5 +1,7 @@
 #include "McduWatcher.h"
+#include "Copilot.h"
 #include <algorithm>
+int HttpRequest::receiveTimeout = 1000;
 
 bool isNumber(const std::string& str) 
 {
@@ -51,6 +53,8 @@ void McduWatcher::update()
 			isFmgcSetup.initB = zfwEntered && fuelEntered;
 		}
 		vars["isFmgcSetup"] = isFmgcSetup.takeoff && isFmgcSetup.initB;
+	} else {
+		copilot::logger->warn("PF MCDU Http request error {}", pfMcdu->lastError());
 	}
 }
 
