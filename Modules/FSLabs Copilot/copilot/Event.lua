@@ -620,7 +620,7 @@ end
 
 function VoiceCommand:new(data)
   local voiceCommand = data
-  voiceCommand.confidence = data.confidence or copilot.UserOptions.voice_control.confidence_threshold
+  voiceCommand.confidence = data.confidence or 0.93
   voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
   if copilot.isVoiceControlEnabled then
     voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase,

@@ -12,8 +12,7 @@ local options = {
   {
     "Voice_control",
     {
-      {"enable", 1},
-      {"confidence_threshold", 0.93}
+      {"enable", 1}
     }
   },
   {

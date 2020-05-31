@@ -190,18 +190,12 @@ local function setup()
   local userFiles = false
   for _file in lfs.dir(customDir) do
     if _file:find("%.lua$") then
-      local path = customDir .. _file
-      for line in io.lines(path) do
-        if line:find("%S") then
-          if not userFiles then
-            userFiles = true
-            copilot.logger:info "Loading user lua files:"
-          end
-          copilot.logger:info(_file)
-          dofile(path)
-          break
-        end
+      if not userFiles then
+        userFiles = true
+        copilot.logger:info "Loading user lua files:"
       end
+      copilot.logger:info(_file)
+      dofile(customDir .. _file)
     end
   end
 

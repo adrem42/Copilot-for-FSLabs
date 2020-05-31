@@ -21,15 +21,11 @@ else
   flapsLimits.flapsFull = 177
 end
 
-local function recoConfidence(confidence)
-  return confidence * copilot.UserOptions.voice_control.confidence_threshold / 0.93
-end
-
 if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsOne = VoiceCommand:new {
     phrase = "flaps one",
-    confidence = recoConfidence(0.94),
+    confidence = 0.94,
     action = function()
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
@@ -62,7 +58,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsTwo = VoiceCommand:new {
     phrase = "flaps two",
-    confidence = recoConfidence(0.94),
+    confidence = 0.94,
     action = function()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
@@ -95,6 +91,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsThree = VoiceCommand:new {
     phrase = "flaps three",
+    confidence = 0.94,
     action = function()
       if FSL.PED_FLAP_LEVER:getPosn() == "2" and copilot.IAS() <= flapsLimits.flapsThree then
         copilot.voiceCommands.flapsThree:ignore()
@@ -109,6 +106,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsFull = VoiceCommand:new {
     phrase = "flaps full",
+    confidence = 0.94,
     action = function()
       if FSL.PED_FLAP_LEVER:getPosn() == "3"then
         if copilot.IAS() <= flapsLimits.flapsFull then
@@ -124,6 +122,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.flapsUp = VoiceCommand:new {
     phrase = {"flaps up", "flaps zero"},
+    confidence = 0.94,
     action = function()
       if FSL.PED_FLAP_LEVER:getPosn() == "1" then
         local Vs = copilot.mcduWatcher:getVar("Vs")
@@ -215,7 +214,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.gearDown = VoiceCommand:new {
     phrase = "gear down",
-    confidence = recoConfidence(0.95),
+    confidence = 0.95,
     action = function()
       copilot.voiceCommands.gearDown:ignore()
       VoiceCommand:react()
@@ -616,7 +615,7 @@ if copilot.UserOptions.actions.lineup == 1 then
     copilot.voiceCommands.lineup = VoiceCommand:new {
       phrase = "lineup procedure",
       persistent = "ignore",
-      confidence = recoConfidence(0.94),
+      confidence = 0.94,
       action = {function()
         if copilot.UserOptions.actions.takeoff_sequence == 1 then
           copilot.voiceCommands.takeoff:activate()
@@ -640,8 +639,8 @@ do
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.takeoff = VoiceCommand:new{
       phrase = "takeoff",
-      confidence = recoConfidence(0.94),
-      dummy = {"takeoffrunway", "takeoff runway","take off runway", "taykoffrunway"},
+      confidence = 0.94,
+      dummy = "takeoffwrongway",
       action = function()
         copilot.actions.noVoiceTakeoffTrigger:stopCurrentThread()
         copilot.events.takeoffInitiated2:trigger()
@@ -786,7 +785,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.noApu = VoiceCommand:new {
     phrase = {"no apu", "hold apu"},
-    confidence = recoConfidence(0.95),
+    confidence = 0.95,
     action = function()
       copilot.sequences.afterLanding.noApu = true
       copilot.voiceCommands.startApu:activate()

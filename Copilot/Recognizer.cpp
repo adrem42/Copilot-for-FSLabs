@@ -86,13 +86,19 @@ void Recognizer::changeRuleState(Rule& rule, RuleState newRuleState, SPRULESTATE
 	HRESULT hr;
 	if (rule.dummyRuleID) {
 		Rule& dummyRule = getRuleById(rule.dummyRuleID);
-		logRuleStatus(dummyLogMsg, dummyRule);
-		hr = recoGrammar->SetRuleIdState(dummyRule.ruleID, spRuleState);
-		checkResult("Error changing rule state", hr);
+		if (dummyRule.sapiRuleState != spRuleState) {
+			logRuleStatus(dummyLogMsg, dummyRule);
+			hr = recoGrammar->SetRuleIdState(dummyRule.ruleID, spRuleState);
+			checkResult("Error changing rule state", hr);
+			dummyRule.sapiRuleState = spRuleState;
+		}
 	}
 	logRuleStatus(logMsg, rule);
-	hr = recoGrammar->SetRuleIdState(rule.ruleID, spRuleState);
-	checkResult("Error changing rule state", hr);
+	if (rule.sapiRuleState != spRuleState) {
+		hr = recoGrammar->SetRuleIdState(rule.ruleID, spRuleState);
+		checkResult("Error changing rule state", hr);
+		rule.sapiRuleState = spRuleState;
+	}
 	rule.state = newRuleState;
 	return;
 }

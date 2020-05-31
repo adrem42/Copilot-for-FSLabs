@@ -28,6 +28,7 @@ private:
 		RulePersistenceMode persistenceMode;
 		RuleState state = RuleState::Inactive;
 		RuleID dummyRuleID;
+		SPRULESTATE sapiRuleState = SPRS_INACTIVE;
 	};
 	Rule& getRuleById(RuleID ruleID);
 	void changeRuleState(Rule& rule, RuleState newRuleState, SPRULESTATE spRuleState, std::string&& logMsg, std::string&& dummyLogMsg);
