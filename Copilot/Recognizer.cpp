@@ -298,7 +298,7 @@ RecoResult Recognizer::getResult()
 			hr = _recoResult->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, TRUE, &dstrText, NULL);
 		if (SUCCEEDED(hr)) {
 			RuleID ruleID = spphrase->Rule.ulId;
-			float confidence = spphrase->pElements->SREngineConfidence;
+			float confidence = spphrase->Rule.SREngineConfidence;
 			std::string phrase = dstrText.CopyToChar();
 			std::lock_guard<std::recursive_mutex> lock(mtx);
 			const Rule& rule = getRuleById(ruleID);

@@ -436,6 +436,7 @@ end
 --- @usage
 -- local myAction = myEvent:addAction(function() end)
 -- myEvent:removeAction(myAction)
+---@return self
 
 function Event:removeAction(action)
   for i, _action in ipairs(self.sortedActions) do
@@ -447,6 +448,7 @@ function Event:removeAction(action)
   self.actions.nodes[action] = nil
   self.runOnce[action] = nil
   self.coroDepends[action] = nil
+  return self
 end
 
 function Event:getActionCount() 
