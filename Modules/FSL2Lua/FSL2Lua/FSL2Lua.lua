@@ -1198,11 +1198,18 @@ local TL_posns = {
 }
 
 function FSL:getThrustLeversPos(TL)
-  local pos = TL == 1 and ipc.readLvar("VC_PED_TL_1") or TL == 2 and ipc.readLvar("VC_PED_TL_2")
+  local pos
+  if TL == 1 then
+    pos = ipc.readLvar("VC_PED_TL_1")
+  elseif TL == 2 then
+    pos = ipc.readLvar("VC_PED_TL_2")
+  else
+    pos = (ipc.readLvar("VC_PED_TL_1") + ipc.readLvar("VC_PED_TL_2") / 2)
+  end
   for k,v in pairs(TL_posns) do
     if (pos and math.abs(pos - v) < 4) or (not pos and math.abs(ipc.readLvar("VC_PED_TL_1")  - v) < 4 and math.abs(ipc.readLvar("VC_PED_TL_2")  - v) < 4) then
       return k
-    elseif pos then return pos end
+    else return pos end
   end
 end
 

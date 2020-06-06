@@ -214,7 +214,8 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.gearDown = VoiceCommand:new {
     phrase = "gear down",
-    confidence = 0.95,
+    confidence = 0.94,
+    dummy = "... gear ...",
     action = function()
       copilot.voiceCommands.gearDown:ignore()
       VoiceCommand:react()
@@ -640,7 +641,7 @@ do
     copilot.voiceCommands.takeoff = VoiceCommand:new{
       phrase = "takeoff",
       confidence = 0.94,
-      dummy = "takeoffwrongway",
+      dummy = {"... takeoff", "takeoff ...", "takeoffrunway", "takeoff runway", "before takeoff", "beforetakeoff"},
       action = function()
         copilot.actions.noVoiceTakeoffTrigger:stopCurrentThread()
         copilot.events.takeoffInitiated2:trigger()

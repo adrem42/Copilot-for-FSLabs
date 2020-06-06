@@ -584,7 +584,7 @@ local recognizer = copilot.recognizer
 -- will also degrade the quality of recognition.<br>
 --
 --- @type VoiceCommand
-VoiceCommand = {}
+VoiceCommand = {DefaultConfidence = 0.93}
 setmetatable(VoiceCommand, {__index = Event})
 
 local PersistenceMode = {
@@ -622,7 +622,7 @@ end
 
 function VoiceCommand:new(data)
   local voiceCommand = data
-  voiceCommand.confidence = data.confidence or 0.93
+  voiceCommand.confidence = data.confidence or VoiceCommand.DefaultConfidence
   voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
   if copilot.isVoiceControlEnabled then
     voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase,
