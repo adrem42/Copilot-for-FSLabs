@@ -1023,7 +1023,7 @@ function FSL:init()
     end
 
     local rect = control.rectangle
-    control.rectangle = FSL:getAcType() == "A321" and rect.A321 or rect.A320
+    control.rectangle = control.rectangle[FSL:getAcType()]
 
     control.pos = self:initControlPositions(varname,control)
 
@@ -1198,19 +1198,15 @@ local TL_posns = {
 }
 
 function FSL:getThrustLeversPos(TL)
-  local pos
-  if TL == 1 then
-    pos = ipc.readLvar("VC_PED_TL_1")
-  elseif TL == 2 then
-    pos = ipc.readLvar("VC_PED_TL_2")
-  else
-    pos = (ipc.readLvar("VC_PED_TL_1") + ipc.readLvar("VC_PED_TL_2") / 2)
-  end
+  local pos = TL == 1 and ipc.readLvar("VC_PED_TL_1") or TL == 2 and ipc.readLvar("VC_PED_TL_2")
   for k,v in pairs(TL_posns) do
-    if (pos and math.abs(pos - v) < 4) or (not pos and math.abs(ipc.readLvar("VC_PED_TL_1")  - v) < 4 and math.abs(ipc.readLvar("VC_PED_TL_2")  - v) < 4) then
+    if pos and math.abs(pos - v) < 4 then
       return k
-    else return pos end
+    elseif not pos and math.abs(ipc.readLvar("VC_PED_TL_1")  - v) < 4 and math.abs(ipc.readLvar("VC_PED_TL_2")  - v) < 4 then
+      return k
+    end
   end
+  return pos or (ipc.readLvar("VC_PED_TL_1") + ipc.readLvar("VC_PED_TL_2")) / 2
 end
 
 function FSL:setTakeoffFlaps(setting)

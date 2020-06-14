@@ -240,7 +240,8 @@ void Recognizer::resetGrammar()
 		std::lock_guard<std::recursive_mutex> lock(mtx);
 		for (auto& rule : rules) {
 			statesBefore[&rule] = rule.state;
-			rule.state = RuleState::Inactive;
+			if (rule.state != RuleState::Disabled)
+				rule.state = RuleState::Inactive;
 			for (const auto& phrase : rule.phrases) {
 				SPSTATEHANDLE initialState;
 				hr = recoGrammar->GetRule(NULL, rule.ruleID, SPRAF_TopLevel | SPRAF_Active | SPRAF_Dynamic, TRUE, &initialState);

@@ -178,6 +178,7 @@ if copilot.isVoiceControlEnabled then
 
   copilot.actions.airborne = copilot.events.airborne:addAction(function()
     copilot.voiceCommands.lineup:deactivate()
+    copilot.voiceCommands.takeoff:deactivate()
     copilot.voiceCommands.gearDown:ignore()
     copilot.voiceCommands.flapsOne:ignore()
     copilot.voiceCommands.flapsTwo:ignore()
