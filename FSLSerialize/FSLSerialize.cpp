@@ -23,7 +23,7 @@ using namespace P3D;
 HANDLE hSimConnect;
 HANDLE hLuaThread;
 std::mutex simMtx, luaMtx;
-std::atomic<bool> closeThread = false;
+std::atomic_bool closeThread, resultsSaved, saveMenuItemVisible;
 lua_State* L;
 
 GAUGESIMPORT ImportTable = {
@@ -36,7 +36,9 @@ enum EVENT_ID {
 	EVENT_MENU,
 	EVENT_MENU_START,
 	EVENT_MENU_STOP,
-	EVENT_MENU_SAVE
+	EVENT_MENU_SAVE,
+	EVENT_MENU_RECORD,
+	EVENT_MENU_SHOW_MACROS
 };
 
 struct MACRO {
@@ -61,6 +63,8 @@ class MouseRectListenerCallback : public IMouseRectListenerCallback {
 		DEFAULT_IUNKNOWN_QI_INLINE_IMPL(MouseRectListenerCallback, IID_IUnknown)
 
 public:
+
+	enum class Mode { Record, Show } mode;
 	MouseRectListenerCallback() :
 		m_RefCount(1)
 	{
@@ -73,15 +77,29 @@ public:
 			clickType == MOUSE_CLICK_RIGHT_SINGLE ||
 			clickType == MOUSE_CLICK_WHEEL_DOWN ||
 			clickType == MOUSE_CLICK_WHEEL_UP) {
-			//std::cout << "--------------------" << std::endl;
-			//std::cout << std::hex << id << std::endl << std::dec << clickType << std::endl;
 
-			std::lock_guard<std::mutex> lock(simMtx);
-			MACRO macro{ id, (int)clickType };
-			currMacro = std::make_shared<MACRO>(macro);
+			switch (mode) {
+
+				case Mode::Record: 
+				{
+					std::lock_guard<std::mutex> lock(simMtx);
+					MACRO macro{ id, (int)clickType };
+					currMacro = std::make_shared<MACRO>(macro);
+				}
+				break;
+
+				case Mode::Show:
+				{
+					logger->info("-----------------------------------");
+					logger->info("ID: 0x{:X}, ClickType: {}", id, clickType);
+				}
+				break;
+
+			}
+
 		}
 	}
-};
+} *mouseRectListenerCallback;
 
 int getLvar(lua_State* L)
 {
@@ -173,8 +191,10 @@ void luaThread()
 			checkLuaResult(L, lua_pcall(L, 2, 0, 0));
 		}
 	}
-	
+
+	std::lock_guard<std::mutex> lock(luaMtx);
 	lua_close(L);
+	L = nullptr;
 }
 
 void restartLuaThread()
@@ -185,6 +205,46 @@ void restartLuaThread()
 		closeThread = false;
 	}
 	myThread = std::thread(luaThread);
+}
+
+void setSaveMenuItemVisible(bool visible)
+{
+	if (visible && !saveMenuItemVisible) {
+		HRESULT hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Save the work", EVENT_MENU_SAVE, 0);
+		saveMenuItemVisible = true;
+		return;
+	} else if (!visible && saveMenuItemVisible) {
+		HRESULT hr = SimConnect_MenuDeleteSubItem(hSimConnect, EVENT_MENU, EVENT_MENU_SAVE);
+		saveMenuItemVisible = false;
+	}
+}
+
+void setupRecordingMenu()
+{
+	std::lock_guard<std::mutex> simLock(simMtx);
+	std::lock_guard<std::mutex> luaLock(luaMtx);
+	mouseRectListenerCallback->mode = MouseRectListenerCallback::Mode::Record;
+
+	HRESULT hr;
+	hr = SimConnect_MenuDeleteSubItem(hSimConnect, EVENT_MENU, EVENT_MENU_RECORD);
+	if (L != nullptr) setSaveMenuItemVisible(true);
+	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Start lua", EVENT_MENU_START, 0);
+	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Stop lua", EVENT_MENU_STOP, 0);
+	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Show macros", EVENT_MENU_SHOW_MACROS, 0);
+}
+
+void setupMacroDisplayMenu()
+{
+	std::lock_guard<std::mutex> simLock(simMtx);
+	std::lock_guard<std::mutex> luaLock(luaMtx);
+	mouseRectListenerCallback->mode = MouseRectListenerCallback::Mode::Show;
+
+	HRESULT hr;
+	hr = SimConnect_MenuDeleteSubItem(hSimConnect, EVENT_MENU, EVENT_MENU_STOP);
+	hr = SimConnect_MenuDeleteSubItem(hSimConnect, EVENT_MENU, EVENT_MENU_START);
+	setSaveMenuItemVisible(false);
+	hr = SimConnect_MenuDeleteSubItem(hSimConnect, EVENT_MENU, EVENT_MENU_SHOW_MACROS);
+	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Record macros", EVENT_MENU_RECORD, 0);
 }
 
 void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
@@ -199,25 +259,42 @@ void CALLBACK MyDispatchProcDLL(SIMCONNECT_RECV* pData, DWORD cbData, void* pCon
 
 				case EVENT_MENU_START:
 				{
-					std::lock_guard<std::mutex> lock(luaMtx);
 					restartLuaThread();
+					setSaveMenuItemVisible(true);
 					break;
 				}
 
 				case EVENT_MENU_SAVE:
 				{
-					std::lock_guard<std::mutex> lock(luaMtx);
-					lua_getglobal(L, "saveResults");
-					checkLuaResult(L, lua_pcall(L, 0, 0, 0));
+					if (L != nullptr) {
+						std::lock_guard<std::mutex> lock(luaMtx);
+						lua_getglobal(L, "saveResults");
+						checkLuaResult(L, lua_pcall(L, 0, 0, 0));
+					}
+					
 					break;
 				}
 
 				case EVENT_MENU_STOP:
 				{
 					if (myThread.joinable()) {
+						setSaveMenuItemVisible(false);
 						closeThread = true;
 						myThread.join();
+						closeThread = false;
 					}
+					break;
+				}
+
+				case EVENT_MENU_SHOW_MACROS:
+				{
+					setupMacroDisplayMenu();
+					break;
+				}
+
+				case EVENT_MENU_RECORD:
+				{
+					setupRecordingMenu();
 					break;
 				}
 
@@ -234,35 +311,22 @@ void DLLStart(__in __notnull IPdk* pPdk)
 
 	attachLogToConsole();
 
-	if (pPdk != nullptr) {
-		PdkServices::Init(pPdk);
-		logger->info("PDK initialized");
-	} else {
-		logger->error("PDK not found");
-		return;
-	}
+	if (pPdk != nullptr) PdkServices::Init(pPdk);
 
-	PdkServices::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(new MouseRectListenerCallback);
+	mouseRectListenerCallback = new MouseRectListenerCallback();
+	mouseRectListenerCallback->mode = MouseRectListenerCallback::Mode::Record;
+	PdkServices::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(mouseRectListenerCallback);
 
 	if (Panels != NULL) {
 		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
-	} else {
-		logger->error("FSLSerialize: No panels");
-		return;
 	}
 
 	if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FSLSerialize", NULL, 0, NULL, 0))) {
 
 		HRESULT hr;
 		hr = SimConnect_MenuAddItem(hSimConnect, "FSLSerialize", EVENT_MENU, 0);
-		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Start lua", EVENT_MENU_START, 0);
-		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Stop lua", EVENT_MENU_STOP, 0);
-		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_MENU, "Save the work", EVENT_MENU_SAVE, 0);
-
+		setupRecordingMenu();
 		hr = SimConnect_CallDispatch(hSimConnect, MyDispatchProcDLL, NULL);
-
-	} else {
-		logger->error("Failed to initialize SimConnect");
 	}
 
 }

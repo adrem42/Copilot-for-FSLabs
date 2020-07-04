@@ -1022,9 +1022,8 @@ function FSL:init()
       control._rectangle = control.rectangle
     end
 
-    local rect = control.rectangle
-    control.rectangle = control.rectangle[FSL:getAcType()]
-
+    control.rectangle = control.rectangle[FSL:getAcType() == "A321" and "A321" or "A320"]
+    
     control.pos = self:initControlPositions(varname,control)
 
     if control.posn then
