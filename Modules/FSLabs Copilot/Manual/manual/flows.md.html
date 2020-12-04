@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 1.1.3</title>
+    <title>Copilot for FSLabs 1.1.5</title>
     <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 1.1.3</h1>
+<h1>Copilot for FSLabs 1.1.5</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -54,305 +54,223 @@
 
 <div id="content">
 
-    <h1>Flows</h1>
 
-<hr />
-
+<h1>Flows</h1>
+<hr/>
 <h3>Preflight</h3>
 
 <ul>
-<li>Check FMGC data insertion (doesn&rsquo;t actually check anything, just cycles through the pages :)</li>
-<li>Set up the EFIS</li>
+    <li>Check FMGC data insertion (doesn't actually check anything, just cycles through the pages :)</li>
+    <li>Set up the EFIS</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <p>Fill out the PERF and INIT B pages</p>
-
-<hr />
+<hr/>
 
 <h3>After start</h3>
 
 <ul>
-<li>Arm the ground spoilers</li>
-<li>Set takeoff flaps</li>
-<li>Set the takeoff pitch trim</li>
+    <li>Arm the ground spoilers</li>
+    <li>Set takeoff flaps</li>
+    <li>Set the takeoff pitch trim</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <p>At least one engine running and the engine mode selector switch in the NORM position for at least 4 seconds.</p>
-
-<hr />
+<hr/>
 
 <h3>Flight controls check</h3>
 
 <ul>
-<li>PM will announce &lsquo;full left&rsquo;, &lsquo;full right&rsquo;, &lsquo;neutral&rsquo; etc.
-The aileron and elevator checks need to be performed before the rudder check.</li>
+    <li>PM will announce 'full left', 'full right', 'neutral' etc.
+    The aileron and elevator checks need to be performed before the rudder check.</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <p>Full left or full right aileron deflection/
 full up or full down elevator deflection</p>
-
-<hr />
+<hr/>
 
 <h3>Brake check</h3>
 
-<p>Apply some brakes and the PM will announce &lsquo;pressure zero&rsquo;</p>
+<p>Apply some brakes and the PM will announce 'pressure zero'</p>
 
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
 
-<p>Say &lsquo;Brake check&rsquo; during taxi with the ground speed  below 3 knots</p>
+<p>Say 'Brake check' during taxi with the ground speed  below 3 knots</p>
 
 <h5>voice_control = 0:</h5>
 
 <p>The first brake application during taxi with the ground speed below 3 knots</p>
-
-<hr />
-
+<hr/>
 <p>Note: you can do the checks above in any order.</p>
-
-<hr />
-
+<hr/>
 <h3>During taxi</h3>
 
 <ul>
-<li>Weather radar SYS switch 1 or 2</li>
-<li>Weather radar PWS switch AUTO</li>
-<li>AUTO BRK MAX</li>
-<li>Press TO CONFIG button</li>
+    <li>Weather radar SYS switch 1 or 2</li>
+    <li>Weather radar PWS switch AUTO</li>
+    <li>AUTO BRK MAX</li>
+    <li>Press TO CONFIG button</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <p>As soon as the brake and flight controls checks are completed</p>
-
-<hr />
-
+<hr/>
 <h3>Lineup</h3>
 
 <ul>
-<li>Transponder ON/OFF switch ON</li>
-<li>Transponder MODE switch TARA</li>
-<li>Optionally, turn the packs off</li>
+    <li>Transponder ON/OFF switch ON</li>
+    <li>Transponder MODE switch TARA</li>
+    <li>Optionally, turn the packs off</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
 
-<p>Say &lsquo;Lineup procedure&rsquo;</p>
+<p>Say 'Lineup procedure'</p>
 
 <h5>voice_control = 0:</h5>
 
 <p>Cycle the seat belts sign switch twice within two seconds</p>
-
-<hr />
-
-<p>Note: To decide whether to turn the packs off, the script first looks for a performance request in the ATSU log. If it finds a performance request and the packs are off in it, the PM will turn the packs off. Otherwise, he will turn them off or leave them on based on the packs_on_takeoff option</p>
-
-<hr />
-
+<hr/>
+<p>Note: To decide whether to turn the packs off, the script first looks for a performance request in the ATSU log. If it finds a performance request and the packs are off in it, the PM will turn the packs off. Otherwise, he will turn them off or leave them on based on the packs<em>on</em>takeoff option</p>
+<hr/>
 <h3>Takeoff</h3>
 
 <ul>
-<li>MIP chrono elapsed time switch RUN</li>
-<li>Press the glareshield CHRONO button on PM&rsquo;s side</li>
+    <li>MIP chrono elapsed time switch RUN</li>
+    <li>Press the glareshield CHRONO button on PM's side</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
 
-<p>Say &lsquo;Takeoff&rsquo;</p>
+<p>Say 'Takeoff'</p>
 
 <h5>voice_control = 0:</h5>
 
 <p>Thrust levers in FLX or TOGA and landing lights on</p>
-
-<hr />
-
+<hr/>
 <h3>Takeoff roll callouts</h3>
 
 <ul>
-<li>'Thrust set'</li>
-<li>&lsquo;One hundred&rsquo;</li>
-<li>&lsquo;V1 (if it&rsquo;s not played by the aircraft itself)</li>
-<li>&lsquo;Rotate&rsquo;</li>
-<li>&lsquo;Positive climb&rsquo;</li>
+    <li>'Thrust set'</li>
+    <li>'One hundred'</li>
+    <li>'V1 (if it's not played by the aircraft itself)</li>
+    <li>'Rotate'</li>
+    <li>'Positive climb'
+    <hr/></li>
+    <li>Retract the gear</li>
 </ul>
-
-
-<hr />
-
-<ul>
-<li>Retract the gear</li>
-</ul>
-
 
 <h4>Voice command:</h4>
 
-<p>&lsquo;Gear up&rsquo;</p>
-
-<hr />
-
+<p>'Gear up'</p>
+<hr/>
 <h3>After takeoff</h3>
 
 <ul>
-<li><p>Select the packs back on if they were turned off for takeoff</p></li>
-<li><p>Voice commands <em>(if voice_control=1)</em>:</p>
-
-<ul>
-<li><em>&lsquo;Flaps two&rsquo;</em></li>
-<li><em>&lsquo;Flaps one&rsquo;</em></li>
-<li><em>&lsquo;Flaps up&rsquo; or &lsquo;flaps zero&rsquo;</em></li>
+    <li><p>Select the packs back on if they were turned off for takeoff</p></li>
+    <li><p>Voice commands *(if voice_control=1)*:</p></li>
+    <li><p><em>'Flaps two'</em></p></li>
+    <li><p><em>'Flaps one'</em></p></li>
+    <li><p><em>'Flaps up' or 'flaps zero'</em></p></li>
 </ul>
-</li>
-</ul>
-
 
 <p>When the flaps are retracted:</p>
 
 <ul>
-<li>Disarm the ground spoilers</li>
+    <li>Disarm the ground spoilers</li>
 </ul>
-
 
 <h4>Trigger:</h4>
 
 <p>Move the thrust levers back to CLB.</p>
-
-<hr />
-
+<hr/>
 <h3>Climbing through 10000</h3>
 
 <ul>
-<li>Retract the landing lights</li>
-<li>On PM&rsquo;S MCDU:
-
-<ul>
-<li>Clear the RADNAV page</li>
-<li>Copy the active flight plan on the SEC F-PLN page</li>
-</ul>
-</li>
-<li>On PM&rsquo;s side EFIS:
-
-<ul>
-<li>Select ARPT</li>
-<li>ND range to 160</li>
-<li>VOR/ADF switches to VOR</li>
-</ul>
-</li>
-</ul>
-
-
-<hr />
-
-<h3>Descending through 10000</h3>
-
-<ul>
-<li>Landing lights ON</li>
-<li>Seat belts sign switch ON</li>
-<li><p>On PM&rsquo;s side EFIS:</p>
-
-<ul>
-<li>Select LS if an ILS or LOC approach has been selected in the MCDU</li>
-<li>Select CSTR</li>
-</ul>
-</li>
-<li><p>On PM&rsquo;s side MCDU:</p>
-
-<ul>
-<li>Look at the RADNAV page for 5 seconds</li>
-<li>Go to the PROG page </li>
-</ul>
-</li>
-<li><p>Voice commands become available:</p></li>
+    <li><p>Retract the landing lights</p></li>
+    <li><p>On PM'S MCDU:</p></li>
+    <li><p>Clear the RADNAV page</p></li>
+    <li><p>Copy the active flight plan on the SEC F-PLN page</p></li>
+    <li><p>On PM's side EFIS:</p></li>
+    <li><p>Select ARPT</p></li>
+    <li><p>ND range to 160</p></li>
+    <li><p>VOR/ADF switches to VOR</p>
+    <hr/>
+    <h3>Descending through 10000</h3></li>
+    <li><p>Landing lights ON</p></li>
+    <li><p>Seat belts sign switch ON</p></li>
+    <li><p>On PM's side EFIS:</p></li>
+    <li><p>Select LS if an ILS or LOC approach has been selected in the MCDU</p></li>
+    <li><p>Select CSTR</p></li>
+    <li><p>On PM's side MCDU:</p></li>
+    <li><p>Look at the RADNAV page for 5 seconds</p></li>
+    <li><p>Go to the PROG page </p></li>
+    <li><p>Voice commands become available:</p></li>
 </ul>
 
-
-<p>   &lsquo;Gear down&rsquo;<br/>
-   &lsquo;Flaps one&rsquo;<br/>
-   &lsquo;Flaps two&rsquo;<br/>
-   &lsquo;Flaps three&rsquo;<br/>
-   &lsquo;Flaps full&rsquo;<br/>
-</p>
-
-<hr />
-
+<p>   'Gear down' <br/>
+   'Flaps one' <br/>
+   'Flaps two' <br/>
+   'Flaps three' <br/>
+   'Flaps full'  </p>
+<hr/>
 <h3>Landing roll callouts</h3>
 
 <ul>
-<li>'Spoilers'</li>
-<li>&lsquo;Reverse green&rsquo;</li>
-<li>&lsquo;Decel&rsquo;</li>
-<li>&lsquo;70 knots&rsquo;</li>
+    <li><p>'Spoilers'</p></li>
+    <li><p>'Reverse green'</p></li>
+    <li><p>'Decel'</p></li>
+    <li><p>'70 knots'</p>
+    <hr/>
+    <h3>After landing</h3></li>
+    <li><p>Retract the flaps</p></li>
+    <li><p>Transponder mode switch STBY</p></li>
+    <li><p>MIP chrono elapsed time switch STP</p></li>
+    <li><p>Press the chrono button on PM's side glareshield</p></li>
+    <li><p>Strobe light switch AUTO</p></li>
+    <li><p>Runway turnoff light switch OFF</p></li>
+    <li><p>Landing lights switches OFF</p></li>
+    <li><p>Nose light switch TAXI</p></li>
+    <li><p>Weather radar SYS switch OFF</p></li>
+    <li><p>Weather radar PWS switch OFF</p></li>
+    <li><p>*option FDs<em>off</em>after_landing:*</p></li>
+    <li><p><em>Turn off both  flight directors if the option value is 1 or turn them back on if the value is 0.</em></p></li>
+    <li><p>Select LS off on both sides</p></li>
+    <li><p>Disable the 'bird' mode if it's active</p></li>
+    <li><p>*pack2<em>off</em>after_landing=1:*</p></li>
+    <li><p><em>Turn off pack 2</em></p></li>
+    <li><p>Start the APU unless you told not to</p></li>
+    <li><p>Voice command 'Taxi light off' becomes available</p></li>
 </ul>
-
-
-<hr />
-
-<h3>After landing</h3>
-
-<ul>
-<li>Retract the flaps</li>
-<li>Transponder mode switch STBY</li>
-<li>MIP chrono elapsed time switch STP</li>
-<li>Press the chrono button on PM&rsquo;s side glareshield</li>
-<li>Strobe light switch AUTO</li>
-<li>Runway turnoff light switch OFF</li>
-<li>Landing lights switches OFF</li>
-<li>Nose light switch TAXI</li>
-<li>Weather radar SYS switch OFF</li>
-<li>Weather radar PWS switch OFF</li>
-<li><em>option FDs_off_after_landing:</em>
-
-<ul>
-<li><em>Turn off both  flight directors if the option value is 1 or turn them back on if the value is 0.</em></li>
-</ul>
-</li>
-<li>Select LS off on both sides</li>
-<li>Disable the &lsquo;bird&rsquo; mode if it&rsquo;s active</li>
-<li><em>pack2_off_after_landing=1:</em>
-
-<ul>
-<li><em>Turn off pack 2</em></li>
-</ul>
-</li>
-<li>Start the APU unless you told not to</li>
-<li>Voice command &lsquo;Taxi light off&rsquo; becomes available</li>
-</ul>
-
 
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
+<p>* ###### *after<em>landing</em>trigger = 1*
+   Say 'After landing' or 'After landing, no APU'. <br/>
+   Saying 'No APU' can be delayed until the PM is just about to start the APU. <br/>
+   If you chose not to start the APU during the after landing procedure, you can say 'Start APU' at any time until the engines are shut down.
+<br><br></p>
 
 <ul>
-<li><h6><em>after_landing_trigger = 1</em></h6>
-
- Say &lsquo;After landing&rsquo; or &lsquo;After landing, no APU&rsquo;.<br/>
- Saying &lsquo;No APU&rsquo; can be delayed until the PM is just about to start the APU.<br/>
- If you chose not to start the APU during the after landing procedure, you can say &lsquo;Start APU&rsquo; at any time until the engines are shut down.
-<br><br></li>
-<li><h6><em>after_landing_trigger = 2</em></h6>
-
- Disarm the ground spoilers
- A few seconds before or after that you can say &lsquo;No APU&rsquo;
-<br><br></li>
+    <li><h6>*after<em>landing</em>trigger = 2*</h6>
+    Disarm the ground spoilers
+    A few seconds before or after that you can say 'No APU'
+    <br><br></li>
 </ul>
-
 
 <h5>voice_control = 0:</h5>
 
@@ -363,7 +281,7 @@ full up or full down elevator deflection</p>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-07-04 10:55:10 </i>
+<i style="float:right;">Last updated 2020-12-04 21:44:21 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

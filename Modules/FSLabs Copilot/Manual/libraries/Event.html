@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 1.1.3</title>
+    <title>Copilot for FSLabs 1.1.5</title>
     <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 1.1.3</h1>
+<h1>Copilot for FSLabs 1.1.5</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -61,8 +61,9 @@
 <div id="content">
 
 <h1>Module <code>Event</code></h1>
-<p>Copilot&rsquo;s event library.</p>
+<p>Copilot's event library.</p>
 <p>
+
 </p>
 
 
@@ -94,7 +95,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Action:addCleanup">Action:addCleanup(callback)</a></td>
-	<td class="summary">Can be used when the action can be stopped &ndash; the callback will be executed when the action is stopped.</td>
+	<td class="summary">Can be used when the action can be stopped - the callback will be executed when the action is stopped.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Action:addLogMsg">Action:addLogMsg(msg)</a></td>
@@ -113,11 +114,11 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event:setActionOrder">Event:setActionOrder(action)</a></td>
-	<td class="summary">Sets order of the event&rsquo;s actions relative to each other.</td>
+	<td class="summary">Sets order of the event's actions relative to each other.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event:addOneOffAction">Event:addOneOffAction(...)</a></td>
-	<td class="summary">Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event&rsquo;s action list after it&rsquo;s executed once.</td>
+	<td class="summary">Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event:removeAction">Event:removeAction(action)</a></td>
@@ -231,10 +232,11 @@
             <span class="types"><span class="type">function</span></span>
 
 
+
         </li>
         <li><span class="parameter">flags</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         &lsquo;runAsCoroutine&rsquo;
+         'runAsCoroutine'
          (<em>optional</em>)
         </li>
     </ul>
@@ -291,7 +293,7 @@
     <ul>
         <li><span class="parameter">refType</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         &lsquo;stop&rsquo;
+         'stop'
         </li>
         <li><span class="parameter">...</span>
          one or more <a href="#Class_Event">Event</a> object
@@ -332,7 +334,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-         One or more events. If the &lsquo;runAsCoroutine&rsquo; flag was passed to the constructor, the callback coroutine will be stopped when these events are triggered.
+         One or more events. If the 'runAsCoroutine' flag was passed to the constructor, the callback coroutine will be stopped when these events are triggered.
         </li>
     </ul>
 
@@ -355,13 +357,14 @@
     <strong>Action:addCleanup(callback)</strong>
     </dt>
     <dd>
-    Can be used when the action can be stopped &ndash; the callback will be executed when the action is stopped.
+    Can be used when the action can be stopped - the callback will be executed when the action is stopped.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">callback</span>
             <span class="types"><span class="type">function</span></span>
+
 
 
         </li>
@@ -389,6 +392,7 @@
     <ul>
         <li><span class="parameter">msg</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
 
 
         </li>
@@ -421,8 +425,8 @@
         <li><span class="parameter">data</span> A table containing the following fields:
         <ul>
         <li><span class="parameter">action</span>
-         Function or <a href="#Class_Action">Action</a> object or array of functions or <a href="#Class_Action">Action</a> objects that will be executed when the event is triggered.<br/>
- If it&rsquo;s an array of functions, each function can optionally be followed by string &lsquo;runAsCoroutine&rsquo;.<br/>
+         Function or <a href="#Class_Action">Action</a> object or array of functions or <a href="#Class_Action">Action</a> objects that will be executed when the event is triggered. <br/>
+ If it's an array of functions, each function can optionally be followed by string 'runAsCoroutine'. <br/>
  Actions can also be added to an existing event via <a href="../libraries/Event.html#Event:addAction">addAction</a>.
          (<em>optional</em>)
         </li>
@@ -465,7 +469,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-         Either a function with the optional flag &lsquo;runAsCoroutine&rsquo; as the second argument or an <a href="#Class_Action">Action</a> object.
+         Either a function with the optional flag 'runAsCoroutine' as the second argument or an <a href="#Class_Action">Action</a> object.
         </li>
     </ul>
 
@@ -488,7 +492,7 @@
     <strong>Event:setActionOrder(action)</strong>
     </dt>
     <dd>
-    Sets order of the event&rsquo;s actions relative to each other.
+    Sets order of the event's actions relative to each other.
 
 
     <h3>Parameters:</h3>
@@ -501,12 +505,13 @@
     <h3>Returns:</h3>
     <ol>
 
-         A table with four functions: &lsquo;front&rsquo;, &lsquo;back&rsquo;, &lsquo;before&rsquo; and &lsquo;after. 'Before&rsquo; and &lsquo;after&rsquo; take a variable
+         A table with four functions: 'front', 'back', 'before' and 'after. 'Before' and 'after' take a variable
 number of Action objects. All four functions optionally take a boolean as the last parameter which defaults to true
  if omitted. If the last parameter is true and both the anchor action and the other actions are coroutines,
  the coroutines will not be run simultaneously.</p>
 
 <p> An error will be thrown if there is a cycle in the ordering.
+
     </ol>
 
 
@@ -588,12 +593,13 @@ event:trigger()
     <strong>Event:addOneOffAction(...)</strong>
     </dt>
     <dd>
-    Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event&rsquo;s action list after it&rsquo;s executed once.
+    Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
+
 
 
         </li>
@@ -700,6 +706,7 @@ myEvent:removeAction(myAction)</pre>
             <span class="types"><span class="type">bool</span></span>
 
 
+
          (<em>default</em> false)
         </li>
     </ul>
@@ -726,11 +733,10 @@ myEvent:removeAction(myAction)</pre>
 <p> A voice command can be in one of these  states:</p>
 
 <ul>
-<li><p>Active</p></li>
-<li><p>Inactive</p></li>
-<li><p>Ignore mode: the phrases are active in the recognizer but recognition events don&rsquo;t trigger the voice command.</p></li>
+    <li><p>Active</p></li>
+    <li><p>Inactive</p></li>
+    <li><p>Ignore mode: the phrases are active in the recognizer but recognition events don't trigger the voice command.</p></li>
 </ul>
-
 
 <p> If you only have a couple of phrases active in the recognizer at a given time, especially short ones, the accuracy will be low and
  the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of active phrases
@@ -754,8 +760,8 @@ myEvent:removeAction(myAction)</pre>
         </li>
         <li><span class="parameter">dummy</span>
          string or array of strings. One or multiple dummy phrase variants which will activated and deactivated
- synchronously with the voice command&rsquo;s actual phrase variants to help the recognizer discriminate between them and similarly
- sounding phrases. For example, the default &lsquo;takeoff&rsquo; voice command has a &lsquo;takeoff runway&rsquo; dummy phrase which is an item on the
+ synchronously with the voice command's actual phrase variants to help the recognizer discriminate between them and similarly
+ sounding phrases. For example, the default 'takeoff' voice command has a 'takeoff runway' dummy phrase which is an item on the
  standard takeoff checklist.
         </li>
         <li><span class="parameter">confidence</span>
@@ -764,12 +770,13 @@ myEvent:removeAction(myAction)</pre>
          (<em>default</em> 0.93)
         </li>
         <li><span class="parameter">persistent</span>
-        <ul>
-<li>omitted or false: the voice command will be deactivated after being triggered.</li>
-<li>&lsquo;ignore&rsquo;: the voice command will be put into ignore mode after being triggered.</li>
-<li>true: the voice command will stay active after being triggered.</li>
-</ul>
 
+
+<ul>
+    <li>omitted or false: the voice command will be deactivated after being triggered.</li>
+    <li>'ignore': the voice command will be put into ignore mode after being triggered.</li>
+    <li>true: the voice command will stay active after being triggered.</li>
+</ul>
 
          (<em>default</em> false)
         </li>
@@ -840,12 +847,13 @@ myEvent:removeAction(myAction)</pre>
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">persistenceMode</span>
-        <ul>
-<li>omitted or false: the voice command will be deactivated after being triggered.</li>
-<li>&lsquo;ignore&rsquo;: the voice command will be put into ignore mode after being triggered.</li>
-<li>true: the voice command will stay active after being triggered.</li>
-</ul>
 
+
+<ul>
+    <li>omitted or false: the voice command will be deactivated after being triggered.</li>
+    <li>'ignore': the voice command will be put into ignore mode after being triggered.</li>
+    <li>true: the voice command will stay active after being triggered.</li>
+</ul>
 
         </li>
     </ul>
@@ -867,8 +875,8 @@ myEvent:removeAction(myAction)</pre>
     <dd>
     Adds phrase variants to a voice command. </p>
 
-<p>The SAPI recognizer has two confidence metrics &ndash; a float from 0-1 and another one that has three states: low, normal and high.
-If a word is preceded by a &lsquo;+&rsquo; or &lsquo;&ndash;&rsquo;, its required confidence is set to &lsquo;high&rsquo; or &lsquo;low&rsquo;, respectively, otherwise, it has the default required confidence &lsquo;normal&rsquo;.
+<p>The SAPI recognizer has two confidence metrics - a float from 0-1 and another one that has three states: low, normal and high.
+If a word is preceded by a '+' or '-', its required confidence is set to 'high' or 'low', respectively, otherwise, it has the default required confidence 'normal'.
 
 
     <h3>Parameters:</h3>
@@ -898,7 +906,7 @@ If a word is preceded by a &lsquo;+&rsquo; or &lsquo;&ndash;&rsquo;, its require
     </dt>
     <dd>
     Removes phrase variants from a voice command.
- + and &ndash; in front of a word are ignored. For example, removePhrase(&ldquo;hello world&rdquo;) will remove both &ldquo;+hello -world&rdquo; and &ldquo;hello world&rdquo;.
+ + and - in front of a word are ignored. For example, removePhrase("hello world") will remove both "+hello -world" and "hello world".
 
 
     <h3>Parameters:</h3>
@@ -1066,7 +1074,7 @@ If a word is preceded by a &lsquo;+&rsquo; or &lsquo;&ndash;&rsquo;, its require
     <dd>
     The voice command will become active when the events passed as parameters are triggered. </p>
 
-<p> Adds an &lsquo;activate&rsquo; event reference that can be removed from the event via <a href="../libraries/Event.html#VoiceCommand:removeEventRef">removeEventRef</a>
+<p> Adds an 'activate' event reference that can be removed from the event via <a href="../libraries/Event.html#VoiceCommand:removeEventRef">removeEventRef</a>
 
 
     <h3>Parameters:</h3>
@@ -1088,7 +1096,7 @@ If a word is preceded by a &lsquo;+&rsquo; or &lsquo;&ndash;&rsquo;, its require
     <dd>
     The voice command will be deactivated when the events passed as parameters are triggered. </p>
 
-<p> Adds a &lsquo;deactivate&rsquo; event reference that can be removed from the event via <a href="../libraries/Event.html#VoiceCommand:removeEventRef">removeEventRef</a>
+<p> Adds a 'deactivate' event reference that can be removed from the event via <a href="../libraries/Event.html#VoiceCommand:removeEventRef">removeEventRef</a>
 
 
     <h3>Parameters:</h3>
@@ -1112,7 +1120,7 @@ If a word is preceded by a &lsquo;+&rsquo; or &lsquo;&ndash;&rsquo;, its require
 
 <p> are triggered. </p>
 
-<p> Adds a &lsquo;ignore&rsquo; event reference that can be removed from the event via <a href="../libraries/Event.html#VoiceCommand:removeEventRef">removeEventRef</a>
+<p> Adds a 'ignore' event reference that can be removed from the event via <a href="../libraries/Event.html#VoiceCommand:removeEventRef">removeEventRef</a>
 
 
     <h3>Parameters:</h3>
@@ -1139,7 +1147,7 @@ If a word is preceded by a &lsquo;+&rsquo; or &lsquo;&ndash;&rsquo;, its require
     <ul>
         <li><span class="parameter">refType</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         &lsquo;activate&rsquo;, &lsquo;deactivate&rsquo; or &lsquo;ignore&rsquo;
+         'activate', 'deactivate' or 'ignore'
         </li>
         <li><span class="parameter">...</span>
          one or more <a href="#Class_Event">Event</a> objects
@@ -1163,7 +1171,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-07-04 10:55:10 </i>
+<i style="float:right;">Last updated 2020-12-04 21:44:21 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

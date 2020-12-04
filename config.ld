@@ -1,6 +1,6 @@
-title = 'Copilot for FSLabs 1.1.3'
+title = 'Copilot for FSLabs 1.1.5'
 
-project = 'Copilot for FSLabs 1.1.3'
+project = 'Copilot for FSLabs 1.1.5'
 
 file = {
   'Modules/FSLabs Copilot/copilot/Event.lua',

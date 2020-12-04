@@ -189,8 +189,34 @@ namespace copilot {
 													  });
 	}
 
+	void createAdditionalLog()
+	{
+		char lpFilename[MAX_PATH];
+		HMODULE hMod = GetModuleHandleA("FSLCopilot.dll");
+		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
+		std::string logFilePath(lpFilename);
+		logFilePath = logFilePath.substr(0, logFilePath.find("FSLCopilot.dll"));
+		logFilePath += "Copilot.log";
+
+		auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFilePath, 1048576 * 5, 0, true);
+		fileSink->set_pattern("[%T] [%l] %v");
+
+		copilot::logger->sinks().push_back(fileSink);
+
+	}
+
 	void init()
 	{
+
+		std::string logName = "FSLabs Copilot";
+#ifdef DEBUG
+		logName += "(debug)";
+#endif
+		copilot::logger = std::make_shared<spdlog::logger>(logName);
+		copilot::logger->flush_on(spdlog::level::trace);
+
+		//createAdditionalLog();
+
 		while (!connectToFSUIPC()) {
 			if (WaitForSingleObject(simExit, 2000) == WAIT_OBJECT_0) return;
 		}
@@ -199,25 +225,27 @@ namespace copilot {
 		HMODULE hMod = GetModuleHandleA("FSUIPC5");
 		if (!hMod) hMod = GetModuleHandleA("FSUIPC6");
 		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
-		std::string FSUIPC_DIR = std::regex_replace(lpFilename, std::regex("FSUIPC\\d.dll"), "");
-		std::string appDir = FSUIPC_DIR + "\\FSLabs Copilot\\";
+		std::string FSUIPC_DIR = std::regex_replace(lpFilename, std::regex("FSUIPC\\d.dll", std::regex_constants::icase), "");
+		std::string appDir = FSUIPC_DIR + "FSLabs Copilot\\";
 
-		if (GetFileAttributes(appDir.c_str()) != INVALID_FILE_ATTRIBUTES) {
+		bool appDirExists = GetFileAttributes(appDir.c_str()) != INVALID_FILE_ATTRIBUTES;
+
+		if (appDirExists) {
 			std::string logFileName = appDir + "\\Copilot.log";
 #ifdef DEBUG
 			logFileName = appDir + "\\Copilot(debug).log";
 #endif
 			auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFileName, 1048576 * 5, 0, true);
 			fileSink->set_pattern("[%T] [%l] %v");
-			std::string logName = "FSLabs Copilot";
-#ifdef DEBUG
-			logName += "(debug)";
-#endif
-			copilot::logger = std::make_shared<spdlog::logger>(logName, fileSink);
-			copilot::logger->flush_on(spdlog::level::trace);
-			int lineWidth = 60;
-			copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
-			copilot::logger->info("");
+
+			copilot::logger->sinks().push_back(fileSink);
+		}
+
+		int lineWidth = 60;
+		copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
+		copilot::logger->info("");
+
+		if (appDirExists) {
 			sol::state lua;
 			lua.open_libraries();
 			lua["FSUIPC_DIR"] = FSUIPC_DIR;
@@ -228,18 +256,23 @@ namespace copilot {
 				sol::error err = result;
 				copilot::logger->error(err.what());
 			}
+		}
+		
+		BASS_DEVICEINFO info;
+		copilot::logger->info("{:*^{}}", " Output device info: ", lineWidth);
+		copilot::logger->info("");
+		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
+			copilot::logger->info("{}={} {}",
+								  i, info.name,
+								  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
+		copilot::logger->info("");
+		copilot::logger->info("{:*^{}}", "", lineWidth);
+		copilot::logger->info("");
 
-			BASS_DEVICEINFO info;
-			copilot::logger->info("{:*^{}}", " Output device info: ", lineWidth);
-			copilot::logger->info("");
-			for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
-				copilot::logger->info("{}={} {}",
-									  i, info.name,
-									  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
-			copilot::logger->info("");
-			copilot::logger->info("{:*^{}}", "", lineWidth);
-			copilot::logger->info("");
+		//copilot::logger->info("FSUIPC folder: {}", FSUIPC_DIR);
 
+		if (!appDirExists) {
+			copilot::logger->error("Folder {} doesn't exist!", appDir);
 		}
 
 	}

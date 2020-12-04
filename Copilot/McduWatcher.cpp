@@ -34,7 +34,7 @@ void McduWatcher::update()
 	if (_pfDisp) {
 		const std::string& pfDisp = *_pfDisp;
 		std::lock_guard<std::mutex> lock(mtx);
-		if (pfDisp.substr(9, 8) == "TAKE OFF") {
+		if (pfDisp.substr(9, 8) == "TAKE OFF" || pfDisp.substr(4, 12) == "TAKE OFF RWY") {
 			vars["V1"] = toNumber(pfDisp.substr(48, 3));
 			vars["Vr"] = toNumber(pfDisp.substr(96, 3));
 			vars["V2"] = toNumber(pfDisp.substr(144, 3));

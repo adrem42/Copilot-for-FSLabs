@@ -419,7 +419,7 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
     ipc.mousemacro(self.rectangle, releaseClickType or 13)
   else
     local FPS = frameRate()
-    sleepAfterPress = FPS > 30 and 50 or FPS > 20 and 70 or 100
+    sleepAfterPress = FPS > 30 and 100 or FPS > 20 and 150 or 200
     local timeout = ipc.elapsedtime() + 1000
     if twoSwitches then
       repeat
@@ -1233,7 +1233,7 @@ function FSL:getTakeoffFlapsFromMcdu(side)
       return
     else
       local disp = self.MCDU:getString()
-      if disp:sub(10,17) == "TAKE OFF" then
+      if disp:sub(10,17) == "TAKE OFF" or disp:sub(5,16) == "TAKE OFF RWY" then
         local setting = disp:sub(162,162)
         sleep(plusminus(1000))
         self[sideStr].PED_MCDU_KEY_FPLN()
