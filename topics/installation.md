@@ -2,6 +2,16 @@
 
 <a href="https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432">Copilot and FSLabs version compatibility</a>
 
+## Installing only FSL2Lua
+
+You can use FSL2Lua standalone (without Copilot) to bind FSLabs cockpit controls to your keyboard, joystick buttons and axes.
+
+To install only FSL2Lua, unzip Modules\FSL2Lua into your FSUIPC folder (the one with the FSUIPC dll).
+
+@{standalonescripts.md | Click here} to read on how to create a script and tell FSUIPC to run it.
+
+## Installing Copilot
+
 1. Unzip the content of the Modules folder into the the FSUIPC installation directory.
 
 2. Unzip the content of the Prepar3D vx Add-ons folder into your Add-ons folder (eg *C:\Users\Username\Documents\Prepar3D v4 Add-ons*).

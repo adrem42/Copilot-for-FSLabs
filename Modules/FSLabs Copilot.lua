@@ -168,24 +168,6 @@ local function setup()
     require "copilot.actions"
   end
 
-  for _, voiceCommand in pairs(copilot.voiceCommands) do
-    local function addPlus(phrase)
-      return phrase:gsub("%S+", function(word) 
-        return "+" .. word
-      end)
-    end
-    local phrases = voiceCommand:getPhrases()
-    voiceCommand:removeAllPhrases()
-    for _, phrase in ipairs(phrases) do
-      voiceCommand:addPhrase(addPlus(phrase))
-    end
-    local dummyPhrases = voiceCommand:getPhrases(true)
-    voiceCommand:removeAllPhrases(true)
-    for _, phrase in ipairs(dummyPhrases) do
-      voiceCommand:addPhrase(addPlus(phrase), true)
-    end
-  end
-
   local customDir = APPDIR .. "custom\\"
   local userFiles = false
   for _file in lfs.dir(customDir) do

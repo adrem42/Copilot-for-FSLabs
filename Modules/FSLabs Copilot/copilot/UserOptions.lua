@@ -30,6 +30,7 @@ local options = {
     "Actions",
     {
       {"enable", 1},
+      {"PM_clears_scratchpad", 1, "If enabled, PM will press the CLR button whenever his scratchpad displays a message."},
       {"preflight", 1},
       {"after_start", 1},
       {"during_taxi", 1},

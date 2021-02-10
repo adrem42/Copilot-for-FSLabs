@@ -189,13 +189,13 @@ local function setupFailures()
           elseif disp:sub(242,264):find(failureName, nil, true)  then
             line = 5
           else
-            local timeout = ipc.elapsedtime() + 5000
             prevDisp = disp
             FSL.PED_MCDU_KEY_UP()
-            repeat 
+            checkWithTimeout(5000, function()
               sleep()
               disp = FSL.MCDU:getString()
-            until disp ~= prevDisp or ipc.elapsedtime() > timeout
+              return disp ~= prevDisp
+            end)
           end
           if line then
             found = true

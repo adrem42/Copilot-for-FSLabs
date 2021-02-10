@@ -9,7 +9,7 @@
 #include <mutex>
 #include <chrono>
 #include <atomic>
-#include "../lua515/include/lua.hpp"
+#include "lua.hpp"
 #include <spdlog/spdlog.h>
 
 auto startTime = std::chrono::high_resolution_clock::now();
@@ -19,6 +19,8 @@ std::shared_ptr<spdlog::logger> logger;
 std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink;
 
 using namespace P3D;
+
+IPdk* pdk;
 
 HANDLE hSimConnect;
 HANDLE hLuaThread;
@@ -94,9 +96,7 @@ public:
 					logger->info("ID: 0x{:X}, ClickType: {}", id, clickType);
 				}
 				break;
-
 			}
-
 		}
 	}
 } *mouseRectListenerCallback;
@@ -311,15 +311,15 @@ void DLLStart(__in __notnull IPdk* pPdk)
 
 	attachLogToConsole();
 
+	if (Panels != NULL) {
+		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
+	}
 	if (pPdk != nullptr) PdkServices::Init(pPdk);
+	pdk = pPdk;
 
 	mouseRectListenerCallback = new MouseRectListenerCallback();
 	mouseRectListenerCallback->mode = MouseRectListenerCallback::Mode::Record;
 	PdkServices::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(mouseRectListenerCallback);
-
-	if (Panels != NULL) {
-		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
-	}
 
 	if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FSLSerialize", NULL, 0, NULL, 0))) {
 
@@ -333,5 +333,6 @@ void DLLStart(__in __notnull IPdk* pPdk)
 
 void __stdcall DLLStop(void)
 {
+	PdkServices::Shutdown();
 	if (hSimConnect) SimConnect_Close(hSimConnect);
 }

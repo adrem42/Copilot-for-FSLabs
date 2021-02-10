@@ -1,5 +1,5 @@
 #pragma once
-#include "../lua515/include/lua.hpp"
+#include <lua.hpp>
 #include <chrono>
 #include <atomic>
 #include <vector>

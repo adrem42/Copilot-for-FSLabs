@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 1.1.5</title>
+    <title>Copilot for FSLabs 1.1.6</title>
     <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 1.1.5</h1>
+<h1>Copilot for FSLabs 1.1.6</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -32,6 +32,7 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#Class_MCDU">Class MCDU </a></li>
 <li><a href="#Class_Control">Class Control </a></li>
@@ -50,17 +51,20 @@
   <li><a href="../libraries/Event.html">Event</a></li>
   <li><a href="../libraries/copilot.html">copilot</a></li>
   <li><strong>FSL2Lua</strong></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
 <h2>Manual</h2>
 <ul class="nowrap">
   <li><a href="../manual/flows.md.html">Flows</a></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
 </ul>
 <h2>Examples</h2>
 <ul class="nowrap">
   <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
   <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+  <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
 </ul>
 
 </div>
@@ -75,6 +79,13 @@
 <p> Click <a href="../manual/listofcontrols.md.html#"> here</a> to see the list of cockpit controls contained in the exported table.</p>
 
 
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#prob">prob(prob)</a></td>
+	<td class="summary">Hand  ------------------------------------------------------------------------------</td>
+	</tr>
+</table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
@@ -230,6 +241,14 @@
 	<td class="name" nowrap><a href="#KnobWithoutPositions:random">KnobWithoutPositions:random([lower=0[, upper=100]])</a></td>
 	<td class="summary">Sets the knob to random position between lower and upper.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions:moveTwoSwitches">KnobWithoutPositions:moveTwoSwitches(switch1, pos1, switch2, pos2, chance)</a></td>
+	<td class="summary">Misc functions ---------------------------------------------------------------------</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#KnobWithoutPositions.Bind">KnobWithoutPositions.Bind</a></td>
+	<td class="summary">Main Bind function -----------------------------------------------------------------</td>
+	</tr>
 </table>
 <h2><a href="#FSL">FSL</a></h2>
 <table class="function_list">
@@ -244,12 +263,46 @@
 	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
 	<td class="summary">This function is a wrapper around event.key and event.button from the FSUIPC Lua library.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Encoder">Encoder</a></td>
+	<td class="summary">Encoder class ----------------------------------------------------------------------</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FSL.CheckMacros">FSL.CheckMacros()</a></td>
+	<td class="summary">Macro checking ---------------------------------------------------------------------</td>
+	</tr>
 </table>
 
 <br/>
 <br/>
 
 
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "prob"></a>
+    <strong>prob(prob)</strong>
+    </dt>
+    <dd>
+    Hand  ------------------------------------------------------------------------------
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">prob</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Tables"></a>Tables</h2>
 
     <dl class="function">
@@ -914,6 +967,70 @@
 
 
 </dd>
+    <dt>
+    <a name = "KnobWithoutPositions:moveTwoSwitches"></a>
+    <strong>KnobWithoutPositions:moveTwoSwitches(switch1, pos1, switch2, pos2, chance)</strong>
+    </dt>
+    <dd>
+    Misc functions ---------------------------------------------------------------------
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">switch1</span>
+
+
+
+        </li>
+        <li><span class="parameter">pos1</span>
+
+
+
+        </li>
+        <li><span class="parameter">switch2</span>
+
+
+
+        </li>
+        <li><span class="parameter">pos2</span>
+
+
+
+        </li>
+        <li><span class="parameter">chance</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "KnobWithoutPositions.Bind"></a>
+    <strong>KnobWithoutPositions.Bind</strong>
+    </dt>
+    <dd>
+    Main Bind function -----------------------------------------------------------------
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">binds</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="FSL"></a>FSL</h2>
 
@@ -966,10 +1083,7 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>Bind(data)</strong>
     </dt>
     <dd>
-    This function is a wrapper around event.key and event.button from the FSUIPC Lua library. </p>
-
-<p> Don't use this inside Copilot since Copilot can block for several seconds - unless you want to trigger Copilot's actions with keys or buttons.
- <a href="../examples/cockpit_control_binds.lua.html#">Import FSL2Lua in a separate script</a> instead and auto-launch it in a separate thread (look up 'Automatic running of Macros and Lua plugins' in FSUIPC5 For Advanced Users.pdf)
+    This function is a wrapper around event.key and event.button from the FSUIPC Lua library.
 
 
     <h3>Parameters:</h3>
@@ -1069,6 +1183,57 @@ Bind {key = <span class="string">"Backspace"</span>, onPress = <span class="keyw
     </ul>
 
 </dd>
+    <dt>
+    <a name = "Encoder"></a>
+    <strong>Encoder</strong>
+    </dt>
+    <dd>
+    Encoder class ----------------------------------------------------------------------
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">_onCW</span>
+
+
+
+        </li>
+        <li><span class="parameter">_onCCW</span>
+
+
+
+        </li>
+        <li><span class="parameter">DIR_CW</span>
+
+
+
+        </li>
+        <li><span class="parameter">DIR_CCW</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "FSL.CheckMacros"></a>
+    <strong>FSL.CheckMacros()</strong>
+    </dt>
+    <dd>
+    Macro checking ---------------------------------------------------------------------
+
+
+
+
+
+
+
+</dd>
 </dl>
 
 
@@ -1076,7 +1241,7 @@ Bind {key = <span class="string">"Backspace"</span>, onPress = <span class="keyw
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-12-04 21:44:21 </i>
+<i style="float:right;">Last updated 2021-02-10 04:20:27 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

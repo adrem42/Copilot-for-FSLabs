@@ -8,7 +8,7 @@
 		"files.exclude": {
 			"**/*.cpp": true,
 			"**/*.def": true,
-			"**/*.h": true,
+			//"**/*.h": true,
 			"**/*.hpp": true,
 			"**/*.lib": true,
 			"**/x64/": true,

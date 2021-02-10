@@ -1,4 +1,4 @@
---- See @{FSL2Lua.Bind} for details.
+-- Example usage of `FSL2Lua.Bind`
 
 local FSL = require "FSL2Lua"
 FSL:setPilot(1)
@@ -45,8 +45,7 @@ Bind {key = "\191", onPress = FSL.GSLD_Chrono_Button}
 Bind {key = "F1", onPress = {FSL.MIP_CHRONO_ELAPS_SEL_Switch, "RUN"}}
 Bind {key = "F2", onPress = {FSL.MIP_CHRONO_ELAPS_SEL_Switch, "STP"}}
 
--- UGCX menu toggle
-Bind {key = "Backspace", onPress = function () ipc.control(66807) end}
+Bind {key = "Backspace", onPress = {ipc.control, 66807}}
 
 Bind {
   btn = "C5", 

@@ -445,13 +445,11 @@ function copilot.callouts:start()
       end)
 
       copilot.voiceCommands.brakeCheck:addAction(function()
-        local timeout = ipc.elapsedtime() + 5000
-        while not self.brakeCheck:brakeCheckConditions() do
+        local timedOut = not checkWithTimeout(5000, function()
           copilot.suspend()
-          if ipc.elapsedtime() > timeout then 
-            return
-          end
-        end
+          return self.brakeCheck:brakeCheckConditions()
+        end)
+        if timedOut then return end
         if self:brakeCheck() then
           copilot.voiceCommands.brakeCheck:ignore()
         end

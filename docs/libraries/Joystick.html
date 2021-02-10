@@ -1,0 +1,705 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 1.1.6</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 1.1.6</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_AxisProperties">Class AxisProperties </a></li>
+<li><a href="#Class_AxisCallback">Class AxisCallback </a></li>
+<li><a href="#Class_Joystick">Class Joystick </a></li>
+</ul>
+
+
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><strong>Joystick</strong></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/flows.md.html">Flows</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
+  <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+  <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>Joystick</code></h1>
+<p>HID joystick library.</p>
+<p> This library can be used to bind buttons and axes
+ of HID Joystick devices. Unlike <a href="../libraries/FSL2Lua.html#Bind">FSL2Lua.Bind</a>, this library isn't
+ limited to 32 buttons and isn't implented on top of the FSUIPC lua facilities.</p>
+
+
+<h2><a href="#Class_AxisProperties">Class AxisProperties </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#AxisProperties:delta">AxisProperties:delta(delta)</a></td>
+	<td class="summary">Sets the axis delta (how much change in position is needed to trigger the callback)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AxisProperties:invert">AxisProperties:invert()</a></td>
+	<td class="summary">Inverts the axis</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AxisProperties:bounds">AxisProperties:bounds(lower, upper)</a></td>
+	<td class="summary">Sets the axis lower and upper bounds</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AxisProperties:nullzone">AxisProperties:nullzone(lower, upper)</a></td>
+	<td class="summary">Sets the axis null zone</td>
+	</tr>
+</table>
+<h2><a href="#Class_AxisCallback">Class AxisCallback </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#AxisCallback:props">AxisCallback:props()</a></td>
+	<td class="summary">Creates and returns new axis properties for this callback only.</td>
+	</tr>
+</table>
+<h2><a href="#Class_Joystick">Class Joystick </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Joystick.new">Joystick.new(vendorId, productId[, deviceNum=0])</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:axisProps">Joystick:axisProps(axisName[, index=0])</a></td>
+	<td class="summary">Returns the properties of an axis by its name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:axisProps">Joystick:axisProps(usageID[, index=0])</a></td>
+	<td class="summary">Returns the properties of an axis by its usage ID.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onPress">Joystick:onPress(buttonNum, callback, ...)</a></td>
+	<td class="summary">Binds a callback to a button press.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onPressRepeat">Joystick:onPressRepeat(buttonNum, callback, ...)</a></td>
+	<td class="summary">Same as <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>, but the callback will be called repeatedly while the button is depressed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onPressRepeat">Joystick:onPressRepeat(buttonNum, repeatInterval, callback, ...)</a></td>
+	<td class="summary">Same as <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>, but the callback will be called repeatedly while the button is depressed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onRelease">Joystick:onRelease(buttonNum, callback, ...)</a></td>
+	<td class="summary">Binds a callback to a button release.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onAxis">Joystick:onAxis(axisName, callback)</a></td>
+	<td class="summary">Binds a callback to an axis.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onAxis">Joystick:onAxis(axisName, axisIndex, callback)</a></td>
+	<td class="summary">Binds a callback to an axis.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onAxis">Joystick:onAxis(usageId, callback)</a></td>
+	<td class="summary">Binds a callback to axis by the axis' HID usage ID.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:onAxis">Joystick:onAxis(usageId, axisIndex, callback)</a></td>
+	<td class="summary">Binds a callback to axis by the axis' HID usage ID.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick.read">Joystick.read()</a></td>
+	<td class="summary">Continuously reads the data for all joysticks and never returns.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick.peek">Joystick.peek()</a></td>
+	<td class="summary">Reads the latest data for all joysticks and returns.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick:startLogging">Joystick:startLogging()</a></td>
+	<td class="summary">Start printing into the console whenever a button is pressed or an axis is moved.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Joystick.logAllJoysticks">Joystick.logAllJoysticks()</a></td>
+	<td class="summary">Calls <a href="../libraries/Joystick.html#Joystick:startLogging">startLogging</a> for all registered Joysticks.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Class_AxisProperties"></a>Class AxisProperties </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "AxisProperties:delta"></a>
+    <strong>AxisProperties:delta(delta)</strong>
+    </dt>
+    <dd>
+    Sets the axis delta (how much change in position is needed to trigger the callback)
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">delta</span>
+            <span class="types"><span class="type">number</span></span>
+         Percent from 0-100.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AxisProperties:invert"></a>
+    <strong>AxisProperties:invert()</strong>
+    </dt>
+    <dd>
+    Inverts the axis
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AxisProperties:bounds"></a>
+    <strong>AxisProperties:bounds(lower, upper)</strong>
+    </dt>
+    <dd>
+    Sets the axis lower and upper bounds
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lower</span>
+            <span class="types"><span class="type">number</span></span>
+         Percent from 0-100.
+        </li>
+        <li><span class="parameter">upper</span>
+            <span class="types"><span class="type">number</span></span>
+         Percent from 0-100.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AxisProperties:nullzone"></a>
+    <strong>AxisProperties:nullzone(lower, upper)</strong>
+    </dt>
+    <dd>
+    Sets the axis null zone
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lower</span>
+            <span class="types"><span class="type">number</span></span>
+         Percent from 0-100.
+        </li>
+        <li><span class="parameter">upper</span>
+            <span class="types"><span class="type">number</span></span>
+         Percent from 0-100.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_AxisCallback"></a>Class AxisCallback </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "AxisCallback:props"></a>
+    <strong>AxisCallback:props()</strong>
+    </dt>
+    <dd>
+    Creates and returns new axis properties for this callback only.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="#Class_AxisProperties">AxisProperties</a>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Class_Joystick"></a>Class Joystick </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Joystick.new"></a>
+    <strong>Joystick.new(vendorId, productId[, deviceNum=0])</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">vendorId</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">productId</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">deviceNum</span>
+            <span class="types"><span class="type">int</span></span>
+         Specify this parameter if there are multiple devices with the same vendor and product IDs
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:axisProps"></a>
+    <strong>Joystick:axisProps(axisName[, index=0])</strong>
+    </dt>
+    <dd>
+    Returns the properties of an axis by its name.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">axisName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">index</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="#Class_AxisProperties">AxisProperties</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:axisProps"></a>
+    <strong>Joystick:axisProps(usageID[, index=0])</strong>
+    </dt>
+    <dd>
+    Returns the properties of an axis by its usage ID.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">usageID</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">index</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="#Class_AxisProperties">AxisProperties</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onPress"></a>
+    <strong>Joystick:onPress(buttonNum, callback, ...)</strong>
+    </dt>
+    <dd>
+    Binds a callback to a button press.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">buttonNum</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">callback</span>
+         A function or object with a __call metamethod. You can also call other methods on the object (see below), in which case it doesn't need to have a __call metamethod.
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments that will be passed to the callback. If the callback is an object and the first argument is a string that matches a method name, the method will be called on the object, with the arguments following the method name string forwarded to the call.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onPressRepeat"></a>
+    <strong>Joystick:onPressRepeat(buttonNum, callback, ...)</strong>
+    </dt>
+    <dd>
+    Same as <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>, but the callback will be called repeatedly while the button is depressed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">buttonNum</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">callback</span>
+         See <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>
+        </li>
+        <li><span class="parameter">...</span>
+         See <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onPressRepeat"></a>
+    <strong>Joystick:onPressRepeat(buttonNum, repeatInterval, callback, ...)</strong>
+    </dt>
+    <dd>
+    Same as <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>, but the callback will be called repeatedly while the button is depressed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">buttonNum</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">repeatInterval</span>
+            <span class="types"><span class="type">int</span></span>
+         Interval between callback invocations in milliseconds.
+        </li>
+        <li><span class="parameter">callback</span>
+         See <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>
+        </li>
+        <li><span class="parameter">...</span>
+         See <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onRelease"></a>
+    <strong>Joystick:onRelease(buttonNum, callback, ...)</strong>
+    </dt>
+    <dd>
+    Binds a callback to a button release.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">buttonNum</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">callback</span>
+         See <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>
+        </li>
+        <li><span class="parameter">...</span>
+         See <a href="../libraries/Joystick.html#Joystick:onPress">onPress</a>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onAxis"></a>
+    <strong>Joystick:onAxis(axisName, callback)</strong>
+    </dt>
+    <dd>
+    Binds a callback to an axis.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">axisName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         One of these: X, Y, Z, Rx, Ry, Rz, Slider, Dial
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         A function to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onAxis"></a>
+    <strong>Joystick:onAxis(axisName, axisIndex, callback)</strong>
+    </dt>
+    <dd>
+    Binds a callback to an axis.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">axisName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         One of these: X, Y, Z, Rx, Ry, Rz, Slider, Dial
+        </li>
+        <li><span class="parameter">axisIndex</span>
+            <span class="types"><span class="type">int</span></span>
+         Specify this parameter if there are multiple axes with the same name.
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         A function to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onAxis"></a>
+    <strong>Joystick:onAxis(usageId, callback)</strong>
+    </dt>
+    <dd>
+    Binds a callback to axis by the axis' HID usage ID.  You're probably not going to need this.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">usageId</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         A function to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:onAxis"></a>
+    <strong>Joystick:onAxis(usageId, axisIndex, callback)</strong>
+    </dt>
+    <dd>
+    Binds a callback to axis by the axis' HID usage ID.  You're probably not going to need this.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">usageId</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">axisIndex</span>
+            <span class="types"><span class="type">int</span></span>
+         Specify this parameter if there are multiple axes with a given usage ID.
+        </li>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         A function to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick.read"></a>
+    <strong>Joystick.read()</strong>
+    </dt>
+    <dd>
+    Continuously reads the data for all joysticks and never returns.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick.peek"></a>
+    <strong>Joystick.peek()</strong>
+    </dt>
+    <dd>
+    Reads the latest data for all joysticks and returns.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick:startLogging"></a>
+    <strong>Joystick:startLogging()</strong>
+    </dt>
+    <dd>
+    Start printing into the console whenever a button is pressed or an axis is moved.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Joystick.logAllJoysticks"></a>
+    <strong>Joystick.logAllJoysticks()</strong>
+    </dt>
+    <dd>
+    Calls <a href="../libraries/Joystick.html#Joystick:startLogging">startLogging</a> for all registered Joysticks.
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-02-10 04:20:27 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

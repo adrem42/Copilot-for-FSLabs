@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS 1
-#include "../lua515/include/lua.hpp"
+#define NOMINMAX
+#include "../lua/src/lua.hpp"
 #include <sol/sol.hpp>
 #include <Windows.h>
 #include <thread>
@@ -11,6 +12,8 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <regex>
 
+#include "LogReader.h"
+#include "DirectoryWatcher.h"
 #include "Copilot.h"
 #include "Sound.h"
 #include "Recognizer.h"
@@ -24,9 +27,26 @@ McduWatcher* mcduWatcher = nullptr;
 
 std::thread copilotInitThread, luaInitThread;
 std::atomic_bool scriptStarted = false;
-std::string appDir;
+std::wstring appDir, FSUIPC_DIR;
+int fsuipcVersion;
+int numGreetings = 0;
+
+std::string getGreeting()
+{
+	std::string greeting = "Greeting" + std::to_string(numGreetings);
+	return greeting;
+}
+
+std::string makeNextGreeting()
+{
+	numGreetings++;
+	return getGreeting();
+}
 
 HANDLE simExit = CreateEventA(NULL, TRUE, FALSE, NULL);
+
+
+std::unique_ptr<LogReader> logReader;
 
 GAUGESIMPORT ImportTable = {
 { 0x0000000F, (PPANELS)NULL },
@@ -43,10 +63,57 @@ class MessageLoop {
 	std::atomic_bool running;
 	static constexpr UINT WM_STARTTIMER = WM_APP, WM_STOPTIMER = WM_APP + 1;
 
+	std::string fsuipcScriptHandle;
+
+	static MessageLoop* _this;
+
+	void checkFsuipcLogForErrors()
+	{
+		while (true) {
+			std::string line = logReader->nextLine();
+			if (line == "")
+				return;
+			size_t pos = line.find(fsuipcScriptHandle);
+			if (pos != std::string::npos) {
+				std::string err = " LUA Error";
+				std::string sub = line.substr(pos + fsuipcScriptHandle.length(), err.length());
+				if (sub == err)
+					copilot::logger->error(line.substr(pos + fsuipcScriptHandle.length() + 1));
+			}
+		}
+	}
+
+	bool findScriptHandleInFsuipcLog()
+	{
+		if (fsuipcScriptHandle != "")
+			return true;
+		while (true) {
+			std::string line = logReader->nextLine();
+			if (line == "") 
+				return false;
+			if (line.find(getGreeting()) != std::string::npos) {
+				static std::regex regex(R"(^\s*\d+\s*(LUA\.\d+:))");
+				std::smatch sm;
+				if (std::regex_search(line, sm, regex)) {
+					fsuipcScriptHandle = sm[1];
+					return true;
+				}
+			}
+		}
+	}
+
+	void readFsuipcLog()
+	{
+		if (findScriptHandleInFsuipcLog())
+			checkFsuipcLogForErrors();
+	}
+
 	static VOID timerProc(HWND, UINT, UINT_PTR, DWORD)
 	{
 		mcduWatcher->update();
 		Sound::processQueue();
+		if (_this) 
+			_this->readFsuipcLog();
 	}
 
 	void _startTimer()
@@ -61,28 +128,80 @@ class MessageLoop {
 
 	void _messageLoop(bool voiceControl)
 	{
+		_this = this;
+
+		fsuipcScriptHandle = "";
+
 		if (voiceControl) {
 			callbackRegisteredOk = copilot::recoResultFetcher->registerCallback();
 			SetEvent(callbackRegistered);
 		}
 		_startTimer();
 		running = true;
-		MSG msg;
-		while (GetMessage(&msg, NULL, 0, 0)) {
-			switch (msg.message) {
-				case (WM_STARTTIMER):
-					_startTimer();
+		MSG msg = {};
+
+		std::unique_ptr<DirectoryWatcher> watcher;
+		HANDLE watcherEvent;
+
+		std::wstring logFileName = std::to_wstring(fsuipcVersion) + L".log";
+
+		auto makeLogReader = [&] {
+			std::wstring path = FSUIPC_DIR + L"\\FSUIPC" + logFileName;
+			logReader = std::make_unique<LogReader>(path);
+		};
+
+		try {
+			watcher = std::make_unique<DirectoryWatcher>(FSUIPC_DIR, logFileName);
+			watcherEvent = watcher->next();
+			makeLogReader();
+		} catch (InvalidHandleException & ex) {
+			watcher = nullptr;
+			logReader = nullptr;
+			copilot::logger->error("Failed to open file {}, error code: {}", std::string(ex.path.begin(), ex.path.end()), ex.errorCode);
+		}
+
+		while (running) {
+
+			switch (MsgWaitForMultipleObjects(1, &watcherEvent, FALSE, INFINITE, QS_ALLINPUT))
+			{
+
+				case WAIT_OBJECT_0 : 
+					if (watcher->getInfo().Action == FILE_ACTION_ADDED) {
+						readFsuipcLog();
+						makeLogReader();
+					}
+					watcherEvent = watcher->next();
 					break;
-				case (WM_STOPTIMER):
-					_stopTimer();
+
+				case WAIT_OBJECT_0 + 1:
+					while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+
+						switch (msg.message) {
+
+							case WM_STARTTIMER:
+								_startTimer();
+								break;
+
+							case WM_STOPTIMER:
+								_stopTimer();
+								break;
+
+							case WM_QUIT:
+								running = false;
+								break;
+
+							default:
+								break;
+						}
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
 					break;
 				default:
 					break;
 			}
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
 		}
-		running = false;
+
 		_stopTimer();
 	}
 
@@ -127,6 +246,8 @@ public:
 	}
 
 } messageLoop;
+
+MessageLoop* MessageLoop::_this = nullptr;
 
 bool connectToFSUIPC()
 {
@@ -186,23 +307,7 @@ namespace copilot {
 				startLuaThread();
 				if (WaitForSingleObject(simExit, 5000) == WAIT_OBJECT_0) return;
 			};
-													  });
-	}
-
-	void createAdditionalLog()
-	{
-		char lpFilename[MAX_PATH];
-		HMODULE hMod = GetModuleHandleA("FSLCopilot.dll");
-		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
-		std::string logFilePath(lpFilename);
-		logFilePath = logFilePath.substr(0, logFilePath.find("FSLCopilot.dll"));
-		logFilePath += "Copilot.log";
-
-		auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFilePath, 1048576 * 5, 0, true);
-		fileSink->set_pattern("[%T] [%l] %v");
-
-		copilot::logger->sinks().push_back(fileSink);
-
+		});
 	}
 
 	void init()
@@ -215,27 +320,30 @@ namespace copilot {
 		copilot::logger = std::make_shared<spdlog::logger>(logName);
 		copilot::logger->flush_on(spdlog::level::trace);
 
-		//createAdditionalLog();
-
 		while (!connectToFSUIPC()) {
 			if (WaitForSingleObject(simExit, 2000) == WAIT_OBJECT_0) return;
 		}
 
-		char lpFilename[MAX_PATH];
-		HMODULE hMod = GetModuleHandleA("FSUIPC5");
-		if (!hMod) hMod = GetModuleHandleA("FSUIPC6");
-		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
-		std::string FSUIPC_DIR = std::regex_replace(lpFilename, std::regex("FSUIPC\\d.dll", std::regex_constants::icase), "");
-		std::string appDir = FSUIPC_DIR + "FSLabs Copilot\\";
+		wchar_t lpFilename[MAX_PATH];
+		HMODULE hMod = GetModuleHandle(L"FSUIPC5");
+		if (!hMod) {
+			hMod = GetModuleHandle(L"FSUIPC6");
+			fsuipcVersion = 6;
+		} else {
+			fsuipcVersion = 5;
+		}
+		GetModuleFileName(hMod, lpFilename, MAX_PATH);
+		FSUIPC_DIR = std::regex_replace(lpFilename, std::wregex(L"FSUIPC\\d.dll", std::regex_constants::icase), L"");
+		appDir = FSUIPC_DIR + L"FSLabs Copilot\\";
 
 		bool appDirExists = GetFileAttributes(appDir.c_str()) != INVALID_FILE_ATTRIBUTES;
 
 		if (appDirExists) {
-			std::string logFileName = appDir + "\\Copilot.log";
+			std::wstring logFileName = appDir + L"\\Copilot.log";
 #ifdef DEBUG
-			logFileName = appDir + "\\Copilot(debug).log";
+			logFileName = appDir + L"\\Copilot(debug).log";
 #endif
-			auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFileName, 1048576 * 5, 0, true);
+			auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(std::string(logFileName.begin(), logFileName.end()), 1048576 * 5, 0, true);
 			fileSink->set_pattern("[%T] [%l] %v");
 
 			copilot::logger->sinks().push_back(fileSink);
@@ -251,7 +359,9 @@ namespace copilot {
 			lua["FSUIPC_DIR"] = FSUIPC_DIR;
 			lua["APPDIR"] = appDir;
 			lua.do_string(R"(package.path = FSUIPC_DIR .. '\\?.lua')");
-			auto result = lua.do_file(appDir + "\\copilot\\UserOptions.lua");
+			std::string script = std::string(appDir.begin(), appDir.end());
+			script += "\\copilot\\UserOptions.lua";
+			auto result = lua.do_file(script);
 			if (!result.valid()) {
 				sol::error err = result;
 				copilot::logger->error(err.what());
@@ -269,10 +379,8 @@ namespace copilot {
 		copilot::logger->info("{:*^{}}", "", lineWidth);
 		copilot::logger->info("");
 
-		//copilot::logger->info("FSUIPC folder: {}", FSUIPC_DIR);
-
 		if (!appDirExists) {
-			copilot::logger->error("Folder {} doesn't exist!", appDir);
+			copilot::logger->error("Folder {} doesn't exist!", std::string(appDir.begin(), appDir.end()));
 		}
 
 	}
@@ -382,7 +490,7 @@ std::optional<std::string> initLua(sol::this_state ts)
 	copilot["recognizer"] = recognizer;
 	copilot["recoResultFetcher"] = copilot::recoResultFetcher;
 	copilot["mcduWatcher"] = mcduWatcher;
-
+	lua["print"](makeNextGreeting());
 	bool callbackRegisteredOk = messageLoop.start(voiceControl);
 	if (voiceControl && !callbackRegisteredOk)
 		return "Failed to create SAPI callback";
@@ -417,6 +525,7 @@ __declspec(dllexport) int luaopen_FSLCopilot(lua_State* L)
 	auto copilot = lua.create_table();
 	copilot["init"] = initLua;
 	copilot["logger"] = copilot::logger;
+
 	copilot.push();
 	return 1;
 }

@@ -5,12 +5,19 @@
 -- Click @{listofcontrols.md | here} to see the list of cockpit controls contained in the exported table.
 -- @module FSL2Lua
 
+if not FSL2LUA_STANDALONE 
+  and not ipc.readLvar("AIRCRAFT_A319")
+  and not ipc.readLvar("AIRCRAFT_A320")
+  and not ipc.readLvar("AIRCRAFT_A321") then ipc.exit() end
+
 local maf = require "FSL2Lua.libs.maf"
 local file = require "FSL2Lua.FSL2Lua.file"
 local ipc = ipc
 local math = math
 local FSUIPCversion = not FSL2LUA_STANDALONE and ipc.readUW(0x3306)
 local copilot = type(copilot) == "table" and copilot.logger and copilot
+
+local A319_IS_A320 = require "FSL2Lua.FSL2Lua.config".A319_IS_A320
 
 local function handleError(msg, level, critical)
   level = level and level + 1 or 2
@@ -26,6 +33,27 @@ local function handleError(msg, level, critical)
     local trace = debug.getinfo(level, "Sl")
     ipc.log(string.format("%s\r\nsource: %s:%s", msg, trace.short_src, trace.currentline))
   end
+end
+
+function checkWithTimeout(timeout, condition)
+  timeout = ipc.elapsedtime() + (timeout or 5000)
+  repeat 
+    if condition() then return true end
+  until ipc.elapsedtime() > timeout
+  return false
+end
+
+function withTimeout(timeout, block)
+  timeout = ipc.elapsedtime() + (timeout or 5000)
+  repeat
+    local val = block()
+    if val ~= nil then return val end
+  until ipc.elapsedtime() > timeout
+end
+
+function repeatWithTimeout(timeout, block)
+  timeout = ipc.elapsedtime() + (timeout or 5000)
+  repeat block() until ipc.elapsedtime() > timeout
 end
 
 local function handleControlTimeout(control, level)
@@ -88,6 +116,10 @@ local function sleep(time1,time2)
   ipc.sleep(time)
 end
 
+---------------------------------------------------------------------------------------
+-- Hand  ------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
 function prob(prob) return math.random() <= prob end
 
 function plusminus(val, percent)
@@ -147,6 +179,10 @@ function hand:moveTo(newpos)
   end
   return time or 0
 end
+
+---------------------------------------------------------------------------------------
+-- MCDU -------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 --- @type MCDU
 
@@ -280,6 +316,10 @@ FSL.CPT.MCDU = MCDU:new(1)
 FSL.FO.MCDU = MCDU:new(2)
 MCDU.new = nil
 
+---------------------------------------------------------------------------------------
+-- FCU -------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
 local FCU = {request = HttpRequest and HttpRequest:new("http://localhost:8080/FCU/Display")}
 FSL.FCU = FCU
 
@@ -305,6 +345,10 @@ function FCU:get()
   } 
 end
 
+---------------------------------------------------------------------------------------
+-- Control ----------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
 --- Abstract control
 --- @type Control
 
@@ -326,6 +370,9 @@ function Control:new(control)
     control.rectangle = tonumber(control.rectangle)
   end
   self.__index = self
+  if control.manual and not FSL2LUA_IGNORE_FAULTY_LVARS then
+    control.getLvarValue = self.getLvarValueErr
+  end
   return setmetatable(control, self)
 end
 
@@ -366,29 +413,30 @@ end
 
 function Control:isLit()
   if not self.Lt then return end
-  if type(self.Lt) == "string" then return ipc.readLvar(self.Lt) == 1
-  else return ipc.readLvar(self.Lt.Brt) == 1 or ipc.readLvar(self.Lt.Dim) == 1 end
+  if type(self.Lt) == "string" then return ipc.readLvar(self.Lt) == 1 end
+  return ipc.readLvar(self.Lt.Brt) == 1 or ipc.readLvar(self.Lt.Dim) == 1
 end
 
 --- @treturn number
 
-function Control:getLvarValue()
-  return ipc.readLvar(self.LVar)
+function Control:getLvarValue() return ipc.readLvar(self.LVar) end
+
+function Control:getLvarValueErr()
+  error("The Lvar for control " .. self.name .. " doesn't work so you can't call functions that need to read the Lvar.")
 end
 
-function Control:waitForLVarChange(timeout)
-  timeout = ipc.elapsedtime() + (5000 or timeout)
-  local startPos = self:getLvarValue()
-  repeat until self:getLvarValue() ~= startPos or ipc.elapsedtime() > timeout
+function Control:waitForLVarChange(timeout, startPos)
+  startPos = startPos or self:getLvarValue()
+  return checkWithTimeout(timeout or 5000, function() 
+    return self:getLvarValue() ~= startPos 
+  end)
 end
 
-local function hideCursor()
-  local x, y = mouse.getpos()
-  mouse.move(x + 1, y + 1)
-  mouse.move(x, y)
-  sleep(10)
-  ipc.control(1139)
-end
+local hideCursor = hideCursor
+
+---------------------------------------------------------------------------------------
+-- Button -----------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 --- @type Button
 
@@ -402,11 +450,7 @@ function Button:new(control)
   return setmetatable(control, self)
 end
 
---- Presses the button.
---- @function __call
---- @usage FSL.OVHD_ELEC_BAT_1_Button()
-
-function Button:__call(twoSwitches, pressClickType, releaseClickType)
+function Button:_pressAndReleaseInternal(twoSwitches, pressClickType, releaseClickType)
   if FSL.areSequencesEnabled and not twoSwitches then
     self:moveHandHere()
   end
@@ -420,20 +464,17 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
   else
     local FPS = frameRate()
     sleepAfterPress = FPS > 30 and 100 or FPS > 20 and 150 or 200
-    local timeout = ipc.elapsedtime() + 1000
+    local timeout = 1000
     if twoSwitches then
-      repeat
+      checkWithTimeout(timeout, function()
         coroutine.yield()
-      until self:getLvarValue() ~= LVarbefore or ipc.elapsedtime() > timeout
-      local time = ipc.elapsedtime()
-      repeat coroutine.yield() until ipc.elapsedtime() - time >= sleepAfterPress
+        return self:getLvarValue() ~= LVarbefore
+      end)
+      repeatWithTimeout(sleepAfterPress, coroutine.yield)
     else
-      repeat 
-        sleep(10) 
-        if ipc.elapsedtime() > timeout then
-          break
-        end
-      until self:getLvarValue() ~= LVarbefore
+      checkWithTimeout(timeout, function()
+        return self:getLvarValue() ~= LVarbefore
+      end)
       sleep(sleepAfterPress)
     end
     ipc.mousemacro(self.rectangle, releaseClickType or 13)
@@ -441,10 +482,7 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
   if FSL.areSequencesEnabled then
     local interactionLength = plusminus(self.interactionLength or 150) - ipc.elapsedtime() + startTime
     if twoSwitches then
-      local time = ipc.elapsedtime()
-      while ipc.elapsedtime() - time < interactionLength do
-        coroutine.yield()
-      end
+      repeatWithTimeout(interactionLength, coroutine.yield)
     else
       sleep(interactionLength)
     end
@@ -452,80 +490,32 @@ function Button:__call(twoSwitches, pressClickType, releaseClickType)
   end
 end
 
-function Button:checkMacro()
-  local t
-  for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
-    for _, control in pairs(_t) do
-      if control == self then 
-        t = _t 
-        break
-      end
-    end
-  end
+--- Presses the button.
+--- @function __call
+--- @usage FSL.OVHD_ELEC_BAT_1_Button()
 
-  local guard = self.guard and t[self.guard]
-  if not guard then
-    for _, control in pairs(t) do
-      if type(control) == "table" and control.FSL_VC_control then
-        local LVar = control.LVar:lower()
-        if LVar:find("guard") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1")) then
-          guard = control
-          break
-        end 
-      end
-    end
-  end
-
-  if guard and not guard:isOpen() then
-    guard:lift()
-    local timeout = ipc.elapsedtime() + 2000
-    local guardOk
-    repeat 
-      guardOk = guard:isOpen()
-    until guardOk or ipc.elapsedtime() > timeout
-    if not guardOk then return false end
-  end
-
-  local timeout = ipc.elapsedtime() + 2000
-  local LVarbefore = self:getLvarValue()
-  ipc.mousemacro(self.rectangle, 3)
-  if self.toggle then
-    ipc.mousemacro(self.rectangle, 13)
-  end
-  repeat
-    if self:getLvarValue() ~= LVarbefore then 
-      ipc.mousemacro(self.rectangle, 13)
-      return true 
-    end
-  until ipc.elapsedtime() > timeout
-  return false
+function Button:__call()
+  return self:_pressAndReleaseInternal()
 end
 
 --- Simulates a click of the right mouse button on the VC button.
 
-function Button:rightClick() self(false, 1, 11) end
+function Button:rightClick() 
+  return self:_pressAndReleaseInternal(false, 1, 11) 
+end
 
 --- @treturn bool True if the button is depressed.
 
-function Button:isDown() return ipc.readLvar(self.LVar) == 10 end
+function Button:isDown() return self:getLvarValue() == 10 end
+
+---------------------------------------------------------------------------------------
+-- Guard ------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 --- @type Guard
 
 local Guard = Control:new()
 Guard.__class = "Guard"
-
-function Guard:checkMacro()
-  local LVarbefore = self:getLvarValue()
-  if self:isOpen() then self:close()
-  else self:lift() end
-  local timeout = ipc.elapsedtime() + 2000
-  repeat
-    if self:getLvarValue() ~= LVarbefore then
-      return true
-    end
-  until ipc.elapsedtime() > timeout
-  return false
-end
 
 --- <span>
 
@@ -535,6 +525,7 @@ function Guard:lift()
   end
   if not self:isOpen() then
     ipc.mousemacro(self.rectangle, 1)
+    checkWithTimeout(5000, function() return self:isOpen() end)
   end
   if FSL.areSequencesEnabled then
     self:interact(plusminus(1000))
@@ -561,9 +552,11 @@ end
 
 --- @treturn bool
 
-function Guard:isOpen()
-  return ipc.readLvar(self.LVar) == 10
-end
+function Guard:isOpen() return self:getLvarValue() == 10 end
+
+---------------------------------------------------------------------------------------
+-- Switch -----------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 --- All controls that have named positions
 --- @type Switch
@@ -597,40 +590,38 @@ function Switch:new(control)
   return setmetatable(control, self)
 end
 
-function Switch:checkMacro()
-  local LVarbefore = self:getLvarValue()
-  if LVarbefore == 0 then self:increase()
-  else self:decrease() end
-  local timeout = ipc.elapsedtime() + 5000
-  repeat
-    if self:getLvarValue() ~= LVarbefore then
-      return true
+function Switch:_moveInternal(targetPos, twoSwitches)
+  local _targetPos, err = self:getTargetLvarVal(targetPos)
+  if not _targetPos then error(err, 2) end
+  if FSL.areSequencesEnabled and not twoSwitches then
+    self:moveHandHere()
+  end
+  local currPos = self:getLvarValue()
+  if currPos ~= _targetPos then
+    if FSL.areSequencesEnabled and not twoSwitches then
+      self:interact(plusminus(100))
     end
-  until ipc.elapsedtime() > timeout
-  return false
+    return self:set(_targetPos, twoSwitches)
+  end
 end
 
 --- @function __call
 --- @usage FSL.GSLD_EFIS_VORADF_1_Switch("VOR")
 --- @string targetPos
 
-function Switch:__call(targetPos, twoSwitches)
-  local targetPos = self:getTargetLvarVal(targetPos)
-  if not targetPos then return end
-  if FSL.areSequencesEnabled and not twoSwitches then
-    self:moveHandHere()
-  end
-  local currPos = self:getLvarValue()
-  if currPos ~= targetPos then
-    if FSL.areSequencesEnabled and not twoSwitches then
-      self:interact(plusminus(100))
-    end
-    self:set(targetPos, twoSwitches)
-  end
+function Switch:__call(targetPos)
+  return self:_moveInternal(targetPos)
 end
 
 function Switch:getTargetLvarVal(targetPos)
-  return self.posn[tostring(targetPos):upper()]
+  if type(targetPos) ~= "string" then
+    return nil, "targetPos must be a string"
+  end
+  local _targetPos = self.posn[tostring(targetPos):upper()]
+  if not _targetPos then
+    return nil, "Invalid targetPos: '" .. targetPos .. "'."
+  end
+  return _targetPos
 end
 
 function Switch:set(targetPos, twoSwitches)
@@ -648,22 +639,14 @@ function Switch:set(targetPos, twoSwitches)
     if FSL.areSequencesEnabled then
       local interactionLength = plusminus(self.interactionLength or 100)
       if twoSwitches then
-        local time = ipc.elapsedtime()
-        while ipc.elapsedtime() - time < interactionLength do
-          coroutine.yield()
-        end
+        repeatWithTimeout(interactionLength, coroutine.yield)
         log("Interaction with the control took " .. interactionLength .. " ms")
       else
         self:interact(interactionLength)
       end
     end
-    local timeout = ipc.elapsedtime() + 1000
-    while self:getLvarValue() == currPos do
-      sleep(5)
-      if ipc.elapsedtime() > timeout then 
-        handleControlTimeout(self, 3)
-        return 
-      end
+    if not self:waitForLVarChange(1000, currPos) then
+      handleControlTimeout(self, 3)
     end
   end
   if FSL.areSequencesEnabled and not twoSwitches then
@@ -674,7 +657,7 @@ end
 --- @treturn string Current position of the switch in uppercase.
 
 function Switch:getPosn()
-  return self.LVarToPosn[ipc.readLvar(self.LVar)]
+  return self.LVarToPosn[self:getLvarValue()]
 end
 
 function Switch:decrease()
@@ -712,27 +695,18 @@ function Switch:toggle()
     if self.toggleDir == 1 then self:increase()
     else self:decrease() end
   end
+  hideCursor()
 end
+
+---------------------------------------------------------------------------------------
+-- FcuSwitch --------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 --- Switches that can be pushed and pulled
 --- @type FcuSwitch
 
 local FcuSwitch = Control:new()
 FcuSwitch.__class = "FcuSwitch"
-
-function FcuSwitch:checkMacro()
-  ipc.mousemacro(self.rectangle, 13)
-  ipc.mousemacro(self.rectangle, 11)
-  local LVarbefore = self:getLvarValue()
-  ipc.mousemacro(self.rectangle, 3)
-  local timeout = ipc.elapsedtime() + 5000
-  repeat
-    if self:getLvarValue() ~= LVarbefore then
-      return true
-    end
-  until ipc.elapsedtime() > timeout
-  return false
-end
 
 --- <span>
 function FcuSwitch:push()
@@ -760,38 +734,46 @@ function FcuSwitch:pull()
   end
 end
 
+---------------------------------------------------------------------------------------
+-- EngineMasterSwitch -----------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
 --- @type EngineMasterSwitch
 local EngineMasterSwitch = Switch:new()
 EngineMasterSwitch.__call = getmetatable(EngineMasterSwitch).__call
 EngineMasterSwitch.__class = "EngineMasterSwitch"
 
-function EngineMasterSwitch:checkMacro()
-  ipc.mousemacro(self.rectangle, 13)
-  ipc.mousemacro(self.rectangle, 11)
-  local LVarbefore = self:getLvarValue()
-  ipc.mousemacro(self.rectangle, 1)
-  local timeout = ipc.elapsedtime() + 1000
-  repeat
-    if self:getLvarValue() ~= LVarbefore then
-      return true
-    end
-  until ipc.elapsedtime() > timeout
-  return false
-end
-
 function EngineMasterSwitch:increase()
   ipc.mousemacro(self.rectangle, 1)
   self:waitForLVarChange()
-  ipc.sleep(plusminus(100))
+  if FSL.areSequencesEnabled then
+    self:interact(100)
+  end
   ipc.mousemacro(self.rectangle, 3)
   self:waitForLVarChange()
-  ipc.sleep(plusminus(100))
+  if FSL.areSequencesEnabled then
+    self:interact(100)
+  end
   ipc.mousemacro(self.rectangle, 11)
   ipc.mousemacro(self.rectangle, 13)
-  hideCursor()
+  self:waitForLVarChange()
 end
 
 EngineMasterSwitch.decrease = EngineMasterSwitch.increase
+
+function EngineMasterSwitch:set(targetPos)
+  local lvarVal = self:getLvarValue()
+  if lvarVal == 10 or lvarVal == 20 then
+    ipc.mousemacro(self.rectangle, 11)
+    ipc.mousemacro(self.rectangle, 13)
+    self:waitForLVarChange()
+  end
+  Switch.set(self, targetPos)
+end
+
+---------------------------------------------------------------------------------------
+-- KnobWithoutPositions ---------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 --- Knobs with no fixed positions
 --- @type KnobWithoutPositions
@@ -799,70 +781,39 @@ EngineMasterSwitch.decrease = EngineMasterSwitch.increase
 local KnobWithoutPositions = Switch:new()
 KnobWithoutPositions.__class = "KnobWithoutPositions"
 
-function KnobWithoutPositions:checkMacro()
-  if self.LVar:lower():find("comm") then
-    local t
-    for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
-      for _, control in pairs(_t) do
-        if control == self then t = _t end
-      end
-    end
-    for _, control in pairs(t) do
-      
-      if type(control) == "table" and control.FSL_VC_control then
-        
-        local LVar = control.LVar:lower()
-        local switch = LVar:find("switch") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1"))
-        if switch and control.isDown and control:isDown() then
-          control()
-          local timeout = ipc.elapsedtime() + 2000
-          local switchOk = false
-          repeat 
-            if not control:isDown() then
-              switchOk = true
-            end
-          until switchOk or ipc.elapsedtime() > timeout
-          if not switchOk then
-            return false
-          end
-          break
-        end
-      end
-    end
-  end
-
-  local LVarbefore = self:getLvarValue()
-  if LVarbefore == 0 then self:rotateRight()
-  else self:rotateLeft() end
-  local timeout = ipc.elapsedtime() + 1000
-  repeat
-    if self:getLvarValue() ~= LVarbefore then return true end
-  until ipc.elapsedtime() > timeout
-  return false
-end
-
 --- @function __call
 --- @number targetPos Relative position from 0-100.
 --- @usage FSL.OVHD_INTLT_Integ_Lt_Knob(42)
 
 KnobWithoutPositions.__call = getmetatable(KnobWithoutPositions).__call
 
+function KnobWithoutPositions:_rotateLeft()
+  ipc.mousemacro(self.rectangle, 15)
+end
+
+function KnobWithoutPositions:_rotateRight()
+  ipc.mousemacro(self.rectangle, 14)
+end
+
 --- Rotates the knob left by 1 tick.
 function KnobWithoutPositions:rotateLeft()
-  ipc.mousemacro(self.rectangle, 15)
+  self:_rotateLeft()
+  hideCursor() 
 end
 
 --- Rotates the knob right by 1 tick.
 function KnobWithoutPositions:rotateRight()
-  ipc.mousemacro(self.rectangle, 14)
+  self:_rotateRight()
+  hideCursor()
 end
 
 function KnobWithoutPositions:getTargetLvarVal(targetPos)
-  if type(targetPos) == "number" then
-    if targetPos > 100 then targetPos = 100
-    elseif targetPos < 0 then targetPos = 0 end
-    return self.range / 100 * targetPos
-  else return false end
+  if type(targetPos) ~= "number" then 
+    return nil, "targetPos must be a number"
+  end
+  if targetPos > 100 then targetPos = 100
+  elseif targetPos < 0 then targetPos = 0 end
+  return self.range / 100 * targetPos
 end
 
 function KnobWithoutPositions:set(targetPos)
@@ -870,24 +821,28 @@ function KnobWithoutPositions:set(targetPos)
   local tolerance = (targetPos == 0 or targetPos == self.range) and 0 or 5
   local wasLower, wasGreater
   local tick = 1
+  local currPos = self:getLvarValue()
+  if self.prevTargetPos then
+    if targetPos >= self.prevTargetPos and self.wasLower then
+      wasLower = self.wasLower
+    elseif targetPos < self.prevTargetPos and self.wasGreater then
+      wasGreater = self.wasGreater
+    end
+  end
   while true do
-    local currPos = self:getLvarValue()
     if math.abs(currPos - targetPos) > tolerance then
       if currPos < targetPos then
         if wasGreater then break end
-        self:rotateRight()
+        self:_rotateRight()
         wasLower = true
       elseif currPos > targetPos then
         if wasLower then break end
-        self:rotateLeft()
+        self:_rotateLeft()
         wasGreater = true
       end
-      local timeout = ipc.elapsedtime() + 1000
-      while self:getLvarValue() == currPos do
-        if ipc.elapsedtime() > timeout then
-          handleControlTimeout(self, 3)
-          return
-        end
+      if not self:waitForLVarChange(1000, currPos) then
+        handleControlTimeout(self, 3)
+        return
       end
     else
       break
@@ -896,17 +851,45 @@ function KnobWithoutPositions:set(targetPos)
       sleep(1)
     end
     tick = tick + 1
+    currPos = self:getLvarValue()
   end
+  self.prevTargetPos = targetPos
+  self.wasLower = wasLower
+  self.wasGreater = wasGreater
   hideCursor()
   if FSL.areSequencesEnabled then 
     log("Interaction with the control took " .. ipc.elapsedtime() - timeStarted .. " ms") 
   end
+  return currPos / self.range * 100
+end
+
+function KnobWithoutPositions:cycle(steps)
+  steps = math.floor(steps)
+  local step = 100 / steps
+  local cycleVal = self.cycleVal or 0
+  local curr = self:getPosn()
+  if curr ~= self.prev then
+    cycleVal = curr
+  end
+  if cycleVal == 100 then 
+    self.cycleDir = false
+  elseif cycleVal == 0 then 
+    self.cycleDir = true 
+  end
+  if self.cycleDir then
+    cycleVal = math.min(cycleVal + step, 100)
+  else
+    cycleVal = math.max(cycleVal - step, 0)
+  end
+  cycleVal = cycleVal - cycleVal % step
+  self.prev = self(cycleVal) or self.prev
+  self.cycleVal = cycleVal
 end
 
 --- @treturn number Relative position from 0-100.
 
 function KnobWithoutPositions:getPosn()
-  local val = ipc.readLvar(self.LVar)
+  local val = self:getLvarValue()
   return (val / self.range) * 100
 end
 
@@ -923,13 +906,17 @@ function KnobWithoutPositions:rotateBy(ticks, pause)
   local startTime = ipc.elapsedtime()
   if ticks > 0 then
     for _ = 1, ticks do
-      self:rotateRight()
-      sleep(plusminus(pause))
+      self:_rotateRight()
+      if pause > 0 then
+        sleep(plusminus(pause))
+      end
     end
   elseif ticks < 0 then
     for _ = 1, -ticks do
-      self:rotateLeft()
-      sleep(plusminus(pause))
+      self:_rotateLeft()
+      if pause > 0 then
+        sleep(plusminus(pause))
+      end
     end
   end
   if FSL.areSequencesEnabled then
@@ -946,15 +933,24 @@ function KnobWithoutPositions:random(lower, upper)
   self(math.random(lower or 0, upper or 100))
 end
 
+---------------------------------------------------------------------------------------
+-- Misc functions ---------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
 function moveTwoSwitches(switch1,pos1,switch2,pos2,chance)
   if prob(chance or 1) then
     hand:moveTo((switch1.pos + switch2.pos) / 2)
     sleep(plusminus(100))
-    local co1 = coroutine.create(function() switch1(pos1,true) end)
-    local co2 = coroutine.create(function() sleep(plusminus(30)) switch2(pos2,true) end)
+    local co1 = coroutine.create(function() 
+      switch1:_moveInternal(pos1, true) 
+    end)
+    local co2 = coroutine.create(function() 
+      sleep(plusminus(30))
+      switch1:_moveInternal(pos2, true) 
+    end)
     repeat
       local done1 = not coroutine.resume(co1)
-      sleep(5)
+      sleep(1)
       local done2 = not coroutine.resume(co2)
     until done1 and done2
   else
@@ -964,15 +960,20 @@ function moveTwoSwitches(switch1,pos1,switch2,pos2,chance)
   end
 end
 
-function pressTwoButtons(butt1,butt2,chance)
+function pressTwoButtons(butt1, butt2, chance)
   if prob(chance or 1) then
     hand:moveTo((butt1.pos + butt1.pos) / 2)
     sleep(plusminus(200,0.1))
-    local co1 = coroutine.create(function() butt1(true) end)
-    local co2 = coroutine.create(function() sleep(plusminus(10)) butt2(true) end)
+    local co1 = coroutine.create(function() 
+      butt1:_pressAndReleaseInternal(true) 
+    end)
+    local co2 = coroutine.create(function() 
+      sleep(1)
+      butt1:_pressAndReleaseInternal(true) 
+    end)
     repeat
       local done1 = not coroutine.resume(co1)
-      sleep(5)
+      sleep(1)
       local done2 = not coroutine.resume(co2)
     until done1 and done2
   else
@@ -980,137 +981,6 @@ function pressTwoButtons(butt1,butt2,chance)
     butt2()
   end
 end
-
-local rawControls = require "FSL2Lua.FSL2Lua.FSL"
-
-function FSL:initControlPositions(varname,control)
-  local pos = control.pos
-  local mirror = {
-    MCDU_R = "MCDU_L",
-    COMM_2 = "COMM_1",
-    RADIO_2 = "RADIO_1"
-  }
-  for k,v in pairs(mirror) do
-    if varname:find(k) then
-      pos = rawControls[varname:gsub(k,v)].pos
-      if pos.x and pos.x ~= "" then
-        pos.x = tonumber(pos.x) + 370
-      end
-    end
-  end
-  pos = maf.vector(tonumber(pos.x), tonumber(pos.y), tonumber(pos.z))
-  local ref = {
-    --0,0,0 is at the bottom left corner of the pedestal's top side
-    OVHD = {maf.vector(39, 730, 1070), 2.75762}, -- bottom left corner (the one that is part of the bottom edge)
-    MIP = {maf.vector(0, 792, 59), 1.32645}, -- left end of the edge that meets the pedestal
-    GSLD = {maf.vector(-424, 663, 527), 1.32645} -- bottom left corner of the panel with the autoland button
-  }
-  for section,refpos in pairs(ref) do
-    if control.LVar:find(section) then
-      local r = maf.rotation.fromAngleAxis(refpos[2], 1, 0, 0)
-      pos = pos:rotate(r) + refpos[1]
-    end
-  end
-  return pos
-end
-
-function FSL:init()
-
-  for varname, control in pairs(rawControls) do
-
-    if FSL2LUA_STANDALONE then
-      control._rectangle = control.rectangle
-    end
-
-    control.rectangle = control.rectangle[FSL:getAcType() == "A321" and "A321" or "A320"]
-    
-    control.pos = self:initControlPositions(varname,control)
-
-    if control.posn then
-      local temp = control.posn
-      control.posn = {}
-      for k,v in pairs(temp) do
-        control.posn[k:upper()] = v
-      end
-      local highest = 0
-      for k, v in pairs(control.posn) do
-        if type(v) == "table" then v = v[1] end
-        v = tonumber(v)
-        if v > highest then highest = v end
-      end
-      control.maxLVarVal = highest
-    end
-
-    do
-      local name = control.LVar:lower()
-      local _type = control.type:lower()
-      if _type == "unknown" then
-        control = Control:new(control)
-      elseif _type == "enginemasterswitch" then
-        control = EngineMasterSwitch:new(control)
-      elseif _type == "fcuswitch" then
-        control = FcuSwitch:new(control)
-      elseif name:find("knob") and not control.posn then
-        control = KnobWithoutPositions:new(control)
-      elseif control.posn then
-        control = Switch:new(control)
-      elseif name:find("guard") then
-        control = Guard:new(control)
-      elseif name:find("button") or name:find("switch") or name:find("mcdu") or name:find("key") then
-        control = Button:new(control)
-      else
-        control = Control:new(control)
-      end
-      if not control.checkMacro and not FSL2LUA_IGNORE_UNCHECKED then
-        control = nil
-      end
-    end
-
-    if control then
-      
-      local replace = {
-        CPT = {
-          MCDU_L = "MCDU",
-          COMM_1 = "COMM",
-          RADIO_1 = "RADIO",
-          _CP = ""
-        },
-        FO = {
-          MCDU_R = "MCDU",
-          COMM_2 = "COMM",
-          RADIO_2 = "RADIO",
-          _FO = ""
-        }
-      }
-      for pattern, replace in pairs(replace.CPT) do
-        if varname:find(pattern) then
-          if pattern == "_CP" and varname:find("_CPT") then pattern = "_CPT" end
-          controlName = varname:gsub(pattern,replace)
-          self.CPT[controlName] = control
-          control.name = controlName
-          control.side = "CPT"
-        end
-      end
-      for pattern, replace in pairs(replace.FO) do
-        if varname:find(pattern) then
-          controlName = varname:gsub(pattern,replace)
-          self.FO[controlName] = control
-          control.name = controlName
-          control.side = "FO"
-        end
-      end
-
-      if not control.side then
-        self[varname] = control
-        control.name = varname
-      end
-
-    end
-  end
-
-end
-
---#############################################################################
 
 function FSL:getAcType()
   return self.acType
@@ -1134,6 +1004,11 @@ end
 -- print(FSL.PF.MCDU:getString() == FSL.FO.MCDU:getString()) -- true
 -- print(FSL.PF.GSLD_Chrono_Button == FSL.FO.GSLD_Chrono_Button) -- true
 function FSL:setPilot(pilot)
+  if pilot ~= 1 and pilot ~=2 and pilot ~= "CPT" and pilot ~= "FO" then
+    error("'pilot' must be either 1, 2, 'CPT' or 'FO'.", 2)
+  end
+  if pilot == "CPT" then pilot = 1
+  elseif pilot == "FO" then pilot = 2 end
   self.pilot = pilot
   for controlName, control in pairs(self) do
     if type(control) == "table" and control.side then
@@ -1227,22 +1102,21 @@ function FSL:getTakeoffFlapsFromMcdu(side)
   local sideStr = side == 1 and "CPT" or side == 2 and "FO"
   self[sideStr].PED_MCDU_KEY_PERF()
   sleep(500)
-  local timeout = ipc.elapsedtime() + 5000
-  while true do
-    if ipc.elapsedtime() > timeout then
-      return
-    else
-      local disp = self.MCDU:getString()
-      if disp:sub(10,17) == "TAKE OFF" or disp:sub(5,16) == "TAKE OFF RWY" then
-        local setting = disp:sub(162,162)
-        sleep(plusminus(1000))
-        self[sideStr].PED_MCDU_KEY_FPLN()
-        return tonumber(setting)
-      end
+  return withTimeout(5000, function()
+    local disp = self.MCDU:getString()
+    if disp:sub(10,17) == "TAKE OFF" or disp:sub(5,16) == "TAKE OFF RWY" then
+      local setting = disp:sub(162,162)
+      sleep(plusminus(1000))
+      self[sideStr].PED_MCDU_KEY_FPLN()
+      return tonumber(setting)
     end
     sleep()
-  end
+  end)
 end
+
+---------------------------------------------------------------------------------------
+-- Trim wheel -------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 local trimwheel = {
   control = {inc = 65607, dec = 65615},
@@ -1342,55 +1216,9 @@ function atsuLog:test()
   self.path = self.path:gsub("ATSU.log", "test.log")
 end
 
-function FSL.CheckMacros()
-
-  local checked = {}
-  local missing = {}
-
-  local function checkControl(control)
-    if type(control) == "table" and control.FSL_VC_control and control.checkMacro then
-      if control.rectangle then
-        if not control:checkMacro() then
-          print("The macro of control " .. control.LVar .. " appears to be invalid")
-        end
-      elseif not control.FSControl then
-        table.insert(missing, control)
-      end
-    end
-  end
-
-  local function checkMacros(table)
-    for _, control in pairs(table) do
-      if type(control) == "table" and control.LVar and control.LVar:lower():find("guard") then
-        checkControl(control)
-        checked[control] = true
-      end
-    end
-
-    for _, control in pairs(table) do
-      if not checked[control] then checkControl(control) end
-    end
-  end
-
-  print "------------------------------------------------------"
-  print "Checking macros!"
-
-  for _, button in ipairs {FSL.OVHD_FIRE_ENG1_PUSH_Button, FSL.OVHD_FIRE_ENG2_PUSH_Button, FSL.OVHD_FIRE_APU_PUSH_Button} do
-    if not button:isDown() then
-      checkControl(button)
-    end
-  end
-
-  checkMacros(FSL)
-  checkMacros(FSL.CPT)
-  checkMacros(FSL.FO)
-
-  --print("The following controls are missing rectangles:")
-  --for _, control in ipairs(missing) do print(control.LVar) end
-
-  print "Finished checking macros!"
-
-end
+---------------------------------------------------------------------------------------
+-- Bind helper functions --------------------------------------------------------------
+---------------------------------------------------------------------------------------
 
 local keyList = {
   Backspace = 8,
@@ -1609,6 +1437,10 @@ function joyBind:registerOnReleaseEvents()
   event.button(self.data.joyLetter, self.data.btnNum, 2, funcName)
 end
 
+---------------------------------------------------------------------------------------
+-- Main Bind function -----------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
 Bind = {
   binds = {},
   funcCount = 0
@@ -1620,8 +1452,6 @@ setmetatable(Bind, Bind)
 
 --- This function is a wrapper around event.key and event.button from the FSUIPC Lua library.
 --
---- Don't use this inside Copilot since Copilot can block for several seconds - unless you want to trigger Copilot's actions with keys or buttons.
---- @{cockpit_control_binds.lua|Import FSL2Lua in a separate script} instead and auto-launch it in a separate thread (look up 'Automatic running of Macros and Lua plugins' in FSUIPC5 For Advanced Users.pdf)
 --- @function Bind
 --- @tparam table data A table containing the following fields: 
 --- @tparam function data.onPress (see usage below)
@@ -1688,7 +1518,7 @@ setmetatable(Bind, Bind)
 --- Bind {key = "Backspace", onPress = function () ipc.control(66807) end}
 
 function Bind:__call(data)
-  assert(data.key or data.btn, "Attempt to create a bind without a key or button", 2)
+  assert(data.key or data.btn, "You need to specify a key and/or button", 2)
   data = self:prepareData(data)
   local _keyBind = data.key and keyBind:new(data)
   local _joyBind = data.btn and joyBind:new(data)
@@ -1720,54 +1550,133 @@ function Bind:prepareData(data)
   return data
 end
 
+local bindArg = {}
+
+function Bind.asArg(func)
+  assert(type(func) == "function", "The argument must be a function.")
+  return setmetatable({f = func}, bindArg)
+end
+
 function Bind:makeSingleFunc(funcs)
-  if type(funcs) == "table" then
-    if funcs.__call or (getmetatable(funcs) and getmetatable(funcs).__call) then
-      return funcs
-    else
-      local _funcs = funcs
-      funcs = {}
-      for i, func in ipairs(_funcs) do
-        if type(func) ~= "string" then
-          local nextElem = _funcs[i+1]
-          local _func
-          if type(nextElem) == "string" then
-            local valid = false
-            if type(func) == "table" then
-              local control = func
-              assert(control.FSL_VC_control, tostring(control) .. " is not an FSL2Lua cockpit control.", 4)
-              if control[nextElem] then
-                _func = function() control[nextElem](func) end
-                valid = true
-              elseif control.posn then
-                for pos in pairs(control.posn) do
-                  if pos:lower() == nextElem:lower() then
-                    valid = true
-                    _func = function() control(nextElem) end
-                  end
-                end
-              end
-              assert(valid, string.format("%s is neither a position or method of control %s", nextElem, control.name), 4)
-            end
-          else
-            _func = func
-          end
-          funcs[#funcs+1] = _func
-        end
-      end
-      if #funcs == 1 then
-        return funcs[1]
-      else
-        return function()
-          for _, func in ipairs(funcs) do
-            func()
-          end
-        end
-      end
-    end
-  elseif type(funcs) == "function" then
+  local errLevel = 4
+
+  if type(funcs) == "function" then return funcs end
+
+  if type(funcs) ~= "table" then 
+    error("Invalid callback parameter", errLevel) 
+  end
+
+  if funcs.__call or (getmetatable(funcs) and getmetatable(funcs).__call) then
     return funcs
   end
+  
+  local _funcs = funcs
+  funcs = {}
+
+  local function parse(i, prevArgs)
+    
+    local callable, elem
+
+    while i <= #_funcs do
+
+      elem = _funcs[i]
+
+      if type(elem) == "function" then
+        callable = "func"
+      elseif type(elem) == "table" then
+        local nextElem = _funcs[i+1]
+        if type(elem[nextElem]) == "function" then
+          callable = "method"
+        else
+          local mt = getmetatable(elem)
+          if mt == bindArg then
+            elem = elem.f
+          elseif type(mt) == "table" and type(mt.__call) == "function" then
+            callable = "__call"
+          end
+        end
+      end
+
+      if callable then
+        break
+      elseif i == 1 then
+        error("The first element in the table must be callable", errLevel + 1)
+      else 
+        prevArgs[#prevArgs+1] = elem
+      end
+
+      i = i + 1
+    end
+
+    if elem == nil then return end
+
+    if callable then
+
+      local args = {}
+
+      if i < #_funcs then
+        if callable == "method" then
+          args[1] = elem
+          parse(i+2, args)
+        else
+          parse(i+1, args)
+        end
+      end
+
+      if callable == "__call" and elem.FSL_VC_control then
+        local class = getmetatable(elem)
+        local arg = args[1]
+        if not arg and (class == KnobWithoutPositions or class == Switch) then
+          error("A position must be specified for control " .. elem.name .. ".", errLevel + 1)
+        end
+        if class == KnobWithoutPositions then
+          assert(
+            type(arg) == "number",
+            "The position for control " .. elem.name .. " must be a number.", errLevel + 1
+          )
+        end
+        if class == Switch then
+          assert(
+            type(arg) == "string",
+            "The position for control " .. elem.name .. " must be a string.", errLevel + 1
+          )
+          assert(
+            elem.posn[arg:upper()] ~= nil,
+            arg .. " is not a valid position of control " .. elem.name .. ".",
+            errLevel + 1
+          )
+        end
+      end
+
+      local func
+
+      if callable == "method" then 
+        elem = elem[_funcs[i+1]]
+      end
+
+      if #args == 0 then 
+        func = elem
+      elseif #args == 1 then 
+        local arg = args[1]
+        func = function() elem(arg) end
+      else
+        func = function() elem(unpack(args)) end
+      end
+
+      funcs[#funcs+1] = func
+    end
+  end
+
+  parse(1, {})
+
+  if #funcs == 1 then return funcs[1] end
+ 
+  return function()
+    for i = #funcs, 1, -1 do
+      funcs[i]()
+    end
+  end
+
 end
 
 function Bind:addGlobalFuncs(...)
@@ -1787,9 +1696,488 @@ function Bind:addGlobalFuncs(...)
   else return funcNames end
 end
 
-FSL:init()
-FSL.init = nil
-FSL.initControlPositions = nil
+if getmetatable(Joystick) then
+
+  getmetatable(Joystick).printDeviceInfo = function()
+    print "------------------------------------"
+    print "-------  HID device info  ----------"
+    print "------------------------------------"
+    for _, device in ipairs(Joystick.enumerateDevices()) do
+      print("Manufacturer: " .. device.manufacturer)
+      print("Product: " .. device.product)
+      print(string.format("Vendor ID: 0x%04X", device.vendorId))
+      print(string.format("Product ID: 0x%04X", device.productId))
+      print "------------------------------------"
+    end
+  end
+
+  getmetatable(Joystick).fastRepeat = function(func, calc)
+    local lastExecutionTime = 0
+    local function callback(timeStamp)
+      local n = calc(timeStamp - lastExecutionTime)
+      lastExecutionTime = timeStamp
+      for _ = 1, n do func() end
+    end
+    return callback, Joystick.withTimestamp
+  end
+end
+
+---------------------------------------------------------------------------------------
+-- Encoder ----------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+Encoder = {
+  _onCW   = function () end,
+  _onCCW  = function () end,
+  DIR_CW = 0,
+  DIR_CCW = 1
+}
+
+function Encoder.new(joy, data)
+
+  if type(data[1]) ~= "number" or type(data[2]) ~= "number" then
+    error("Specify two button numbers for the encoder", 2)
+  end
+
+  local DPC = data.detentsPerCycle
+
+  if DPC == nil then
+    error("Missing detentsPerCycle argument", 2)
+  end
+
+  if DPC ~= 1 and DPC ~= 2 and DPC ~= 4 then
+    error("detentsPerCycle must be either 1, 2 or 4", 2)
+  end
+
+  local shift = 0
+
+  if data.shift == true then
+    if DPC == 1 then shift = 2
+    elseif DPC == 2 then shift = 1 end
+  end
+
+  local e = {
+    _pinA = data[1],
+    _pinB = data[2],
+    _prevStateA = false,
+    _prevStateB = false,
+    _detentRatio = 4 / DPC,
+    _count = 0,
+    _shift = shift,
+    _direction = Encoder.DIR_CW
+  }
+
+  local function callback(button, state, timestamp)
+    e:_onPinEvent(button, state, timestamp)
+  end
+
+  joy:onPress   (data[1], callback, Joystick.sendEventDetails)
+  joy:onPress   (data[2], callback, Joystick.sendEventDetails)
+  joy:onRelease (data[1], callback, Joystick.sendEventDetails)
+  joy:onRelease (data[2], callback, Joystick.sendEventDetails)
+
+  Encoder.__index = Encoder
+  return setmetatable(e, Encoder)
+end
+
+function Encoder:setTickCalculator(tickCalculator)
+  self._calculateTicks = tickCalculator
+  return self
+end
+
+function Encoder:_makeCallback(...)
+
+  local func = Bind:makeSingleFunc {...}
+
+  if not self._calculateTicks then
+    return function() func() end
+  end
+
+  local prevTimestamp = 0
+
+  return function(timestamp)
+    local diff = timestamp - prevTimestamp
+    prevTimestamp = timestamp
+    local numTicks = self._calculateTicks(diff)
+    for _ = 1, numTicks do
+      func()
+    end
+  end
+end
+
+function Encoder:onCW(...)
+  self._onCW = self:_makeCallback(...)
+  return self
+end
+
+function Encoder:onCCW(...)
+  self._onCCW = self:_makeCallback(...)
+  return self
+end
+
+function Encoder:_calculateDirection(this, thisPrev, other)
+  if this and not thisPrev then
+    return other and self.DIR_CCW or self.DIR_CW
+  else
+    return other and self.DIR_CW or self.DIR_CCW
+  end
+end
+
+function Encoder:_onPinEvent(pin, state, timestamp)
+  state = state == 1
+  local direction, other
+  if pin == self._pinA then
+    other = self._prevStateB
+    direction = self:_calculateDirection(state, self._prevStateA, other)
+    self._prevStateA = state
+  else
+    other = self._prevStateA
+    direction = self:_calculateDirection(state, self._prevStateB, not other)
+    self._prevStateB = state
+  end
+  if not state and not other then
+    self._count = 0
+  else
+    self._count = (self._count + 1) % 4
+  end
+  self._direction = direction
+  if (self._count + self._shift) % self._detentRatio == 0 then
+    if direction == self.DIR_CW then
+      self._onCW(timestamp)
+    else
+      self._onCCW(timestamp)
+    end
+  end
+end
+
+---------------------------------------------------------------------------------------
+-- Initializaion of controls ----------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+local rawControls = require "FSL2Lua.FSL2Lua.FSL"
+
+local function initControlPositions(varname,control)
+  local pos = control.pos
+  local mirror = {
+    MCDU_R = "MCDU_L",
+    COMM_2 = "COMM_1",
+    RADIO_2 = "RADIO_1"
+  }
+  for k,v in pairs(mirror) do
+    if varname:find(k) then
+      pos = rawControls[varname:gsub(k,v)].pos
+      if pos.x and pos.x ~= "" then
+        pos.x = tonumber(pos.x) + 370
+      end
+    end
+  end
+  pos = maf.vector(tonumber(pos.x), tonumber(pos.y), tonumber(pos.z))
+  local ref = {
+    --0,0,0 is at the bottom left corner of the pedestal's top side
+    OVHD = {maf.vector(39, 730, 1070), 2.75762}, -- bottom left corner (the one that is part of the bottom edge)
+    MIP = {maf.vector(0, 792, 59), 1.32645}, -- left end of the edge that meets the pedestal
+    GSLD = {maf.vector(-424, 663, 527), 1.32645} -- bottom left corner of the panel with the autoland button
+  }
+  for section,refpos in pairs(ref) do
+    if control.LVar:find(section) then
+      local r = maf.rotation.fromAngleAxis(refpos[2], 1, 0, 0)
+      pos = pos:rotate(r) + refpos[1]
+    end
+  end
+  return pos
+end
+
+local function initControl(control, varname)
+
+  control.pos = initControlPositions(varname,control)
+
+  if control.posn then
+    local temp = control.posn
+    control.posn = {}
+    for k,v in pairs(temp) do
+      control.posn[k:upper()] = v
+    end
+    local maxLVarVal = 0
+    for _, v in pairs(control.posn) do
+      if type(v) == "table" then v = v[1] end
+      v = tonumber(v)
+      if v > maxLVarVal then maxLVarVal = v end
+    end
+    control.maxLVarVal = maxLVarVal
+  end
+
+  do
+    local name = control.LVar:lower()
+    local _type = control.type:lower()
+    if _type == "unknown" then
+      control = Control:new(control)
+    elseif _type == "enginemasterswitch" then
+      control = EngineMasterSwitch:new(control)
+    elseif _type == "fcuswitch" then
+      control = FcuSwitch:new(control)
+    elseif name:find("knob") and not control.posn then
+      control = KnobWithoutPositions:new(control)
+    elseif control.posn then
+      control = Switch:new(control)
+    elseif name:find("guard") then
+      control = Guard:new(control)
+    elseif name:find("button") or name:find("switch") or name:find("mcdu") or name:find("key") then
+      control = Button:new(control)
+    else
+      control = Control:new(control)
+    end
+    if not control.checkMacro and not FSL2LUA_IGNORE_UNCHECKED then
+      control = nil
+    end
+  end
+
+  if control then
+    
+    local replace = {
+      CPT = {
+        MCDU_L = "MCDU",
+        COMM_1 = "COMM",
+        RADIO_1 = "RADIO",
+        _CP = ""
+      },
+      FO = {
+        MCDU_R = "MCDU",
+        COMM_2 = "COMM",
+        RADIO_2 = "RADIO",
+        _FO = ""
+      }
+    }
+    for pattern, replace in pairs(replace.CPT) do
+      if varname:find(pattern) then
+        if pattern == "_CP" and varname:find("_CPT") then pattern = "_CPT" end
+        controlName = varname:gsub(pattern,replace)
+        FSL.CPT[controlName] = control
+        control.name = "FSL.CPT." .. controlName
+        control.side = "CPT"
+      end
+    end
+    for pattern, replace in pairs(replace.FO) do
+      if varname:find(pattern) then
+        controlName = varname:gsub(pattern,replace)
+        FSL.FO[controlName] = control
+        control.name = "FSL.FO." .. controlName
+        control.side = "FO"
+      end
+    end
+
+    if not control.side then
+      FSL[varname] = control
+      control.name = "FSL." .. varname
+    end
+
+  end
+end
+
+local function initControls()
+  for varname, control in pairs(rawControls) do
+    local acType = FSL.acType
+    if acType == "A319" and A319_IS_A320 then
+      acType = "A320"
+    end
+    if acType then
+      control.rectangle = control[acType].rectangle
+      if control.rectangle or control.FSControl then
+        initControl(control, varname)
+        control.manual = control[acType].manual
+      end
+    elseif MAKE_CONTROL_LIST then
+      initControl(control, varname)
+    end
+  end
+end
+
+---------------------------------------------------------------------------------------
+-- Macro checking ---------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+function FSL.CheckMacros()
+
+  local checked = {}
+  local missing = {}
+  local manual = {}
+  local notManual = {}
+
+  local acType = FSL.acType
+
+  if acType == "A319" and A319_IS_A320 then
+    acType = "A320"
+  end
+
+  local function checkControl(control)
+    if type(control) == "table" and control.FSL_VC_control and control.checkMacro then
+      if control.rectangle then
+        if not control:checkMacro() then
+          if control[acType].manual then
+            table.insert(manual, control)
+          else
+            print("The macro of control " .. control.name .. " appears to be invalid")
+          end
+        elseif control[acType].manual then
+          table.insert(notManual, control)
+        end
+      elseif not control.FSControl then
+        table.insert(missing, control)
+      end
+    end
+  end
+
+  local function checkMacros(table)
+    for _, control in pairs(table) do
+      if type(control) == "table" and control.LVar and control.LVar:lower():find("guard") then
+        checkControl(control)
+        checked[control] = true
+      end
+    end
+
+    for _, control in pairs(table) do
+      if not checked[control] then checkControl(control) end
+    end
+  end
+
+  print "------------------------------------------------------"
+  print "Checking macros!"
+
+  for _, button in ipairs {FSL.OVHD_FIRE_ENG1_PUSH_Button, FSL.OVHD_FIRE_ENG2_PUSH_Button, FSL.OVHD_FIRE_APU_PUSH_Button} do
+    if not button:isDown() then
+      checkControl(button)
+    end
+  end
+
+  checkMacros(FSL)
+  checkMacros(FSL.CPT)
+  checkMacros(FSL.FO)
+
+  print "Finished checking macros!"
+
+  if #manual > 0 then
+    print("The following controls need to be checked manually for this type (" .. acType .. "):\n")
+    for _, control in ipairs(manual) do
+      print(control.name)
+    end
+  end
+
+  if #notManual > 0 then
+    print("The following are no longer manual for this type (" .. acType .. "):\n")
+    for _, control in ipairs(notManual) do
+      print(control.name)
+    end
+  end
+
+end
+
+function Button:checkMacro()
+  local t
+  for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
+    for _, control in pairs(_t) do
+      if control == self then 
+        t = _t 
+        break
+      end
+    end
+  end
+
+  local guard = self.guard and t[self.guard]
+  if not guard then
+    for _, control in pairs(t) do
+      if type(control) == "table" and control.FSL_VC_control then
+        local LVar = control.LVar:lower()
+        if LVar:find("guard") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1")) then
+          guard = control
+          break
+        end 
+      end
+    end
+  end
+
+  if guard and not guard:isOpen() then
+    guard:lift()
+    local timedOut = not checkWithTimeout(2000, function()
+      return guard:isOpen()
+    end)
+    if timedOut then return false end
+  end
+
+  local LVarbefore = self:getLvarValue()
+  ipc.mousemacro(self.rectangle, 3)
+  if self.toggle then
+    ipc.mousemacro(self.rectangle, 13)
+  end
+  local timedOut = not self:waitForLVarChange(2000, LVarbefore)
+  if not timedOut then ipc.mousemacro(self.rectangle, 13) end
+end
+
+function Guard:checkMacro()
+  local LVarbefore = self:getLvarValue()
+  if self:isOpen() then self:close()
+  else self:lift() end
+  return self:waitForLVarChange(2000, LVarbefore)
+end
+
+function Switch:checkMacro()
+  local LVarbefore = self:getLvarValue()
+  if LVarbefore > 0 then self:decrease()
+  else self:increase() end
+  return self:waitForLVarChange(5000, LVarbefore)
+end
+
+function FcuSwitch:checkMacro()
+  ipc.mousemacro(self.rectangle, 13)
+  ipc.mousemacro(self.rectangle, 11)
+  local LVarbefore = self:getLvarValue()
+  ipc.mousemacro(self.rectangle, 3)
+  return self:waitForLVarChange(5000, LVarbefore)
+end
+
+function EngineMasterSwitch:checkMacro()
+  ipc.mousemacro(self.rectangle, 13)
+  ipc.mousemacro(self.rectangle, 11)
+  local LVarbefore = self:getLvarValue()
+  ipc.mousemacro(self.rectangle, 1)
+  return self:waitForLVarChange(1000, LVarbefore)
+end
+
+function KnobWithoutPositions:checkMacro()
+  if self.LVar:lower():find("comm") then
+    local t
+    for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
+      for _, control in pairs(_t) do
+        if control == self then t = _t end
+      end
+    end
+    for _, control in pairs(t) do
+      if type(control) == "table" and control.FSL_VC_control then
+        local LVar = control.LVar:lower()
+        local switch = LVar:find("switch") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1"))
+        if switch and control.isDown and control:isDown() then
+          control()
+          local timedOut = not checkWithTimeout(2000, function()
+            return not control:isDown()
+          end)
+          if timedOut then return false end
+          break
+        end
+      end
+    end
+  end
+  local LVarbefore = self:getLvarValue()
+  if LVarbefore > 0 then self:_rotateLeft()
+  else self:_rotateRight() end
+  return self:waitForLVarChange(1000, LVarbefore)
+end
+
+---------------------------------------------------------------------------------------
+-- The end ----------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+initControls()
+
 FSL.MIP_GEAR_Lever = FSL.GEAR_Lever
-collectgarbage("collect")
+
+collectgarbage "collect"
+
 return FSL
