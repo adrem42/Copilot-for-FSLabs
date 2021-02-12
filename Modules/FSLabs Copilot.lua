@@ -1,7 +1,5 @@
---[[--
-Stuff you can use in Copilot.
-]]
---- @module copilot
+
+if false then module("copilot") end
 
 local function addPackagePath(dir)
   package.path = dir .. "\\?.lua;" .. package.path
@@ -11,7 +9,7 @@ APPDIR = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1FSLabs Copilot\\")
 addPackagePath(APPDIR)
 
 copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
-require "copilot.helpers"
+require "copilot.util"
 copilot.UserOptions = require "copilot.UserOptions"
 local err = copilot.init()
 if err then copilot.exit(err) end

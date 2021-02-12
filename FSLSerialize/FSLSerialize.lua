@@ -10,6 +10,7 @@ local LVarList = require "control_lvars"
 local lightVarList = require "light_lvars"
 
 local FSL2LuaDir = require "config".path
+local repoDir = require "config".repoPath
 
 package.path = FSL2LuaDir .. "\\?.lua"
 
@@ -17,9 +18,14 @@ local serpent = require "libs.serpent"
 local file = require "FSL2Lua.file"
 
 local FSL_path = FSL2LuaDir .. "\\FSL2Lua\\FSL.lua"
+local FSL_repo_path = repoDir .. "\\Modules\\FSL2Lua\\FSL2Lua\\FSL.lua"
 local FSL_file = file.read(FSL_path)
 
 local FSL = loadstring(FSL_file)()
+
+if file.read(FSL_repo_path) ~= FSL_file then
+  error "The contents of both FSL.lua files must be the same"
+end 
 
 for controlName in pairs(LVarList) do
   local newName = controlName:sub(4)
@@ -105,7 +111,7 @@ function saveResults()
     end
   end
 
-  local backup = FSL2LuaDir .. "\\FSL2Lua\\FSL.bak.0"
+  local backup = repoDir .. "\\FSL.bak.0"
 
   while true do
     if not file.exists(backup) then break end
@@ -114,11 +120,14 @@ function saveResults()
 
   file.write(backup, FSL_file)
 
-  if not file.read(backup) == FSL_file then
+  if file.read(backup) ~= FSL_file then
     error "Failed to create backup"
   end
 
-  file.write(FSL_path, "return " .. serpent.block(FSL, {comment = false, sparse = false}),"w")
+  local content = "return " .. serpent.block(FSL, {comment = false, sparse = false})
+
+  file.write(FSL_path, content,"w")
+  file.write(FSL_repo_path, content,"w")
 
   info "file saved"
 end

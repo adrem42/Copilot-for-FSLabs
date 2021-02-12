@@ -81,6 +81,10 @@ private:
 
 	lua_State* L;
 
+	struct ButtonCallback {
+
+	};
+
 	using ButtonCallback = std::function<void(size_t timestamp, size_t button, unsigned short status)>;
 
 	std::unordered_map<size_t, size_t> buttonDataIndexToNumber;
@@ -990,12 +994,12 @@ public:
 					buttonNum--;
 				onPress(buttonNum, [this, buttonNum](size_t, size_t, unsigned short) {
 					std::wstringstream ss;
-					ss << L"Joystick = " << logName  << L"   |   Button " << buttonNum << " pressed";
+					ss << L"   Joystick = " << logName  << L"   |   Button " << buttonNum << " pressed";
 					log(ss.str());
 				});
 				onRelease(buttonNum, [this, buttonNum](size_t, size_t, unsigned short) {
 					std::wstringstream ss;
-					ss << L"Joystick = " << logName  << L"   |   Button " << buttonNum << " released";
+					ss << L"   Joystick = " << logName  << L"   |   Button " << buttonNum << " released";
 					log(ss.str());
 				});
 			}
@@ -1021,9 +1025,9 @@ public:
 			}
 			auto callback = [axisName, this, axisIndex](double value) {
 				std::wstringstream ss;
-				ss << L"Joystick = " << logName 
+				ss << L"   Joystick = " << logName 
 					<< "   |   Axis = " << axisName.c_str() 
-					<< axisIndex << "   |   " 
+					<< std::setw(8 - axisName.length()) << std::left << axisIndex << "   |   "
 					<< std::fixed << std::right << std::setw(6) << std::setprecision(2) << value << " %";
 				log(ss.str());
 			};

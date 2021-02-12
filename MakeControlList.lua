@@ -3,7 +3,7 @@ package.path = "Modules\\?.lua;Modules\\?\\init.lua"
 MAKE_CONTROL_LIST = true
 FSL2LUA_STANDALONE = true
 local FSL = require "FSL2Lua"
-local A319_IS_A320 = require "FSL2Lua.FSL2Lua.config".A319_IS_A320
+local A319_IS_A320 = require "FSL2Lua.config".A319_IS_A320
 
 local path = "topics\\listofcontrols.md"
 io.open(path,"w"):close()

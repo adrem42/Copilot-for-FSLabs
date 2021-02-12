@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 1.1.6</title>
+    <title>Copilot for FSLabs 1.2.0</title>
     <link rel="stylesheet" href="../ldoc.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 1.1.6</h1>
+<h1>Copilot for FSLabs 1.2.0</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -32,25 +32,23 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
-<li><a href="#Class_MCDU">Class MCDU </a></li>
+<li><a href="#FSL">FSL</a></li>
 <li><a href="#Class_Control">Class Control </a></li>
 <li><a href="#Class_Button">Class Button </a></li>
 <li><a href="#Class_Guard">Class Guard </a></li>
 <li><a href="#Class_Switch">Class Switch </a></li>
 <li><a href="#Class_FcuSwitch">Class FcuSwitch </a></li>
 <li><a href="#Class_KnobWithoutPositions">Class KnobWithoutPositions </a></li>
-<li><a href="#FSL">FSL</a></li>
-<li><a href="#"> </a></li>
+<li><a href="#Class_MCDU">Class MCDU </a></li>
 </ul>
 
 
 <h2>Libraries</h2>
 <ul class="nowrap">
-  <li><a href="../libraries/Event.html">Event</a></li>
-  <li><a href="../libraries/copilot.html">copilot</a></li>
   <li><strong>FSL2Lua</strong></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
   <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
 <h2>Manual</h2>
@@ -73,19 +71,9 @@
 
 <h1>Module <code>FSL2Lua</code></h1>
 <p>Library for interacting with FSLabs cockpit controls based on Lvars and mouse macros.</p>
-<p> To import, type <code>local FSL = require &apos;FSL2Lua&apos;</code>.
- You don't need to do that in a file loaded by Copilot in the custom directory since FSL2Lua will already be included.</p>
-
-<p> Click <a href="../manual/listofcontrols.md.html#"> here</a> to see the list of cockpit controls contained in the exported table.</p>
+<p> See <a href="../manual/standalonescripts.md.html#">here</a> on how to use it outside of Copilot.</p>
 
 
-<h2><a href="#Functions">Functions</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#prob">prob(prob)</a></td>
-	<td class="summary">Hand  ------------------------------------------------------------------------------</td>
-	</tr>
-</table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
@@ -95,50 +83,22 @@
 </td>
 	</tr>
 </table>
-<h2><a href="#Class_MCDU">Class MCDU </a></h2>
+<h2><a href="#FSL">FSL</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#MCDU:getArray">MCDU:getArray()</a></td>
-	<td class="summary">
-
-</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#MCDU:getString">MCDU:getString([startpos[, endpos]])</a></td>
-	<td class="summary">
-
-</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad()</a></td>
-	<td class="summary">
-
-</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#MCDU:type">MCDU:type(str)</a></td>
-	<td class="summary">Types str on the keyboard.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#MCDU:isOn">MCDU:isOn()</a></td>
-	<td class="summary">
-
-</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells()</a></td>
-	<td class="summary">Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold.</td>
+	<td class="name" nowrap><a href="#FSL:setPilot">FSL:setPilot(pilot)</a></td>
+	<td class="summary">This function makes references in the root FSL table to all fields in either FSL.CPT or FSL.FO, if the 'pilot' parameter is 1 or 2, respectively.</td>
 	</tr>
 </table>
 <h2><a href="#Class_Control">Class Control </a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#Control:macro">Control:macro(clickType)</a></td>
-	<td class="summary">Invokes the mouse macro directly</td>
+	<td class="summary">Invokes the mouse macro of the control</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Control:isLit">Control:isLit()</a></td>
-	<td class="summary"><span></td>
+	<td class="summary">Checks if the control's light is on.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Control:getLvarValue">Control:getLvarValue()</a></td>
@@ -241,35 +201,32 @@
 	<td class="name" nowrap><a href="#KnobWithoutPositions:random">KnobWithoutPositions:random([lower=0[, upper=100]])</a></td>
 	<td class="summary">Sets the knob to random position between lower and upper.</td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:moveTwoSwitches">KnobWithoutPositions:moveTwoSwitches(switch1, pos1, switch2, pos2, chance)</a></td>
-	<td class="summary">Misc functions ---------------------------------------------------------------------</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions.Bind">KnobWithoutPositions.Bind</a></td>
-	<td class="summary">Main Bind function -----------------------------------------------------------------</td>
-	</tr>
 </table>
-<h2><a href="#FSL">FSL</a></h2>
+<h2><a href="#Class_MCDU">Class MCDU </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#FSL:setPilot">FSL:setPilot(pilot)</a></td>
-	<td class="summary">This makes references in the root FSL table to all fields in either FSL.CPT or FSL.FO, if the 'pilot' parameter is 1 or 2, respectively.</td>
-	</tr>
-</table>
-<h2><a href="#"> </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
-	<td class="summary">This function is a wrapper around event.key and event.button from the FSUIPC Lua library.</td>
+	<td class="name" nowrap><a href="#MCDU:getArray">MCDU:getArray()</a></td>
+	<td class="summary">Returns the MCDU display as an array of display cells.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Encoder">Encoder</a></td>
-	<td class="summary">Encoder class ----------------------------------------------------------------------</td>
+	<td class="name" nowrap><a href="#MCDU:getString">MCDU:getString([startpos[, endpos]])</a></td>
+	<td class="summary">Returns the MCDU display as a string.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#FSL.CheckMacros">FSL.CheckMacros()</a></td>
-	<td class="summary">Macro checking ---------------------------------------------------------------------</td>
+	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad()</a></td>
+	<td class="summary">Returns the scratchpad - the last line on the display</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:type">MCDU:type(str)</a></td>
+	<td class="summary">Types str on the keyboard.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:isOn">MCDU:isOn()</a></td>
+	<td class="summary">Returns false if the display is blank.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells()</a></td>
+	<td class="summary">Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold.</td>
 	</tr>
 </table>
 
@@ -277,32 +234,6 @@
 <br/>
 
 
-    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "prob"></a>
-    <strong>prob(prob)</strong>
-    </dt>
-    <dd>
-    Hand  ------------------------------------------------------------------------------
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">prob</span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
     <h2 class="section-header "><a name="Tables"></a>Tables</h2>
 
     <dl class="function">
@@ -341,124 +272,23 @@
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name="Class_MCDU"></a>Class MCDU </h2>
+    <h2 class="section-header "><a name="FSL"></a>FSL</h2>
 
     <dl class="function">
     <dt>
-    <a name = "MCDU:getArray"></a>
-    <strong>MCDU:getArray()</strong>
+    <a name = "FSL:setPilot"></a>
+    <strong>FSL:setPilot(pilot)</strong>
     </dt>
     <dd>
+    This function makes references in the root FSL table to all fields in either FSL.CPT or FSL.FO, if the 'pilot' parameter is 1 or 2, respectively.  For the other side's controls, it makes
+references in the FSL.PF table.</p>
 
-
-
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-<p> Array of tables representing display cells.</p>
-
-<p> Each cell table has three fields:</p>
-
-<ul>
-    <li>char: the character (nil if the cell is blank)</li>
-    <li>color: string :
-    <ul>
-        <li>'cyan' </li>
-        <li>'grey' </li>
-        <li>'green' </li>
-        <li>'magenta' </li>
-        <li>'amber' </li>
-        <li>'white' </li>
-    </ul></li>
-    <li>isBold: bool</li>
-</ul>
-
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "MCDU:getString"></a>
-    <strong>MCDU:getString([startpos[, endpos]])</strong>
-    </dt>
-    <dd>
-
-
-
+<p>Copilot will set it depending on the 'PM_seat' option.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">startpos</span>
-            <span class="types"><span class="type">number</span></span>
-
-
-
-         (<em>optional</em>)
-        </li>
-        <li><span class="parameter">endpos</span>
-            <span class="types"><span class="type">number</span></span>
-
-
-
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "MCDU:getScratchpad"></a>
-    <strong>MCDU:getScratchpad()</strong>
-    </dt>
-    <dd>
-
-
-
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-        Only the last line.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "MCDU:type"></a>
-    <strong>MCDU:type(str)</strong>
-    </dt>
-    <dd>
-    Types str on the keyboard.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">str</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        <li><span class="parameter">pilot</span>
 
 
 
@@ -468,44 +298,20 @@
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> FSL = <span class="global">require</span> <span class="string">"FSL2Lua"</span>
 
-</dd>
-    <dt>
-    <a name = "MCDU:isOn"></a>
-    <strong>MCDU:isOn()</strong>
-    </dt>
-    <dd>
+<span class="global">print</span>(FSL.MCDU) <span class="comment">-- nil
+</span><span class="global">print</span>(FSL.GSLD_Chrono_Button) <span class="comment">-- nil
+</span>
+FSL:setPilot(<span class="number">1</span>)
 
-
-
-
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">bool</span></span>
-        False if the display is blank.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "MCDU:printCells"></a>
-    <strong>MCDU:printCells()</strong>
-    </dt>
-    <dd>
-    Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold. </p>
-
-<p> The output will be in the console and the FSUIPC log file.
-
-
-
-
-
-
+<span class="global">print</span>(FSL.MCDU:getString() == FSL.CPT.MCDU:getString()) <span class="comment">-- true
+</span><span class="global">print</span>(FSL.GSLD_Chrono_Button == FSL.CPT.GSLD_Chrono_Button) <span class="comment">-- true
+</span><span class="global">print</span>(FSL.PF.MCDU:getString() == FSL.FO.MCDU:getString()) <span class="comment">-- true
+</span><span class="global">print</span>(FSL.PF.GSLD_Chrono_Button == FSL.FO.GSLD_Chrono_Button) <span class="comment">-- true</span></pre>
+    </ul>
 
 </dd>
 </dl>
@@ -520,7 +326,7 @@
     <strong>Control:macro(clickType)</strong>
     </dt>
     <dd>
-    Invokes the mouse macro directly
+    Invokes the mouse macro of the control
 
 
     <h3>Parameters:</h3>
@@ -552,7 +358,7 @@
     <strong>Control:isLit()</strong>
     </dt>
     <dd>
-    <span>
+    Checks if the control's light is on.
 
 
 
@@ -591,7 +397,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">number</span></span>
+           <span class="types"><span class="type">int</span></span>
 
 
 
@@ -967,248 +773,121 @@
 
 
 </dd>
-    <dt>
-    <a name = "KnobWithoutPositions:moveTwoSwitches"></a>
-    <strong>KnobWithoutPositions:moveTwoSwitches(switch1, pos1, switch2, pos2, chance)</strong>
-    </dt>
-    <dd>
-    Misc functions ---------------------------------------------------------------------
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">switch1</span>
-
-
-
-        </li>
-        <li><span class="parameter">pos1</span>
-
-
-
-        </li>
-        <li><span class="parameter">switch2</span>
-
-
-
-        </li>
-        <li><span class="parameter">pos2</span>
-
-
-
-        </li>
-        <li><span class="parameter">chance</span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "KnobWithoutPositions.Bind"></a>
-    <strong>KnobWithoutPositions.Bind</strong>
-    </dt>
-    <dd>
-    Main Bind function -----------------------------------------------------------------
-
-
-    <h3>Fields:</h3>
-    <ul>
-        <li><span class="parameter">binds</span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
 </dl>
-    <h2 class="section-header "><a name="FSL"></a>FSL</h2>
+    <h2 class="section-header "><a name="Class_MCDU"></a>Class MCDU </h2>
 
     <dl class="function">
     <dt>
-    <a name = "FSL:setPilot"></a>
-    <strong>FSL:setPilot(pilot)</strong>
+    <a name = "MCDU:getArray"></a>
+    <strong>MCDU:getArray()</strong>
     </dt>
     <dd>
-    This makes references in the root FSL table to all fields in either FSL.CPT or FSL.FO, if the 'pilot' parameter is 1 or 2, respectively.  For the other side's controls, it makes
-references in the FSL.PF table.</p>
+    Returns the MCDU display as an array of display cells.
 
-<p>Copilot will set it depending on the 'PM_seat' option.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+
+<p> Array of tables representing display cells.</p>
+
+<p> Each cell table has three fields:</p>
+
+<ul>
+    <li>char: the character (nil if the cell is blank)</li>
+    <li>color: string :
+    <ul>
+        <li>'cyan' </li>
+        <li>'grey' </li>
+        <li>'green' </li>
+        <li>'magenta' </li>
+        <li>'amber' </li>
+        <li>'white' </li>
+    </ul></li>
+    <li>isBold: bool</li>
+</ul>
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:getString"></a>
+    <strong>MCDU:getString([startpos[, endpos]])</strong>
+    </dt>
+    <dd>
+    Returns the MCDU display as a string.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">pilot</span>
+        <li><span class="parameter">startpos</span>
+            <span class="types"><span class="type">number</span></span>
 
 
 
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">endpos</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+         (<em>optional</em>)
         </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
 
 
 
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> FSL = <span class="global">require</span> <span class="string">"FSL2Lua"</span>
+    </ol>
 
-<span class="global">print</span>(FSL.MCDU) <span class="comment">-- nil
-</span><span class="global">print</span>(FSL.GSLD_Chrono_Button) <span class="comment">-- nil
-</span>
-FSL:setPilot(<span class="number">1</span>)
 
-<span class="global">print</span>(FSL.MCDU:getString() == FSL.CPT.MCDU:getString()) <span class="comment">-- true
-</span><span class="global">print</span>(FSL.GSLD_Chrono_Button == FSL.CPT.GSLD_Chrono_Button) <span class="comment">-- true
-</span><span class="global">print</span>(FSL.PF.MCDU:getString() == FSL.FO.MCDU:getString()) <span class="comment">-- true
-</span><span class="global">print</span>(FSL.PF.GSLD_Chrono_Button == FSL.FO.GSLD_Chrono_Button) <span class="comment">-- true</span></pre>
-    </ul>
+
 
 </dd>
-</dl>
-    <h2 class="section-header "><a name=""></a> </h2>
-
-    <dl class="function">
     <dt>
-    <a name = "Bind"></a>
-    <strong>Bind(data)</strong>
+    <a name = "MCDU:getScratchpad"></a>
+    <strong>MCDU:getScratchpad()</strong>
     </dt>
     <dd>
-    This function is a wrapper around event.key and event.button from the FSUIPC Lua library.
+    Returns the scratchpad - the last line on the display
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:type"></a>
+    <strong>MCDU:type(str)</strong>
+    </dt>
+    <dd>
+    Types str on the keyboard.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">data</span> A table containing the following fields:
-        <ul>
-        <li><span class="parameter">onPress</span>
-            <span class="types"><span class="type">function</span></span>
-         (see usage below)
-        </li>
-        <li><span class="parameter">onPressRepeat</span>
-            <span class="types"><span class="type">function</span></span>
-         (see usage below)</p>
-
-<p> <strong>Warning</strong>: for buttons, onPressRepeat uses event.timer. There is only one timer available in a lua script so don't use onPressRepeat with buttons if you need a timer for something else.<br><br>
-        </li>
-        <li><span class="parameter">onRelease</span>
-            <span class="types"><span class="type">function</span></span>
-         (see usage below)
-        </li>
-        <li><span class="parameter">btn</span>
+        <li><span class="parameter">str</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
-        </li>
-        <li><span class="parameter">key</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-<p> Define this field for a key bind. The following values for are accepted:<br><br></p>
-
-<ul>
-    <li>Alphanumeric character keys</li>
-    <li>Escaped keycode for weird characters like 'ö' (key = '\222').
-    The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging facility.</li>
-    <li>Enter</li>
-    <li>Pause</li>
-    <li>CapsLock</li>
-    <li>Esc</li>
-    <li>Escape</li>
-    <li>Space</li>
-    <li>PageUp</li>
-    <li>PageDown</li>
-    <li>End</li>
-    <li>Home </li>
-    <li>LeftArrow</li>
-    <li>UpArrow</li>
-    <li>RightArrow </li>
-    <li>DownArrow</li>
-    <li>PrintScreen</li>
-    <li>Ins</li>
-    <li>Insert</li>
-    <li>Del</li>
-    <li>Delete</li>
-    <li>NumpadEnter</li>
-    <li>NumpadPlus</li>
-    <li>NumpadMinus</li>
-    <li>NumpadDot </li>
-    <li>NumpadDel</li>
-    <li>NumpadDiv</li>
-    <li>NumpadMult</li>
-</ul>
-
-<p> You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br></p>
-
-<ul>
-    <li>Tab</li>
-    <li>Shift</li>
-    <li>Ctrl</li>
-    <li>LeftAlt</li>
-    <li>RightAlt</li>
-    <li>Windows</li>
-    <li>Apps</li>
-</ul>
-
-
-        </li>
-        </li></ul>
-    </ul>
-
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">Bind {key = <span class="string">"SHIFT+A"</span>, onPress = FSL.MIP_ISIS_BARO_Button}
-Bind {
-  key = <span class="string">"NumpadEnter"</span>,
-  onPressRepeat = {FSL.OVHD_INTLT_Integ_Lt_Knob, <span class="string">"rotateLeft"</span>}
-}
-Bind {
-  btn = <span class="string">"C5"</span>,
-  onPress = {FSL.PED_COMM_INT_RAD_Switch, <span class="string">"RAD"</span>},
-  onRelease = {FSL.PED_COMM_INT_RAD_Switch, <span class="string">"OFF"</span>}
-}
-Bind {key = <span class="string">"NumpadMinus"</span>, onPress = {FSL.GSLD_EFIS_Baro_Switch, <span class="string">"push"</span>}}
-Bind {key = <span class="string">"NumpadPlus"</span>, onPress = {FSL.GSLD_EFIS_Baro_Switch, <span class="string">"pull"</span>}}
-Bind {key = <span class="string">"Backspace"</span>, onPress = <span class="keyword">function</span> () ipc.control(<span class="number">66807</span>) <span class="keyword">end</span>}</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "Encoder"></a>
-    <strong>Encoder</strong>
-    </dt>
-    <dd>
-    Encoder class ----------------------------------------------------------------------
-
-
-    <h3>Fields:</h3>
-    <ul>
-        <li><span class="parameter">_onCW</span>
-
-
-
-        </li>
-        <li><span class="parameter">_onCCW</span>
-
-
-
-        </li>
-        <li><span class="parameter">DIR_CW</span>
-
-
-
-        </li>
-        <li><span class="parameter">DIR_CCW</span>
 
 
 
@@ -1221,11 +900,35 @@ Bind {key = <span class="string">"Backspace"</span>, onPress = <span class="keyw
 
 </dd>
     <dt>
-    <a name = "FSL.CheckMacros"></a>
-    <strong>FSL.CheckMacros()</strong>
+    <a name = "MCDU:isOn"></a>
+    <strong>MCDU:isOn()</strong>
     </dt>
     <dd>
-    Macro checking ---------------------------------------------------------------------
+    Returns false if the display is blank.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:printCells"></a>
+    <strong>MCDU:printCells()</strong>
+    </dt>
+    <dd>
+    Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold. </p>
+
+<p> The output will be in the console and the FSUIPC log file.
 
 
 
@@ -1241,7 +944,7 @@ Bind {key = <span class="string">"Backspace"</span>, onPress = <span class="keyw
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-10 04:20:27 </i>
+<i style="float:right;">Last updated 2021-02-12 01:27:47 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

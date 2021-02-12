@@ -1,4 +1,4 @@
---- @submodule copilot
+if false then module("copilot") end
 
 local ipc = ipc
 local coroutine = coroutine

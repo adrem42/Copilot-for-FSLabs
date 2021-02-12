@@ -71,6 +71,9 @@ function calculateKnobTicks(diff)
   return 1
 end
 
+-- The encoder output needs to be debounced in
+-- the firmware or hardware for the function
+-- to work properly
 myJoy:makeEncoder { 8, 9, detentsPerCycle = 4 }
   :setTickCalculator(calculateKnobTicks)
   :onCW(FSL.GSLD_FCU_HDG_Knob, "rotateRight")

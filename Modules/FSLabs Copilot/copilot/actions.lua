@@ -377,7 +377,7 @@ function copilot.sequences:afterStart()
   FSL.PED_SPD_BRK_LEVER("ARM")
   FSL:setTakeoffFlaps(copilot.mcduWatcher:getVar("takeoffFlaps"))
   repeat copilot.suspend() until not copilot.GSX_pushback()
-  FSL.trimwheel:set()
+  FSL.trimwheel:_set()
 end
 
 function copilot.sequences:taxiSequence()

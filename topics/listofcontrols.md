@@ -235,6 +235,9 @@ FSL.OVHD\_AI\_Eng\_2\_Anti\_Ice\_Button
 FSL.OVHD\_AI\_Wing\_Anti\_Ice\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
+FSL.OVHD\_APU\_EXT\_RST\_Button
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+
 FSL.OVHD\_APU\_EXT\_TST\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -574,21 +577,11 @@ FSL.OVHD\_FAC\_2\_Button
 FSL.OVHD\_FDC\_1\_GND\_PWR\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
-
->A319: unavailable
-
->A320: unavailable
-
 FSL.OVHD\_FDC\_1\_GND\_PWR\_Guard
 > Class: <a href='../libraries/FSL2Lua.html#Class_Guard'>Guard</a>
 
 FSL.OVHD\_FDC\_2\_GND\_PWR\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
-
-
->A319: unavailable
-
->A320: unavailable
 
 FSL.OVHD\_FDC\_2\_GND\_PWR\_Guard
 > Class: <a href='../libraries/FSL2Lua.html#Class_Guard'>Guard</a>
@@ -634,6 +627,14 @@ FSL.OVHD\_FIRE\_ENG2\_PUSH\_Guard
 
 FSL.OVHD\_FIRE\_ENG2\_TEST\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+
+FSL.OVHD\_FUEL\_ACT\_Button
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+
+
+>A319: unavailable
+
+>A320: unavailable
 
 FSL.OVHD\_FUEL\_CTR\_TK\_1\_PUMP\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -819,6 +820,16 @@ FSL.OVHD\_RADIO\_3\_HF1\_Button
 FSL.OVHD\_RADIO\_3\_HF2\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
+FSL.OVHD\_RADIO\_3\_Inner\_Knob
+> Class: <a href='../libraries/FSL2Lua.html#Class_KnobWithoutPositions'>KnobWithoutPositions</a>
+
+
+>A319: no Lvar
+
+>A320: no Lvar
+
+>A321: no Lvar
+
 FSL.OVHD\_RADIO\_3\_LS\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -832,6 +843,16 @@ FSL.OVHD\_RADIO\_3\_ON\_OFF\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
 > Positions: "OFF", "ON"
+
+FSL.OVHD\_RADIO\_3\_Outer\_Knob
+> Class: <a href='../libraries/FSL2Lua.html#Class_KnobWithoutPositions'>KnobWithoutPositions</a>
+
+
+>A319: no Lvar
+
+>A320: no Lvar
+
+>A321: no Lvar
 
 FSL.OVHD\_RADIO\_3\_VHF1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -976,7 +997,9 @@ FSL.PED\_COCKPIT\_DOOR\_VIDEO\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.PED\_COCKPIT\_DOOR\_VIDEO\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
+
+> Positions: "CKPT\_ENTRY", "OFF"
 
 FSL.PED\_ECP\_ALL\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1547,6 +1570,9 @@ FSL.FO.PED\_MCDU\_KEY\_Y
 FSL.FO.PED\_MCDU\_KEY\_Z
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
+FSL.FO.PED\_MCDU\_Kbd\_Toggle\_Vis
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+
 FSL.FO.PED\_MCDU\_LSK\_L1
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -1735,9 +1761,6 @@ FSL.CPT.MIP\_DU\_PNL\_WX\_BRT\_Knob
 
 FSL.CPT.MIP\_GPWS\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
-
-
->A321: unavailable
 
 FSL.CPT.MIP\_PFDND\_XFR\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -2048,6 +2071,9 @@ FSL.CPT.PED\_MCDU\_KEY\_Y
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.CPT.PED\_MCDU\_KEY\_Z
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+
+FSL.CPT.PED\_MCDU\_Kbd\_Toggle\_Vis
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.CPT.PED\_MCDU\_LSK\_L1
