@@ -4,9 +4,9 @@
 
 ## Installing only FSL2Lua
 
-You can use FSL2Lua standalone (without Copilot) to bind FSLabs cockpit controls to your keyboard, joystick buttons and axes.
+You can install FSL2Lua standalone (without Copilot) to bind your keyboard keys, joystick buttons and axes to FSLabs cockpit controls.
 
-To install only FSL2Lua, unzip Modules\FSL2Lua into your FSUIPC folder (the one with the FSUIPC dll).
+To do that, unzip Modules\FSL2Lua into your FSUIPC folder (the one with the FSUIPC dll).
 
 @{standalonescripts.md | Click here} to read on how to create a script and tell FSUIPC to run it.
 

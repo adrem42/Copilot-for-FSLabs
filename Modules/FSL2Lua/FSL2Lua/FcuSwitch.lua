@@ -5,8 +5,8 @@ local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
 --- Switches that can be pushed and pulled
 --- @type FcuSwitch
-
 local FcuSwitch = setmetatable({}, Control)
+
 FcuSwitch.__index = FcuSwitch
 FcuSwitch.__class = "FcuSwitch"
 
@@ -15,11 +15,11 @@ function FcuSwitch:push()
   if FSL.areSequencesEnabled then
     self:_moveHandHere()
   end
-  ipc.mousemacro(self.rectangle, 3)
+  self:macro "leftPress"
   ipc.sleep(100)
-  ipc.mousemacro(self.rectangle, 13)
+  self:macro "leftRelease"
   if FSL.areSequencesEnabled then
-    self:interact(plusminus(200))
+    self:_interact(plusminus(200))
   end
 end
 
@@ -28,11 +28,11 @@ function FcuSwitch:pull()
   if FSL.areSequencesEnabled then
     self:_moveHandHere()
   end
-  ipc.mousemacro(self.rectangle, 1)
+  self:macro "rightPress"
   ipc.sleep(100)
-  ipc.mousemacro(self.rectangle, 11)
+  self:macro "rightRelease"
   if FSL.areSequencesEnabled then
-    self:interact(plusminus(200))
+    self:_interact(plusminus(200))
   end
 end
 

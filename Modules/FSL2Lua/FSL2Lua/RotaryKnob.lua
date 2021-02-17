@@ -5,47 +5,47 @@ local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
 
 ---Knobs with no fixed positions
---@type KnobWithoutPositions
+--@type RotaryKnob
+local RotaryKnob = setmetatable({}, Switch)
 
-local KnobWithoutPositions = setmetatable({}, Switch)
-KnobWithoutPositions.__index = KnobWithoutPositions
-KnobWithoutPositions.__class = "KnobWithoutPositions"
+RotaryKnob.__index = RotaryKnob
+RotaryKnob.__class = "RotaryKnob"
+
+function RotaryKnob:new(control)
+  if not control.range then error("wtf " .. control.LVar) end
+  return setmetatable(Switch:new(control), self)
+end
 
 --- @function __call
 --- @number targetPos Relative position from 0-100.
 --- @usage FSL.OVHD_INTLT_Integ_Lt_Knob(42)
-KnobWithoutPositions.__call = getmetatable(KnobWithoutPositions).__call
+RotaryKnob.__call = getmetatable(RotaryKnob).__call
 
-function KnobWithoutPositions:_rotateLeftInternal()
-  ipc.mousemacro(self.rectangle, 15)
-end
-
-function KnobWithoutPositions:_rotateRightInternal()
-  ipc.mousemacro(self.rectangle, 14)
-end
+function RotaryKnob:_rotateLeft()   self:macro "wheelDown" end
+function RotaryKnob:_rotateRight()  self:macro "wheelUp" end
 
 --- Rotates the knob left by 1 tick.
-function KnobWithoutPositions:rotateLeft()
-  self:_rotateLeftInternal()
+function RotaryKnob:rotateLeft()
+  self:_rotateLeft()
   hideCursor() 
 end
 
 --- Rotates the knob right by 1 tick.
-function KnobWithoutPositions:rotateRight()
-  self:_rotateRightInternal()
+function RotaryKnob:rotateRight()
+  self:_rotateRight()
   hideCursor()
 end
 
-function KnobWithoutPositions:_getTargetLvarVal(targetPos)
+function RotaryKnob:_getTargetLvarVal(targetPos)
   if type(targetPos) ~= "number" then 
-    return nil, "targetPos must be a number"
+    return nil, ("The position for control '%s' must be a number"):format(self.name)
   end
   if targetPos > 100 then targetPos = 100
   elseif targetPos < 0 then targetPos = 0 end
   return self.range / 100 * targetPos
 end
 
-function KnobWithoutPositions:_set(targetPos)
+function RotaryKnob:_set(targetPos)
   local timeStarted = ipc.elapsedtime()
   --local tolerance = (targetPos == 0 or targetPos == self.range) and 0 or 5
   local tolerance = 0
@@ -63,11 +63,11 @@ function KnobWithoutPositions:_set(targetPos)
     if math.abs(currPos - targetPos) > tolerance then
       if currPos < targetPos then
         if wasGreater then break end
-        self:_rotateRightInternal()
+        self:_rotateRight()
         wasLower = true
       elseif currPos > targetPos then
         if wasLower then break end
-        self:_rotateLeftInternal()
+        self:_rotateLeft()
         wasGreater = true
       end
       if not self:_waitForLvarChange(1000, currPos, 3) then
@@ -94,7 +94,12 @@ function KnobWithoutPositions:_set(targetPos)
   return currPos / self.range * 100
 end
 
-function KnobWithoutPositions:cycle(steps)
+--- This function is made for keyboard and joystick bindings.
+--- It divides the knob in n steps and cycles back and forth between them.
+--- @usage
+--- Bind {key = "A", onPress = {FSL.OVHD_INTLT_Integ_Lt_Knob, "cycle", 5}}
+--- @int steps In how many steps to divide the knob.
+function RotaryKnob:cycle(steps)
   steps = math.floor(steps)
   local step = 100 / steps
   local cycleVal = self.cycleVal or 0
@@ -118,8 +123,7 @@ function KnobWithoutPositions:cycle(steps)
 end
 
 --- @treturn number Relative position from 0-100.
-
-function KnobWithoutPositions:getPosn()
+function RotaryKnob:getPosn()
   local val = self:getLvarValue()
   return (val / self.range) * 100
 end
@@ -127,24 +131,23 @@ end
 --- Rotates the knob by amount of ticks.
 --- @number ticks positive to rotate right, negative to rotate left
 --- @number[opt=70] pause milliseconds to sleep between each tick
-
-function KnobWithoutPositions:rotateBy(ticks, pause)
+function RotaryKnob:rotateBy(ticks, pause)
   pause = pause or 70
   if FSL.areSequencesEnabled then
     self:_moveHandHere()
-    self:interact(300)
+    self:_interact(300)
   end
   local startTime = ipc.elapsedtime()
   if ticks > 0 then
     for _ = 1, ticks do
-      self:_rotateRightInternal()
+      self:_rotateRight()
       if pause > 0 then
         util.sleep(plusminus(pause))
       end
     end
   elseif ticks < 0 then
     for _ = 1, -ticks do
-      self:_rotateLeftInternal()
+      self:_rotateLeft()
       if pause > 0 then
         util.sleep(plusminus(pause))
       end
@@ -159,9 +162,8 @@ end
 --- Sets the knob to random position between lower and upper.
 --- @number[opt=0] lower
 --- @number[opt=100] upper
-
-function KnobWithoutPositions:random(lower, upper)
+function RotaryKnob:random(lower, upper)
   self(math.random(lower or 0, upper or 100))
 end
 
-return KnobWithoutPositions
+return RotaryKnob

@@ -47,27 +47,29 @@ function Switch:_moveInternal(targetPos, twoSwitches)
   local currPos = self:getLvarValue()
   if currPos ~= _targetPos then
     if FSL.areSequencesEnabled and not twoSwitches then
-      self:interact(plusminus(100))
+      self:_interact(plusminus(100))
     end
     return self:_set(_targetPos, twoSwitches)
   end
 end
 
---- @function __call
---- @usage FSL.GSLD_EFIS_VORADF_1_Switch("VOR")
---- @string targetPos
-
-function Switch:__call(targetPos)
-  return self:_moveInternal(targetPos)
-end
+--- Moves the switch to the given position.
+--- @function __call 
+--- @usage FSL.GSLD_EFIS_VORADF_1_Switch "VOR"
+--- @string targetPos A valid position for this switch. 
+--- You can find the list of positions for a given switch in @{listofcontrols.md|the list of controls}.
+function Switch:__call(targetPos) return self:_moveInternal(targetPos) end
 
 function Switch:_getTargetLvarVal(targetPos)
+  if targetPos == nil then
+    return nil, ("A position must be specified for control '%s'"):format(self.name)
+  end
   if type(targetPos) ~= "string" then
-    return nil, "targetPos must be a string"
+    return nil, ("The position for control '%s' must be a string"):format(self.name)
   end
   local _targetPos = self.posn[tostring(targetPos):upper()]
   if not _targetPos then
-    return nil, "Invalid targetPos: '" .. targetPos .. "'."
+    return nil, ("Invalid position for control '%s': '%s'"):format(self.name, targetPos)
   end
   return _targetPos
 end
@@ -90,7 +92,7 @@ function Switch:_set(targetPos, twoSwitches)
         repeatWithTimeout(interactionLength, coroutine.yield)
         util.log("Interaction with the control took " .. interactionLength .. " ms")
       else
-        self:interact(interactionLength)
+        self:_interact(interactionLength)
       end
     end
     if not self:_waitForLvarChange(1000, currPos) then
@@ -98,25 +100,22 @@ function Switch:_set(targetPos, twoSwitches)
     end
   end
   if FSL.areSequencesEnabled and not twoSwitches then
-    self:interact(plusminus(100))
+    self:_interact(plusminus(100))
   end
 end
 
 --- @treturn string Current position of the switch in uppercase.
-
-function Switch:getPosn()
-  return self.LVarToPosn[self:getLvarValue()]
-end
+function Switch:getPosn() return self.LVarToPosn[self:getLvarValue()] end
 
 function Switch:decrease()
   if self.FSControl then
     ipc.control(self.FSControl.dec)
   elseif self.letGo then
-    ipc.mousemacro(self.rectangle, 13)
-    ipc.mousemacro(self.rectangle, 11)
+    self:macro "leftRelease"
+    self:macro "rightRelease"
     self.letGo = false
   else
-    ipc.mousemacro(self.rectangle, self.decClickType)
+    self:_macro(self.decClickType)
   end
 end
 
@@ -124,18 +123,17 @@ function Switch:increase()
   if self.FSControl then
     ipc.control(self.FSControl.inc)
   elseif self.letGo then
-    ipc.mousemacro(self.rectangle, 13)
-    ipc.mousemacro(self.rectangle, 11)
+    self:macro "leftRelease"
+    self:macro "rightRelease"
     self.letGo = false
   else
-    ipc.mousemacro(self.rectangle, self.incClickType)
+    self:_macro(self.incClickType)
   end
 end
 
 --- Cycles the switch back and forth.
---- @usage FSL.OVHD_EXTLT_Land_L_Switch:toggle()
-
-function Switch:toggle()
+--- @usage FSL.OVHD_EXTLT_Land_L_Switch:cycle()
+function Switch:cycle()
   if self.maxLVarVal then
     local pos = self:getLvarValue()
     if pos == self.maxLVarVal then self.toggleDir = -1
@@ -146,6 +144,8 @@ function Switch:toggle()
   hideCursor()
 end
 
-Switch.cycle = Switch.toggle
+--- Alias for `cycle`.
+--- @function toggle
+Switch.toggle = Switch.cycle
 
 return Switch

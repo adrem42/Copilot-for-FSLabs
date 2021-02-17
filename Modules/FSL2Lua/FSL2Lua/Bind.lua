@@ -3,6 +3,9 @@ if false then module "FSL2Lua" end
 local util = require "FSL2Lua.FSL2Lua.util"
 local KeyBind = require "FSL2Lua.FSL2Lua.KeyBind"
 local JoyBind = require "FSL2Lua.FSL2Lua.JoyBind"
+local Switch = require "FSL2Lua.FSL2Lua.Switch"
+local Button = require "FSL2Lua.FSL2Lua.Button"
+local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 
 local Bind = {
   binds = {},
@@ -13,22 +16,24 @@ setmetatable(Bind, Bind)
 
 --- @section Bind
 
---- This function is a wrapper around event.key and event.button from the FSUIPC Lua library.
+--- This function is a convenience wrapper around event.key and event.button from the FSUIPC Lua library.
+--
+--- @{cockpit_control_binds.lua|Click here for usage examples}
 --
 --- @function Bind
---- @tparam table data A table containing the following fields: 
---- @tparam function data.onPress (see usage below)
---
---- @tparam function data.onPressRepeat (see usage below)
---
---- **Warning**: for buttons, onPressRepeat uses event.timer. There is only one timer available in a lua script so don't use onPressRepeat with buttons if you need a timer for something else.<br><br>
---- @tparam function data.onRelease (see usage below)
+--- @tparam table data A table that may contain the following fields: 
+--- @param data.onPress @{cockpit_control_binds.lua|see the examples}
+--- @param data.onPressRepeat @{cockpit_control_binds.lua|see the examples}
+--- **Warning**: for buttons, onPressRepeat uses event.timer. There is only one timer available for a given thread so don't use onPressRepeat with buttons if you need a timer for something else.
+--- @param data.onRelease @{cockpit_control_binds.lua|see the examples}
+--- @param data.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
+--- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
 --- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
---- @string data.key Define this field for a key bind. The following values for are accepted:<br><br>
+--- @string data.key Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br>
 --
 -- * Alphanumeric character keys
--- * Escaped keycode for weird characters like 'ö' (key = '\222'). 
--- The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging facility.
+-- * Escaped keycodes: `key = "\222"`. 
+-- The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging option.
 -- * Enter
 -- * Pause
 -- * CapsLock
@@ -65,20 +70,6 @@ setmetatable(Bind, Bind)
 -- * RightAlt
 -- * Windows
 -- * Apps
---
---- @usage Bind {key = "SHIFT+A", onPress = FSL.MIP_ISIS_BARO_Button}
---- Bind {
----   key = "NumpadEnter",
----   onPressRepeat = {FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft"}
---- }
---- Bind {
----   btn = "C5",
----   onPress = {FSL.PED_COMM_INT_RAD_Switch, "RAD"}, 
----   onRelease = {FSL.PED_COMM_INT_RAD_Switch, "OFF"}
---- }
---- Bind {key = "NumpadMinus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "push"}}
---- Bind {key = "NumpadPlus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "pull"}}
---- Bind {key = "Backspace", onPress = function () ipc.control(66807) end}
 function Bind:__call(data)
   util.assert(data.key or data.btn, "You need to specify a key and/or button", 2)
   data = self:prepareData(data)
@@ -92,7 +83,31 @@ function Bind:__call(data)
   end
 end
 
+local function makeTable(data)
+  return type(data) == "table" and data or {data}
+end
+
 function Bind:prepareData(data)
+
+  if data.onPress and data.onPressRepeat then
+    error("You can't have both onPress and onPressRepeat in the same bind.", 3)
+  end
+
+  if data.bindButton then
+    data.onPress = makeTable(data.onPress)
+    data.onRelease = makeTable(data.onRelease)
+    local onPress, onRelease = Bind._bindButton(data.bindButton)
+    data.onPress[#data.onPress+1] = onPress
+    data.onRelease[#data.onRelease+1] = onRelease
+  end
+
+  if data.bindToggleButton then
+    data.onPress = makeTable(data.onPress)
+    data.onRelease = makeTable(data.onRelease)
+    local onPress, onRelease = Bind._bindToggleButton(data.bindToggleButton)
+    data.onPress[#data.onPress+1] = onPress
+    data.onRelease[#data.onRelease+1] = onRelease
+  end
   
   if data.onPressRepeat then
     data.onPress = data.onPressRepeat
@@ -100,7 +115,9 @@ function Bind:prepareData(data)
   end
   
   if data.onPress then
+    
     data.onPress = self:makeSingleFunc(data.onPress)
+
     if data.cond then
       local onPress = data.onPress
       data.onPress = function()
@@ -116,9 +133,8 @@ end
 
 local bindArg = {}
 
-function Bind.asArg(func)
-  util.assert(type(func) == "function", "The argument must be a function.")
-  return setmetatable({f = func}, bindArg)
+function Bind.asArg(arg)
+  return setmetatable({arg = arg}, bindArg)
 end
 
 local function isCallable(elem, nextElem)
@@ -130,7 +146,7 @@ local function isCallable(elem, nextElem)
     else
       local mt = getmetatable(elem)
       if mt == bindArg then
-        elem = elem.f
+        return nil, elem.arg
       elseif type(mt) == "table" and type(mt.__call) == "function" then
         return "__call"
       end
@@ -138,30 +154,11 @@ local function isCallable(elem, nextElem)
   end
 end
 
-local function checkFSLcontrol(callableType, elem, args, errLevel)
-  if callableType == "__call" and elem.FSL_VC_control then
-    local class = getmetatable(elem)
-    local arg = args[1]
-    if not arg and (class == KnobWithoutPositions or class == Switch) then
-      error("A position must be specified for control " .. elem.name .. ".", errLevel + 1)
-    end
-    if class == KnobWithoutPositions then
-      util.assert(
-        type(arg) == "number",
-        "The position for control " .. elem.name .. " must be a number.", errLevel + 1
-      )
-    end
-    if class == Switch then
-      util.assert(
-        type(arg) == "string",
-        "The position for control " .. elem.name .. " must be a string.", errLevel + 1
-      )
-      util.assert(
-        elem.posn[arg:upper()] ~= nil,
-        arg .. " is not a valid position of control " .. elem.name .. ".",
-        errLevel + 1
-      )
-    end
+local function checkFSLcontrol(elem, callableType, args, errLevel)
+  if callableType == "method" then return end
+  if util.isType(elem, Switch) then
+    local ok, err = elem:_getTargetLvarVal(args[1])
+    if not ok then error(err, errLevel + 1) end
   end
 end
 
@@ -180,7 +177,7 @@ makeFuncFromCallable = function(i, elem, callableType, candidates, funcs, errLev
     end
   end
 
-  checkFSLcontrol(callableType, elem, args, errLevel)
+  checkFSLcontrol(elem, callableType, args, errLevel + 1)
 
   if callableType == "method" then 
     elem = elem[candidates[i+1]]
@@ -206,13 +203,13 @@ parseCallableArgs = function(i, candidates, funcs, prevArgs)
 
   while i <= #candidates do
     elem = candidates[i]
-    callableType = isCallable(elem, candidates[i+1])
+    callableType, arg = isCallable(elem, candidates[i+1])
     if callableType then
       break
     elseif i == 1 then
       error("The first element in the table must be callable", errLevel + 1)
     else 
-      prevArgs[#prevArgs+1] = elem
+      prevArgs[#prevArgs+1] = arg or elem
     end
     i = i + 1
   end
@@ -227,18 +224,90 @@ parseCallableArgs = function(i, candidates, funcs, prevArgs)
   return funcs
 end
 
+function Bind._bindButton(butt)
+  util.assert(util.isType(butt, Button), tostring(butt.name or butt) .. " is not a button.", 4)
+  local onPress, onRelease
+  if not butt.guard then
+    if getmetatable(butt) == ToggleButton then
+      onPress = function() butt() end
+      onRelease = function() end
+    else
+      onPress = function() butt:macro "leftPress" end
+      onRelease = function() butt:macro "leftRelease" end
+    end
+  elseif getmetatable(butt) == ToggleButton then
+    onPress = function() butt.guard:open() butt() end
+    onRelease = function() butt.guard:close() end
+  else
+    onPress = function()
+      butt.guard:open()
+      butt:macro "leftPress"
+    end
+    onRelease = function()
+      butt:macro "leftRelease"
+      butt.guard:close()
+    end
+  end
+  return onPress, onRelease
+end
+
+local function checkIsToggleButton(butt, errLevel)
+  util.assert(
+    getmetatable(butt) == ToggleButton,
+    tostring(butt and butt.name or butt) .. " is not a toggle button.", 
+    errLevel + 1
+  )
+end
+
+function Bind._bindToggleButton(butt)
+  checkIsToggleButton(butt, 4)
+  local onPress, onRelease
+  if not butt.guard then
+    onPress = function() butt:toggleDown() end
+    onRelease = function() butt:toggleUp() end
+  else
+    onPress = function()
+      butt.guard:open()
+      butt:toggleDown()
+      butt.guard:close()
+    end
+    onRelease = function()
+      butt.guard:open()
+      butt:toggleUp()
+      butt.guard:close()
+    end
+  end
+  return onPress, onRelease
+end
+
+function Bind.toggleButtons(...)
+  local butts = {...}
+  for i = 1, #butts do
+    checkIsToggleButton(butts[i], 2)
+  end
+  return function()
+    local toggleState
+    for _, butt in ipairs(butts) do
+      if toggleState == nil then
+        toggleState = not butt:isDown()
+      elseif not butt:isDown() then
+        toggleState = true
+      end
+    end
+    for _, butt in ipairs(butts) do
+      butt:setToggleState(toggleState)
+    end
+  end
+end
+
 function Bind:makeSingleFunc(args)
-
   if type(args) == "function" then return args end
-
   if type(args) ~= "table" then 
     error("Invalid callback arguments", 4) 
   end
-
   if args.__call or (getmetatable(args) and getmetatable(args).__call) then
-    return args
+    args = {args}
   end
-
   local funcs = parseCallableArgs(1, args)
   if #funcs == 1 then return funcs[1] end
   return function()
@@ -263,11 +332,6 @@ function Bind:addGlobalFuncs(...)
   if #funcNames == 1 then
     return funcNames[1]
   else return funcNames end
-end
-
-Bind.shift = {}
-function Bind.shift:__call(data)
-  return setmetatable({data = data}, Bind.shift)
 end
 
 return Bind

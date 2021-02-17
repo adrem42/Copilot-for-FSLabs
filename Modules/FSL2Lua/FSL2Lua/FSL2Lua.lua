@@ -1,12 +1,17 @@
-----------------------------------------
--- Library for interacting with FSLabs cockpit controls based on Lvars and mouse macros.
--- See @{standalonescripts.md|here} on how to use it outside of Copilot.
--- @module FSL2Lua
+if false then module "FSL2Lua" end
+
+if FSL2LUA_MAKE_CONTROL_LIST then
+  FSL2LUA_STANDALONE = true
+end
 
 if not FSL2LUA_STANDALONE 
   and not ipc.readLvar "AIRCRAFT_A319" 
   and not ipc.readLvar "AIRCRAFT_A320"
   and not ipc.readLvar "AIRCRAFT_A321" then ipc.exit() end
+
+if FSL2LUA_STANDALONE then
+  ipc = {readLvar = function() end}
+end
 
 --- @field CPT table containing controls on the left side
 --- @field FO table containing controls on the right side
@@ -40,11 +45,12 @@ local hand = require "FSL2Lua.FSL2Lua.hand"
 
 local Control = require "FSL2Lua.FSL2Lua.Control"
 local Button = require "FSL2Lua.FSL2Lua.Button"
+local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 local Guard = require "FSL2Lua.FSL2Lua.Guard"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
 local FcuSwitch = require "FSL2Lua.FSL2Lua.FcuSwitch"
 local EngineMasterSwitch = require "FSL2Lua.FSL2Lua.EngineMasterSwitch"
-local KnobWithoutPositions = require "FSL2Lua.FSL2Lua.KnobWithoutPositions"
+local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
 
 local trimwheel = require "FSL2Lua.FSL2Lua.trimwheel"
 
@@ -64,6 +70,21 @@ FSL.atsuLog = atsuLog
 FSL.trimwheel = trimwheel
 
 FSL.CheckMacros = require "FSL2Lua.FSL2Lua.CheckMacros"
+
+function FSL._uncheckedControls()
+  local t = {}
+  local count = 0
+  local function visit(_t)
+    for _, v in pairs(_t) do
+      if util.isType(v, Control) and not t[v.name] and not v._checkMacro then
+        t[v.name] =v
+        count = count + 1
+      end
+    end
+  end
+  visit(FSL) visit(FSL.CPT) visit(FSL.FO)
+  return t, count
+end
 
 ---This function makes references in the root FSL table to all fields in either FSL.CPT or FSL.FO, if the 'pilot' parameter is 1 or 2, respectively. For the other side's controls, it makes
 ---references in the FSL.PF table.
@@ -123,6 +144,9 @@ function FSL:disableLogging()
 end
 
 function FSL:enableSequences()
+  if not self:getPilot() then
+    error("Call setPilot first", 2)
+  end
   self.areSequencesEnabled = true
 end
 
@@ -189,6 +213,48 @@ function FSL:getTakeoffFlapsFromMcdu(side)
   end)
 end
 
+function moveTwoSwitches(switch1, pos1, switch2, pos2, chance)
+  if prob(chance or 1) then
+    hand:moveTo((switch1.pos + switch2.pos) / 2)
+    util.sleep(plusminus(100))
+    local co1 = coroutine.create(function() 
+      switch1:_moveInternal(pos1, true) 
+    end)
+    local co2 = coroutine.create(function() 
+      switch2:_moveInternal(pos2, true) 
+    end)
+    repeat
+      local done1 = not coroutine.resume(co1)
+      util.sleep(1)
+      local done2 = not coroutine.resume(co2)
+    until done1 and done2
+  else
+    switch1(pos1)
+    switch2(pos2)
+  end
+end
+
+function pressTwoButtons(butt1, butt2, chance)
+  if prob(chance or 1) then
+    hand:moveTo((butt1.pos + butt1.pos) / 2)
+    util.sleep(plusminus(200,0.1))
+    local co1 = coroutine.create(function() 
+      butt1:_pressAndRelease(true) 
+    end)
+    local co2 = coroutine.create(function() 
+      butt2:_pressAndRelease(true) 
+    end)
+    repeat
+      local done1 = not coroutine.resume(co1)
+      util.sleep(1)
+      local done2 = not coroutine.resume(co2)
+    until done1 and done2
+  else
+    butt1()
+    butt2()
+  end
+end
+
 if getmetatable(Joystick) then
 
   getmetatable(Joystick).printDeviceInfo = function()
@@ -212,9 +278,11 @@ end
 
 local rawControls = require "FSL2Lua.FSL2Lua.FSL"
 
-local function initControlPositions(varname,control)
+local function initControlPosition(control, varname)
+  if not control.pos then return end
   local pos = control.pos
   local mirror = {
+    DCDU_R = "DCDU_L",
     MCDU_R = "MCDU_L",
     COMM_2 = "COMM_1",
     RADIO_2 = "RADIO_1"
@@ -240,13 +308,93 @@ local function initControlPositions(varname,control)
       pos = pos:rotate(r) + refpos[1]
     end
   end
-  return pos
+  control.pos = pos
 end
 
-local function initControl(control, varname)
+local function mapGuardsToButtons(guards, buttons)
+  for _, button in ipairs(buttons) do
+    local buttonLvar = button.LVar:lower()
+    for i, guard in ipairs(guards) do
+      local guardLvar = guard.LVar:lower()
+      if button.guardLvar == guard.LVar or guardLvar:find(buttonLvar:gsub("(.+)_.+", "%1")) then
+        button.guardLvar = nil
+        button.guard = table.remove(guards, i)
+        break
+      end
+    end
+  end
+end
 
-  control.pos = initControlPositions(varname,control)
+local replace = {
+  CPT = {
+    WIPER_KNOB_LEFT = {"WIPER_KNOB", keep = true},
+    WIPER_RPLNT_LEFT = {"WIPER_RPLNT", keep = true},
+    DCDU_L = {"DCDU"},
+    MCDU_L = {"MCDU"},
+    COMM_1 = {"COMM"},
+    RADIO_1 = {"RADIO"},
+    _CP = {""}
+  },
+  FO = {
+    WIPER_KNOB_RIGHT = {"WIPER_KNOB", keep = true},
+    WIPER_RPLNT_RIGHT = {"WIPER_RPLNT", keep = true},
+    DCDU_R = {"DCDU"},
+    MCDU_R = {"MCDU"},
+    COMM_2 = {"COMM"},
+    RADIO_2 = {"RADIO"},
+    _FO = {""}
+  }
+}
 
+local function findControlSide(control, varname, side)
+  for pattern, _replace in pairs(replace[side]) do
+    if varname:find(pattern) then
+      if pattern == "_CP" and varname:find("_CPT") then 
+        pattern = "_CPT"
+      end
+      local controlName = varname:gsub(pattern, _replace[1])
+      FSL[side][controlName] = control
+      control.name = "FSL." .. side .. "." .. controlName
+      control.side = side
+      if _replace.keep then
+        FSL[varname] = control
+      end
+      return true
+    end
+  end
+  return false
+end
+
+local function assignClassToControl(control, buttons, guards)
+  local Lvar = (control.LVar or ""):lower()
+  local _type = (control.type or ""):lower()
+  if _type == "unknown" then
+    control = Control:new(control)
+  elseif _type == "enginemasterswitch" then
+    control = EngineMasterSwitch:new(control)
+  elseif _type == "fcuswitch" then
+    control = FcuSwitch:new(control)
+  elseif Lvar:find("knob") and not control.posn then
+    control = RotaryKnob:new(control)
+  elseif control.posn then
+    control = Switch:new(control)
+  elseif Lvar:find("guard") then
+    control = Guard:new(control)
+    guards[#guards+1] = control
+  elseif Lvar:find("button") or Lvar:find("switch") or Lvar:find("mcdu") or Lvar:find("key") or Lvar:find("dcdu") then
+    if control.toggle == true then
+      control = ToggleButton:new(control)
+    else
+      control = Button:new(control)
+    end
+    buttons[#buttons+1] = control
+  else
+    control = Control:new(control)
+  end
+  return util.isType(control, Control) and control or nil
+end
+
+local function initControlPositions(control)
   if control.posn then
     local temp = control.posn
     control.posn = {}
@@ -261,98 +409,83 @@ local function initControl(control, varname)
     end
     control.maxLVarVal = maxLVarVal
   end
-
-  do
-    local name = control.LVar:lower()
-    local _type = control.type:lower()
-    if _type == "unknown" then
-      control = Control:new(control)
-    elseif _type == "enginemasterswitch" then
-      control = EngineMasterSwitch:new(control)
-    elseif _type == "fcuswitch" then
-      control = FcuSwitch:new(control)
-    elseif name:find("knob") and not control.posn then
-      control = KnobWithoutPositions:new(control)
-    elseif control.posn then
-      control = Switch:new(control)
-    elseif name:find("guard") then
-      control = Guard:new(control)
-    elseif name:find("button") or name:find("switch") or name:find("mcdu") or name:find("key") then
-      control = Button:new(control)
-    else
-      control = Control:new(control)
-    end
-    if not control._checkMacro and not FSL2LUA_IGNORE_UNCHECKED then
-      control = nil
-    end
-  end
-
-  if control then
-    
-    local replace = {
-      CPT = {
-        MCDU_L = "MCDU",
-        COMM_1 = "COMM",
-        RADIO_1 = "RADIO",
-        _CP = ""
-      },
-      FO = {
-        MCDU_R = "MCDU",
-        COMM_2 = "COMM",
-        RADIO_2 = "RADIO",
-        _FO = ""
-      }
-    }
-    
-    for pattern, _replace in pairs(replace.CPT) do
-      if varname:find(pattern) then
-        if pattern == "_CP" and varname:find("_CPT") then pattern = "_CPT" end
-        controlName = varname:gsub(pattern, _replace)
-        FSL.CPT[controlName] = control
-        control.name = "FSL.CPT." .. controlName
-        control.side = "CPT"
-      end
-    end
-
-    for pattern, _replace in pairs(replace.FO) do
-      if varname:find(pattern) then
-        controlName = varname:gsub(pattern, _replace)
-        FSL.FO[controlName] = control
-        control.name = "FSL.FO." .. controlName
-        control.side = "FO"
-      end
-    end
-
-    if not control.side then
-      FSL[varname] = control
-      control.name = "FSL." .. varname
-    end
-
-  end
 end
 
+local function initControl(control, varname, guards, buttons)
+
+  local id = control.name or control.LVar
+  local function epicFail() error("Failed to create control: " .. id, 2) end
+
+  initControlPosition(control, varname)
+  initControlPositions(control)
+
+  control = assignClassToControl(control, buttons, guards)
+  if not control then epicFail() end
+  if not control._checkMacro and not FSL2LUA_IGNORE_UNCHECKED then
+    if control.name then epicFail() end
+    setmetatable(control, nil)
+    return nil
+  end
+
+  local name = control.name
+  if not findControlSide(control, varname, "CPT") and not findControlSide(control, varname, "FO") then
+    FSL[varname] = control
+    control.name = "FSL." .. varname
+  end
+  if name and control.name ~= name then
+    epicFail()
+  end
+
+  return control
+end
+
+local tableOfControls = {}
+
 local function initControls()
+
+  local guards, buttons = {}, {}
+
   for varname, control in pairs(rawControls) do
-    local acType = FSL:getAcType()
-    if acType == "A319" and config.A319_IS_A320 then
-      acType = "A320"
+
+    if config.A319_IS_A320 then
+      control.A319 = control.A320
     end
-    if acType then
-      control.rectangle = control[acType].rectangle
+
+    for _, _type in ipairs(FSL.AC_TYPES) do
+      control[_type] = control[_type] or {}
+    end
+
+    if FSL:getAcType() then
+      control.rectangle = control[FSL:getAcType()].rectangle
       if control.rectangle or control.FSControl then
-        initControl(control, varname)
-        control.manual = control[acType].manual
+        initControl(control, varname, guards, buttons)
+        control.manual = control[FSL:getAcType()].manual
       end
-    elseif MAKE_CONTROL_LIST then
-      initControl(control, varname)
+    elseif FSL2LUA_MAKE_CONTROL_LIST and FSL._checkControl(control) then
+      tableOfControls[#tableOfControls+1] = initControl(control, varname, guards, buttons)
     end
   end
+
+  mapGuardsToButtons(guards, buttons)
+
+  if FSL._pilot then FSL:setPilot(FSL._pilot) end
+
 end
 
 initControls()
 
+FSL._init = initControls
+
+function FSL.ignoreFaultyLvars()
+  for _, v in pairs(rawControls) do
+    v.getLvarValue = nil
+  end
+end
+
 FSL.MIP_GEAR_Lever = FSL.GEAR_Lever
 
 collectgarbage "collect"
+
+if FSL2LUA_MAKE_CONTROL_LIST then return tableOfControls end
 
 return FSL

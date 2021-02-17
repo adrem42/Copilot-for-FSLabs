@@ -16,8 +16,8 @@ local oldLineupSequence = copilot.sequences.lineUpSequence
 
 function copilot.sequences.lineUpSequence()
   oldLineupSequence()
-  FSL.OVHD_EXTLT_Nose_Switch("TO")
-  FSL.OVHD_EXTLT_Strobe_Switch("AUTO")
+  FSL.OVHD_EXTLT_Nose_Switch "TO"
+  FSL.OVHD_EXTLT_Strobe_Switch "AUTO"
 end
 
 -- If you want to remove something from a default sequence
@@ -27,12 +27,11 @@ end
 
 function copilot.sequences.taxiSequence()
   FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == 1 and "2" or "1")
-  FSL.PED_WXRadar_PWS_Switch("AUTO")
+  FSL.PED_WXRadar_PWS_Switch "AUTO"
   copilot.sleep(100)
-  FSL.PED_WXRadar_PWS_Switch("AUTO")
+  FSL.PED_WXRadar_PWS_Switch "AUTO"
   FSL.MIP_BRAKES_AUTOBRK_MAX_Button()
-  FSL.PED_ENG_2_MSTR_Switch("OFF")
-  -- Even the best of us struggle with this button
+  FSL.PED_ENG_2_MSTR_Switch "OFF"
   for _ = 1, 5 do
     FSL.PED_ECP_TO_CONFIG_Button()
     copilot.sleep(50, 100)
@@ -63,7 +62,7 @@ local newAction = copilot.events.enginesStarted:addAction(function()
   copilot.suspend(5000, 10000)
   pleaseStop:activate()
 
-  FSL.OVHD_WIPER_KNOB_LEFT_Knob("FAST")
+  FSL.OVHD_WIPER_KNOB_LEFT_Knob "FAST"
   FSL.OVHD_GPWS_TERR_Button()
   FSL.OVHD_GPWS_SYS_Button()
   FSL.OVHD_GPWS_GS_MODE_Button()
@@ -72,9 +71,9 @@ local newAction = copilot.events.enginesStarted:addAction(function()
   FSL.OVHD_ELAC_1_Button()
   FSL.OVHD_SEC_1_Button()
   FSL.OVHD_FAC_1_Button()
-  FSL.OVHD_ADIRS_1_Knob("OFF")
-  FSL.OVHD_ADIRS_3_Knob("OFF")
-  FSL.OVHD_ADIRS_2_Knob("OFF")
+  FSL.OVHD_ADIRS_1_Knob "OFF"
+  FSL.OVHD_ADIRS_3_Knob "OFF"
+  FSL.OVHD_ADIRS_2_Knob "OFF"
   FSL.OVHD_AC_Cockpit_Knob(0)
   FSL.OVHD_AC_Fwd_Cabin_Knob(0)
   FSL.OVHD_AC_Aft_Cabin_Knob(0)
@@ -86,8 +85,8 @@ local newAction = copilot.events.enginesStarted:addAction(function()
   FSL.OVHD_FUEL_CTR_TK_2_VALVE_Button()
   FSL.OVHD_FUEL_R_TK_1_PUMP_Button()
   FSL.OVHD_FUEL_R_TK_2_PUMP_Button()
-  FSL.OVHD_INTLT_AnnLt_Switch("TEST")
-  FSL.OVHD_WIPER_KNOB_RIGHT_Knob("SLOW")
+  FSL.OVHD_INTLT_AnnLt_Switch "TEST"
+  FSL.OVHD_WIPER_KNOB_RIGHT_Knob "SLOW"
   FSL.MIP_DU_PNL_PFD_BRT_Knob(0)
   FSL.MIP_DU_PNL_ND_BRT_Knob(0)
   FSL.PF.MIP_DU_PNL_PFD_BRT_Knob(0)
@@ -125,7 +124,7 @@ local getMetar = VoiceCommand:new {
   action = function(voiceCommand) -- Voice commands and events pass a reference
     -- to themselves as the first argument to their action callbacks.
     copilot.sleep(500, 1000)
-    if not FSL.MCDU:getString():find("MCDU MENU") then
+    if not FSL.MCDU:getString():find "MCDU MENU" then
       FSL.PED_MCDU_KEY_MENU()
     end
     copilot.sleep(500, 1000)
@@ -148,3 +147,37 @@ local getMetar = VoiceCommand:new {
 VoiceCommand.resetGrammar()
 
 getMetar:activate()
+
+------------------------------------------------------------------------------
+-- Waiting for events
+------------------------------------------------------------------------------
+
+local abortWithKey = Event.fromKeyPress "A"
+local abortWithVoice = VoiceCommand:new {phrase = "Abort the launch"}
+local launchCommand = VoiceCommand:new {phrase = "Launch it"}
+
+local function rocketLaunch()
+
+  copilot.logger:info "Preparing for rocket launch..."
+  copilot.suspend(5000, 10000)
+
+  copilot.logger:info "Launching the rocket on your command"
+  Event.waitForEvent(launchCommand:activate())
+
+  copilot.logger:info "You have 5 seconds to abort the launch"
+  local res = Event.waitForEventsWithTimeout(
+    5000, {abortWithKey, abortWithVoice:activate()}
+  )
+
+  abortWithVoice:deactivate()
+  
+  if res == Event.TIMEOUT then
+    copilot.logger:info "The rocket has been launched successfully!"
+  elseif res == abortWithKey then
+    copilot.logger:info "The launch was aborted with a key press"
+  elseif res == abortWithVoice then
+    copilot.logger:info "The launch was aborted with a voice command"
+  end
+end
+
+copilot.addCallback(coroutine.create(rocketLaunch))

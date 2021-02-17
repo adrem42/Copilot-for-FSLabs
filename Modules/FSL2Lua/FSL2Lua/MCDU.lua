@@ -33,8 +33,8 @@ end
 --
 --- Each cell table has three fields:
 --
--- * char: the character (nil if the cell is blank)
--- * color: string : 
+-- * char: The character displayed in the cell (nil if the cell is blank)
+-- * color: The color of the character, one of these : 
 --    * 'cyan' 
 --    * 'grey' 
 --    * 'green' 
@@ -67,6 +67,10 @@ end
 --- @treturn string
 --- @number[opt] startpos
 --- @number[opt] endpos
+--- @usage 
+--- if FSL.CPT.MCDU:getString():find "MCDU MENU" then
+---   print "We're on the main menu page"
+--- end
 function MCDU:getString(startpos, endpos)
   local display
   while true do
@@ -81,7 +85,7 @@ function MCDU:getString(startpos, endpos)
   end
 end
 
---- Returns the scratchpad - the last line on the display
+--- Returns the scratchpad - the last line on the display.
 --- @treturn string
 function MCDU:getScratchpad()
   return self:getString(313)
@@ -89,6 +93,7 @@ end
 
 --- Types str on the keyboard.
 ---@string str
+--- @usage FSL.CPT.MCDU:type "UwU"
 function MCDU:type(str)
   str = tostring(str)
   local _FSL = FSL[self.sideStr]
@@ -116,9 +121,7 @@ function MCDU:isOn()
   return self:getString():find("%S") ~= nil
 end
 
---- Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold.
---
---- The output will be in the console and the FSUIPC log file.
+--- Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.
 function MCDU:printCells()
   for pos,cell in ipairs(self:getArray()) do
     print(pos, 

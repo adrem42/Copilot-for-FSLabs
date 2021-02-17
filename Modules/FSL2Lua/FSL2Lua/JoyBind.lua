@@ -1,3 +1,5 @@
+local util = require "FSL2Lua.FSL2Lua.util"
+
 local JoyBind = {}
 
 function JoyBind:new(data)
@@ -14,12 +16,12 @@ function JoyBind:new(data)
 end
 
 function JoyBind:prepareData(data)
-  assert(type(data.btn) == "string", "Wrong joystick button format", 4)
+  util.assert(type(data.btn) == "string", "Wrong joystick button format", 4)
   data.joyLetter = data.btn:sub(1,1)
   data.btnNum = tostring(data.btn:sub(2, #data.btn))
   data.btn = nil
-  assert(data.joyLetter:find("%A") == nil, "Wrong joystick button format", 4)
-  assert(tostring(data.btnNum):find("%D") == nil, "Wrong joystick button format", 4)
+  util.assert(data.joyLetter:find("%A") == nil, "Wrong joystick button format", 4)
+  util.assert(tostring(data.btnNum):find("%D") == nil, "Wrong joystick button format", 4)
   return data
 end
 

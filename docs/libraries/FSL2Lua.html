@@ -32,15 +32,18 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Functions">Functions</a></li>
 <li><a href="#Tables">Tables</a></li>
 <li><a href="#FSL">FSL</a></li>
 <li><a href="#Class_Control">Class Control </a></li>
 <li><a href="#Class_Button">Class Button </a></li>
+<li><a href="#Class_ToggleButton">Class ToggleButton </a></li>
 <li><a href="#Class_Guard">Class Guard </a></li>
 <li><a href="#Class_Switch">Class Switch </a></li>
 <li><a href="#Class_FcuSwitch">Class FcuSwitch </a></li>
-<li><a href="#Class_KnobWithoutPositions">Class KnobWithoutPositions </a></li>
+<li><a href="#Class_RotaryKnob">Class RotaryKnob </a></li>
 <li><a href="#Class_MCDU">Class MCDU </a></li>
+<li><a href="#"> </a></li>
 </ul>
 
 
@@ -74,6 +77,21 @@
 <p> See <a href="../manual/standalonescripts.md.html#">here</a> on how to use it outside of Copilot.</p>
 
 
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#checkWithTimeout">checkWithTimeout([timeout=5000], condition)</a></td>
+	<td class="summary">Executes the condition callback until it signals the condition or the timeout elapses.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#withTimeout">withTimeout([timeout=5000], block)</a></td>
+	<td class="summary">Executes the callback until the timeout elapses or the callback returns any value other than nil.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block)</a></td>
+	<td class="summary">Repeats the callback until the timeout elapses</td>
+	</tr>
+</table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
 	<tr>
@@ -94,7 +112,7 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#Control:macro">Control:macro(clickType)</a></td>
-	<td class="summary">Invokes the mouse macro of the control</td>
+	<td class="summary">Invokes the mouse macro with the given click type on the controls mouse rectangle.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Control:isLit">Control:isLit()</a></td>
@@ -110,12 +128,16 @@
 <h2><a href="#Class_Button">Class Button </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#Button.guard">Button.guard</a></td>
+	<td class="summary">The <a href="#Class_Guard">guard</a> of this button or nil if it doesn't have one.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Button:__call">Button:__call()</a></td>
 	<td class="summary">Presses the button.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Button:rightClick">Button:rightClick()</a></td>
-	<td class="summary">Simulates a click of the right mouse button on the VC button.</td>
+	<td class="summary">Simulates a click of the right mouse button on this button.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Button:isDown">Button:isDown()</a></td>
@@ -123,12 +145,43 @@
 
 </td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Button:pressForLightState">Button:pressForLightState(state)</a></td>
+	<td class="summary">Presses the button if its light's current state doesn't match the passed 'state' parameter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Button:pressIfLit">Button:pressIfLit()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Button:pressIfNotLit">Button:pressIfNotLit()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+</table>
+<h2><a href="#Class_ToggleButton">Class ToggleButton </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ToggleButton:setToggleState">ToggleButton:setToggleState(state)</a></td>
+	<td class="summary">Sets the toggle state of the button</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ToggleButton:toggleDown">ToggleButton:toggleDown()</a></td>
+	<td class="summary">Calls <a href="../libraries/FSL2Lua.html#ToggleButton:setToggleState">setToggleState</a>(true)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ToggleButton:toggleUp">ToggleButton:toggleUp()</a></td>
+	<td class="summary">Calls <a href="../libraries/FSL2Lua.html#ToggleButton:setToggleState">setToggleState</a>(false)</td>
+	</tr>
 </table>
 <h2><a href="#Class_Guard">Class Guard </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Guard:lift">Guard:lift()</a></td>
+	<td class="name" nowrap><a href="#Guard:open">Guard:open()</a></td>
 	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Guard:lift">Guard:lift()</a></td>
+	<td class="summary">Alias for <a href="../libraries/FSL2Lua.html#Guard:open">open</a>.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Guard:close">Guard:close()</a></td>
@@ -145,9 +198,7 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#Switch:__call">Switch:__call(targetPos)</a></td>
-	<td class="summary">
-
-</td>
+	<td class="summary">Moves the switch to the given position.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Switch:getPosn">Switch:getPosn()</a></td>
@@ -156,8 +207,12 @@
 </td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Switch:toggle">Switch:toggle()</a></td>
+	<td class="name" nowrap><a href="#Switch:cycle">Switch:cycle()</a></td>
 	<td class="summary">Cycles the switch back and forth.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Switch:toggle">Switch:toggle()</a></td>
+	<td class="summary">Alias for <a href="../libraries/FSL2Lua.html#RotaryKnob:cycle">cycle</a>.</td>
 	</tr>
 </table>
 <h2><a href="#Class_FcuSwitch">Class FcuSwitch </a></h2>
@@ -171,34 +226,38 @@
 	<td class="summary"><span></td>
 	</tr>
 </table>
-<h2><a href="#Class_KnobWithoutPositions">Class KnobWithoutPositions </a></h2>
+<h2><a href="#Class_RotaryKnob">Class RotaryKnob </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:__call">KnobWithoutPositions:__call(targetPos)</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:__call">RotaryKnob:__call(targetPos)</a></td>
 	<td class="summary">
 
 </td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:rotateLeft">KnobWithoutPositions:rotateLeft()</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:rotateLeft">RotaryKnob:rotateLeft()</a></td>
 	<td class="summary">Rotates the knob left by 1 tick.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:rotateRight">KnobWithoutPositions:rotateRight()</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:rotateRight">RotaryKnob:rotateRight()</a></td>
 	<td class="summary">Rotates the knob right by 1 tick.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:getPosn">KnobWithoutPositions:getPosn()</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:cycle">RotaryKnob:cycle(steps)</a></td>
+	<td class="summary">This function is made for keyboard and joystick bindings.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RotaryKnob:getPosn">RotaryKnob:getPosn()</a></td>
 	<td class="summary">
 
 </td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:rotateBy">KnobWithoutPositions:rotateBy(ticks[, pause=70])</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:rotateBy">RotaryKnob:rotateBy(ticks[, pause=70])</a></td>
 	<td class="summary">Rotates the knob by amount of ticks.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#KnobWithoutPositions:random">KnobWithoutPositions:random([lower=0[, upper=100]])</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:random">RotaryKnob:random([lower=0[, upper=100]])</a></td>
 	<td class="summary">Sets the knob to random position between lower and upper.</td>
 	</tr>
 </table>
@@ -214,7 +273,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad()</a></td>
-	<td class="summary">Returns the scratchpad - the last line on the display</td>
+	<td class="summary">Returns the scratchpad - the last line on the display.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:type">MCDU:type(str)</a></td>
@@ -226,7 +285,14 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells()</a></td>
-	<td class="summary">Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold.</td>
+	<td class="summary">Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.</td>
+	</tr>
+</table>
+<h2><a href="#"> </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
+	<td class="summary">This function is a convenience wrapper around event.key and event.button from the FSUIPC Lua library.</td>
 	</tr>
 </table>
 
@@ -234,6 +300,103 @@
 <br/>
 
 
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "checkWithTimeout"></a>
+    <strong>checkWithTimeout([timeout=5000], condition)</strong>
+    </dt>
+    <dd>
+    Executes the condition callback until it signals the condition or the timeout elapses.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+         (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">condition</span>
+            <span class="types"><span class="type">function</span></span>
+         A callback that should return a truthy value to signal the condition.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True if the condition was signaled, false if the timeout has elapsed.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "withTimeout"></a>
+    <strong>withTimeout([timeout=5000], block)</strong>
+    </dt>
+    <dd>
+    Executes the callback until the timeout elapses or the callback returns any value other than nil.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+         (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">block</span>
+            <span class="types"><span class="type">function</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Either nil  if the timeout has elapsed, or the value returned by block.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "repeatWithTimeout"></a>
+    <strong>repeatWithTimeout([timeout=5000], block)</strong>
+    </dt>
+    <dd>
+    Repeats the callback until the timeout elapses
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+         (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">block</span>
+            <span class="types"><span class="type">function</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header "><a name="Tables"></a>Tables</h2>
 
     <dl class="function">
@@ -326,7 +489,7 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>Control:macro(clickType)</strong>
     </dt>
     <dd>
-    Invokes the mouse macro of the control
+    Invokes the mouse macro with the given click type on the controls mouse rectangle.
 
 
     <h3>Parameters:</h3>
@@ -368,9 +531,9 @@ FSL:setPilot(<span class="number">1</span>)
            <span class="types"><span class="type">bool</span></span>
          True if the control has a light and it's on.</p>
 
-<p> The control needs to have an LVar associated with its light for this to work.</p>
+<p> The control needs to have an Lvar associated with its light - otherwise, this function throws an error!</p>
 
-<p> Unfortunately, overhead-style square buttons don't have such LVars.
+<p> Unfortunately, overhead-style square buttons don't have such Lvars.
     </ol>
 
 
@@ -412,6 +575,20 @@ FSL:setPilot(<span class="number">1</span>)
 
     <dl class="function">
     <dt>
+    <a name = "Button.guard"></a>
+    <strong>Button.guard</strong>
+    </dt>
+    <dd>
+    The <a href="#Class_Guard">guard</a> of this button or nil if it doesn't have one.
+
+
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "Button:__call"></a>
     <strong>Button:__call()</strong>
     </dt>
@@ -434,7 +611,10 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>Button:rightClick()</strong>
     </dt>
     <dd>
-    Simulates a click of the right mouse button on the VC button.
+    Simulates a click of the right mouse button on this button.
+ This function was written because I know that the PA button on the ACP
+ has a special function if you click on it with the right mouse button.
+ I don't think it's useful for anything else.
 
 
 
@@ -465,16 +645,135 @@ FSL:setPilot(<span class="number">1</span>)
 
 
 </dd>
+    <dt>
+    <a name = "Button:pressForLightState"></a>
+    <strong>Button:pressForLightState(state)</strong>
+    </dt>
+    <dd>
+    Presses the button if its light's current state doesn't match the passed 'state' parameter.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">state</span>
+         Truthy for 'the light should be on', falsy for 'the light should be off'.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Button:pressIfLit"></a>
+    <strong>Button:pressIfLit()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Button:pressIfNotLit"></a>
+    <strong>Button:pressIfNotLit()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_ToggleButton"></a>Class ToggleButton </h2>
+
+          <div class="section-description">
+          Buttons that toggle between their 'up' and 'down' positions, such as most of the overhead buttons. </p>
+
+<p> Subclass of <a href="#Class_Button">Button</a>
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "ToggleButton:setToggleState"></a>
+    <strong>ToggleButton:setToggleState(state)</strong>
+    </dt>
+    <dd>
+    Sets the toggle state of the button
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">state</span>
+         Truthy for 'down', falsy for 'up'
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ToggleButton:toggleDown"></a>
+    <strong>ToggleButton:toggleDown()</strong>
+    </dt>
+    <dd>
+    Calls <a href="../libraries/FSL2Lua.html#ToggleButton:setToggleState">setToggleState</a>(true)
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ToggleButton:toggleUp"></a>
+    <strong>ToggleButton:toggleUp()</strong>
+    </dt>
+    <dd>
+    Calls <a href="../libraries/FSL2Lua.html#ToggleButton:setToggleState">setToggleState</a>(false)
+
+
+
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Class_Guard"></a>Class Guard </h2>
 
     <dl class="function">
     <dt>
+    <a name = "Guard:open"></a>
+    <strong>Guard:open()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "Guard:lift"></a>
     <strong>Guard:lift()</strong>
     </dt>
     <dd>
-    <span>
+    Alias for <a href="../libraries/FSL2Lua.html#Guard:open">open</a>.
 
 
 
@@ -533,18 +832,15 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>Switch:__call(targetPos)</strong>
     </dt>
     <dd>
-
-
-
+    Moves the switch to the given position.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">targetPos</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
+         A valid position for this switch.
+ You can find the list of positions for a given switch in <a href="../manual/listofcontrols.md.html#">the list of controls</a>.
         </li>
     </ul>
 
@@ -553,7 +849,7 @@ FSL:setPilot(<span class="number">1</span>)
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">FSL.GSLD_EFIS_VORADF_1_Switch(<span class="string">"VOR"</span>)</pre>
+        <pre class="example">FSL.GSLD_EFIS_VORADF_1_Switch <span class="string">"VOR"</span></pre>
     </ul>
 
 </dd>
@@ -580,8 +876,8 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "Switch:toggle"></a>
-    <strong>Switch:toggle()</strong>
+    <a name = "Switch:cycle"></a>
+    <strong>Switch:cycle()</strong>
     </dt>
     <dd>
     Cycles the switch back and forth.
@@ -593,8 +889,22 @@ FSL:setPilot(<span class="number">1</span>)
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">FSL.OVHD_EXTLT_Land_L_Switch:toggle()</pre>
+        <pre class="example">FSL.OVHD_EXTLT_Land_L_Switch:cycle()</pre>
     </ul>
+
+</dd>
+    <dt>
+    <a name = "Switch:toggle"></a>
+    <strong>Switch:toggle()</strong>
+    </dt>
+    <dd>
+    Alias for <a href="../libraries/FSL2Lua.html#RotaryKnob:cycle">cycle</a>.
+
+
+
+
+
+
 
 </dd>
 </dl>
@@ -633,15 +943,15 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
 </dl>
-    <h2 class="section-header has-description"><a name="Class_KnobWithoutPositions"></a>Class KnobWithoutPositions </h2>
+    <h2 class="section-header has-description"><a name="Class_RotaryKnob"></a>Class RotaryKnob </h2>
 
           <div class="section-description">
           Knobs with no fixed positions
           </div>
     <dl class="function">
     <dt>
-    <a name = "KnobWithoutPositions:__call"></a>
-    <strong>KnobWithoutPositions:__call(targetPos)</strong>
+    <a name = "RotaryKnob:__call"></a>
+    <strong>RotaryKnob:__call(targetPos)</strong>
     </dt>
     <dd>
 
@@ -667,8 +977,8 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "KnobWithoutPositions:rotateLeft"></a>
-    <strong>KnobWithoutPositions:rotateLeft()</strong>
+    <a name = "RotaryKnob:rotateLeft"></a>
+    <strong>RotaryKnob:rotateLeft()</strong>
     </dt>
     <dd>
     Rotates the knob left by 1 tick.
@@ -681,8 +991,8 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "KnobWithoutPositions:rotateRight"></a>
-    <strong>KnobWithoutPositions:rotateRight()</strong>
+    <a name = "RotaryKnob:rotateRight"></a>
+    <strong>RotaryKnob:rotateRight()</strong>
     </dt>
     <dd>
     Rotates the knob right by 1 tick.
@@ -695,8 +1005,34 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "KnobWithoutPositions:getPosn"></a>
-    <strong>KnobWithoutPositions:getPosn()</strong>
+    <a name = "RotaryKnob:cycle"></a>
+    <strong>RotaryKnob:cycle(steps)</strong>
+    </dt>
+    <dd>
+    This function is made for keyboard and joystick bindings.
+ It divides the knob in n steps and cycles back and forth between them.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">steps</span>
+            <span class="types"><span class="type">int</span></span>
+         In how many steps to divide the knob.
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">Bind {key = <span class="string">"A"</span>, onPress = {FSL.OVHD_INTLT_Integ_Lt_Knob, <span class="string">"cycle"</span>, <span class="number">5</span>}}</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "RotaryKnob:getPosn"></a>
+    <strong>RotaryKnob:getPosn()</strong>
     </dt>
     <dd>
 
@@ -717,8 +1053,8 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "KnobWithoutPositions:rotateBy"></a>
-    <strong>KnobWithoutPositions:rotateBy(ticks[, pause=70])</strong>
+    <a name = "RotaryKnob:rotateBy"></a>
+    <strong>RotaryKnob:rotateBy(ticks[, pause=70])</strong>
     </dt>
     <dd>
     Rotates the knob by amount of ticks.
@@ -743,8 +1079,8 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "KnobWithoutPositions:random"></a>
-    <strong>KnobWithoutPositions:random([lower=0[, upper=100]])</strong>
+    <a name = "RotaryKnob:random"></a>
+    <strong>RotaryKnob:random([lower=0[, upper=100]])</strong>
     </dt>
     <dd>
     Sets the knob to random position between lower and upper.
@@ -796,8 +1132,8 @@ FSL:setPilot(<span class="number">1</span>)
 <p> Each cell table has three fields:</p>
 
 <ul>
-    <li>char: the character (nil if the cell is blank)</li>
-    <li>color: string :
+    <li>char: The character displayed in the cell (nil if the cell is blank)</li>
+    <li>color: The color of the character, one of these :
     <ul>
         <li>'cyan' </li>
         <li>'grey' </li>
@@ -852,6 +1188,12 @@ FSL:setPilot(<span class="number">1</span>)
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">if</span> FSL.CPT.MCDU:getString():find <span class="string">"MCDU MENU"</span> <span class="keyword">then</span>
+  <span class="global">print</span> <span class="string">"We're on the main menu page"</span>
+<span class="keyword">end</span></pre>
+    </ul>
 
 </dd>
     <dt>
@@ -859,7 +1201,7 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>MCDU:getScratchpad()</strong>
     </dt>
     <dd>
-    Returns the scratchpad - the last line on the display
+    Returns the scratchpad - the last line on the display.
 
 
 
@@ -897,6 +1239,10 @@ FSL:setPilot(<span class="number">1</span>)
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">FSL.CPT.MCDU:<span class="global">type</span> <span class="string">"UwU"</span></pre>
+    </ul>
 
 </dd>
     <dt>
@@ -926,11 +1272,105 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>MCDU:printCells()</strong>
     </dt>
     <dd>
-    Outputs information about each display cell: its index, character (including its numerical representation) and whether it's bold. </p>
-
-<p> The output will be in the console and the FSUIPC log file.
+    Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.
 
 
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name=""></a> </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Bind"></a>
+    <strong>Bind(data)</strong>
+    </dt>
+    <dd>
+    This function is a convenience wrapper around event.key and event.button from the FSUIPC Lua library. </p>
+
+<p> <a href="../examples/cockpit_control_binds.lua.html#">Click here for usage examples</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">data</span> A table that may contain the following fields:
+        <ul>
+        <li><span class="parameter">onPress</span>
+         <a href="../examples/cockpit_control_binds.lua.html#">see the examples</a>
+        </li>
+        <li><span class="parameter">onPressRepeat</span>
+         <a href="../examples/cockpit_control_binds.lua.html#">see the examples</a>
+ <strong>Warning</strong>: for buttons, onPressRepeat uses event.timer. There is only one timer available for a given thread so don't use onPressRepeat with buttons if you need a timer for something else.
+        </li>
+        <li><span class="parameter">onRelease</span>
+         <a href="../examples/cockpit_control_binds.lua.html#">see the examples</a>
+        </li>
+        <li><span class="parameter">bindButton</span>
+         <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
+        </li>
+        <li><span class="parameter">bindToggleButton</span>
+         <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
+        </li>
+        <li><span class="parameter">btn</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
+        </li>
+        <li><span class="parameter">key</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+<p> Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br></p>
+
+<ul>
+    <li>Alphanumeric character keys</li>
+    <li>Escaped keycodes: <code>key = &quot;\222&quot;</code>.
+    The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging option.</li>
+    <li>Enter</li>
+    <li>Pause</li>
+    <li>CapsLock</li>
+    <li>Esc</li>
+    <li>Escape</li>
+    <li>Space</li>
+    <li>PageUp</li>
+    <li>PageDown</li>
+    <li>End</li>
+    <li>Home </li>
+    <li>LeftArrow</li>
+    <li>UpArrow</li>
+    <li>RightArrow </li>
+    <li>DownArrow</li>
+    <li>PrintScreen</li>
+    <li>Ins</li>
+    <li>Insert</li>
+    <li>Del</li>
+    <li>Delete</li>
+    <li>NumpadEnter</li>
+    <li>NumpadPlus</li>
+    <li>NumpadMinus</li>
+    <li>NumpadDot </li>
+    <li>NumpadDel</li>
+    <li>NumpadDiv</li>
+    <li>NumpadMult</li>
+</ul>
+
+<p> You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br></p>
+
+<ul>
+    <li>Tab</li>
+    <li>Shift</li>
+    <li>Ctrl</li>
+    <li>LeftAlt</li>
+    <li>RightAlt</li>
+    <li>Windows</li>
+    <li>Apps</li>
+</ul>
+
+        </li>
+        </li></ul>
+    </ul>
 
 
 
@@ -944,7 +1384,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-12 01:27:47 </i>
+<i style="float:right;">Last updated 2021-02-17 18:48:29 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

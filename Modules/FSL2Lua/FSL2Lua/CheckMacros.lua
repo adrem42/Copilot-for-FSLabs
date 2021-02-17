@@ -4,45 +4,19 @@ local Guard = require "FSL2Lua.FSL2Lua.Guard"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
 local FcuSwitch = require "FSL2Lua.FSL2Lua.FcuSwitch"
 local EngineMasterSwitch = require "FSL2Lua.FSL2Lua.EngineMasterSwitch"
-local KnobWithoutPositions = require "FSL2Lua.FSL2Lua.KnobWithoutPositions"
+local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
+local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 local serpent = require "FSL2Lua.libs.serpent"
 local util = require "FSL2Lua.FSL2Lua.util"
 local file = require "FSL2Lua.FSL2Lua.file"
-
-local function findGuardForButton(button)
-
-  local t
-  for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
-    for _, control in pairs(_t) do
-      if control == button then 
-        t = _t 
-        break
-      end
-    end
-  end
-
-  local guard = button.guard and t[button.guard]
-  if not guard then
-    for _, control in pairs(t) do
-      if type(control) == "table" and control.FSL_VC_control then
-        local LVar = control.LVar:lower()
-        if LVar:find("guard") and LVar:find(button.LVar:lower():gsub("(.+)_.+","%1")) then
-          guard = control
-          break
-        end 
-      end
-    end
-  end
-  return guard
-
-end
+local Control = require "FSL2Lua.FSL2Lua.Control"
 
 function Button:_checkMacro()
 
-  local guard = findGuardForButton(self)
+  local guard = self.guard
 
   if guard and not guard:isOpen() then
-    guard:lift()
+    guard:open()
     local timedOut = not checkWithTimeout(2000, function()
       return guard:isOpen()
     end)
@@ -50,12 +24,10 @@ function Button:_checkMacro()
   end
 
   local LVarbefore = self:getLvarValue()
-  ipc.mousemacro(self.rectangle, 3)
-  if self.toggle then
-    ipc.mousemacro(self.rectangle, 13)
-  end
+  self:macro "leftPress"
+  if getmetatable(self) == ToggleButton then self:macro "leftRelease" end
   local timedOut = not self:_waitForLvarChange(2000, LVarbefore)
-  if not timedOut then ipc.mousemacro(self.rectangle, 13) end
+  if not timedOut then self:macro "leftRelease" end
   return not timedOut
 end
 
@@ -71,7 +43,7 @@ end
 function Guard:_checkMacro()
   local LVarbefore = self:getLvarValue()
   if self:isOpen() then self:close()
-  else self:lift() end
+  else self:open() end
   return self:_waitForLvarChange(2000, LVarbefore)
 end
 
@@ -104,34 +76,34 @@ function Switch:_checkMacroManual()
 end
 
 function FcuSwitch:_checkMacro()
-  ipc.mousemacro(self.rectangle, 13)
-  ipc.mousemacro(self.rectangle, 11)
+  self:macro "leftRelease"
+  self:macro "rightRelease"
   local LVarbefore = self:getLvarValue()
-  ipc.mousemacro(self.rectangle, 3)
+  self:macro "leftPress"
   return self:_waitForLvarChange(5000, LVarbefore)
 end
 
 function EngineMasterSwitch:_checkMacro()
-  ipc.mousemacro(self.rectangle, 13)
-  ipc.mousemacro(self.rectangle, 11)
+  self:macro "leftRelease"
+  self:macro "rightRelease"
   local LVarbefore = self:getLvarValue()
-  ipc.mousemacro(self.rectangle, 1)
+  self:macro "rightPress"
   return self:_waitForLvarChange(1000, LVarbefore)
 end
 
-function KnobWithoutPositions:_checkMacroManual()
+function RotaryKnob:_checkMacroManual()
   for _ = 1, 100 do
-    self:_rotateLeftInternal()
+    self:_rotateLeft()
   end
   while true do
-    for _ = 1, 10 do self:_rotateLeftInternal() end
+    for _ = 1, 10 do self:_rotateLeft() end
     repeatWithTimeout(500, coroutine.yield)
-    for _ = 1, 10 do self:_rotateRightInternal() end
+    for _ = 1, 10 do self:_rotateRight() end
     repeatWithTimeout(500, coroutine.yield)
   end
 end
 
-function KnobWithoutPositions:_checkMacro()
+function RotaryKnob:_checkMacro()
   if self.LVar:lower():find("comm") then
     local t
     for _, _t in ipairs{FSL, FSL.CPT, FSL.FO} do
@@ -140,7 +112,7 @@ function KnobWithoutPositions:_checkMacro()
       end
     end
     for _, control in pairs(t) do
-      if type(control) == "table" and control.FSL_VC_control then
+      if util.isType(control, Control) then
         local LVar = control.LVar:lower()
         local switch = LVar:find("switch") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1"))
         if switch and control.isDown and control:isDown() then
@@ -155,8 +127,8 @@ function KnobWithoutPositions:_checkMacro()
     end
   end
   local LVarbefore = self:getLvarValue()
-  if LVarbefore > 0 then self:_rotateLeftInternal()
-  else self:_rotateRightInternal() end
+  if LVarbefore > 0 then self:_rotateLeft()
+  else self:_rotateRight() end
   return self:_waitForLvarChange(1000, LVarbefore)
 end
 
@@ -175,10 +147,6 @@ if file.exists(checkFilePath) then
   -- if checkFile.version ~= _FSL2LUA_VERSION then
   --   checkFile = {}
   -- end
-end
-
-if acType == "A319" and A319_IS_A320 then
-  acType = "A320"
 end
 
 local function collectkMissingMacros()
@@ -296,6 +264,8 @@ end
 
 local function CheckMacros()
 
+  FSL.ignoreFaultyLvars()
+
   invalid = {}
   invalidManual = {}
   local checked = {}
@@ -303,8 +273,7 @@ local function CheckMacros()
 
   local function checkControl(control)
 
-    if type(control) == "table" and control.FSL_VC_control and control._checkMacro and not control.FSControl then
-
+    if util.isType(control, Control) and control._checkMacro and not control.FSControl then
       if checkFile[control.LVar] then
         if tonumber(checkFile[control.LVar][acType]) == control.rectangle then
           return
@@ -342,11 +311,12 @@ local function CheckMacros()
     end
   end
   print"\n"
-  print "------------------------------------------------------"
-  print "--- Checking macros! ---------------------------------"
-  print ("--- FSL2Lua version: " .. _FSL2LUA_VERSION .. " ---------------------------")
-  print ("--- A/C type: " .. acType .. " -----------------------------------")
-  print "------------------------------------------------------"
+  print "-----------------------------------------------------------"
+  print "--- Checking macros! --------------------------------------"
+  print ("--- FSL2Lua version: " .. _FSL2LUA_VERSION .. " --------------------------------")
+  print ("--- A/C type: " .. acType .. " ----------------------------------------")
+  print "--- Delete FSL2Lua\\checked_macros.lua to reset the check --"
+  print "-----------------------------------------------------------"
   print"\n"
   for _, button in ipairs {FSL.OVHD_FIRE_ENG1_PUSH_Button, FSL.OVHD_FIRE_ENG2_PUSH_Button, FSL.OVHD_FIRE_APU_PUSH_Button} do
     if not button:isDown() then

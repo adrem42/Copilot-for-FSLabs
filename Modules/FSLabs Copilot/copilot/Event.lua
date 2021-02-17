@@ -267,7 +267,7 @@ end
 
 local OrderSetter = {}
 
-function OrderSetter._assertCoro(action)
+function OrderSetter._checkCoro(action)
   if not action.runAsCoroutine then
     error("Action " .. action:toString() .. " needs to be a coroutine in order to wait for other coroutines to complete", 3)
   end
@@ -279,7 +279,7 @@ function OrderSetter:front(wait)
     if otherAction ~= self.anchor then
       nodes[otherAction][self.anchor] = true
       if wait ~= false and self.anchor.runAsCoroutine then
-        self._assertCoro(otherAction)
+        self._checkCoro(otherAction)
         local depends = self.event.coroDepends[otherAction]
         depends[#depends+1] = self.anchor
       end
@@ -294,7 +294,7 @@ function OrderSetter:back(wait)
     if otherAction ~= self.anchor then
       nodes[self.anchor][otherAction] = true
       if wait ~= false and otherAction.runAsCoroutine then
-        self._assertCoro(self.anchor)
+        self._checkCoro(self.anchor)
         local depends = self.event.coroDepends[self.anchor]
         depends[#depends+1] = otherAction
       end
@@ -311,7 +311,7 @@ function OrderSetter:before(...)
     if getmetatable(otherAction) == Action then
       nodes[otherAction][self.anchor] = true
       if lastArg ~= false and self.anchor.runAsCoroutine then
-        self._assertCoro(otherAction)
+        self._checkCoro(otherAction)
         local depends = self.event.coroDepends[otherAction]
         depends[#depends+1] = self.anchor
       end
@@ -329,7 +329,7 @@ function OrderSetter:after(...)
     if getmetatable(otherAction) == Action then
       node[otherAction] = true
       if lastArg ~= false and otherAction.runAsCoroutine then
-        self._assertCoro(self.anchor)
+        self._checkCoro(self.anchor)
         local depends = self.event.coroDepends[self.anchor]
         depends[#depends+1] = otherAction
       end
@@ -437,8 +437,11 @@ end
 -- local myAction = myEvent:addAction(function() end)
 -- myEvent:removeAction(myAction)
 ---@return self
-
 function Event:removeAction(action)
+  if self.runningActions then
+    self.actionsToRemove[#self.actionsToRemove+1] = action
+    return self
+  end
   for i, _action in ipairs(self.sortedActions) do
     if action == _action then
       table.remove(self.sortedActions, i)
@@ -458,15 +461,14 @@ end
 
 --- Triggers the event which in turn executes all actions (if they are enabled). 
 --- @param ... Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
-
 function Event:trigger(...)
   copilot.logger:debug("Event: " .. self:toString())
   if not self.areActionsSorted then
     self:sortActions()
   end
-  local deletthis
+  self.actionsToRemove = {}
   self.runningActions = true
-  for i, action in ipairs(self.sortedActions) do
+  for _, action in ipairs(self.sortedActions) do
     if action.isEnabled then
       if action.runAsCoroutine then
         local depends = self.coroDepends[action]
@@ -477,19 +479,15 @@ function Event:trigger(...)
         action:runCallback(self, ...)
       end
       if self.runOnce[action] then
-        deletthis = deletthis or {}
-        deletthis[#deletthis+1] = i
+        self.actionsToRemove[#self.actionsToRemove+1] = action
       end
     end
   end
-  if deletthis then
-    for i = #deletthis, 1, -1 do
-      local action = table.remove(self.sortedActions, deletthis[i])
-      self.actions.nodes[action] = nil
-      self.runOnce[action] = nil
-    end
-  end
   self.runningActions = false
+  for _, action in ipairs(self.actionsToRemove) do
+    self:removeAction(action)
+  end
+  self.actionsToRemove = nil
 end
 
 function Event.fetchRecoResults()
@@ -523,6 +521,41 @@ function Event.waitForEvent(event, returnFunction)
   end
 end
 
+Event.TIMEOUT = {}
+Event.INFINITE = {}
+
+function Event.fromKeyPress(key, ...)
+  local event = Event:new(...)
+  Bind {key = key, onPress = function() event:trigger() end}
+  return event
+end
+
+function Event.waitForEventWithTimeout(timeout, event)
+  if timeout == Event.INFINITE then
+    return Event.waitForEvent(event)
+  end
+  local isEventSignaled = Event.waitForEvent(event, true)
+  local timedOut = not checkWithTimeout(timeout, function()
+    copilot.suspend()
+    return isEventSignaled()
+  end)
+  if timedOut then return 
+    Event.TIMEOUT 
+  end
+end
+
+function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
+  if timeout == Event.INFINITE then
+    return Event.waitForEvents(events, waitForAll, false)
+  end
+  local checkEvents = Event.waitForEvents(events, waitForAll, true)
+  local res = withTimeout(timeout, function()
+    copilot.suspend()
+    return checkEvents() or nil
+  end)
+  return res or Event.TIMEOUT
+end
+
 ---Same as @{waitForEvent} but for multiple events
 ---@static
 ---@tparam table events array of <a href="#Class_Event">Event</a> objects
@@ -549,13 +582,10 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
       end
       return true
     end
-    if returnFunction then
-      return areEventsTriggered
-    else
-      repeat copilot.suspend() until areEventsTriggered()
-    end
+    if returnFunction then return areEventsTriggered end
+    repeat copilot.suspend() until areEventsTriggered()
   else
-    return function()
+    local function checkEvents()
       for event, flag in pairs(flags) do
         if flag == true then
           flags[event] = false
@@ -563,8 +593,13 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
         end
       end
     end
+    if returnFunction then return checkEvents end
+    while true do
+      copilot.suspend()
+      local event = checkEvents()
+      if event then return event end
+    end
   end
-
 end
 
 local recognizer = copilot.recognizer

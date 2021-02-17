@@ -6,6 +6,25 @@ Encoder = {
   DIR_CW = 0,
   DIR_CCW = 1
 }
+if Joystick then
+  getmetatable(Joystick).gottaGoFast = function(howFast, ...)
+
+    local func = Bind:makeSingleFunc {...}
+
+    local prevTimestamp = 0
+
+    local callback = function(_, _, timestamp)
+      local diff = timestamp - prevTimestamp
+      prevTimestamp = timestamp
+      local numTicks = howFast(diff)
+      for _ = 1, numTicks do
+        func()
+      end
+    end
+
+    return callback, Joystick.sendEventDetails
+  end
+end
 
 function Encoder.new(joy, data)
 
@@ -60,23 +79,11 @@ function Encoder:setTickCalculator(tickCalculator)
 end
 
 function Encoder:_makeCallback(...)
-
-  local func = Bind:makeSingleFunc {...}
-
   if not self._calculateTicks then
+    local func = Bind:makeSingleFunc {...}
     return function() func() end
   end
-
-  local prevTimestamp = 0
-
-  return function(timestamp)
-    local diff = timestamp - prevTimestamp
-    prevTimestamp = timestamp
-    local numTicks = self._calculateTicks(diff)
-    for _ = 1, numTicks do
-      func()
-    end
-  end
+  return Joystick.gottaGoFast(self._calculateTicks, ...)
 end
 
 function Encoder:onCW(...)
@@ -117,9 +124,9 @@ function Encoder:_onPinEvent(pin, state, timestamp)
   self._direction = direction
   if (self._count + self._shift) % self._detentRatio == 0 then
     if direction == self.DIR_CW then
-      self._onCW(timestamp)
+      self._onCW(nil, nil, timestamp)
     else
-      self._onCCW(timestamp)
+      self._onCCW(nil, nil, timestamp)
     end
   end
 end

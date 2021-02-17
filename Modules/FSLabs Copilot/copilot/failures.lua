@@ -32,11 +32,10 @@ local function waitForDisplay(str, disappear)
 end
 
 local function dimDisplay()
-  local time = ipc.elapsedtime()
-  repeat
+  repeatWithTimeout(7000, function()
     FSL.PED_MCDU_KEY_BRT:macro("leftPress")
     ipc.sleep(100)
-  until ipc.elapsedtime() - time > 7000
+  end)
   FSL.PED_MCDU_KEY_BRT:macro("leftRelease")
   ipc.sleep(1000)
   for i=1,30 do 
@@ -252,8 +251,6 @@ local function init()
 
   local path = ipc.readSTR(0x3C00,256):gsub("SimObjects.+", "A320XGauges.ini")
   coldAndDark = file.read(path):find("%[PANEL_STATE%].-Default=1")
-  
-
 end
 
 local function loadStates()
@@ -292,6 +289,8 @@ if not ipc.get("FSLC_failures") then
   copilot.logger:info("Finished setting up failures")
   FSL:setPilot(pilotBefore)
   FSL:enableSequences()
+else
+  copilot.logger:info "Failures have already been set up during this simming session" 
 end
 
 scriptStartTime = ipc.elapsedtime()

@@ -297,7 +297,7 @@ function copilot.sequences:checkFmgcData()
   copilot.suspend(5000,10000)
   if prob(0.1) then copilot.suspend(5000,10000) end
   FSL.PED_MCDU_KEY_FPLN()
-  if not FSL.GSLD_EFIS_CSTR_Button:isLit() then FSL.GSLD_EFIS_CSTR_Button() end
+  FSL.GSLD_EFIS_CSTR_Button:pressIfNotLit()
   FSL.GSLD_EFIS_ND_Mode_Knob("PLAN")
   FSL.GSLD_EFIS_ND_Range_Knob("20")
   copilot.suspend(0,5000)
@@ -360,24 +360,52 @@ function copilot.sequences:checkFmgcData()
 end
 
 function copilot.sequences:setupEFIS()
-  if not FSL.GSLD_EFIS_CSTR_Button:isLit() then
-    FSL.GSLD_EFIS_CSTR_Button()
-  end
+
+  FSL.GSLD_EFIS_CSTR_Button:pressIfNotLit()
 
   FSL.GSLD_EFIS_ND_Range_Knob(prob(0.5) and "10" or "20")
   FSL.GSLD_EFIS_ND_Mode_Knob("ARC")
   FSL.GSLD_EFIS_VORADF_1_Switch("VOR")
   FSL.GSLD_VORADF_2_Switch("VOR")
-  if not FSL.GSLD_EFIS_FD_Button:isLit() then
-    FSL.GSLD_EFIS_FD_Button()
-  end
+
+  FSL.GSLD_EFIS_FD_Button:pressIfNotLit()
+
 end
 
 function copilot.sequences:afterStart()
-  FSL.PED_SPD_BRK_LEVER("ARM")
-  FSL:setTakeoffFlaps(copilot.mcduWatcher:getVar("takeoffFlaps"))
+
+  FSL.PED_SPD_BRK_LEVER "ARM"
+
+  local flapsSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
+  local msg
+  if flapsSetting then
+    msg = "Setting the takeoff flaps using the setting found in the MCDU: %s"
+  else
+    flapsSetting = FSL.atsuLog:getTakeoffFlaps()
+    if flapsSetting then
+      msg = "No takeoff flaps setting found in the MCDU, taking the setting from the latest ATSU performance request: %s"
+    else
+      msg = "Unable to set takeoff flaps: no setting found in the MCDU and no performance request found in the ATSU log."
+    end
+  end
+  copilot.logger:info(string.format(msg, flapsSetting))
+  if flapsSetting then
+    FSL.PED_FLAP_LEVER(tostring(flapsSetting))
+  end
+
   repeat copilot.suspend() until not copilot.GSX_pushback()
-  FSL.trimwheel:_set()
+  
+  local CG = FSL.atsuLog:getMACTOW()
+  local msg
+  if CG then
+    msg = "Setting the takeoff trim using the MACTOW from the latest ATSU loadsheet: %.2f%%"
+  else
+    CG = ipc.readDBL(0x2EF8) * 100
+    msg = "No ATSU loadsheet found, setting the takeoff trim using the simulator CG variable: %.2f%%"
+  end
+  copilot.logger:info(msg:format(CG))
+
+  FSL.trimwheel:set(CG)
 end
 
 function copilot.sequences:taxiSequence()
@@ -412,28 +440,52 @@ function copilot.sequences:waitForLineup()
 end
 
 function copilot.sequences:lineUpSequence()
-  local packs = FSL.atsuLog:getTakeoffPacks() or copilot.UserOptions.actions.packs_on_takeoff
-  FSL.PED_ATCXPDR_ON_OFF_Switch("ON")
-  FSL.PED_ATCXPDR_MODE_Switch("TARA")
-  if packs == 0 then
-    if FSL.OVHD_AC_Pack_1_Button:isDown() then FSL.OVHD_AC_Pack_1_Button() end
-    if FSL.OVHD_AC_Pack_2_Button:isDown() then FSL.OVHD_AC_Pack_2_Button() end
+  
+  FSL.PED_ATCXPDR_ON_OFF_Switch "ON"
+  FSL.PED_ATCXPDR_MODE_Switch "TARA"
+
+  local packs = FSL.atsuLog:getTakeoffPacks()
+  local msgLeaveAlone, msgOff
+  if packs then
+    msgOff = "Switching the packs off as per the latest ATSU performance request."
+    msgLeaveAlone = "'PACKS ON' found in the latest ATSU performance request, leaving the packs at the current setting."
+  else
+    packs = copilot.UserOptions.actions.packs_on_takeoff
+    msgOff = "No ATSU performance request found, packs_on_takeoff=0 — switching the packs off."
+    msgLeaveAlone = "No ATSU performance request found, packs_on_takeoff=1 — leaving the packs at the current setting."
   end
+  copilot.logger:info(packs == 0 and msgOff or msgLeaveAlone)
+
+  if packs == 0 then
+    FSL.OVHD_AC_Pack_1_Button:toggleUp()
+    FSL.OVHD_AC_Pack_2_Button:toggleUp()
+  end
+
 end
 
 function copilot.sequences:takeoffSequence()
+
   firstFlight = false
-  FSL.MIP_CHRONO_ELAPS_SEL_Switch("RUN")
-  if copilot.UserOptions.actions.after_landing == 1 then FSL.GSLD_Chrono_Button() end
+
+  FSL.MIP_CHRONO_ELAPS_SEL_Switch "RUN"
+
+  if copilot.UserOptions.actions.after_landing == 1 then 
+    FSL.GSLD_Chrono_Button() 
+  end
+
 end
 
 function copilot.sequences:afterTakeoffSequence()
-  if not FSL.OVHD_AC_Pack_1_Button:isDown() then FSL.OVHD_AC_Pack_1_Button() end
+
+  FSL.OVHD_AC_Pack_1_Button:toggleDown()
   copilot.suspend(plusminus(10000,0.2))
-  if not FSL.OVHD_AC_Pack_2_Button:isDown() then FSL.OVHD_AC_Pack_2_Button() end
-  repeat copilot.suspend() until ipc.readLvar("FSLA320_slat_l_1") == 0
+  FSL.OVHD_AC_Pack_2_Button:toggleDown()
+
+  repeat copilot.suspend() until ipc.readLvar "FSLA320_slat_l_1" == 0
+
   copilot.suspend(plusminus(2000, 0.5))
-  FSL.PED_SPD_BRK_LEVER("RET")
+
+  FSL.PED_SPD_BRK_LEVER "RET"
 end
 
 function copilot.sequences.tenThousandDep()
@@ -485,10 +537,10 @@ function copilot.sequences.tenThousandDep()
 
   FSL.PED_MCDU_KEY_FPLN()
 
-  if not FSL.GSLD_EFIS_ARPT_Button:isLit() then FSL.GSLD_EFIS_ARPT_Button() end
-  FSL.GSLD_EFIS_ND_Range_Knob("160")
-  FSL.GSLD_EFIS_VORADF_1_Switch("VOR")
-  FSL.GSLD_VORADF_2_Switch("VOR")
+  FSL.GSLD_EFIS_ARPT_Button:pressIfNotLit()
+  FSL.GSLD_EFIS_ND_Range_Knob "160"
+  FSL.GSLD_EFIS_VORADF_1_Switch "VOR"
+  FSL.GSLD_VORADF_2_Switch "VOR"
 
 end
 
@@ -496,19 +548,19 @@ function copilot.sequences:tenThousandArr()
 
   FSL.PED_MCDU_KEY_PERF()
   copilot.sleep(plusminus(500))
-  while not FSL.MCDU:getString(1,48):find("APPR") do
+  while not FSL.MCDU:getString(1, 48):find "APPR" do
     FSL.PED_MCDU_LSK_R6()
     copilot.sleep(100)
   end
-  local disp = FSL.MCDU:getString(49,71)
-  local LS = disp:find("ILS") or disp:find("LOC")
+  local disp = FSL.MCDU:getString(49, 71)
+  local shouldLSbeOn = disp:find "ILS" or disp:find "LOC"
 
   moveTwoSwitches(FSL.OVHD_EXTLT_Land_L_Switch, "ON", FSL.OVHD_EXTLT_Land_R_Switch,"ON", 0.9)
-  FSL.OVHD_SIGNS_SeatBelts_Switch("ON")
+  FSL.OVHD_SIGNS_SeatBelts_Switch "ON"
 
-  if not FSL.GSLD_EFIS_CSTR_Button:isLit() then FSL.GSLD_EFIS_CSTR_Button() end
-  FSL.GSLD_EFIS_ND_Range_Knob("20")
-  if LS and not FSL.GSLD_EFIS_LS_Button:isLit() then FSL.GSLD_EFIS_LS_Button() end
+  FSL.GSLD_EFIS_CSTR_Button:pressIfNotLit()
+  FSL.GSLD_EFIS_ND_Range_Knob "20"
+  FSL.GSLD_EFIS_LS_Button:pressForLightState(shouldLSbeOn)
 
   FSL.PED_MCDU_KEY_RADNAV()
   copilot.sleep(plusminus(5000))
@@ -526,37 +578,36 @@ function copilot.sequences.afterLanding:__call()
 
   self.isRunning = true
 
-  FSL.PED_FLAP_LEVER("0")
-  FSL.PED_ATCXPDR_MODE_Switch("STBY")
+  FSL.PED_FLAP_LEVER "0"
+  FSL.PED_ATCXPDR_MODE_Switch "STBY"
 
-  FSL.MIP_CHRONO_ELAPS_SEL_Switch("STP")
-  if copilot.UserOptions.actions.takeoff_sequence == 1 then FSL.GSLD_Chrono_Button() end
+  FSL.MIP_CHRONO_ELAPS_SEL_Switch "STP"
+  if copilot.UserOptions.actions.takeoff_sequence == 1 then 
+    FSL.GSLD_Chrono_Button() 
+  end
 
-  FSL.OVHD_EXTLT_Strobe_Switch("AUTO")
-  FSL.OVHD_EXTLT_RwyTurnoff_Switch("OFF")
+  FSL.OVHD_EXTLT_Strobe_Switch "AUTO"
+  FSL.OVHD_EXTLT_RwyTurnoff_Switch "OFF"
   moveTwoSwitches(FSL.OVHD_EXTLT_Land_L_Switch, "RETR", FSL.OVHD_EXTLT_Land_R_Switch,"RETR", 0.9)
-  FSL.OVHD_EXTLT_Nose_Switch("TAXI")
+  FSL.OVHD_EXTLT_Nose_Switch "TAXI"
 
-  FSL.PED_WXRadar_SYS_Switch("OFF")
-  FSL.PED_WXRadar_PWS_Switch("OFF")
+  FSL.PED_WXRadar_SYS_Switch "OFF"
+  FSL.PED_WXRadar_PWS_Switch "OFF"
 
-  local FDsOff = copilot.UserOptions.actions.FDs_off_after_landing == 1
-  local FDisLit = FSL.PF.GSLD_EFIS_FD_Button:isLit()
-  if (not FDisLit and not FDsOff) or (FDisLit and FDsOff) then
-    FSL.PF.GSLD_EFIS_FD_Button()
-  end
-  
-  if FSL.PF.GSLD_EFIS_LS_Button:isLit() then FSL.PF.GSLD_EFIS_LS_Button() end
-  if FSL.FCU:get().isBirdOn then FSL.GSLD_FCU_HDGTRKVSFPA_Button() end
-  if FSL.GSLD_EFIS_LS_Button:isLit() then FSL.GSLD_EFIS_LS_Button() end
+  local shouldFDsBeOn = copilot.UserOptions.actions.FDs_off_after_landing == 0
 
-  FDisLit = FSL.GSLD_EFIS_FD_Button:isLit()
-  if (not FDisLit and not FDsOff) or (FDisLit and FDsOff) then
-    FSL.GSLD_EFIS_FD_Button()
+  FSL.PF.GSLD_EFIS_FD_Button:pressForLightState(shouldFDsBeOn)
+  FSL.PF.GSLD_EFIS_LS_Button:pressIfLit()
+
+  if FSL.FCU:get().isBirdOn then 
+    FSL.GSLD_FCU_HDGTRKVSFPA_Button() 
   end
 
-  if copilot.UserOptions.actions.pack2_off_after_landing == 1 and FSL.OVHD_AC_Pack_2_Button:isDown() then 
-    FSL.OVHD_AC_Pack_2_Button() 
+  FSL.GSLD_EFIS_LS_Button:pressIfLit()
+  FSL.GSLD_EFIS_FD_Button:pressForLightState(shouldFDsBeOn)
+
+  if copilot.UserOptions.actions.pack2_off_after_landing == 1 then 
+    FSL.OVHD_AC_Pack_2_Button:toggleUp()
   end
 
   copilot.suspend()

@@ -8,23 +8,29 @@ project = '%s'
 merge = true
 
 file = {
+  'Modules/FSL2lua/FSL2Lua/util.lua',
   'Modules/FSL2lua/FSL2Lua/FSL2Lua.lua',
 
   'Modules/FSL2lua/FSL2Lua/Control.lua',
 
   'Modules/FSL2lua/FSL2Lua/Button.lua',
+  'Modules/FSL2lua/FSL2Lua/ToggleButton.lua',
+
   'Modules/FSL2lua/FSL2Lua/Guard.lua',
 
   'Modules/FSL2lua/FSL2Lua/Switch.lua',
   'Modules/FSL2lua/FSL2Lua/FcuSwitch.lua',
 
-  'Modules/FSL2lua/FSL2Lua/KnobWithoutPositions.lua',
+  'Modules/FSL2lua/FSL2Lua/RotaryKnob.lua',
 
   'Modules/FSL2lua/FSL2Lua/MCDU.lua',
+  'Modules/FSL2lua/FSL2Lua/Bind.lua',
+
+
   'Modules/FSLabs Copilot.lua',
   'Modules/FSLabs Copilot/copilot/util.lua',
   'Modules/FSLabs Copilot/copilot/Event.lua',
-  'FSL2Lua/Joystick.h',
+  'Joystick/Joystick.h',
 }
 
 format = 'markdown'

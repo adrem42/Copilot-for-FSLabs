@@ -6,7 +6,7 @@
 	],
 	"settings": {
 		"files.exclude": {
-			"**/*.cpp": true,
+			//"**/*.cpp": true,
 			"**/*.def": true,
 			//"**/*.h": true,
 			"**/*.hpp": true,

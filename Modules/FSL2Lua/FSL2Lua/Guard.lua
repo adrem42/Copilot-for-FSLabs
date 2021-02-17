@@ -10,40 +10,37 @@ Guard.__index = Guard
 Guard.__class = "Guard"
 
 --- <span>
-
-function Guard:lift()
+function Guard:open()
   if FSL.areSequencesEnabled then
     self:_moveHandHere()
   end
   if not self:isOpen() then
-    ipc.mousemacro(self.rectangle, 1)
+    self:macro "rightPress"
     checkWithTimeout(5000, function() return self:isOpen() end)
   end
   if FSL.areSequencesEnabled then
-    self:interact(plusminus(1000))
+    self:_interact(plusminus(1000))
   end
 end
 
---- <span>
+--- Alias for `open`.
+--- @function lift
+Guard.lift = Guard.open
 
+--- <span>
 function Guard:close()
   if FSL.areSequencesEnabled then
     self:_moveHandHere()
   end
   if self:isOpen() then
-    if self.toggle then
-      ipc.mousemacro(self.rectangle, 1)
-    else
-      ipc.mousemacro(self.rectangle, 11)
-    end
+    self:macro(self.toggle and "rightPress" or "rightRelease")
   end
   if FSL.areSequencesEnabled then
-    self:interact(plusminus(500))
+    self:_interact(plusminus(500))
   end
 end
 
 --- @treturn bool
-
 function Guard:isOpen() return self:getLvarValue() == 10 end
 
 return Guard

@@ -10,31 +10,31 @@ EngineMasterSwitch.__call = Switch.__call
 EngineMasterSwitch.__class = "EngineMasterSwitch"
 
 function EngineMasterSwitch:increase()
-  ipc.mousemacro(self.rectangle, 1)
+  self:macro "rightPress"
   self:_waitForLvarChange()
   if FSL.areSequencesEnabled then
-    self:interact(100)
+    self:_interact(100)
   end
-  ipc.mousemacro(self.rectangle, 3)
+  self:macro "leftPress"
   self:_waitForLvarChange()
   if FSL.areSequencesEnabled then
-    self:interact(100)
+    self:_interact(100)
   end
-  ipc.mousemacro(self.rectangle, 11)
-  ipc.mousemacro(self.rectangle, 13)
+  self:macro "rightRelease"
+  self:macro "leftRelease"
   self:_waitForLvarChange()
 end
 
 EngineMasterSwitch.decrease = EngineMasterSwitch.increase
 
 function EngineMasterSwitch:_set(targetPos)
-  local lvarVal = self:getLvarValue()
-  if lvarVal == 10 or lvarVal == 20 then
-    ipc.mousemacro(self.rectangle, 11)
-    ipc.mousemacro(self.rectangle, 13)
+  local lvar = self:getLvarValue()
+  if lvar == 10 or lvar == 20 then
+    self:macro "rightRelease"
+    self:macro "leftRelease"
     self:_waitForLvarChange()
   end
-  Switch.set(self, targetPos)
+  Switch._set(self, targetPos)
 end
 
 return EngineMasterSwitch

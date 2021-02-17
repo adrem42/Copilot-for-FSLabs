@@ -10,7 +10,7 @@ local atsuLog = {
 }
 
 function atsuLog:get()
-  return file.read(self.path)
+  return file.read(self.path) or ""
 end
 
 function atsuLog:getMACTOW()

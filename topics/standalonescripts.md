@@ -1,8 +1,8 @@
 # Standalone FSL2Lua scripts
 
-You can use FSL2Lua standalone (without Copilot) to bind FSLabs cockpit controls to your keyboard, joystick buttons and axes.
+You can install FSL2Lua standalone (without Copilot) to bind your keyboard keys, joystick buttons **and axes** to FSLabs cockpit controls.
 
-Even though you will need to write Lua code, no prior programming experience is required as the syntax is very straightforward. Making simple bindings is more akin to writing a configuration file rather than 'real programming'.
+The syntax for writing the scripts is straightforward enough that you don't need any programming experience. 
 
 ***
 
@@ -32,4 +32,4 @@ You can bind it to a button or key in the FSUIPC menu - it will be listed in the
 [Auto]  
 1=Lua my_script
 <br><br>
-<iframe style="position: relative; width: 100%; height:480px" src="https://www.youtube.com/embed/jjjrj4fHNTE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe style="position: relative; width: 100%; height:480px" src="https://www.youtube.com/embed/D75G7qVwChY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

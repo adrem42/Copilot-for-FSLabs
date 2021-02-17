@@ -1,7 +1,7 @@
 -- Example usage of `FSL2Lua.Bind`
 
 local FSL = require "FSL2Lua"
-FSL:setPilot(1)
+FSL:setPilot "CPT"
 
 Bind {key = "F5", onPress = {FSL.OVHD_EXTLT_Strobe_Switch, "ON"}}
 Bind {key = "Ins", onPress = {FSL.OVHD_EXTLT_Strobe_Switch, "AUTO"}}
@@ -9,7 +9,27 @@ Bind {key = "Del", onPress = {FSL.OVHD_EXTLT_Strobe_Switch, "OFF"}}
 
 Bind {key = "NumpadMinus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "push"}}
 Bind {key = "NumpadPlus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "pull"}}
-Bind {key = "NumpadEnter", onPress = FSL.MIP_ISIS_BARO_Button}
+Bind {key = "NumpadEnter", bindButton = FSL.MIP_ISIS_BARO_Button}
+
+--- Anything with A/C type-specific controls needs to be 
+--- wrapped in A/C type checks:
+
+if FSL:getAcType() == "A321" then
+  Bind {key = "F1", onPress = FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button}
+  Bind {key = "F2", onPress = FSL.OVHD_CALLS_ALL_Button}
+else
+  Bind {key = "F1", onPress = FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button}
+end
+
+Bind {
+  key = "A",
+  -- Bind.toggleButtons will keep the toggle states
+  -- of the buttons in sync.
+  onPress = Bind.toggleButtons(
+    FSL.OVHD_AI_Eng_1_Anti_Ice_Button,
+    FSL.OVHD_AI_Eng_2_Anti_Ice_Button
+  )
+}
 
 Bind {
   key = "F6",
@@ -40,7 +60,7 @@ Bind {key = "PageDown", onPress = {FSL.OVHD_EXTLT_Nose_Switch, "OFF"}}
 
 Bind {key = "NumpadDiv", onPress = {FSL.OVHD_INTLT_Dome_Switch, "BRT"}}
 
-Bind {key = "\191", onPress = FSL.GSLD_Chrono_Button}
+Bind {key = "\191", bindButton = FSL.GSLD_Chrono_Button}
 
 Bind {key = "F1", onPress = {FSL.MIP_CHRONO_ELAPS_SEL_Switch, "RUN"}}
 Bind {key = "F2", onPress = {FSL.MIP_CHRONO_ELAPS_SEL_Switch, "STP"}}

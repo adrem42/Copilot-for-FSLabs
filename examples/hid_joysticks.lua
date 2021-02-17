@@ -21,7 +21,17 @@ Joystick.logAllJoysticks()
 
 myJoy:onPress(1, print, "Hello " .. myJoy.info.product .. "!")
 
--- "ON" and "RETR" will be passed as arguments to these @{FSL2Lua.Switch.__call|callbacks}.
+myJoy:onPress(9, 
+  -- Bind.toggleButtons will keep the toggle states
+  -- of the buttons in sync.
+  Bind.toggleButtons(
+    FSL.OVHD_AI_Eng_1_Anti_Ice_Button,
+    FSL.OVHD_AI_Eng_2_Anti_Ice_Button
+  )
+)
+
+myJoy:bindButton(8, FSL.CPT.PED_RADIO_NAV_Button)
+
 myJoy:onPress(5, 
   FSL.OVHD_EXTLT_Land_L_Switch, "ON",
   FSL.OVHD_EXTLT_Land_R_Switch, "ON")
@@ -33,7 +43,7 @@ myJoy:onPress(6,
 myJoy:onPress   (2, FSL.PED_COMM_INT_RAD_Switch, "RAD")
 myJoy:onRelease (2, FSL.PED_COMM_INT_RAD_Switch, "OFF")
 
--- @{FSL2Lua.KnobWithoutPositions.rotateLeft|rotateLeft} and @{FSL2Lua.KnobWithoutPositions.rotateRight|rotateRight} are method names
+-- @{FSL2Lua.RotaryKnob.rotateLeft|rotateLeft} and @{FSL2Lua.RotaryKnob.rotateRight|rotateRight} are method names
 -- 30 is the repeat interval in milliseconds
 myJoy:onPressRepeat(4, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft")
 myJoy:onPressRepeat(3, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateRight")
@@ -42,14 +52,6 @@ myJoy:onPressRepeat(3, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateRight")
 -- This a shorter version of:
 -- myJoy:onPress(0, function() FSL.OVHD_INTLT_Integ_Lt_Knob:cycle(5) end)
 myJoy:onPress(1, FSL.OVHD_INTLT_Integ_Lt_Knob, "cycle", 5)
-
-myJoy:onPress(8, 
-  FSL.CPT.PED_RADIO_NAV_Guard, "lift", 
-  FSL.CPT.PED_RADIO_NAV_Button, "macro", "leftPress")
-
-myJoy:onRelease(8, 
-  FSL.CPT.PED_RADIO_NAV_Button, "macro", "leftRelease",
-  FSL.CPT.PED_RADIO_NAV_Guard, "close")
 
 -----------------------------------------
 ---- Encoders ---------------------------
@@ -71,9 +73,6 @@ function calculateKnobTicks(diff)
   return 1
 end
 
--- The encoder output needs to be debounced in
--- the firmware or hardware for the function
--- to work properly
 myJoy:makeEncoder { 8, 9, detentsPerCycle = 4 }
   :setTickCalculator(calculateKnobTicks)
   :onCW(FSL.GSLD_FCU_HDG_Knob, "rotateRight")

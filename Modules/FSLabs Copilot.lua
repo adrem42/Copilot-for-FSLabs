@@ -11,8 +11,11 @@ addPackagePath(APPDIR)
 copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
 require "copilot.util"
 copilot.UserOptions = require "copilot.UserOptions"
-local err = copilot.init()
-if err then copilot.exit(err) end
+
+do
+  local err = copilot.init()
+  if err then copilot.exit(err) end
+end
 
 FSL = require "FSL2Lua"
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
@@ -66,6 +69,7 @@ FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor
 
 local callbacks = {}
+copilot._callbacks = callbacks
 
 --- Adds function or coroutine callback to the main callback loop.
 --- Dead coroutines are removed automatically.

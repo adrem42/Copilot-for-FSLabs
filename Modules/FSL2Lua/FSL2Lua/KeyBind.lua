@@ -72,9 +72,9 @@ function KeyBind:prepareData(data)
   for key in data.key:gmatch("[^(%+)]+") do
     keyCount = keyCount + 1
     local isShift
-    for shift, data in pairs(shiftsList) do
+    for shift, shiftData in pairs(shiftsList) do
       if shift:lower() == key:lower() then
-        shifts[#shifts+1] = data
+        shifts[#shifts+1] = shiftData
         isShift = true
       end
     end
@@ -149,7 +149,6 @@ function KeyBind:registerOnReleaseEvents()
         self.data.onRelease()
       end
     end)
-    local shiftsVal = 0
     local shiftsValArr = {}
     for _, v in pairs(shifts) do
       shiftsValArr[#shiftsValArr+1] = v.shift
