@@ -292,6 +292,20 @@ public:
 	*/
 
 	/***
+	Same as `bindButton` - for pushing the switch.
+	@function bindPush
+	@int buttonNum
+	@param switch <a href="FSL2Lua.html#Class_FcuSwitch">FcuSwitch</a>
+	*/
+
+	/***
+	Same as `bindButton` - for pulling the switch.
+	@function bindPull
+	@int buttonNum
+	@param switch <a href="FSL2Lua.html#Class_FcuSwitch">FcuSwitch</a>
+	*/
+
+	/***
 	Binds a callback to a button press.
 	@function onPress
 	@int buttonNum
@@ -390,8 +404,6 @@ public:
 	static void logAllJoysticks(sol::this_state s);
 
 	static void makeLuaBindings(sol::state_view& lua);
-
-
 
 	~Joystick();
 };

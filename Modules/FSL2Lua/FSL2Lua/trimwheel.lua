@@ -60,14 +60,14 @@ function trimwheel:_set(CG, step)
 
     if CG > CG_ind then
       if dist > 3.1 then 
-        self:_set(CG_ind + 3, 1) 
+        self:_set(CG_ind + 3, true) 
         util.sleep(plusminus(350,0.2)) 
       end
       ipc.control(self.control.inc)
       util.sleep(time - 5)
     elseif CG < CG_ind then
       if dist > 3.1 then 
-        self:_set(CG_ind - 3, 1) 
+        self:_set(CG_ind - 3, true) 
         util.sleep(plusminus(350,0.2)) 
       end
       ipc.control(self.control.dec)
@@ -77,7 +77,6 @@ function trimwheel:_set(CG, step)
     local trimIsSet = math.abs(CG - CG_ind) <= (step and 0.5 or 0.2)
 
   until trimIsSet
-
 end
 
 function trimwheel:set(CG)
@@ -88,30 +87,27 @@ function trimwheel:set(CG)
   else 
     CG = atsuLog:getMACTOW() or ipc.readDBL(0x2EF8) * 100
   end
-  if not CG then 
-    return
-  else 
-    CG = tonumber(CG) 
-  end
 
-  util.log("Setting the trim. CG: " .. CG, 1)
+  if not CG then return
+  else CG = tonumber(CG) end
+
+  util.log("Setting the trim. CG: " .. CG, true)
 
   if FSL.areSequencesEnabled then
-
     if not CG_man and prob(0.1) then 
       util.sleep(plusminus(10000, 0.5)) 
     end
-
     local reachtime = hand:moveTo(self.pos)
-
-    util.log(("Position of the trimwheel: x = %s, y = %s, z = %s"):format(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z)))
+    util.log(
+      ("Position of the trimwheel: x = %s, y = %s, z = %s")
+        :format(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
+    )
     util.log("Trim wheel reached in " .. math.floor(reachtime) .. " ms")
   end
 
   self:_set(CG)
 
   return CG
-
 end
 
 return trimwheel

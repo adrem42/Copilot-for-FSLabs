@@ -102,22 +102,29 @@ void Joystick::makeLuaBindings(sol::state_view& lua)
 		}
 	);
 
-	JoystickType["bindButton"] = [](Joystick& joy, int buttonNum, sol::object butt) {
+	auto specialButtonBinding = [](Joystick& joy, int buttonNum, sol::object o, const std::string& methodName) {
 		sol::function onPress;
 		sol::function onRelease;
-		auto lua = sol::state_view(butt.lua_state());
-		sol::tie(onPress, onRelease) = lua["Bind"]["_bindButton"](butt);
+		auto lua = sol::state_view(o.lua_state());
+		sol::tie(onPress, onRelease) = lua["Bind"][methodName](o);
 		joy.onPress(buttonNum, onPress);
 		joy.onRelease(buttonNum, onRelease);
 	};
 
-	JoystickType["bindToggleButton"] = [](Joystick& joy, int buttonNum, sol::object butt) {
-		sol::function onPress;
-		sol::function onRelease;
-		auto lua = sol::state_view(butt.lua_state());
-		sol::tie(onPress, onRelease) = lua["Bind"]["_bindToggleButton"](butt);
-		joy.onPress(buttonNum, onPress);
-		joy.onRelease(buttonNum, onRelease);
+	JoystickType["bindButton"] = [specialButtonBinding](Joystick& joy, int buttonNum, sol::object butt) {
+		specialButtonBinding(joy, buttonNum, butt, "_bindButton");
+	};
+
+	JoystickType["bindToggleButton"] = [specialButtonBinding](Joystick& joy, int buttonNum, sol::object butt) {
+		specialButtonBinding(joy, buttonNum, butt, "_bindToggleButton");
+	};
+
+	JoystickType["bindPush"] = [specialButtonBinding](Joystick& joy, int buttonNum, sol::object _switch) {
+		specialButtonBinding(joy, buttonNum, _switch, "_bindPush");
+	};
+
+	JoystickType["bindPull"] = [specialButtonBinding](Joystick& joy, int buttonNum, sol::object _switch) {
+		specialButtonBinding(joy, buttonNum, _switch, "_bindPull");
 	};
 
 	JoystickType["useZeroIndexedButtons"] = &Joystick::useZeroIndexedButtons;

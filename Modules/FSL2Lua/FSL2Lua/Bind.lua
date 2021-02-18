@@ -4,6 +4,7 @@ local util = require "FSL2Lua.FSL2Lua.util"
 local KeyBind = require "FSL2Lua.FSL2Lua.KeyBind"
 local JoyBind = require "FSL2Lua.FSL2Lua.JoyBind"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
+local FcuSwitch = require "FSL2Lua.FSL2Lua.FcuSwitch"
 local Button = require "FSL2Lua.FSL2Lua.Button"
 local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 
@@ -28,6 +29,8 @@ setmetatable(Bind, Bind)
 --- @param data.onRelease @{cockpit_control_binds.lua|see the examples}
 --- @param data.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
 --- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
+--- @param data.bindPush <a href="#Class_FcuSwitch">FcuSwitch</a> Same as `bindButton` — for pushing the switch.
+--- @param data.bindPull <a href="#Class_FcuSwitch">FcuSwitch</a> Same as `bindButton` — for pulling the switch.
 --- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
 --- @string data.key Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br>
 --
@@ -87,26 +90,33 @@ local function makeTable(data)
   return type(data) == "table" and data or {data}
 end
 
+local function specialButtonBinding(data, onPress, onRelease)
+  data.onPress = makeTable(data.onPress)
+  data.onRelease = makeTable(data.onRelease)
+  data.onPress[#data.onPress+1] = onPress
+  data.onRelease[#data.onRelease+1] = onRelease
+end
+
 function Bind:prepareData(data)
 
   if data.onPress and data.onPressRepeat then
     error("You can't have both onPress and onPressRepeat in the same bind.", 3)
   end
 
+  if data.bindPush then
+    specialButtonBinding(data, Bind._bindPush(data.bindPush))
+  end
+
+  if data.bindPull then
+    specialButtonBinding(data, Bind._bindPull(data.bindPull))
+  end
+
   if data.bindButton then
-    data.onPress = makeTable(data.onPress)
-    data.onRelease = makeTable(data.onRelease)
-    local onPress, onRelease = Bind._bindButton(data.bindButton)
-    data.onPress[#data.onPress+1] = onPress
-    data.onRelease[#data.onRelease+1] = onRelease
+    specialButtonBinding(data, Bind._bindButton(data.bindButton))
   end
 
   if data.bindToggleButton then
-    data.onPress = makeTable(data.onPress)
-    data.onRelease = makeTable(data.onRelease)
-    local onPress, onRelease = Bind._bindToggleButton(data.bindToggleButton)
-    data.onPress[#data.onPress+1] = onPress
-    data.onRelease[#data.onRelease+1] = onRelease
+    specialButtonBinding(data, Bind._bindToggleButton(data.bindToggleButton))
   end
   
   if data.onPressRepeat then
@@ -115,16 +125,10 @@ function Bind:prepareData(data)
   end
   
   if data.onPress then
-    
     data.onPress = self:makeSingleFunc(data.onPress)
-
     if data.cond then
       local onPress = data.onPress
-      data.onPress = function()
-        if data.cond() then
-          onPress()
-        end
-      end
+      data.onPress = function() if data.cond() then onPress() end end
     end
   end
   data.onRelease = data.onRelease and self:makeSingleFunc(data.onRelease)
@@ -132,12 +136,9 @@ function Bind:prepareData(data)
 end
 
 local bindArg = {}
+function Bind.asArg(arg) return setmetatable({arg = arg}, bindArg) end
 
-function Bind.asArg(arg)
-  return setmetatable({arg = arg}, bindArg)
-end
-
-local function isCallable(elem, nextElem)
+local function checkCallable(elem, nextElem)
   if type(elem) == "function" then
     return "func"
   elseif type(elem) == "table" then
@@ -154,7 +155,7 @@ local function isCallable(elem, nextElem)
   end
 end
 
-local function checkFSLcontrol(elem, callableType, args, errLevel)
+local function checkFslControl(elem, callableType, args, errLevel)
   if callableType == "method" then return end
   if util.isType(elem, Switch) then
     local ok, err = elem:_getTargetLvarVal(args[1])
@@ -177,7 +178,7 @@ makeFuncFromCallable = function(i, elem, callableType, candidates, funcs, errLev
     end
   end
 
-  checkFSLcontrol(elem, callableType, args, errLevel + 1)
+  checkFslControl(elem, callableType, args, errLevel + 1)
 
   if callableType == "method" then 
     elem = elem[candidates[i+1]]
@@ -191,19 +192,17 @@ makeFuncFromCallable = function(i, elem, callableType, candidates, funcs, errLev
   else
     return function() elem(unpack(args)) end
   end
-  
 end
 
 parseCallableArgs = function(i, candidates, funcs, prevArgs)
 
   funcs = funcs or {}
-
   local errLevel = 5
   local callableType, elem
 
   while i <= #candidates do
     elem = candidates[i]
-    callableType, arg = isCallable(elem, candidates[i+1])
+    callableType, arg = checkCallable(elem, candidates[i+1])
     if callableType then
       break
     elseif i == 1 then
@@ -224,16 +223,18 @@ parseCallableArgs = function(i, candidates, funcs, prevArgs)
   return funcs
 end
 
-function Bind._bindButton(butt)
-  util.assert(util.isType(butt, Button), tostring(butt.name or butt) .. " is not a button.", 4)
+function Bind._bindButton(butt, pressMacro, releaseMacro)
+  util.checkType(butt, Button, "button", 4)
   local onPress, onRelease
+  pressMacro = pressMacro or "leftPress"
+  releaseMacro = releaseMacro or "leftRelease"
   if not butt.guard then
     if getmetatable(butt) == ToggleButton then
       onPress = function() butt() end
       onRelease = function() end
     else
-      onPress = function() butt:macro "leftPress" end
-      onRelease = function() butt:macro "leftRelease" end
+      onPress = function() butt:macro(pressMacro) end
+      onRelease = function() butt:macro(releaseMacro) end
     end
   elseif getmetatable(butt) == ToggleButton then
     onPress = function() butt.guard:open() butt() end
@@ -241,22 +242,28 @@ function Bind._bindButton(butt)
   else
     onPress = function()
       butt.guard:open()
-      butt:macro "leftPress"
+      butt:macro(pressMacro)
     end
     onRelease = function()
-      butt:macro "leftRelease"
+      butt:macro(releaseMacro)
       butt.guard:close()
     end
   end
   return onPress, onRelease
 end
 
+function Bind._bindPush(switch)
+  util.checkType(switch, FcuSwitch, "FCU switch", 4)
+  return Bind._bindButton(switch._button)
+end
+
+function Bind._bindPull(switch)
+  util.checkType(switch, FcuSwitch, "FCU switch", 4)
+  return Bind._bindButton(switch._button, "rightPress", "rightRelease")
+end
+
 local function checkIsToggleButton(butt, errLevel)
-  util.assert(
-    getmetatable(butt) == ToggleButton,
-    tostring(butt and butt.name or butt) .. " is not a toggle button.", 
-    errLevel + 1
-  )
+  util.checkType(butt, ToggleButton, "toggle button", errLevel + 1)
 end
 
 function Bind._bindToggleButton(butt)
@@ -309,6 +316,9 @@ function Bind:makeSingleFunc(args)
     args = {args}
   end
   local funcs = parseCallableArgs(1, args)
+  if #funcs == 0 then
+    error("There needs to be at least one callable object", 4)
+  end
   if #funcs == 1 then return funcs[1] end
   return function()
     for i = #funcs, 1, -1 do

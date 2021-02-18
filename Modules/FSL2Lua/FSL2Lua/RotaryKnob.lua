@@ -12,7 +12,7 @@ RotaryKnob.__index = RotaryKnob
 RotaryKnob.__class = "RotaryKnob"
 
 function RotaryKnob:new(control)
-  if not control.range then error("wtf " .. control.LVar) end
+  util.assert(type(control.range) == "number", "Failed to create control: " .. control.LVar)
   return setmetatable(Switch:new(control), self)
 end
 
@@ -21,20 +21,14 @@ end
 --- @usage FSL.OVHD_INTLT_Integ_Lt_Knob(42)
 RotaryKnob.__call = getmetatable(RotaryKnob).__call
 
-function RotaryKnob:_rotateLeft()   self:macro "wheelDown" end
-function RotaryKnob:_rotateRight()  self:macro "wheelUp" end
+function RotaryKnob:_rotateLeft() self:macro "wheelDown" end
+function RotaryKnob:_rotateRight() self:macro "wheelUp" end
 
 --- Rotates the knob left by 1 tick.
-function RotaryKnob:rotateLeft()
-  self:_rotateLeft()
-  hideCursor() 
-end
+function RotaryKnob:rotateLeft() self:_rotateLeft() hideCursor() end
 
 --- Rotates the knob right by 1 tick.
-function RotaryKnob:rotateRight()
-  self:_rotateRight()
-  hideCursor()
-end
+function RotaryKnob:rotateRight() self:_rotateRight() hideCursor() end
 
 function RotaryKnob:_getTargetLvarVal(targetPos)
   if type(targetPos) ~= "number" then 
@@ -162,8 +156,6 @@ end
 --- Sets the knob to random position between lower and upper.
 --- @number[opt=0] lower
 --- @number[opt=100] upper
-function RotaryKnob:random(lower, upper)
-  self(math.random(lower or 0, upper or 100))
-end
+function RotaryKnob:random(lower, upper) self(math.random(lower or 0, upper or 100)) end
 
 return RotaryKnob

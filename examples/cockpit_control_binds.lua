@@ -7,18 +7,18 @@ Bind {key = "F5", onPress = {FSL.OVHD_EXTLT_Strobe_Switch, "ON"}}
 Bind {key = "Ins", onPress = {FSL.OVHD_EXTLT_Strobe_Switch, "AUTO"}}
 Bind {key = "Del", onPress = {FSL.OVHD_EXTLT_Strobe_Switch, "OFF"}}
 
-Bind {key = "NumpadMinus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "push"}}
-Bind {key = "NumpadPlus", onPress = {FSL.GSLD_EFIS_Baro_Switch, "pull"}}
+Bind {key = "NumpadMinus", bindPush = FSL.CPT.GSLD_EFIS_Baro_Switch}
+Bind {key = "NumpadPlus", bindPull = FSL.CPT.GSLD_EFIS_Baro_Switch}
 Bind {key = "NumpadEnter", bindButton = FSL.MIP_ISIS_BARO_Button}
 
---- Anything with A/C type-specific controls needs to be 
+--- Anything involving A/C type-specific controls needs to be 
 --- wrapped in A/C type checks:
 
 if FSL:getAcType() == "A321" then
-  Bind {key = "F1", onPress = FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button}
-  Bind {key = "F2", onPress = FSL.OVHD_CALLS_ALL_Button}
+  Bind {key = "F1", bindButton = FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button}
+  Bind {key = "F2", bindButton = FSL.OVHD_CALLS_ALL_Button}
 else
-  Bind {key = "F1", onPress = FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button}
+  Bind {key = "F1", bindButton = FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button}
 end
 
 Bind {

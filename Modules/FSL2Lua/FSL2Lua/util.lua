@@ -67,6 +67,15 @@ function util.isType(o, _type)
   return util.isType(mt, _type)
 end
 
+function util.checkType(o, type, desc, errLevel)
+  util.assert(
+    util.isType(o, type),
+    tostring(o and o.name or o) .. " is not a " .. desc .. ".",  
+    (errLevel or 1) + 1
+  )
+  return o
+end
+
 function util.handleError(msg, level, critical)
   level = (level or 1) + 1
   msg = "FSL2Lua: " .. msg
@@ -85,7 +94,7 @@ end
 function util.log(msg, drawline, notimestamp)
   if not util._loggingEnabled then return end
   local str = ""
-  if drawline == 1 then
+  if drawline == true then
     str = "-------------------------------------------------------------------------------------------\n"
   end
   if not notimestamp then

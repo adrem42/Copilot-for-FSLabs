@@ -40,8 +40,9 @@ function Button:_pressAndRelease(twoSwitches, pressClickType, releaseClickType)
     end
     util.log("Interaction with the control took " .. interactionLength .. " ms")
   end
-
 end
+
+function Button:_hasBeenPressed(lvarBefore) return self:getLvarValue() ~= lvarBefore end
 
 function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   local lvarBefore = self:getLvarValue()
@@ -54,11 +55,11 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   if twoSwitches then
     checkWithTimeout(timeout, function()
       coroutine.yield()
-      return self:getLvarValue() ~= lvarBefore
+      return self:_hasBeenPressed(lvarBefore)
     end)
     repeatWithTimeout(sleepAfterPress, coroutine.yield)
   else
-    self:_waitForLvarChange(timeout, lvarBefore)
+    checkWithTimeout(timeout, function() return self:_hasBeenPressed(lvarBefore) end)
     util.sleep(sleepAfterPress)
   end
   self:_macro(releaseClickType)
@@ -67,14 +68,14 @@ end
 --- Presses the button.
 --- @function __call
 --- @usage FSL.OVHD_ELEC_BAT_1_Button()
-function Button:__call() return self:_pressAndRelease() end
+function Button:__call() self:_pressAndRelease() end
 
 --- Simulates a click of the right mouse button on this button.
 --- This function was written because I know that the PA button on the ACP 
 --- has a special function if you click on it with the right mouse button. 
 --- I don't think it's useful for anything else.
 function Button:rightClick() 
-  return self:_pressAndRelease(
+  self:_pressAndRelease(
     false, self.clickTypes.rightPress, self.clickTypes.rightRelease
   ) 
 end
@@ -97,9 +98,9 @@ function Button:pressForLightState(state)
 end
 
 --- <span>
-function Button:pressIfLit() return self:pressForLightState(false) end
+function Button:pressIfLit() self:pressForLightState(false) end
 
 --- <span>
-function Button:pressIfNotLit() return self:pressForLightState(true) end
+function Button:pressIfNotLit() self:pressForLightState(true) end
 
 return Button

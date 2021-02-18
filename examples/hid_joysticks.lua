@@ -32,6 +32,9 @@ myJoy:onPress(9,
 
 myJoy:bindButton(8, FSL.CPT.PED_RADIO_NAV_Button)
 
+myJoy:bindPush(1, FSL.CPT.GSLD_EFIS_Baro_Switch)
+myJoy:bindPull(2, FSL.CPT.GSLD_EFIS_Baro_Switch)
+
 myJoy:onPress(5, 
   FSL.OVHD_EXTLT_Land_L_Switch, "ON",
   FSL.OVHD_EXTLT_Land_R_Switch, "ON")
@@ -88,6 +91,18 @@ myJoy:onAxis("Y", FSL.GSLD_FCU_DimLt_Knob)
 myJoy:onAxis("Z", FSL.CPT.PED_COMM_VHF1_Knob):props():invert()
 
 -----------------------------------------
+
+--- Anything involving A/C type-specific controls needs to be 
+--- wrapped in A/C type checks:
+
+if FSL:getAcType() == "A321" then
+  myJoy:bindButton(7, FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button)
+  myJoy:bindButton(8, FSL.OVHD_CALLS_ALL_Button)
+else
+  myJoy:bindButton(7, FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button)
+end
+
+------------------------------------------
 
 -- Start reading the data
 Joystick.read()

@@ -16,11 +16,11 @@ function Switch:new(control)
   control.toggle = nil
   control = getmetatable(self):new(control)
   if control.orientation == 2 then -- right click to decrease, left click to increase
-    control.incClickType = 3
-    control.decClickType = 1
+    control.incClickType = self.clickTypes.leftPress
+    control.decClickType = self.clickTypes.rightPress
   else -- left click to decrease, right click to increase (most of the switches)
-    control.incClickType = 1
-    control.decClickType = 3
+    control.incClickType = self.clickTypes.rightPress
+    control.decClickType = self.clickTypes.leftPress
   end
   control.toggleDir = 1
   control.springLoaded = {}

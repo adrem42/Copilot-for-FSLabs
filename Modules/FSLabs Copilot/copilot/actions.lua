@@ -385,7 +385,7 @@ function copilot.sequences:afterStart()
     if flapsSetting then
       msg = "No takeoff flaps setting found in the MCDU, taking the setting from the latest ATSU performance request: %s"
     else
-      msg = "Unable to set takeoff flaps: no setting found in the MCDU and no performance request found in the ATSU log."
+      msg = "Unable to set takeoff flaps: no setting found in the MCDU, no performance request found in the ATSU log."
     end
   end
   copilot.logger:info(string.format(msg, flapsSetting))
@@ -460,19 +460,14 @@ function copilot.sequences:lineUpSequence()
     FSL.OVHD_AC_Pack_1_Button:toggleUp()
     FSL.OVHD_AC_Pack_2_Button:toggleUp()
   end
-
 end
 
 function copilot.sequences:takeoffSequence()
-
   firstFlight = false
-
   FSL.MIP_CHRONO_ELAPS_SEL_Switch "RUN"
-
   if copilot.UserOptions.actions.after_landing == 1 then 
     FSL.GSLD_Chrono_Button() 
   end
-
 end
 
 function copilot.sequences:afterTakeoffSequence()
@@ -588,7 +583,7 @@ function copilot.sequences.afterLanding:__call()
 
   FSL.OVHD_EXTLT_Strobe_Switch "AUTO"
   FSL.OVHD_EXTLT_RwyTurnoff_Switch "OFF"
-  moveTwoSwitches(FSL.OVHD_EXTLT_Land_L_Switch, "RETR", FSL.OVHD_EXTLT_Land_R_Switch,"RETR", 0.9)
+  moveTwoSwitches(FSL.OVHD_EXTLT_Land_L_Switch, "RETR", FSL.OVHD_EXTLT_Land_R_Switch, "RETR", 0.9)
   FSL.OVHD_EXTLT_Nose_Switch "TAXI"
 
   FSL.PED_WXRadar_SYS_Switch "OFF"

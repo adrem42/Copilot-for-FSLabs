@@ -31,9 +31,9 @@ function ToggleButton:setToggleState(state)
 end
 
 --- Calls `setToggleState`(true)
-function ToggleButton:toggleDown() return self:setToggleState(true) end
+function ToggleButton:toggleDown() self:setToggleState(true) end
 
 --- Calls `setToggleState`(false)
-function ToggleButton:toggleUp() return self:setToggleState(false) end
+function ToggleButton:toggleUp() self:setToggleState(false) end
 
 return ToggleButton

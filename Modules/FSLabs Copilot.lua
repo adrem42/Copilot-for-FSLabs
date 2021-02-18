@@ -147,6 +147,39 @@ if debugger.enable then
   end
 end
 
+local function wrapSequencesWithLogging()
+  
+  local seqNames = {
+    checkFmgcData = "FMGC data check",
+    setupEFIS = "Setting up EFIS",
+    afterStart = "After start",
+    taxiSequence = "During taxi",
+    lineUpSequence = "Line up",
+    takeoffSequence = "Takeoff",
+    afterTakeoffSequence = "After takeoff",
+    tenThousandDep = "Above ten thousand",
+    tenThousandArr = "Below ten thousand",
+    afterLanding = "After landing"
+  }
+  
+  for name, seq in pairs(copilot.sequences) do
+    if seqNames[name] then
+      local isFuncTable = type(seq) == "table" and seq.__call
+      local _f = isFuncTable and seq.__call or seq
+      local function f(...)
+        copilot.logger:info("#### Start of action sequence: " .. seqNames[name])
+        _f(...)
+        copilot.logger:info("#### End of action sequence: " .. seqNames[name])
+      end
+      if isFuncTable then
+        copilot.sequences[name].__call = f
+      else
+        copilot.sequences[name] = f
+      end
+    end
+  end
+end
+
 local function setup()
 
   if copilot.UserOptions.callouts.PM_announces_brake_check == 0 or
@@ -182,6 +215,8 @@ local function setup()
       dofile(customDir .. _file)
     end
   end
+
+  wrapSequencesWithLogging()
 
   if copilot.isVoiceControlEnabled then
     VoiceCommand.resetGrammar()
