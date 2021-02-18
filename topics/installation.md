@@ -6,19 +6,19 @@
 
 You can install FSL2Lua standalone (without Copilot) to bind your keyboard keys, joystick buttons and axes to FSLabs cockpit controls.
 
-To do that, unzip Modules\FSL2Lua into your FSUIPC folder (the one with the FSUIPC dll).
+To do that, unzip *FSUIPC folder\FSL2Lua* into your FSUIPC install directory.
 
 @{standalonescripts.md | Click here} to read on how to create a script and tell FSUIPC to run it.
 
 ## Installing Copilot
 
-1. Unzip the content of the Modules folder into the the FSUIPC installation directory.
+1. Unzip the content of *FSUIPC folder* into your FSUIPC install directory.
 
-2. Unzip the content of the Prepar3D vx Add-ons folder into your Add-ons folder (eg *C:\Users\Username\Documents\Prepar3D v4 Add-ons*).
+2. Unzip the content of *Prepar3D vx Add-ons* into your Add-ons folder (eg *C:\Users\Username\Documents\Prepar3D v4 Add-ons*).
 
 3. Run the simulator and respond to the prompt asking you to enable the addon.
 
-4. After P3D has loaded into the main menu, you'll find the configuration file at *FSUIPC directory/FSLabs Copilot/options.ini*. Open it and adjust the settings.
+4. After P3D has loaded into the main menu, you'll find the configuration file at *FSUIPC directory\FSLabs Copilot\options.ini*. Open it and adjust the settings.
 
 The script will auto-run after you load a flight with FSLabs.
 

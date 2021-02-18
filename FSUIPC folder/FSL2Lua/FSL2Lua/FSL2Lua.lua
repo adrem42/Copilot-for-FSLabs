@@ -48,7 +48,7 @@ local Button = require "FSL2Lua.FSL2Lua.Button"
 local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 local Guard = require "FSL2Lua.FSL2Lua.Guard"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
-local FcuSwitch = require "FSL2Lua.FSL2Lua.FcuSwitch"
+local PushPullSwitch = require "FSL2Lua.FSL2Lua.PushPullSwitch"
 local EngineMasterSwitch = require "FSL2Lua.FSL2Lua.EngineMasterSwitch"
 local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
 
@@ -372,8 +372,8 @@ local function assignClassToControl(control, buttons, guards)
     control = Control:new(control)
   elseif _type == "enginemasterswitch" then
     control = EngineMasterSwitch:new(control)
-  elseif _type == "fcuswitch" then
-    control = FcuSwitch:new(control)
+  elseif _type == "pushpullswitch" then
+    control = PushPullSwitch:new(control)
   elseif Lvar:find("knob") and not control.posn then
     control = RotaryKnob:new(control)
   elseif control.posn then
@@ -394,30 +394,12 @@ local function assignClassToControl(control, buttons, guards)
   return util.isType(control, Control) and control or nil
 end
 
-local function initControlPositions(control)
-  if control.posn then
-    local temp = control.posn
-    control.posn = {}
-    for k,v in pairs(temp) do
-      control.posn[k:upper()] = v
-    end
-    local maxLVarVal = 0
-    for _, v in pairs(control.posn) do
-      if type(v) == "table" then v = v[1] end
-      v = tonumber(v)
-      if v > maxLVarVal then maxLVarVal = v end
-    end
-    control.maxLVarVal = maxLVarVal
-  end
-end
-
 local function initControl(control, varname, guards, buttons)
 
   local id = control.name or control.LVar
   local function epicFail() error("Failed to create control: " .. id, 2) end
 
   initControlPosition(control, varname)
-  initControlPositions(control)
 
   control = assignClassToControl(control, buttons, guards)
   if not control then epicFail() end

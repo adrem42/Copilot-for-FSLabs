@@ -51,7 +51,7 @@ myJoy:onPressRepeat(4, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft")
 myJoy:onPressRepeat(3, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateRight")
 
 -- Divide the knob in 5 steps and cycle back and forth
-myJoy:onPress(1, FSL.OVHD_INTLT_Integ_Lt_Knob, "cycle", 5)
+myJoy:onPress(1, Bind.cycleRotaryKnob(FSL.OVHD_INTLT_Integ_Lt_Knob, 5))
 
 -----------------------------------------
 ---- Encoders ---------------------------

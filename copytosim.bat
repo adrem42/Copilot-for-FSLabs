@@ -1,4 +1,4 @@
-xcopy "Modules" "C:\Users\Peter\Documents\Prepar3D v5 Add-ons\FSUIPC6" /i /y /E /C
+xcopy "FSUIPC folder" "C:\Users\Peter\Documents\Prepar3D v5 Add-ons\FSUIPC6" /i /y /E /C
 
 copy "FSLSerialize\*.lua" "C:\Users\Peter\Documents\Prepar3D v4 Add-ons\FSLSerialize\"
 

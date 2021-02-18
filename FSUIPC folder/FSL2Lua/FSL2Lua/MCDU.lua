@@ -93,7 +93,7 @@ end
 
 --- Types str on the keyboard.
 ---@string str
---- @usage FSL.CPT.MCDU:type "UwU"
+--- @usage FSL.CPT.MCDU:type "hello"
 function MCDU:type(str)
   str = tostring(str)
   local _FSL = FSL[self.sideStr]

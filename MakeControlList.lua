@@ -1,5 +1,5 @@
 
-package.path = "Modules\\?.lua;Modules\\?\\init.lua"
+package.path = "FSUIPC folder\\?.lua;FSUIPC folder\\?\\init.lua"
 FSL2LUA_MAKE_CONTROL_LIST = true
 local FSL = require "FSL2Lua"
 local checkControl = require "FSL2Lua.FSL2Lua.FSLinternal"._checkControl
@@ -65,7 +65,13 @@ local function makeList()
     
     if control.posn then
       line = line .. "\n> Positions: "
-      for pos in pairsByKeys(control.posn) do
+
+      local positions = {}
+
+      for pos in pairs(control.posn) do positions[#positions+1] = pos end
+      table.sort(positions, function(pos1, pos2) return control.posn[pos1] < control.posn[pos2] end)
+
+      for _, pos in ipairs(positions) do
         if pos == pos:upper() then line = line .. "\"" .. pos:upper():gsub("_", "\\_") .. "\", " end
       end
       if line:sub(#line-1,#line-1) == "," then line = line:sub(1, #line-2) end

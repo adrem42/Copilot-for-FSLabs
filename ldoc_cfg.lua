@@ -8,28 +8,28 @@ project = '%s'
 merge = true
 
 file = {
-  'Modules/FSL2lua/FSL2Lua/util.lua',
-  'Modules/FSL2lua/FSL2Lua/Bind.lua',
-  'Modules/FSL2lua/FSL2Lua/FSL2Lua.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/util.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/Bind.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/FSL2Lua.lua',
 
-  'Modules/FSL2lua/FSL2Lua/Control.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/Control.lua',
 
-  'Modules/FSL2lua/FSL2Lua/Button.lua',
-  'Modules/FSL2lua/FSL2Lua/ToggleButton.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/Button.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/ToggleButton.lua',
 
-  'Modules/FSL2lua/FSL2Lua/Guard.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/Guard.lua',
 
-  'Modules/FSL2lua/FSL2Lua/Switch.lua',
-  'Modules/FSL2lua/FSL2Lua/FcuSwitch.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/Switch.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/PushPullSwitch.lua',
 
-  'Modules/FSL2lua/FSL2Lua/RotaryKnob.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/RotaryKnob.lua',
 
-  'Modules/FSL2lua/FSL2Lua/MCDU.lua',
+  'FSUIPC folder/FSL2lua/FSL2Lua/MCDU.lua',
 
 
-  'Modules/FSLabs Copilot.lua',
-  'Modules/FSLabs Copilot/copilot/util.lua',
-  'Modules/FSLabs Copilot/copilot/Event.lua',
+  'FSUIPC folder/FSLabs Copilot.lua',
+  'FSUIPC folder/FSLabs Copilot/copilot/util.lua',
+  'FSUIPC folder/FSLabs Copilot/copilot/Event.lua',
   'Joystick/Joystick.h',
 }
 
@@ -55,7 +55,7 @@ pretty='lxsh'
 
 ]]
 
-local file = require "Modules.FSL2Lua.FSL2Lua.file"
+local file = require "FSUIPC folder.FSL2Lua.FSL2Lua.file"
 
 local versionInfo = file.read "Copilot\\versionInfo.h"
 

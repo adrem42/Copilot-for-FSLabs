@@ -4,7 +4,7 @@ if not check then return {} end
 
 check = require "controls_check.saved_controls"
 
-package.path = package.path .. ";Modules\\?.lua;Modules\\?\\init.lua"
+package.path = package.path .. ";FSUIPC folder\\?.lua;FSUIPC folder\\?\\init.lua"
 FSL2LUA_MAKE_CONTROL_LIST = true
 local FSL = require "FSL2Lua.FSL2Lua.FSL2Lua"
 

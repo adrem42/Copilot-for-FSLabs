@@ -40,7 +40,7 @@
 <li><a href="#Class_ToggleButton">Class ToggleButton </a></li>
 <li><a href="#Class_Guard">Class Guard </a></li>
 <li><a href="#Class_Switch">Class Switch </a></li>
-<li><a href="#Class_FcuSwitch">Class FcuSwitch </a></li>
+<li><a href="#Class_PushPullSwitch">Class PushPullSwitch </a></li>
 <li><a href="#Class_RotaryKnob">Class RotaryKnob </a></li>
 <li><a href="#Class_MCDU">Class MCDU </a></li>
 </ul>
@@ -93,6 +93,22 @@
 	<tr>
 	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
 	<td class="summary">Convenience wrapper around event.key and event.button from the FSUIPC Lua library.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Bind.cycleSwitch">Bind.cycleSwitch(switch[, ...])</a></td>
+	<td class="summary">Returns a function that will cycle the switch.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Bind.cycleLandingLights">Bind.cycleLandingLights([...])</a></td>
+	<td class="summary">Returns a function that will cycle the landing light switches and keep them in sync.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Bind.cycleRotaryKnob">Bind.cycleRotaryKnob(knob, steps)</a></td>
+	<td class="summary">Divides the knob in n steps and returns a function that will cycle the knob across those steps.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Bind.toggleButtons">Bind.toggleButtons(...)</a></td>
+	<td class="summary">Returns a function that will cycle multiple toggle buttons at once and keep their toggle states in sync.</td>
 	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
@@ -209,23 +225,15 @@
 
 </td>
 	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Switch:cycle">Switch:cycle()</a></td>
-	<td class="summary">Cycles the switch back and forth.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Switch:toggle">Switch:toggle()</a></td>
-	<td class="summary">Alias for <a href="../libraries/FSL2Lua.html#Switch:cycle">cycle</a>.</td>
-	</tr>
 </table>
-<h2><a href="#Class_FcuSwitch">Class FcuSwitch </a></h2>
+<h2><a href="#Class_PushPullSwitch">Class PushPullSwitch </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#FcuSwitch:push">FcuSwitch:push()</a></td>
+	<td class="name" nowrap><a href="#PushPullSwitch:push">PushPullSwitch:push()</a></td>
 	<td class="summary"><span></td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#FcuSwitch:pull">FcuSwitch:pull()</a></td>
+	<td class="name" nowrap><a href="#PushPullSwitch:pull">PushPullSwitch:pull()</a></td>
 	<td class="summary"><span></td>
 	</tr>
 </table>
@@ -244,10 +252,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#RotaryKnob:rotateRight">RotaryKnob:rotateRight()</a></td>
 	<td class="summary">Rotates the knob right by 1 tick.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#RotaryKnob:cycle">RotaryKnob:cycle(steps)</a></td>
-	<td class="summary">This function is made for keyboard and joystick bindings.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#RotaryKnob:getPosn">RotaryKnob:getPosn()</a></td>
@@ -433,10 +437,10 @@
          <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
         </li>
         <li><span class="parameter">bindPush</span>
-         <a href="#Class_FcuSwitch">FcuSwitch</a> Same as <code>bindButton</code> — for pushing the switch.
+         <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as <code>bindButton</code> — for pushing the switch.
         </li>
         <li><span class="parameter">bindPull</span>
-         <a href="#Class_FcuSwitch">FcuSwitch</a> Same as <code>bindButton</code> — for pulling the switch.
+         <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as <code>bindButton</code> — for pulling the switch.
         </li>
         <li><span class="parameter">btn</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
@@ -495,6 +499,119 @@
         </li></ul>
     </ul>
 
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Bind.cycleSwitch"></a>
+    <strong>Bind.cycleSwitch(switch[, ...])</strong>
+    </dt>
+    <dd>
+    Returns a function that will cycle the switch.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">switch</span>
+         <a href="#Class_Switch">Switch</a>
+        </li>
+        <li><span class="parameter">...</span>
+         At least two positions to cycle across. If none are specified, the switch will be cycled across all positions.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        Function that will cycle the switch.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Bind.cycleLandingLights"></a>
+    <strong>Bind.cycleLandingLights([...])</strong>
+    </dt>
+    <dd>
+    Returns a function that will cycle the landing light switches and keep them in sync.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         At least two positions to cycle across. If none are specified, the switch will be cycled across all positions.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        Function that will cycle the switches.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Bind.cycleRotaryKnob"></a>
+    <strong>Bind.cycleRotaryKnob(knob, steps)</strong>
+    </dt>
+    <dd>
+    Divides the knob in n steps and returns a function that will cycle the knob across those steps.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">knob</span>
+         <a href="#Class_RotaryKnob">RotaryKnob</a>
+        </li>
+        <li><span class="parameter">steps</span>
+            <span class="types"><span class="type">int</span></span>
+         In how many steps to divide the knob.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        Function that will cycle the knob.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Bind.toggleButtons"></a>
+    <strong>Bind.toggleButtons(...)</strong>
+    </dt>
+    <dd>
+    Returns a function that will cycle multiple toggle buttons at once and keep their toggle states in sync.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         One or more <a href="#Class_ToggleButton">ToggleButton</a>'s
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        Function that will toggle the buttons.
+    </ol>
 
 
 
@@ -979,48 +1096,16 @@ FSL:setPilot(<span class="number">1</span>)
 
 
 </dd>
-    <dt>
-    <a name = "Switch:cycle"></a>
-    <strong>Switch:cycle()</strong>
-    </dt>
-    <dd>
-    Cycles the switch back and forth.
-
-
-
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">FSL.OVHD_EXTLT_Land_L_Switch:cycle()</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "Switch:toggle"></a>
-    <strong>Switch:toggle()</strong>
-    </dt>
-    <dd>
-    Alias for <a href="../libraries/FSL2Lua.html#Switch:cycle">cycle</a>.
-
-
-
-
-
-
-
-</dd>
 </dl>
-    <h2 class="section-header has-description"><a name="Class_FcuSwitch"></a>Class FcuSwitch </h2>
+    <h2 class="section-header has-description"><a name="Class_PushPullSwitch"></a>Class PushPullSwitch </h2>
 
           <div class="section-description">
           Switches that can be pushed and pulled
           </div>
     <dl class="function">
     <dt>
-    <a name = "FcuSwitch:push"></a>
-    <strong>FcuSwitch:push()</strong>
+    <a name = "PushPullSwitch:push"></a>
+    <strong>PushPullSwitch:push()</strong>
     </dt>
     <dd>
     <span>
@@ -1033,8 +1118,8 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "FcuSwitch:pull"></a>
-    <strong>FcuSwitch:pull()</strong>
+    <a name = "PushPullSwitch:pull"></a>
+    <strong>PushPullSwitch:pull()</strong>
     </dt>
     <dd>
     <span>
@@ -1106,32 +1191,6 @@ FSL:setPilot(<span class="number">1</span>)
 
 
 
-
-</dd>
-    <dt>
-    <a name = "RotaryKnob:cycle"></a>
-    <strong>RotaryKnob:cycle(steps)</strong>
-    </dt>
-    <dd>
-    This function is made for keyboard and joystick bindings.
- It divides the knob in n steps and cycles back and forth between them.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">steps</span>
-            <span class="types"><span class="type">int</span></span>
-         In how many steps to divide the knob.
-        </li>
-    </ul>
-
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">Bind {key = <span class="string">"A"</span>, onPress = {FSL.OVHD_INTLT_Integ_Lt_Knob, <span class="string">"cycle"</span>, <span class="number">5</span>}}</pre>
-    </ul>
 
 </dd>
     <dt>
@@ -1345,7 +1404,7 @@ FSL:setPilot(<span class="number">1</span>)
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">FSL.CPT.MCDU:<span class="global">type</span> <span class="string">"UwU"</span></pre>
+        <pre class="example">FSL.CPT.MCDU:<span class="global">type</span> <span class="string">"hello"</span></pre>
     </ul>
 
 </dd>
@@ -1392,7 +1451,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-18 06:02:19 </i>
+<i style="float:right;">Last updated 2021-02-18 15:07:41 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

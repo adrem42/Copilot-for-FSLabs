@@ -3,6 +3,7 @@ if false then module "FSL2Lua" end
 local util = require "FSL2Lua.FSL2Lua.util"
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
+local Control = require "FSL2Lua.FSL2Lua.Control"
 
 ---Knobs with no fixed positions
 --@type RotaryKnob
@@ -12,14 +13,14 @@ RotaryKnob.__index = RotaryKnob
 RotaryKnob.__class = "RotaryKnob"
 
 function RotaryKnob:new(control)
-  util.assert(type(control.range) == "number", "Failed to create control: " .. control.LVar)
-  return setmetatable(Switch:new(control), self)
+  util.assert(type(control.range) == "number", "Failed to create control: " .. control.name or control.LVar)
+  return setmetatable(Control:new(control), self)
 end
 
 --- @function __call
 --- @number targetPos Relative position from 0-100.
 --- @usage FSL.OVHD_INTLT_Integ_Lt_Knob(42)
-RotaryKnob.__call = getmetatable(RotaryKnob).__call
+RotaryKnob.__call = Switch.__call
 
 function RotaryKnob:_rotateLeft() self:macro "wheelDown" end
 function RotaryKnob:_rotateRight() self:macro "wheelUp" end
@@ -86,34 +87,6 @@ function RotaryKnob:_set(targetPos)
     util.log("Interaction with the control took " .. ipc.elapsedtime() - timeStarted .. " ms") 
   end
   return currPos / self.range * 100
-end
-
---- This function is made for keyboard and joystick bindings.
---- It divides the knob in n steps and cycles back and forth between them.
---- @usage
---- Bind {key = "A", onPress = {FSL.OVHD_INTLT_Integ_Lt_Knob, "cycle", 5}}
---- @int steps In how many steps to divide the knob.
-function RotaryKnob:cycle(steps)
-  steps = math.floor(steps)
-  local step = 100 / steps
-  local cycleVal = self.cycleVal or 0
-  local curr = self:getPosn()
-  if curr ~= self.prev then
-    cycleVal = curr
-  end
-  if cycleVal == 100 then 
-    self.cycleDir = false
-  elseif cycleVal == 0 then 
-    self.cycleDir = true 
-  end
-  if self.cycleDir then
-    cycleVal = math.min(cycleVal + step, 100)
-  else
-    cycleVal = math.max(cycleVal - step, 0)
-  end
-  cycleVal = cycleVal - cycleVal % step
-  self.prev = self(cycleVal) or self.prev
-  self.cycleVal = cycleVal
 end
 
 --- @treturn number Relative position from 0-100.

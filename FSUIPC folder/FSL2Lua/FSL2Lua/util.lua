@@ -147,4 +147,15 @@ function util.disableLogging()
   util._loggingEnabled = false
 end
 
+function util._wrapDeprecated(name, suggestion, func)
+  local msg = string.format(
+    "%s is deprecated and will be removed in a future version. Use %s instead.",
+    name, suggestion
+  )
+  return function(...)
+    util.handleError(msg, 2)
+    func(...)
+  end
+end
+
 return util

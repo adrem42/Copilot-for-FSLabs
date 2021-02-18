@@ -295,14 +295,14 @@ public:
 	Same as `bindButton` - for pushing the switch.
 	@function bindPush
 	@int buttonNum
-	@param switch <a href="FSL2Lua.html#Class_FcuSwitch">FcuSwitch</a>
+	@param switch <a href="FSL2Lua.html#Class_PushPullSwitch">PushPullSwitch</a>
 	*/
 
 	/***
 	Same as `bindButton` - for pulling the switch.
 	@function bindPull
 	@int buttonNum
-	@param switch <a href="FSL2Lua.html#Class_FcuSwitch">FcuSwitch</a>
+	@param switch <a href="FSL2Lua.html#Class_PushPullSwitch">PushPullSwitch</a>
 	*/
 
 	/***

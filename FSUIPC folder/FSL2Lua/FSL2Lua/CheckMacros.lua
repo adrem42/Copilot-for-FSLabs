@@ -2,7 +2,7 @@ local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local Button = require "FSL2Lua.FSL2Lua.Button"
 local Guard = require "FSL2Lua.FSL2Lua.Guard"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
-local FcuSwitch = require "FSL2Lua.FSL2Lua.FcuSwitch"
+local PushPullSwitch = require "FSL2Lua.FSL2Lua.PushPullSwitch"
 local EngineMasterSwitch = require "FSL2Lua.FSL2Lua.EngineMasterSwitch"
 local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
 local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
@@ -75,7 +75,7 @@ function Switch:_checkMacroManual()
   end
 end
 
-function FcuSwitch:_checkMacro()
+function PushPullSwitch:_checkMacro()
   self:macro "leftRelease"
   self:macro "rightRelease"
   local LVarbefore = self:getLvarValue()

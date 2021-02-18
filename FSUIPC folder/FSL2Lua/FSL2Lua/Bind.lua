@@ -1,10 +1,13 @@
+
 if false then module "FSL2Lua" end
 
+local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
+local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local util = require "FSL2Lua.FSL2Lua.util"
 local KeyBind = require "FSL2Lua.FSL2Lua.KeyBind"
 local JoyBind = require "FSL2Lua.FSL2Lua.JoyBind"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
-local FcuSwitch = require "FSL2Lua.FSL2Lua.FcuSwitch"
+local PushPullSwitch = require "FSL2Lua.FSL2Lua.PushPullSwitch"
 local Button = require "FSL2Lua.FSL2Lua.Button"
 local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 
@@ -33,8 +36,8 @@ setmetatable(Bind, Bind)
 --- @param data.onRelease See above.
 --- @param data.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
 --- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
---- @param data.bindPush <a href="#Class_FcuSwitch">FcuSwitch</a> Same as `bindButton` — for pushing the switch.
---- @param data.bindPull <a href="#Class_FcuSwitch">FcuSwitch</a> Same as `bindButton` — for pulling the switch.
+--- @param data.bindPush <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pushing the switch.
+--- @param data.bindPull <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pulling the switch.
 --- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number: `"A5"`.
 --- @string data.key Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br>
 --
@@ -157,11 +160,15 @@ local function checkCallable(elem, nextElem)
   end
 end
 
+local function checkIsValidSwitchPosition(switch, position, errLevel)
+  local ok, err = switch:_getTargetLvarVal(position)
+  if not ok then error(err, (errLevel or 1) + 1) end
+end
+
 local function checkFslControl(elem, callableType, args, errLevel)
   if callableType == "method" then return end
   if util.isType(elem, Switch) then
-    local ok, err = elem:_getTargetLvarVal(args[1])
-    if not ok then error(err, errLevel + 1) end
+    checkIsValidSwitchPosition(elem, args[1], errLevel + 1)
   end
 end
 
@@ -255,12 +262,12 @@ function Bind._bindButton(butt, pressMacro, releaseMacro)
 end
 
 function Bind._bindPush(switch)
-  util.checkType(switch, FcuSwitch, "FCU switch", 4)
+  util.checkType(switch, PushPullSwitch, "FCU switch", 4)
   return Bind._bindButton(switch._button)
 end
 
 function Bind._bindPull(switch)
-  util.checkType(switch, FcuSwitch, "FCU switch", 4)
+  util.checkType(switch, PushPullSwitch, "FCU switch", 4)
   return Bind._bindButton(switch._button, "rightPress", "rightRelease")
 end
 
@@ -289,6 +296,121 @@ function Bind._bindToggleButton(butt)
   return onPress, onRelease
 end
 
+local function initSwitchCycling(switch, ...)
+
+  local positions = {...}
+
+  util.assert(#positions == 0 or #positions > 1, "You need at lest two positions to cycle between", 5)
+
+  if #positions == 0 then
+    positions = {}
+    for pos in pairs(switch.posn) do
+      positions[#positions+1] = pos
+    end
+  end
+
+  for _, position in ipairs(positions) do
+    checkIsValidSwitchPosition(switch, position)
+  end
+  
+  table.sort(positions, function(pos1, pos2)
+    return switch.posn[pos1] > switch.posn[pos2]
+  end)
+
+  local currPos = switch:getPosn()
+  for i, position in ipairs(positions) do
+    if position == currPos then return positions, i end
+  end
+end
+
+local function cycle(currIdx, direction, switch, positions)
+
+  if direction == true then
+    currIdx = currIdx + 1
+  else
+    currIdx = currIdx - 1
+  end
+
+  if currIdx > #positions then 
+    direction = false
+    currIdx = #positions - 1
+  elseif currIdx < 1 then 
+    direction = true
+    currIdx = 2 
+  end
+
+  switch(positions[currIdx])
+
+  return currIdx, direction
+end
+
+--- Returns a function that will cycle the switch.
+---@function Bind.cycleSwitch
+---@param switch <a href="#Class_Switch">Switch</a> 
+---@param[opt] ... At least two positions to cycle across. If none are specified, the switch will be cycled across all positions.
+---@treturn function Function that will cycle the switch.
+function Bind.cycleSwitch(switch, ...)
+
+  util.checkType(switch, Switch, "switch", 4)
+
+  local positions, currIdx = initSwitchCycling(switch, ...)
+  local direction = false
+
+  return function()
+    currIdx, direction = cycle(currIdx, direction, switch, positions)
+  end
+end
+
+--- Returns a function that will cycle the landing light switches and keep them in sync.
+---@function Bind.cycleLandingLights
+---@param[opt] ... At least two positions to cycle across. If none are specified, the switch will be cycled across all positions.
+---@treturn function Function that will cycle the switches.
+function Bind.cycleLandingLights(...)
+
+  local left = FSL.OVHD_EXTLT_Land_L_Switch
+  local right = FSL.OVHD_EXTLT_Land_R_Switch
+
+  local direction = false
+  local positions, currIdx = initSwitchCycling(right, ...)
+
+  return function()
+    left(right:getPosn())
+    cycle(currIdx, direction, left, positions)
+    currIdx, direction = cycle(currIdx, direction, right, positions)
+  end
+end
+
+--- Divides the knob in n steps and returns a function that will cycle the knob across those steps.
+---@function Bind.cycleRotaryKnob
+---@param knob <a href="#Class_RotaryKnob">RotaryKnob</a> 
+---@int steps In how many steps to divide the knob.
+---@treturn function Function that will cycle the knob.
+function Bind.cycleRotaryKnob(knob, steps)
+
+  util.checkType(knob, RotaryKnob, "rotary knob", 4)
+
+  steps = math.floor(steps)
+  local cycleVal = 0
+  local prev = 0
+  local cycleDir
+
+  return function()
+    local step = 100 / steps
+    local curr = knob:getPosn()
+    if curr ~= prev then cycleVal = curr end
+    if cycleVal == 100 then cycleDir = false
+    elseif cycleVal == 0 then cycleDir = true  end
+    if cycleDir then cycleVal = math.min(cycleVal + step, 100)
+    else cycleVal = math.max(cycleVal - step, 0) end
+    cycleVal = cycleVal - cycleVal % step
+    prev = knob(cycleVal)
+  end
+end
+
+--- Returns a function that will cycle multiple toggle buttons at once and keep their toggle states in sync.
+---@function Bind.toggleButtons
+---@param ... One or more <a href="#Class_ToggleButton">ToggleButton</a>'s
+---@treturn function Function that will toggle the buttons.
 function Bind.toggleButtons(...)
   local butts = {...}
   for i = 1, #butts do

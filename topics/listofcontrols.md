@@ -15,7 +15,7 @@ FSL.CPT.GSLD\_Autoland\_Button
 FSL.CPT.GSLD\_BARO\_Mode\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "HPA", "INHG"
+> Positions: "INHG", "HPA"
 
 FSL.CPT.GSLD\_Caution\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -30,7 +30,7 @@ FSL.CPT.GSLD\_EFIS\_Baro\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
 FSL.CPT.GSLD\_EFIS\_Baro\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_FcuSwitch'>FcuSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_PushPullSwitch'>PushPullSwitch</a>
 
 FSL.CPT.GSLD\_EFIS\_CSTR\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -47,7 +47,7 @@ FSL.CPT.GSLD\_EFIS\_NDB\_Button
 FSL.CPT.GSLD\_EFIS\_ND\_Mode\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ARC", "LS", "NAV", "PLAN", "VOR"
+> Positions: "LS", "VOR", "NAV", "ARC", "PLAN"
 
 FSL.CPT.GSLD\_EFIS\_ND\_Range\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -79,7 +79,7 @@ FSL.CPT.GSLD\_Warning\_Button
 FSL.CPT.MIP\_CONS\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "BRT", "DIM", "OFF"
+> Positions: "OFF", "DIM", "BRT"
 
 FSL.CPT.MIP\_DCDU\_BRT
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -141,7 +141,7 @@ FSL.CPT.OVHD\_ReadingLt\_Knob
 FSL.CPT.OVHD\_WIPER\_KNOB\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "FAST", "OFF", "SLOW"
+> Positions: "OFF", "SLOW", "FAST"
 
 FSL.CPT.OVHD\_WIPER\_RPLNT\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -194,7 +194,7 @@ FSL.CPT.PED\_COMM\_INT\_Knob
 FSL.CPT.PED\_COMM\_INT\_RAD\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "INT", "OFF", "RAD"
+> Positions: "RAD", "OFF", "INT"
 
 FSL.CPT.PED\_COMM\_INT\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
@@ -556,7 +556,7 @@ FSL.FO.GSLD\_Autoland\_Button
 FSL.FO.GSLD\_BARO\_Mode\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "HPA", "INHG"
+> Positions: "INHG", "HPA"
 
 FSL.FO.GSLD\_Caution\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -571,7 +571,7 @@ FSL.FO.GSLD\_EFIS\_Baro\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
 FSL.FO.GSLD\_EFIS\_Baro\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_FcuSwitch'>FcuSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_PushPullSwitch'>PushPullSwitch</a>
 
 FSL.FO.GSLD\_EFIS\_CSTR\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -588,7 +588,7 @@ FSL.FO.GSLD\_EFIS\_NDB\_Button
 FSL.FO.GSLD\_EFIS\_ND\_Mode\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ARC", "LS", "NAV", "PLAN", "VOR"
+> Positions: "LS", "VOR", "NAV", "ARC", "PLAN"
 
 FSL.FO.GSLD\_EFIS\_ND\_Range\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -620,7 +620,7 @@ FSL.FO.GSLD\_Warning\_Button
 FSL.FO.MIP\_CONS\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "BRT", "DIM", "OFF"
+> Positions: "OFF", "DIM", "BRT"
 
 FSL.FO.MIP\_DCDU\_BRT
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -682,7 +682,7 @@ FSL.FO.OVHD\_ReadingLt\_Knob
 FSL.FO.OVHD\_WIPER\_KNOB\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "FAST", "OFF", "SLOW"
+> Positions: "OFF", "SLOW", "FAST"
 
 FSL.FO.OVHD\_WIPER\_RPLNT\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -735,7 +735,7 @@ FSL.FO.PED\_COMM\_INT\_Knob
 FSL.FO.PED\_COMM\_INT\_RAD\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "INT", "OFF", "RAD"
+> Positions: "RAD", "OFF", "INT"
 
 FSL.FO.PED\_COMM\_INT\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
@@ -1095,7 +1095,7 @@ FSL.GSLD\_FCU\_ALT\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
 FSL.GSLD\_FCU\_ALT\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_FcuSwitch'>FcuSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_PushPullSwitch'>PushPullSwitch</a>
 
 FSL.GSLD\_FCU\_AP1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1125,7 +1125,7 @@ FSL.GSLD\_FCU\_HDG\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
 FSL.GSLD\_FCU\_HDG\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_FcuSwitch'>FcuSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_PushPullSwitch'>PushPullSwitch</a>
 
 FSL.GSLD\_FCU\_LOC\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1140,13 +1140,13 @@ FSL.GSLD\_FCU\_SPD\_MACH\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.GSLD\_FCU\_SPD\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_FcuSwitch'>FcuSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_PushPullSwitch'>PushPullSwitch</a>
 
 FSL.GSLD\_FCU\_VS\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
 FSL.GSLD\_FCU\_VS\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_FcuSwitch'>FcuSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_PushPullSwitch'>PushPullSwitch</a>
 
 FSL.MIP\_BRAKES\_ASKID\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -1171,7 +1171,7 @@ FSL.MIP\_CHRONO\_DATE\_SET\_Button
 FSL.MIP\_CHRONO\_ELAPS\_SEL\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "RST", "RUN", "STP"
+> Positions: "RUN", "STP", "RST"
 
 FSL.MIP\_CHRONO\_GMT\_SEL\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -1187,12 +1187,12 @@ FSL.MIP\_CHRONO\_START\_STOP\_Button
 FSL.MIP\_DDRMI\_VORADF\_L\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ADF", "VOR"
+> Positions: "VOR", "ADF"
 
 FSL.MIP\_DDRMI\_VORADF\_R\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ADF", "VOR"
+> Positions: "VOR", "ADF"
 
 FSL.MIP\_ISIS\_BARO\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1266,27 +1266,27 @@ FSL.OVHD\_AC\_Pack\_Flow\_Knob
 
 >**A321: unavailable**
 
-> Positions: "HI", "LOW", "NORM"
+> Positions: "LOW", "NORM", "HI"
 
 FSL.OVHD\_AC\_XBleed\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "OPEN", "SHUT"
+> Positions: "SHUT", "AUTO", "OPEN"
 
 FSL.OVHD\_ADIRS\_1\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ATT", "NAV", "OFF"
+> Positions: "OFF", "NAV", "ATT"
 
 FSL.OVHD\_ADIRS\_2\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ATT", "NAV", "OFF"
+> Positions: "OFF", "NAV", "ATT"
 
 FSL.OVHD\_ADIRS\_3\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ATT", "NAV", "OFF"
+> Positions: "OFF", "NAV", "ATT"
 
 FSL.OVHD\_ADR\_1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1442,7 +1442,7 @@ FSL.OVHD\_COMM\_3\_INT\_Knob
 FSL.OVHD\_COMM\_3\_INT\_RAD\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "INT", "OFF", "RAD"
+> Positions: "RAD", "OFF", "INT"
 
 FSL.OVHD\_COMM\_3\_INT\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
@@ -1613,17 +1613,17 @@ FSL.OVHD\_EXTLT\_Beacon\_Switch
 FSL.OVHD\_EXTLT\_Land\_L\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "OFF", "ON", "RETR"
+> Positions: "RETR", "OFF", "ON"
 
 FSL.OVHD\_EXTLT\_Land\_R\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "OFF", "ON", "RETR"
+> Positions: "RETR", "OFF", "ON"
 
 FSL.OVHD\_EXTLT\_NavLogo\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "1", "2", "OFF"
+> Positions: "OFF", "1", "2"
 
 FSL.OVHD\_EXTLT\_Nose\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -1638,7 +1638,7 @@ FSL.OVHD\_EXTLT\_RwyTurnoff\_Switch
 FSL.OVHD\_EXTLT\_Strobe\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "OFF", "ON"
+> Positions: "OFF", "AUTO", "ON"
 
 FSL.OVHD\_EXTLT\_Wing\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -1831,12 +1831,12 @@ FSL.OVHD\_HYD\_YELLOW\_ELEC\_PUMP\_Button
 FSL.OVHD\_INTLT\_AnnLt\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "BRT", "DIM", "TEST"
+> Positions: "DIM", "BRT", "TEST"
 
 FSL.OVHD\_INTLT\_Dome\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "BRT", "DIM", "OFF"
+> Positions: "OFF", "DIM", "BRT"
 
 FSL.OVHD\_INTLT\_Integ\_Lt\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
@@ -1970,12 +1970,12 @@ FSL.OVHD\_SEC\_3\_Button
 FSL.OVHD\_SIGNS\_EmerExitLight\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ARM", "OFF", "ON"
+> Positions: "OFF", "ARM", "ON"
 
 FSL.OVHD\_SIGNS\_NoSmoking\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "OFF", "ON"
+> Positions: "OFF", "AUTO", "ON"
 
 FSL.OVHD\_SIGNS\_SeatBelts\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -2042,12 +2042,12 @@ FSL.PED\_ATCXPDR\_MODE\_Switch
 FSL.PED\_ATCXPDR\_ON\_OFF\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "ON", "STBY"
+> Positions: "STBY", "AUTO", "ON"
 
 FSL.PED\_ATCXPDR\_THRT\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "ABV", "ALL", "BLW", "THRT"
+> Positions: "THRT", "ALL", "ABV", "BLW"
 
 FSL.PED\_COCKPIT\_DOOR\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -2138,7 +2138,7 @@ FSL.PED\_ENG\_2\_MSTR\_Switch
 FSL.PED\_ENG\_MODE\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "CRANK", "IGN/START", "NORM"
+> Positions: "CRANK", "NORM", "IGN/START"
 
 FSL.PED\_FLAP\_LEVER
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -2175,27 +2175,27 @@ FSL.PED\_SPD\_BRK\_LEVER
 FSL.PED\_SWITCH\_AIR\_DATA\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "CAPT\_3", "FO\_3", "NORM"
+> Positions: "CAPT\_3", "NORM", "FO\_3"
 
 FSL.PED\_SWITCH\_ATT\_HDG\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "CAPT\_3", "FO\_3", "NORM"
+> Positions: "CAPT\_3", "NORM", "FO\_3"
 
 FSL.PED\_SWITCH\_ECAM\_ND\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "CAPT\_3", "FO\_3", "NORM"
+> Positions: "CAPT\_3", "NORM", "FO\_3"
 
 FSL.PED\_SWITCH\_EIS\_DMC\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "CAPT\_3", "FO\_3", "NORM"
+> Positions: "CAPT\_3", "NORM", "FO\_3"
 
 FSL.PED\_WXRadar\_GCS\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "OFF"
+> Positions: "OFF", "AUTO"
 
 FSL.PED\_WXRadar\_Gain\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
@@ -2203,22 +2203,22 @@ FSL.PED\_WXRadar\_Gain\_Knob
 FSL.PED\_WXRadar\_Mode\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "MAP", "TURB", "WX", "WXT"
+> Positions: "WX", "WXT", "TURB", "MAP"
 
 FSL.PED\_WXRadar\_Multiscan\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "MAN"
+> Positions: "MAN", "AUTO"
 
 FSL.PED\_WXRadar\_PWS\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "AUTO", "OFF"
+> Positions: "OFF", "AUTO"
 
 FSL.PED\_WXRadar\_SYS\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
-> Positions: "1", "2", "OFF"
+> Positions: "1", "OFF", "2"
 
 FSL.PED\_WXRadar\_Tilt\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>

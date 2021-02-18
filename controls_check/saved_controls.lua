@@ -709,11 +709,6 @@ return {
     A320 = true,
     A321 = true
   },
-  ["FSL.CPT.PED_MCDU_Kbd_Toggle_Vis"] = {
-    A319 = true,
-    A320 = true,
-    A321 = true
-  },
   ["FSL.CPT.PED_MCDU_LSK_L1"] = {
     A319 = true,
     A320 = true,
@@ -1570,11 +1565,6 @@ return {
     A321 = true
   },
   ["FSL.FO.PED_MCDU_KEY_Z"] = {
-    A319 = true,
-    A320 = true,
-    A321 = true
-  },
-  ["FSL.FO.PED_MCDU_Kbd_Toggle_Vis"] = {
     A319 = true,
     A320 = true,
     A321 = true

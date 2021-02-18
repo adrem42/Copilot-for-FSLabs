@@ -23,13 +23,13 @@ function ButtonImpl:pull()
 end
 
 --- Switches that can be pushed and pulled
---- @type FcuSwitch
-local FcuSwitch = setmetatable({}, Control)
+--- @type PushPullSwitch
+local PushPullSwitch = setmetatable({}, Control)
 
-FcuSwitch.__index = FcuSwitch
-FcuSwitch.__class = "FcuSwitch"
+PushPullSwitch.__index = PushPullSwitch
+PushPullSwitch.__class = "PushPullSwitch"
 
-function FcuSwitch:new(control)
+function PushPullSwitch:new(control)
   local button = {}
   for k, v in pairs(control) do button[k] = v end
   control._button = ButtonImpl:new(button)
@@ -38,9 +38,9 @@ function FcuSwitch:new(control)
 end
 
 --- <span>
-function FcuSwitch:push() self._button:push() end
+function PushPullSwitch:push() self._button:push() end
 
 --- <span>
-function FcuSwitch:pull() self._button:pull() end
+function PushPullSwitch:pull() self._button:pull() end
 
-return FcuSwitch
+return PushPullSwitch

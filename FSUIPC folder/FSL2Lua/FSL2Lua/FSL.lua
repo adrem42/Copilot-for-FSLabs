@@ -383,7 +383,7 @@ return {
       z = ""
     },
     toggle = false,
-    type = "FcuSwitch"
+    type = "PushPullSwitch"
   },
   GSLD_CP_EFIS_CSTR_Button = {
     A319 = {
@@ -712,7 +712,7 @@ return {
       z = ""
     },
     toggle = true,
-    type = "FcuSwitch"
+    type = "PushPullSwitch"
   },
   GSLD_FCU_AP1_Button = {
     A319 = {
@@ -932,7 +932,7 @@ return {
       z = ""
     },
     toggle = true,
-    type = "FcuSwitch"
+    type = "PushPullSwitch"
   },
   GSLD_FCU_LOC_Button = {
     A319 = {
@@ -1036,7 +1036,7 @@ return {
       z = ""
     },
     toggle = true,
-    type = "FcuSwitch"
+    type = "PushPullSwitch"
   },
   GSLD_FCU_VS_Knob = {
     A319 = {
@@ -1076,7 +1076,7 @@ return {
       z = ""
     },
     toggle = true,
-    type = "FcuSwitch"
+    type = "PushPullSwitch"
   },
   GSLD_FO_ATC_MSG_Button = {
     A319 = {},
@@ -1243,7 +1243,7 @@ return {
       z = ""
     },
     toggle = false,
-    type = "FcuSwitch"
+    type = "PushPullSwitch"
   },
   GSLD_FO_EFIS_CSTR_Button = {
     A319 = {
@@ -2359,7 +2359,7 @@ return {
     },
     LVar = "VC_MIP_DDRMI_VORADF_R_Switch",
     name = "FSL.MIP_DDRMI_VORADF_R_Switch",
-    orientation = 2,
+    reversedOrientation = true,
     pos = {
       x = "156",
       y = "98",

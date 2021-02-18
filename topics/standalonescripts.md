@@ -20,7 +20,7 @@ All controls are listed @{listofcontrols.md|here}.
 
 **These are the steps to create and run a script:**
 
-1. Create a lua file with the name of you choice in the FSUIPC folder (the one with the FSUIPC dll), for example, *my\_script.lua*.
+1. Create a lua file with the name of you choice in the FSUIPC install directory, for example, *my\_script.lua*.
 
 2. Inside your file, write your code with the help of the links above.
 

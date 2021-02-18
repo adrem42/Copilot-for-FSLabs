@@ -13,34 +13,47 @@ Switch.__index = Switch
 Switch.__class = "Switch"
 
 function Switch:new(control)
+
   control.toggle = nil
-  control = getmetatable(self):new(control)
-  if control.orientation == 2 then -- right click to decrease, left click to increase
+  control = Control:new(control)
+
+  if control.reversedOrientation == true then
     control.incClickType = self.clickTypes.leftPress
     control.decClickType = self.clickTypes.rightPress
-  else -- left click to decrease, right click to increase (most of the switches)
+  else
     control.incClickType = self.clickTypes.rightPress
     control.decClickType = self.clickTypes.leftPress
   end
-  control.toggleDir = 1
+
+  util.assert(type(control.posn) == "table", "Failed to create control " .. control.name or control.LVar)
+
+  control.maxLVarVal = 0
+  control.LVarToPosn = {}
   control.springLoaded = {}
-  if control.posn then
-    control.LVarToPosn = {}
-    for k, v in pairs(control.posn) do
-      if type(v) == "table" then
-        v = v[1]
-        control.springLoaded[v] = true
-        control.posn[k] = v
-      end
-      control.LVarToPosn[v] = k:upper()
+
+  local temp = control.posn
+  control.posn = {}
+  for posName, lvarVal in pairs(temp) do
+
+    posName = posName:upper()
+
+    local isSpringLoaded = type(lvarVal) == "table"
+    if isSpringLoaded then
+      lvarVal = lvarVal[1] 
+      control.springLoaded[lvarVal] = true
     end
+
+    control.posn[posName] = lvarVal
+    control.LVarToPosn[lvarVal] = posName
+    control.maxLVarVal = math.max(control.maxLVarVal, lvarVal)
   end
+
   return setmetatable(control, self)
 end
 
 function Switch:_moveInternal(targetPos, twoSwitches)
   local _targetPos, err = self:_getTargetLvarVal(targetPos)
-  if not _targetPos then error(err, 2) end
+  if not _targetPos then error(err, 3) end
   if FSL.areSequencesEnabled and not twoSwitches then
     self:_moveHandHere()
   end
@@ -131,21 +144,11 @@ function Switch:increase()
   end
 end
 
---- Cycles the switch back and forth.
---- @usage FSL.OVHD_EXTLT_Land_L_Switch:cycle()
-function Switch:cycle()
-  if self.maxLVarVal then
-    local pos = self:getLvarValue()
-    if pos == self.maxLVarVal then self.toggleDir = -1
-    elseif pos == 0 then self.toggleDir = 1 end
-    if self.toggleDir == 1 then self:increase()
-    else self:decrease() end
-  end
-  hideCursor()
-end
+Switch.cycle = util._wrapDeprecated("Switch.cycle", "Bind.cycleSwitch", function(self)
+  self._cycler = self._cycler or Bind.cycleSwitch(self)
+  self._cycler()
+end)
 
---- Alias for `cycle`.
---- @function toggle
 Switch.toggle = Switch.cycle
 
 return Switch
