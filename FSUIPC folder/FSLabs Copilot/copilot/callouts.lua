@@ -484,9 +484,7 @@ function copilot.callouts:start()
     
   end
 
-  copilot.events.takeoffInitiated:addAction(function()
-    self:takeoff()
-  end, "runAsCoroutine")
+  copilot.events.takeoffInitiated:addAction(function() self:takeoff() end, "runAsCoroutine")
     :stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
     :addLogMsg("Takeoff callouts")
 

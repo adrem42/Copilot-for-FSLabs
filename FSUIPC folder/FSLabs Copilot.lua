@@ -8,6 +8,7 @@ end
 APPDIR = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1FSLabs Copilot\\")
 addPackagePath(APPDIR)
 
+local util = require "FSL2Lua.FSL2Lua.util"
 copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
 require "copilot.util"
 copilot.UserOptions = require "copilot.UserOptions"
@@ -164,7 +165,7 @@ local function wrapSequencesWithLogging()
   
   for name, seq in pairs(copilot.sequences) do
     if seqNames[name] then
-      local isFuncTable = type(seq) == "table" and seq.__call
+      local isFuncTable = util.isFuncTable(seq)
       local _f = isFuncTable and seq.__call or seq
       local function f(...)
         copilot.logger:info("#### Start of action sequence: " .. seqNames[name])

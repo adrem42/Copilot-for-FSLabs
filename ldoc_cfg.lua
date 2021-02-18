@@ -9,6 +9,7 @@ merge = true
 
 file = {
   'Modules/FSL2lua/FSL2Lua/util.lua',
+  'Modules/FSL2lua/FSL2Lua/Bind.lua',
   'Modules/FSL2lua/FSL2Lua/FSL2Lua.lua',
 
   'Modules/FSL2lua/FSL2Lua/Control.lua',
@@ -24,7 +25,6 @@ file = {
   'Modules/FSL2lua/FSL2Lua/RotaryKnob.lua',
 
   'Modules/FSL2lua/FSL2Lua/MCDU.lua',
-  'Modules/FSL2lua/FSL2Lua/Bind.lua',
 
 
   'Modules/FSLabs Copilot.lua',

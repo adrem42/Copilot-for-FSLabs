@@ -60,17 +60,30 @@ local util = {
 local copilot = type(copilot) == "table" and copilot.logger and copilot
 local logFilePath = util.FSL2LuaDir .. "\\FSL2Lua.log"
 
-function util.isType(o, _type)
-  local mt = getmetatable(o)
-  if mt == _type then return true end
-  if not mt then return false end
-  return util.isType(mt, _type)
+function util.isFuncTable(obj)
+  if type(obj) ~= "table" then return false end
+  if getmetatable(obj) == nil then return false end
+  return type(getmetatable(obj).__call) == "function"
 end
 
-function util.checkType(o, type, desc, errLevel)
+function util.isCallable(obj)
+  if type(obj) == "function" then return true, "function" end
+  if util.isFuncTable(obj) then return true, "funcTable" end
+  return false
+end
+
+function util.isType(obj, type, considerInheritance)
+  if considerInheritance == nil then considerInheritance = true end
+  local mt = getmetatable(obj)
+  if mt == type then return true end
+  if not mt or not considerInheritance then return false end
+  return util.isType(mt, type, true)
+end
+
+function util.checkType(obj, type, desc, errLevel, considerInheritance)
   util.assert(
-    util.isType(o, type),
-    tostring(o and o.name or o) .. " is not a " .. desc .. ".",  
+    util.isType(obj, type, considerInheritance),
+    tostring(obj and obj.name or obj) .. " is not a " .. desc .. ".",  
     (errLevel or 1) + 1
   )
   return o

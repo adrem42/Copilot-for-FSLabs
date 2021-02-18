@@ -15,23 +15,27 @@ local Bind = {
 
 setmetatable(Bind, Bind)
 
---- @section Bind
-
---- This function is a convenience wrapper around event.key and event.button from the FSUIPC Lua library.
+--- Convenience wrapper around event.key and event.button from the FSUIPC Lua library.
 --
 --- @{cockpit_control_binds.lua|Click here for usage examples}
 --
+--- Accepted values for onPress, onRelease, and onPressRepeat are:
+--
+--- * A function or callable table.
+--
+--- * An array in the following format: `{**callable1**, arg1, arg2, ..., argn, **callable2**, arg1, arg2, ..., argn, ...}`
+--- where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_EXTLT_Land_L_Switch, "cycle"`.
 --- @function Bind
 --- @tparam table data A table that may contain the following fields: 
---- @param data.onPress @{cockpit_control_binds.lua|see the examples}
---- @param data.onPressRepeat @{cockpit_control_binds.lua|see the examples}
+--- @param data.onPress See above.
+--- @param data.onPressRepeat See above.
 --- **Warning**: for buttons, onPressRepeat uses event.timer. There is only one timer available for a given thread so don't use onPressRepeat with buttons if you need a timer for something else.
---- @param data.onRelease @{cockpit_control_binds.lua|see the examples}
+--- @param data.onRelease See above.
 --- @param data.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
 --- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
 --- @param data.bindPush <a href="#Class_FcuSwitch">FcuSwitch</a> Same as `bindButton` — for pushing the switch.
 --- @param data.bindPull <a href="#Class_FcuSwitch">FcuSwitch</a> Same as `bindButton` — for pulling the switch.
---- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
+--- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number: `"A5"`.
 --- @string data.key Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br>
 --
 -- * Alphanumeric character keys
@@ -99,7 +103,7 @@ end
 
 function Bind:prepareData(data)
 
-  if data.onPress and data.onPressRepeat then
+  if data.onPress ~= nil and data.onPressRepeat ~= nil then
     error("You can't have both onPress and onPressRepeat in the same bind.", 3)
   end
 
@@ -139,18 +143,16 @@ local bindArg = {}
 function Bind.asArg(arg) return setmetatable({arg = arg}, bindArg) end
 
 local function checkCallable(elem, nextElem)
-  if type(elem) == "function" then
-    return "func"
+  local _, callableType = util.isCallable(elem)
+  if callableType == "function" then
+    return "function"
   elseif type(elem) == "table" then
     if type(elem[nextElem]) == "function" then
       return "method"
-    else
-      local mt = getmetatable(elem)
-      if mt == bindArg then
-        return nil, elem.arg
-      elseif type(mt) == "table" and type(mt.__call) == "function" then
-        return "__call"
-      end
+    elseif callableType == "funcTable" then
+      return "funcTable"
+    elseif getmetatable(elem) == bindArg then
+      return nil, elem.arg
     end
   end
 end
@@ -229,14 +231,14 @@ function Bind._bindButton(butt, pressMacro, releaseMacro)
   pressMacro = pressMacro or "leftPress"
   releaseMacro = releaseMacro or "leftRelease"
   if not butt.guard then
-    if getmetatable(butt) == ToggleButton then
+    if util.isType(butt, ToggleButton) then
       onPress = function() butt() end
       onRelease = function() end
     else
       onPress = function() butt:macro(pressMacro) end
       onRelease = function() butt:macro(releaseMacro) end
     end
-  elseif getmetatable(butt) == ToggleButton then
+  elseif util.isType(butt, ToggleButton) then
     onPress = function() butt.guard:open() butt() end
     onRelease = function() butt.guard:close() end
   else
@@ -312,9 +314,7 @@ function Bind:makeSingleFunc(args)
   if type(args) ~= "table" then 
     error("Invalid callback arguments", 4) 
   end
-  if args.__call or (getmetatable(args) and getmetatable(args).__call) then
-    args = {args}
-  end
+  if util.isFuncTable(args) then args = {args} end
   local funcs = parseCallableArgs(1, args)
   if #funcs == 0 then
     error("There needs to be at least one callable object", 4)
@@ -332,7 +332,7 @@ function Bind:addGlobalFuncs(...)
   for _, func in ipairs {...} do
     self.funcCount = self.funcCount + 1
     local funcName = "FSL2LuaGFunc" .. self.funcCount
-    if type(func) == "table" and (func.__call or getmetatable(func).__call) then
+    if util.isFuncTable(func) then
       _G[funcName] = function() func() end
     else
       _G[funcName] = func

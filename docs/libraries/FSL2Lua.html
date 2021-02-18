@@ -43,7 +43,6 @@
 <li><a href="#Class_FcuSwitch">Class FcuSwitch </a></li>
 <li><a href="#Class_RotaryKnob">Class RotaryKnob </a></li>
 <li><a href="#Class_MCDU">Class MCDU </a></li>
-<li><a href="#"> </a></li>
 </ul>
 
 
@@ -90,6 +89,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block)</a></td>
 	<td class="summary">Repeats the callback until the timeout elapses</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
+	<td class="summary">Convenience wrapper around event.key and event.button from the FSUIPC Lua library.</td>
 	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
@@ -212,7 +215,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Switch:toggle">Switch:toggle()</a></td>
-	<td class="summary">Alias for <a href="../libraries/FSL2Lua.html#RotaryKnob:cycle">cycle</a>.</td>
+	<td class="summary">Alias for <a href="../libraries/FSL2Lua.html#Switch:cycle">cycle</a>.</td>
 	</tr>
 </table>
 <h2><a href="#Class_FcuSwitch">Class FcuSwitch </a></h2>
@@ -286,13 +289,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells()</a></td>
 	<td class="summary">Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.</td>
-	</tr>
-</table>
-<h2><a href="#"> </a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
-	<td class="summary">This function is a convenience wrapper around event.key and event.button from the FSUIPC Lua library.</td>
 	</tr>
 </table>
 
@@ -389,6 +385,114 @@
 
 
         </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Bind"></a>
+    <strong>Bind(data)</strong>
+    </dt>
+    <dd>
+
+<p>Convenience wrapper around event.key and event.button from the FSUIPC Lua library. </p>
+
+<p> <a href="../examples/cockpit_control_binds.lua.html#">Click here for usage examples</a></p>
+
+<p> Accepted values for onPress, onRelease, and onPressRepeat are:</p>
+
+<ul>
+    <li><p>A function or callable table.</p></li>
+    <li><p>An array in the following format: <code>{<strong>callable1</strong>, arg1, arg2, ..., argn, <strong>callable2</strong>, arg1, arg2, ..., argn, ...}</code>
+    where a callable can be either a function, callable table, or object followed by a method name: <code>FSL.OVHD_EXTLT_Land_L_Switch, &quot;cycle&quot;</code>.</p></li>
+</ul>
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">data</span> A table that may contain the following fields:
+        <ul>
+        <li><span class="parameter">onPress</span>
+         See above.
+        </li>
+        <li><span class="parameter">onPressRepeat</span>
+         See above.
+ <strong>Warning</strong>: for buttons, onPressRepeat uses event.timer. There is only one timer available for a given thread so don't use onPressRepeat with buttons if you need a timer for something else.
+        </li>
+        <li><span class="parameter">onRelease</span>
+         See above.
+        </li>
+        <li><span class="parameter">bindButton</span>
+         <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
+        </li>
+        <li><span class="parameter">bindToggleButton</span>
+         <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
+        </li>
+        <li><span class="parameter">bindPush</span>
+         <a href="#Class_FcuSwitch">FcuSwitch</a> Same as <code>bindButton</code> — for pushing the switch.
+        </li>
+        <li><span class="parameter">bindPull</span>
+         <a href="#Class_FcuSwitch">FcuSwitch</a> Same as <code>bindButton</code> — for pulling the switch.
+        </li>
+        <li><span class="parameter">btn</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number: <code>&quot;A5&quot;</code>.
+        </li>
+        <li><span class="parameter">key</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+<p> Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br></p>
+
+<ul>
+    <li>Alphanumeric character keys</li>
+    <li>Escaped keycodes: <code>key = &quot;\222&quot;</code>.
+    The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging option.</li>
+    <li>Enter</li>
+    <li>Pause</li>
+    <li>CapsLock</li>
+    <li>Esc</li>
+    <li>Escape</li>
+    <li>Space</li>
+    <li>PageUp</li>
+    <li>PageDown</li>
+    <li>End</li>
+    <li>Home </li>
+    <li>LeftArrow</li>
+    <li>UpArrow</li>
+    <li>RightArrow </li>
+    <li>DownArrow</li>
+    <li>PrintScreen</li>
+    <li>Ins</li>
+    <li>Insert</li>
+    <li>Del</li>
+    <li>Delete</li>
+    <li>NumpadEnter</li>
+    <li>NumpadPlus</li>
+    <li>NumpadMinus</li>
+    <li>NumpadDot </li>
+    <li>NumpadDel</li>
+    <li>NumpadDiv</li>
+    <li>NumpadMult</li>
+</ul>
+
+<p> You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br></p>
+
+<ul>
+    <li>Tab</li>
+    <li>Shift</li>
+    <li>Ctrl</li>
+    <li>LeftAlt</li>
+    <li>RightAlt</li>
+    <li>Windows</li>
+    <li>Apps</li>
+</ul>
+
+        </li>
+        </li></ul>
     </ul>
 
 
@@ -898,7 +1002,7 @@ FSL:setPilot(<span class="number">1</span>)
     <strong>Switch:toggle()</strong>
     </dt>
     <dd>
-    Alias for <a href="../libraries/FSL2Lua.html#RotaryKnob:cycle">cycle</a>.
+    Alias for <a href="../libraries/FSL2Lua.html#Switch:cycle">cycle</a>.
 
 
 
@@ -1190,8 +1294,8 @@ FSL:setPilot(<span class="number">1</span>)
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example"><span class="keyword">if</span> FSL.CPT.MCDU:getString():find <span class="string">"MCDU MENU"</span> <span class="keyword">then</span>
-  <span class="global">print</span> <span class="string">"We're on the main menu page"</span>
+        <pre class="example"><span class="keyword">if</span> <span class="keyword">not</span> FSL.MCDU:getString():find <span class="string">"MCDU MENU"</span> <span class="keyword">then</span>
+  FSL.PED_MCDU_KEY_MENU()
 <span class="keyword">end</span></pre>
     </ul>
 
@@ -1282,115 +1386,13 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
 </dl>
-    <h2 class="section-header "><a name=""></a> </h2>
-
-    <dl class="function">
-    <dt>
-    <a name = "Bind"></a>
-    <strong>Bind(data)</strong>
-    </dt>
-    <dd>
-    This function is a convenience wrapper around event.key and event.button from the FSUIPC Lua library. </p>
-
-<p> <a href="../examples/cockpit_control_binds.lua.html#">Click here for usage examples</a>
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">data</span> A table that may contain the following fields:
-        <ul>
-        <li><span class="parameter">onPress</span>
-         <a href="../examples/cockpit_control_binds.lua.html#">see the examples</a>
-        </li>
-        <li><span class="parameter">onPressRepeat</span>
-         <a href="../examples/cockpit_control_binds.lua.html#">see the examples</a>
- <strong>Warning</strong>: for buttons, onPressRepeat uses event.timer. There is only one timer available for a given thread so don't use onPressRepeat with buttons if you need a timer for something else.
-        </li>
-        <li><span class="parameter">onRelease</span>
-         <a href="../examples/cockpit_control_binds.lua.html#">see the examples</a>
-        </li>
-        <li><span class="parameter">bindButton</span>
-         <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
-        </li>
-        <li><span class="parameter">bindToggleButton</span>
-         <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
-        </li>
-        <li><span class="parameter">bindPush</span>
-         <a href="#Class_FcuSwitch">FcuSwitch</a> Same as <code>bindButton</code> — for pushing the switch.
-        </li>
-        <li><span class="parameter">bindPull</span>
-         <a href="#Class_FcuSwitch">FcuSwitch</a> Same as <code>bindButton</code> — for pulling the switch.
-        </li>
-        <li><span class="parameter">btn</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number. Example: 'A42'.
-        </li>
-        <li><span class="parameter">key</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-<p> Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br></p>
-
-<ul>
-    <li>Alphanumeric character keys</li>
-    <li>Escaped keycodes: <code>key = &quot;\222&quot;</code>.
-    The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging option.</li>
-    <li>Enter</li>
-    <li>Pause</li>
-    <li>CapsLock</li>
-    <li>Esc</li>
-    <li>Escape</li>
-    <li>Space</li>
-    <li>PageUp</li>
-    <li>PageDown</li>
-    <li>End</li>
-    <li>Home </li>
-    <li>LeftArrow</li>
-    <li>UpArrow</li>
-    <li>RightArrow </li>
-    <li>DownArrow</li>
-    <li>PrintScreen</li>
-    <li>Ins</li>
-    <li>Insert</li>
-    <li>Del</li>
-    <li>Delete</li>
-    <li>NumpadEnter</li>
-    <li>NumpadPlus</li>
-    <li>NumpadMinus</li>
-    <li>NumpadDot </li>
-    <li>NumpadDel</li>
-    <li>NumpadDiv</li>
-    <li>NumpadMult</li>
-</ul>
-
-<p> You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br></p>
-
-<ul>
-    <li>Tab</li>
-    <li>Shift</li>
-    <li>Ctrl</li>
-    <li>LeftAlt</li>
-    <li>RightAlt</li>
-    <li>Windows</li>
-    <li>Apps</li>
-</ul>
-
-        </li>
-        </li></ul>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-18 01:20:29 </i>
+<i style="float:right;">Last updated 2021-02-18 06:02:19 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

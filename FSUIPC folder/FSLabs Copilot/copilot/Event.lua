@@ -4,6 +4,7 @@
 local Ouroboros = require "FSLabs Copilot.libs.ouroboros"
 local coroutine = coroutine
 local copilot = copilot
+local util = "FSL2Lua.FSL2Lua.util"
 
 local function removeEventRef(self, refType, ...)
   if refType == "all" then
@@ -26,21 +27,19 @@ local function makeEventRef(self, func, refType, ...)
 end
 
 --- @type Action
-
 Action = {threads = {}}
 local Action = Action
 
 --- Constructor
 --- @tparam function callback
 --- @string[opt] flags 'runAsCoroutine'
-
 function Action:new(callback, flags)
   self.__index = self
-  if not (type(callback) == "function" or getmetatable(callback) and getmetatable(callback).__call) then
-    error("Action callback must be a callable", 2)
-  end
+  local isCallable, callableType = util.isCallable(callback)
+  util.assert(isCallable, "Action callback must be a callable", 2)
+  local mt = getmetatable(callback)
   return setmetatable ({
-    callback = type(callback) == "function" and callback or function(...) getmetatable(callback).__call(callback, ...) end,
+    callback = callableType == "function" and callback or function(...) mt.__call(callback, ...) end,
     isEnabled = true,
     runAsCoroutine = flags == "runAsCoroutine",
     eventRefs = {stop = {}}
@@ -53,7 +52,6 @@ end
 
 --- Enables or disables the action.
 --- @bool value True to enable the action, false to disable.
-
 function Action:setEnabled(value)
   self.isEnabled = value
 end
@@ -119,7 +117,6 @@ end
 Action.removeEventRef = removeEventRef
 
 --- If the action was configured to be run as a coroutine, stops the execution of the currently running coroutine immediately.
-
 function Action:stopCurrentThread()
   if self.currentThread then
     self:removeThread()
@@ -134,7 +131,6 @@ Action.makeEventRef = makeEventRef
 --- @param ... One or more events. If the 'runAsCoroutine' flag was passed to the constructor, the callback coroutine will be stopped when these events are triggered. 
 --- @usage myAction:stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
 --- @return self
-
 function Action:stopOn(...)
   self:makeEventRef(function() self:stopCurrentThread() end, "stop", ...)
   return self
@@ -143,7 +139,6 @@ end
 --- Can be used when the action can be stopped - the callback will be executed when the action is stopped.
 --- @tparam function callback
 --- @return self
-
 function Action:addCleanup(callback)
   self.cleanUpCallback = callback
   return self
@@ -152,7 +147,6 @@ end
 --- Add log info that will be logged when the action is started or stopped
 --- @string msg
 --- @return self
-
 function Action:addLogMsg(msg)
   self.logMsg = msg
   return self
@@ -238,14 +232,12 @@ end
 function Event:addAction(...)
   local args = {...}
   local action
-  if type(args[1]) == "table" and getmetatable(args[1]) == Action then
+  if util.isType(args[1], Action) then
     action = args[1]
-  elseif type(args[1]) == "function" or (type(args[1]) == "table" and getmetatable(args[1]).__call) then
+  elseif util.isCallable(args[1]) then
     action = Action:new(...)
   end
-  if action == nil then
-    error("Failed to create action", 2)
-  end
+  util.assert(util.isType(action, Action), "Failed to create action", 2)
   self.actions.nodes[action] = {}
   if self.areActionsSorted then
     self.sortedActions[#self.sortedActions+1] = action
@@ -255,7 +247,7 @@ function Event:addAction(...)
 end
 
 function Event:sortActions()
-  if (self.runningActions) then
+  if self.runningActions then
     error("Can't sort actions while actions are running", 2)
   end
   self.sortedActions = self.actions:sort()
@@ -269,7 +261,7 @@ local OrderSetter = {}
 
 function OrderSetter._checkCoro(action)
   if not action.runAsCoroutine then
-    error("Action " .. action:toString() .. " needs to be a coroutine in order to wait for other coroutines to complete", 3)
+    error("Action " .. action:toString() .. " needs to be a coroutine to be able to wait for other coroutines to complete", 3)
   end
 end
 
@@ -417,14 +409,12 @@ end
 -- -- third
 -- -- fourth
 --
-
 function Event:setActionOrder(action)
   OrderSetter.__index = OrderSetter
   return setmetatable({event = self, anchor = action}, OrderSetter)
 end
 
 --- Same as @{addAction} but the action will be removed from event's action list after it's executed once.
-
 function Event:addOneOffAction(...)
   local action = self:addAction(...)
   self.runOnce[action] = action
@@ -511,14 +501,9 @@ end
 ---@usage Event.waitForEvent(copilot.events.landing)
 function Event.waitForEvent(event, returnFunction)
   local isEventTriggered = false
-  event:addOneOffAction(function()
-    isEventTriggered = true
-  end)
-  if returnFunction then
-    return function() return isEventTriggered end
-  else
-    repeat copilot.suspend() until isEventTriggered
-  end
+  event:addOneOffAction(function() isEventTriggered = true end)
+  if returnFunction then return function() return isEventTriggered end end
+  repeat copilot.suspend() until isEventTriggered
 end
 
 Event.TIMEOUT = {}
@@ -563,7 +548,6 @@ end
 ---@treturn function if waitForAll is true, this function works the same as the one returned by @{waitForEvent} and returns true once all events have been triggered
 --
 -- Otherwise, for every event that has been triggered, it returns the event object
-
 function Event.waitForEvents(events, waitForAll, returnFunction)
 
   local flags = {}
@@ -720,7 +704,6 @@ end
 local function trimPhrase(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
 
 --- Removes phrase variants from a voice command.
---- + and - in front of a word are ignored. For example, removePhrase("hello world") will remove both "+hello -world" and "hello world".
 ---@param phrase string or array of strings
 ---@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
 ---@return self
@@ -806,7 +789,6 @@ VoiceCommand.makeEventRef = makeEventRef
 --
 --- Adds an 'activate' event reference that can be removed from the event via @{removeEventRef}
 --- @param ...  one or more events
-
 function VoiceCommand:activateOn(...)
   self:makeEventRef(function() self:activate() end, "activate", ...)
   return self
@@ -816,7 +798,6 @@ end
 --
 --- Adds a 'deactivate' event reference that can be removed from the event via @{removeEventRef}
 --- @param ...  one or more events
-
 function VoiceCommand:deactivateOn(...)
   self:makeEventRef(function() self:deactivate() end, "deactivate", ...)
   return self
@@ -828,7 +809,6 @@ end
 --
 --- Adds a 'ignore' event reference that can be removed from the event via @{removeEventRef}
 --- @param ...  one or more events
-
 function VoiceCommand:ignoreOn(...)
   self:makeEventRef(function() self:ignore() end, "ignore", ...)
   return self
@@ -840,5 +820,4 @@ end
 --- @param ... one or more <a href="#Class_Event">Event</a> objects
 --- @usage copilot.voiceCommands.gearUp:removeEventRef('activate',
 --copilot.events.goAround, copilot.events.takeoffInitiated)
-
 VoiceCommand.removeEventRef = removeEventRef

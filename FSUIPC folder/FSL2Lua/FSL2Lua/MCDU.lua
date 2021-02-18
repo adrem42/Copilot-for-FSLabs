@@ -68,8 +68,8 @@ end
 --- @number[opt] startpos
 --- @number[opt] endpos
 --- @usage 
---- if FSL.CPT.MCDU:getString():find "MCDU MENU" then
----   print "We're on the main menu page"
+--- if not FSL.MCDU:getString():find "MCDU MENU" then
+---   FSL.PED_MCDU_KEY_MENU()
 --- end
 function MCDU:getString(startpos, endpos)
   local display

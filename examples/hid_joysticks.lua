@@ -4,7 +4,7 @@
 FSL = require "FSL2Lua"
 FSL:setPilot "CPT"
 
-Joystick.printDeviceInfo() -- Print info on all devices in the FSUIPC log
+Joystick.printDeviceInfo() -- Print info on all devices
 
 -- 0x06A3 is the vendor ID and 0x0C2D is the product ID
 -- You can get the IDs from Joystick.printDeviceInfo()
@@ -12,7 +12,7 @@ Joystick.printDeviceInfo() -- Print info on all devices in the FSUIPC log
 myJoy = Joystick.new(0x06A3, 0x0C2D)
 anotherJoy = Joystick.new(0x06A3, 0x0763)
 
--- Print all button and axis activity in the FSUIPC log
+-- Print all button and axis activity
 Joystick.logAllJoysticks()
 
 -----------------------------------------
@@ -46,14 +46,11 @@ myJoy:onPress(6,
 myJoy:onPress   (2, FSL.PED_COMM_INT_RAD_Switch, "RAD")
 myJoy:onRelease (2, FSL.PED_COMM_INT_RAD_Switch, "OFF")
 
--- @{FSL2Lua.RotaryKnob.rotateLeft|rotateLeft} and @{FSL2Lua.RotaryKnob.rotateRight|rotateRight} are method names
 -- 30 is the repeat interval in milliseconds
 myJoy:onPressRepeat(4, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft")
 myJoy:onPressRepeat(3, 30, FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateRight")
 
 -- Divide the knob in 5 steps and cycle back and forth
--- This a shorter version of:
--- myJoy:onPress(0, function() FSL.OVHD_INTLT_Integ_Lt_Knob:cycle(5) end)
 myJoy:onPress(1, FSL.OVHD_INTLT_Integ_Lt_Knob, "cycle", 5)
 
 -----------------------------------------

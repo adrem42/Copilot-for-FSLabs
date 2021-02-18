@@ -309,8 +309,7 @@ public:
 	Binds a callback to a button press.
 	@function onPress
 	@int buttonNum
-	@param callback A function or object with a __call metamethod. You can also call other methods on the object (see below), in which case it doesn't need to have a __call metamethod.
-	@param ... Arguments that will be passed to the callback. If the callback is an object and the first argument is a string that matches a method name, the method will be called on the object, with the arguments following the method name forwarded to the call.
+	@param ... Values in the following format:<br><br> `**callable1**, arg1, arg2, ..., argn, **callable2**, arg1, arg2, ..., argn, ...`<br><br> where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_EXTLT_Land_L_Switch, "cycle"`.
 	*/
 	void onPress(size_t buttonNum, ButtonCallback callback);
 
@@ -318,7 +317,6 @@ public:
 	Same as `onPress`, but the callback will be called repeatedly while the button is depressed.
 	@function onPressRepeat
 	@int buttonNum
-	@param callback See `onPress`
 	@param ... See `onPress`
 	*/
 	void onPressRepeat(size_t buttonNum, ButtonCallback callback);
@@ -328,7 +326,6 @@ public:
 	@function onPressRepeat
 	@int buttonNum
 	@int repeatInterval Interval between callback invocations in milliseconds.
-	@param callback See `onPress`
 	@param ... See `onPress`
 	*/
 	void onPressRepeat(size_t buttonNum, int repeatInterval, ButtonCallback callback);
@@ -337,7 +334,6 @@ public:
 	Binds a callback to a button release.
 	@function onRelease
 	@int buttonNum
-	@param callback See `onPress`
 	@param ... See `onPress`
 	*/
 	void onRelease(size_t buttonNum, ButtonCallback callback);
@@ -346,7 +342,7 @@ public:
 	Binds a callback to an axis.
 	@function onAxis
 	@string axisName One of these: X, Y, Z, Rx, Ry, Rz, Slider, Dial
-	@tparam function callback A function to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
+	@tparam function callback A callable to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
 	*/
 	AxisCallback& onAxis(std::string axisName, std::function<void(double)> callback);
 
@@ -355,7 +351,7 @@ public:
 	@function onAxis
 	@string axisName One of these: X, Y, Z, Rx, Ry, Rz, Slider, Dial
 	@int axisIndex Specify this parameter if there are multiple axes with the same name.
-	@tparam function callback A function to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
+	@tparam function callback A callable to be called when the axis changes its value. The callback will receive the current value (percent from 0-100) as the argument.
 	*/
 	AxisCallback& onAxis(std::string axisName, int axisIndex, std::function<void(double)> callback);
 
