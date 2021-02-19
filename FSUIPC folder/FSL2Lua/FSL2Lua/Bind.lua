@@ -162,8 +162,9 @@ local function checkCallable(elem, nextElem)
 end
 
 local function checkIsValidSwitchPosition(switch, position, errLevel)
-  local ok, err = switch:_getTargetLvarVal(position)
-  if not ok then error(err, (errLevel or 1) + 1) end
+  local lvar, err = switch:_getTargetLvarVal(position)
+  if not lvar then error(err, (errLevel or 1) + 1) end
+  return lvar
 end
 
 local function checkFslControl(elem, callableType, args, errLevel)
@@ -302,93 +303,39 @@ local DECREASE = false
 
 local function initSwitchCycling(switch, ...)
 
-  local positions = {...}
+  local posNames = {...}
 
-  util.assert(#positions == 0 or #positions > 1, "You need at lest two positions to cycle between", 5)
+  util.assert(#posNames == 0 or #posNames > 1, "You need at lest two positions to cycle between", 5)
 
-  if #positions == 0 then
-    positions = {}
-    for pos in pairs(switch.posn) do
-      positions[#positions+1] = pos
+  local lvars = {}
+
+  if #posNames == 0 then
+    for _, lvar in pairs(switch.posn) do
+      lvars[#lvars+1] = lvar
+    end
+  else
+    for _, position in ipairs(posNames) do
+      lvars[#lvars+1] = checkIsValidSwitchPosition(switch, position)
     end
   end
 
-  for i, position in ipairs(positions) do
-    positions[i] = position:upper()
-    checkIsValidSwitchPosition(switch, position)
-  end
-  
-  table.sort(positions, function(pos1, pos2)
-    return switch.posn[pos1] < switch.posn[pos2]
-  end)
+  table.sort(lvars)
 
-  local currPos = switch:getPosn()
-  for i, position in ipairs(positions) do
-    if position == currPos then return positions, i end
-  end
-  return positions, 1
+  return lvars, 1
 end
 
-local function cycle(currIdx, direction, switch, positions)
+local function cycle(switch, lvars, currIdx, direction)
 
-  local lastPos = positions[currIdx]
-  local currPos = switch:getPosn()
+  if currIdx == #lvars then direction = DECREASE
+  elseif currIdx == 1 then direction = INCREASE end
 
-  if currPos ~= lastPos then
-  
-    local currPosIdx
+  local nextIdx = currIdx + (direction == INCREASE and 1 or -1)
 
-    for i, pos in ipairs(positions) do
-      if pos == currPos then
-        currPosIdx = i
-        break
-      end
-    end
+  local nextLvar = lvars[nextIdx]
 
-    if currPosIdx then
-      if currPosIdx == #positions then direction = INCREASE
-      elseif currPosIdx == 1 then  direction = DECREASE
-      else direction = currPosIdx > currIdx end
-      currIdx = currPosIdx
-    else
-      local diff = switch.maxLVarVal
-      local currPosLvar = switch.posn[currPos]
-      local inside
-      local closestPosIdx, closestPosLvar
-      for i, pos in ipairs(positions) do
-        local oldDiff = diff
-        local lvar = switch.posn[pos]
-        diff = math.min(diff, math.abs(lvar - currPosLvar))
-        if diff < oldDiff then
-          closestPosLvar = lvar
-          closestPosIdx = i
-        end
-      end
-      if not inside  then
-        if closestPosLvar == switch.posn[positions[1]] then
-          currIdx = #positions  - 1
-        elseif closestPosLvar == switch.posn[positions[#positions]] then
-          currIdx = 2
-        end
-      end
-      direction = closestPosIdx > currIdx 
-    end
-  end
+  switch:_set(nextLvar)
 
-  if direction == INCREASE then currIdx = currIdx + 1
-  else currIdx = currIdx - 1 end
-  
-  if currIdx > #positions then 
-    direction = DECREASE
-    currIdx = #positions - 1
-  elseif currIdx < 1 then 
-    direction = INCREASE
-    currIdx = 2 
-  end
-
-  switch(positions[currIdx])
-
-  return currIdx, direction
+  return nextIdx, direction
 end
 
 --- Returns a function that will cycle the switch.
@@ -403,11 +350,11 @@ function Bind.cycleSwitch(switch, ...)
 
   util.checkType(switch, Switch, "switch", 4)
 
-  local positions, currIdx = initSwitchCycling(switch, ...)
+  local lvars, currIdx = initSwitchCycling(switch, ...)
   local direction = DECREASE
 
   return function()
-    currIdx, direction = cycle(currIdx, direction, switch, positions)
+    currIdx, direction = cycle(switch, lvars, currIdx, direction)
   end
 end
 
@@ -421,12 +368,12 @@ function Bind.cycleLandingLights(...)
   local right = FSL.OVHD_EXTLT_Land_R_Switch
 
   local direction = false
-  local positions, currIdx = initSwitchCycling(right, ...)
+  local lvars, currIdx = initSwitchCycling(right, ...)
 
   return function()
     left(right:getPosn())
-    cycle(currIdx, direction, left, positions)
-    currIdx, direction = cycle(currIdx, direction, right, positions)
+    cycle(left, lvars, currIdx, direction)
+    currIdx, direction = cycle(right, lvars, currIdx, direction)
   end
 end
 
