@@ -31,6 +31,8 @@ Bind {
   )
 }
 
+Bind {key = "F", onPress = Bind.cycleSwitch(FSL.OVHD_EXTLT_Strobe_Switch)}
+
 Bind {
   key = "F6",
   onPress = {
@@ -75,3 +77,23 @@ Bind {
 
 Bind {btn = "C2", onPress = {FSL.PED_COMM_INT_RAD_Switch, "INT"}}
 Bind {btn = "C3", onPress = {FSL.PED_COMM_INT_RAD_Switch, "OFF"}}
+
+---------------------------------------------------------------------
+
+local function clearScratch(side)
+  local old = FSL[side].MCDU:getScratchpad()
+  if old:find "SELECT DESIRED SYSTEM" then return end
+  repeat
+    FSL[side].PED_MCDU_KEY_CLR()
+    local new
+    repeat new = FSL[side].MCDU:getScratchpad()
+    until new ~= old
+    old = new
+  until not new:find "%S" 
+end
+
+Bind {key = "H", onPress = {clearScratch, "CPT", FSL.CPT.MCDU, "type", "hello"}}
+Bind {key = "G", onPress = function ()
+  clearScratch "CPT"
+  FSL.CPT.MCDU:type "goodbye"
+end}

@@ -4,7 +4,7 @@
 local Ouroboros = require "FSLabs Copilot.libs.ouroboros"
 local coroutine = coroutine
 local copilot = copilot
-local util = "FSL2Lua.FSL2Lua.util"
+local util = require "FSL2Lua.FSL2Lua.util"
 
 local function removeEventRef(self, refType, ...)
   if refType == "all" then
@@ -111,7 +111,7 @@ end
 --- Use this you want to disable the effect of @{stopOn} for one of the predefined actions in @{copilot.actions}
 --- @function removeEventRef
 --- @string refType 'stop'
---- @param ... one or more <a href="#Class_Event">Event</a> object
+--- @param ... One or more <a href="#Class_Event">Event</a>'s
 --- @usage copilot.actions.preflight:removeEventRef('stop', copilot.events.enginesStarted)
 
 Action.removeEventRef = removeEventRef
@@ -158,7 +158,7 @@ Event = {events = {}, voiceCommands = {}, runningThreads = {}}
 
 --- Constructor
 --- @tparam[opt] table data A table containing the following fields:
--- @param[opt] data.action Function or <a href="#Class_Action">Action</a> object or array of functions or <a href="#Class_Action">Action</a> objects that will be executed when the event is triggered.  
+-- @param[opt] data.action Function or <a href="#Class_Action">Action</a> or array of either that will be executed when the event is triggered.  
 -- If it's an array of functions, each function can optionally be followed by string 'runAsCoroutine'.  
 -- Actions can also be added to an existing event via @{Event.Event.addAction}.
 -- @string[opt] data.logMsg Message that will be logged when the event is triggered.
@@ -224,10 +224,10 @@ function Event:getActions()
 end
 
 --- <span>
---- @param ... Either a function with the optional flag 'runAsCoroutine' as the second argument or an <a href="#Class_Action">Action</a> object.
+--- @param ... Either a function with the optional flag 'runAsCoroutine' as the second argument or an <a href="#Class_Action">Action</a>.
 --- @usage
 -- myEvent:addAction(function() end, 'runAsCoroutine')
---- @return The added <a href="#Class_Action">Action</a> object.
+--- @return The added <a href="#Class_Action">Action</a>.
 
 function Event:addAction(...)
   local args = {...}
@@ -332,9 +332,9 @@ function OrderSetter:after(...)
 end
 
 --- Sets order of the event's actions relative to each other.
----@param action An action object which will serve as an anchor for positioning other actions in front or after it.
+---@param action An <a href="#Class_Action">Action</a> which will serve as an anchor for positioning other actions in front or after it.
 ---@return A table with four functions: 'front', 'back', 'before' and 'after. 'Before' and 'after' take a variable
----number of Action objects. All four functions optionally take a boolean as the last parameter which defaults to true
+---number of <a href="#Class_Action">Action</a>'s. All four functions optionally take a boolean as the last parameter which defaults to true
 -- if omitted. If the last parameter is true and both the anchor action and the other actions are coroutines,
 -- the coroutines will not be run simultaneously.
 --
@@ -422,7 +422,7 @@ function Event:addOneOffAction(...)
 end
 
 --- <span>
---- @param action An <a href="#Class_Action">Action</a> object that was added to this event.
+--- @param action An <a href="#Class_Action">Action</a> that was added to this event.
 --- @usage
 -- local myAction = myEvent:addAction(function() end)
 -- myEvent:removeAction(myAction)
@@ -494,11 +494,12 @@ function Event.resumeThreads()
   end
 end
 
----<span>
+---A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.
 ---@static
----@param event an <a href="#Class_Event">Event</a> object
----@bool returnFunction If true, waitForEvent returns a function that returns true once the event gets triggered, else waitForEvent returns when the event is triggered.
+---@param event <a href="#Class_Event">Event</a>
+---@bool returnFunction If true, returns a function that returns true once the event is signaled, else waitForEvent waits itself for the event to be signaled.
 ---@usage Event.waitForEvent(copilot.events.landing)
+---@treturn function If returnFunction is true, returns a function that will return true after the event is signaled.
 function Event.waitForEvent(event, returnFunction)
   local isEventTriggered = false
   event:addOneOffAction(function() isEventTriggered = true end)
@@ -509,26 +510,44 @@ end
 Event.TIMEOUT = {}
 Event.INFINITE = {}
 
+---Builds an event from a key press.
+---@static
+---@param key See `FSL2Lua.Bind`
+---@param[opt] ... Arguments to forward to the `Event` constructor.
+---@return <a href="#Class_Event">Event</a>
 function Event.fromKeyPress(key, ...)
   local event = Event:new(...)
   Bind {key = key, onPress = function() event:trigger() end}
   return event
 end
 
+--- Waits for the event or until the timeout is elapsed.
+---@static
+---@int timeout Timeout in milliseconds
+---@param event <a href="#Class_Event">Event</a>
+---@return Event.TIMEOUT
+---@return True if the event was signaled.
 function Event.waitForEventWithTimeout(timeout, event)
   if timeout == Event.INFINITE then
-    return Event.waitForEvent(event)
+    Event.waitForEvent(event)
+    return true
   end
   local isEventSignaled = Event.waitForEvent(event, true)
   local timedOut = not checkWithTimeout(timeout, function()
     copilot.suspend()
     return isEventSignaled()
   end)
-  if timedOut then return 
-    Event.TIMEOUT 
-  end
+  return timedOut and Event.TIMEOUT or true
 end
 
+--- Waits for multiple events or until the timeout is elapsed.
+---@static
+---@int timeout Timeout in milliseconds
+---@param events Array of <a href="#Class_Event">Event</a>'s
+---@bool waitForAll Whether to wait for any event or all events to be signaled.
+---@return Event.TIMEOUT
+---@return True if waitForAll is true and all events were signaled.
+---@return The event that was signaled if waitForAll is false.
 function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
   if timeout == Event.INFINITE then
     return Event.waitForEvents(events, waitForAll, false)
@@ -543,11 +562,11 @@ end
 
 ---Same as @{waitForEvent} but for multiple events
 ---@static
----@tparam table events array of <a href="#Class_Event">Event</a> objects
+---@tparam table events Array of <a href="#Class_Event">Event</a>'s
 ---@bool[opt=false] waitForAll
 ---@treturn function if waitForAll is true, this function works the same as the one returned by @{waitForEvent} and returns true once all events have been triggered
 --
--- Otherwise, for every event that has been triggered, it returns the event object
+-- Otherwise, for every event that has been triggered, it returns the event
 function Event.waitForEvents(events, waitForAll, returnFunction)
 
   local flags = {}
@@ -588,7 +607,7 @@ end
 
 local recognizer = copilot.recognizer
 
---- VoiceCommand is a subclass of <a href="#Class_Event">Event</a>.
+--- VoiceCommand is a subclass of <a href="#Class_Event">Event</a> and is implemented with the Windows Speech API.
 --
 -- A voice command can be in one of these  states:
 --
@@ -817,7 +836,7 @@ end
 --- Disables the effect of @{activateOn}, @{deactivateOn} or @{ignore} for the default voice commands in @{copilot.voiceCommands}
 --- @function removeEventRef
 --- @string refType 'activate', 'deactivate' or 'ignore'
---- @param ... one or more <a href="#Class_Event">Event</a> objects
+--- @param ... one or more <a href="#Class_Event">Event</a>'s
 --- @usage copilot.voiceCommands.gearUp:removeEventRef('activate',
 --copilot.events.goAround, copilot.events.takeoffInitiated)
 VoiceCommand.removeEventRef = removeEventRef

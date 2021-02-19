@@ -309,7 +309,7 @@ public:
 	Binds a callback to a button press.
 	@function onPress
 	@int buttonNum
-	@param ... Values in the following format:<br><br> `**callable1**, arg1, arg2, ..., argn, **callable2**, arg1, arg2, ..., argn, ...`<br><br> where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_EXTLT_Land_L_Switch, "cycle"`.
+	@param ... Values in the following format:<br><br> `**callable1**, arg1, arg2, ..., argn, **callable2**, arg1, arg2, ..., argn, ...`<br><br> where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft"`.
 	*/
 	void onPress(size_t buttonNum, ButtonCallback callback);
 

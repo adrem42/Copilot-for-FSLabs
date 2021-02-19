@@ -1,6 +1,7 @@
 if false then module "FSL2Lua" end
 
 local util = require "FSL2Lua.FSL2Lua.util"
+local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
 --- @type MCDU
 

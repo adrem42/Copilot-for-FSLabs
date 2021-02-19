@@ -133,7 +133,19 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event.waitForEvent">Event.waitForEvent(event, returnFunction)</a></td>
-	<td class="summary"><span></td>
+	<td class="summary">A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event.fromKeyPress">Event.fromKeyPress(key[, ...])</a></td>
+	<td class="summary">Builds an event from a key press.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event.waitForEventWithTimeout">Event.waitForEventWithTimeout(timeout, event)</a></td>
+	<td class="summary">Waits for the event or until the timeout is elapsed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event.waitForEventsWithTimeout">Event.waitForEventsWithTimeout(timeout, events, waitForAll)</a></td>
+	<td class="summary">Waits for multiple events or until the timeout is elapsed.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event.waitForEvents">Event.waitForEvents(events[, waitForAll=false])</a></td>
@@ -299,7 +311,7 @@
          'stop'
         </li>
         <li><span class="parameter">...</span>
-         one or more <a href="#Class_Event">Event</a> object
+         One or more <a href="#Class_Event">Event</a>'s
         </li>
     </ul>
 
@@ -428,7 +440,7 @@
         <li><span class="parameter">data</span> A table containing the following fields:
         <ul>
         <li><span class="parameter">action</span>
-         Function or <a href="#Class_Action">Action</a> object or array of functions or <a href="#Class_Action">Action</a> objects that will be executed when the event is triggered. <br/>
+         Function or <a href="#Class_Action">Action</a> or array of either that will be executed when the event is triggered. <br/>
  If it's an array of functions, each function can optionally be followed by string 'runAsCoroutine'. <br/>
  Actions can also be added to an existing event via <a href="../libraries/Event.html#Event:addAction">addAction</a>.
          (<em>optional</em>)
@@ -472,14 +484,14 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-         Either a function with the optional flag 'runAsCoroutine' as the second argument or an <a href="#Class_Action">Action</a> object.
+         Either a function with the optional flag 'runAsCoroutine' as the second argument or an <a href="#Class_Action">Action</a>.
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        The added <a href="#Class_Action">Action</a> object.
+        The added <a href="#Class_Action">Action</a>.
     </ol>
 
 
@@ -501,7 +513,7 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">action</span>
-         An action object which will serve as an anchor for positioning other actions in front or after it.
+         An <a href="#Class_Action">Action</a> which will serve as an anchor for positioning other actions in front or after it.
         </li>
     </ul>
 
@@ -509,7 +521,7 @@
     <ol>
 
          A table with four functions: 'front', 'back', 'before' and 'after. 'Before' and 'after' take a variable
-number of Action objects. All four functions optionally take a boolean as the last parameter which defaults to true
+number of <a href="#Class_Action">Action</a>'s. All four functions optionally take a boolean as the last parameter which defaults to true
  if omitted. If the last parameter is true and both the anchor action and the other actions are coroutines,
  the coroutines will not be run simultaneously.</p>
 
@@ -624,7 +636,7 @@ event:trigger()
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">action</span>
-         An <a href="#Class_Action">Action</a> object that was added to this event.
+         An <a href="#Class_Action">Action</a> that was added to this event.
         </li>
     </ul>
 
@@ -668,20 +680,26 @@ myEvent:removeAction(myAction)</pre>
     <strong>Event.waitForEvent(event, returnFunction)</strong>
     </dt>
     <dd>
-    <span>
+    A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">event</span>
-         an <a href="#Class_Event">Event</a> object
+         <a href="#Class_Event">Event</a>
         </li>
         <li><span class="parameter">returnFunction</span>
             <span class="types"><span class="type">bool</span></span>
-         If true, waitForEvent returns a function that returns true once the event gets triggered, else waitForEvent returns when the event is triggered.
+         If true, returns a function that returns true once the event is signaled, else waitForEvent waits itself for the event to be signaled.
         </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        If returnFunction is true, returns a function that will return true after the event is signaled.
+    </ol>
 
 
 
@@ -689,6 +707,103 @@ myEvent:removeAction(myAction)</pre>
     <ul>
         <pre class="example">Event.waitForEvent(copilot.events.landing)</pre>
     </ul>
+
+</dd>
+    <dt>
+    <a name = "Event.fromKeyPress"></a>
+    <strong>Event.fromKeyPress(key[, ...])</strong>
+    </dt>
+    <dd>
+    Builds an event from a key press.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         See <a href="../libraries/FSL2Lua.html#Bind">FSL2Lua.Bind</a>
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to the <a href="../libraries/Event.html#">Event</a> constructor.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="#Class_Event">Event</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEventWithTimeout"></a>
+    <strong>Event.waitForEventWithTimeout(timeout, event)</strong>
+    </dt>
+    <dd>
+    Waits for the event or until the timeout is elapsed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">event</span>
+         <a href="#Class_Event">Event</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        Event.TIMEOUT</li>
+        <li>
+        True if the event was signaled.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEventsWithTimeout"></a>
+    <strong>Event.waitForEventsWithTimeout(timeout, events, waitForAll)</strong>
+    </dt>
+    <dd>
+    Waits for multiple events or until the timeout is elapsed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">events</span>
+         Array of <a href="#Class_Event">Event</a>'s
+        </li>
+        <li><span class="parameter">waitForAll</span>
+            <span class="types"><span class="type">bool</span></span>
+         Whether to wait for any event or all events to be signaled.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        Event.TIMEOUT</li>
+        <li>
+        True if waitForAll is true and all events were signaled.</li>
+        <li>
+        The event that was signaled if waitForAll is false.</li>
+    </ol>
+
+
+
 
 </dd>
     <dt>
@@ -703,7 +818,7 @@ myEvent:removeAction(myAction)</pre>
     <ul>
         <li><span class="parameter">events</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         array of <a href="#Class_Event">Event</a> objects
+         Array of <a href="#Class_Event">Event</a>'s
         </li>
         <li><span class="parameter">waitForAll</span>
             <span class="types"><span class="type">bool</span></span>
@@ -720,7 +835,7 @@ myEvent:removeAction(myAction)</pre>
            <span class="types"><span class="type">function</span></span>
         if waitForAll is true, this function works the same as the one returned by <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> and returns true once all events have been triggered</p>
 
-<p> Otherwise, for every event that has been triggered, it returns the event object
+<p> Otherwise, for every event that has been triggered, it returns the event
     </ol>
 
 
@@ -731,7 +846,7 @@ myEvent:removeAction(myAction)</pre>
     <h2 class="section-header has-description"><a name="Class_VoiceCommand"></a>Class VoiceCommand </h2>
 
           <div class="section-description">
-          VoiceCommand is a subclass of <a href="#Class_Event">Event</a>. </p>
+          VoiceCommand is a subclass of <a href="#Class_Event">Event</a> and is implemented with the Windows Speech API. </p>
 
 <p> A voice command can be in one of these  states:</p>
 
@@ -1152,7 +1267,7 @@ If a word is preceded by a '+' or '-', its required confidence is set to 'high' 
          'activate', 'deactivate' or 'ignore'
         </li>
         <li><span class="parameter">...</span>
-         one or more <a href="#Class_Event">Event</a> objects
+         one or more <a href="#Class_Event">Event</a>'s
         </li>
     </ul>
 
@@ -1173,7 +1288,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-18 15:07:41 </i>
+<i style="float:right;">Last updated 2021-02-18 21:04:09 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -19,6 +19,7 @@ local Bind = {
 setmetatable(Bind, Bind)
 
 --- Convenience wrapper around event.key and event.button from the FSUIPC Lua library.
+--- For joystick buttons, consider @{hid_joysticks.lua|using} the `Joystick` library instead. 
 --
 --- @{cockpit_control_binds.lua|Click here for usage examples}
 --
@@ -27,7 +28,7 @@ setmetatable(Bind, Bind)
 --- * A function or callable table.
 --
 --- * An array in the following format: `{**callable1**, arg1, arg2, ..., argn, **callable2**, arg1, arg2, ..., argn, ...}`
---- where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_EXTLT_Land_L_Switch, "cycle"`.
+--- where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft"`.
 --- @function Bind
 --- @tparam table data A table that may contain the following fields: 
 --- @param data.onPress See above.
@@ -296,6 +297,9 @@ function Bind._bindToggleButton(butt)
   return onPress, onRelease
 end
 
+local INCREASE = true
+local DECREASE = false
+
 local function initSwitchCycling(switch, ...)
 
   local positions = {...}
@@ -309,33 +313,76 @@ local function initSwitchCycling(switch, ...)
     end
   end
 
-  for _, position in ipairs(positions) do
+  for i, position in ipairs(positions) do
+    positions[i] = position:upper()
     checkIsValidSwitchPosition(switch, position)
   end
   
   table.sort(positions, function(pos1, pos2)
-    return switch.posn[pos1] > switch.posn[pos2]
+    return switch.posn[pos1] < switch.posn[pos2]
   end)
 
   local currPos = switch:getPosn()
   for i, position in ipairs(positions) do
     if position == currPos then return positions, i end
   end
+  return positions, 1
 end
 
 local function cycle(currIdx, direction, switch, positions)
 
-  if direction == true then
-    currIdx = currIdx + 1
-  else
-    currIdx = currIdx - 1
+  local lastPos = positions[currIdx]
+  local currPos = switch:getPosn()
+
+  if currPos ~= lastPos then
+  
+    local currPosIdx
+
+    for i, pos in ipairs(positions) do
+      if pos == currPos then
+        currPosIdx = i
+        break
+      end
+    end
+
+    if currPosIdx then
+      if currPosIdx == #positions then direction = INCREASE
+      elseif currPosIdx == 1 then  direction = DECREASE
+      else direction = currPosIdx > currIdx end
+      currIdx = currPosIdx
+    else
+      local diff = switch.maxLVarVal
+      local currPosLvar = switch.posn[currPos]
+      local inside
+      local closestPosIdx, closestPosLvar
+      for i, pos in ipairs(positions) do
+        local oldDiff = diff
+        local lvar = switch.posn[pos]
+        diff = math.min(diff, math.abs(lvar - currPosLvar))
+        if diff < oldDiff then
+          closestPosLvar = lvar
+          closestPosIdx = i
+        end
+      end
+      if not inside  then
+        if closestPosLvar == switch.posn[positions[1]] then
+          currIdx = #positions  - 1
+        elseif closestPosLvar == switch.posn[positions[#positions]] then
+          currIdx = 2
+        end
+      end
+      direction = closestPosIdx > currIdx 
+    end
   end
 
+  if direction == INCREASE then currIdx = currIdx + 1
+  else currIdx = currIdx - 1 end
+  
   if currIdx > #positions then 
-    direction = false
+    direction = DECREASE
     currIdx = #positions - 1
   elseif currIdx < 1 then 
-    direction = true
+    direction = INCREASE
     currIdx = 2 
   end
 
@@ -349,12 +396,15 @@ end
 ---@param switch <a href="#Class_Switch">Switch</a> 
 ---@param[opt] ... At least two positions to cycle across. If none are specified, the switch will be cycled across all positions.
 ---@treturn function Function that will cycle the switch.
+---@usage Bind {key = "A", onPress = Bind.cycleSwitch(FSL.OVHD_EXTLT_Strobe_Switch, "OFF", "ON")}
+--
+---myJoystick:onPress(1, Bind.cycleSwitch(FSL.OVHD_EXTLT_Strobe_Switch))
 function Bind.cycleSwitch(switch, ...)
 
   util.checkType(switch, Switch, "switch", 4)
 
   local positions, currIdx = initSwitchCycling(switch, ...)
-  local direction = false
+  local direction = DECREASE
 
   return function()
     currIdx, direction = cycle(currIdx, direction, switch, positions)
@@ -363,7 +413,7 @@ end
 
 --- Returns a function that will cycle the landing light switches and keep them in sync.
 ---@function Bind.cycleLandingLights
----@param[opt] ... At least two positions to cycle across. If none are specified, the switch will be cycled across all positions.
+---@param[opt] ... At least two positions to cycle across. If none are specified, the switches will be cycled across all positions.
 ---@treturn function Function that will cycle the switches.
 function Bind.cycleLandingLights(...)
 
@@ -392,15 +442,15 @@ function Bind.cycleRotaryKnob(knob, steps)
   steps = math.floor(steps)
   local cycleVal = 0
   local prev = 0
-  local cycleDir
+  local cycleDir = DECREASE
 
   return function()
     local step = 100 / steps
     local curr = knob:getPosn()
     if curr ~= prev then cycleVal = curr end
-    if cycleVal == 100 then cycleDir = false
-    elseif cycleVal == 0 then cycleDir = true  end
-    if cycleDir then cycleVal = math.min(cycleVal + step, 100)
+    if cycleVal == 100 then cycleDir = DECREASE
+    elseif cycleVal == 0 then cycleDir = INCREASE  end
+    if cycleDir == INCREASE then cycleVal = math.min(cycleVal + step, 100)
     else cycleVal = math.max(cycleVal - step, 0) end
     cycleVal = cycleVal - cycleVal % step
     prev = knob(cycleVal)

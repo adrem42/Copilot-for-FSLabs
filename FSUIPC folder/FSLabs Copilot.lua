@@ -8,7 +8,6 @@ end
 APPDIR = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1FSLabs Copilot\\")
 addPackagePath(APPDIR)
 
-local util = require "FSL2Lua.FSL2Lua.util"
 copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
 require "copilot.util"
 copilot.UserOptions = require "copilot.UserOptions"
@@ -22,6 +21,8 @@ FSL = require "FSL2Lua"
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
 FSL:setHttpPort(copilot.UserOptions.general.http_port)
 FSL:enableSequences()
+
+local util = require "FSL2Lua.FSL2Lua.util"
 
 copilot.soundDir = APPDIR .. "\\Sounds\\"
 copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == 1

@@ -22,7 +22,7 @@ function ButtonImpl:pull()
   ) 
 end
 
---- Switches that can be pushed and pulled
+---<span>
 --- @type PushPullSwitch
 local PushPullSwitch = setmetatable({}, Control)
 

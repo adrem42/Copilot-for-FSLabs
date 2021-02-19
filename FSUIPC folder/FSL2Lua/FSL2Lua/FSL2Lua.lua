@@ -391,7 +391,10 @@ local function assignClassToControl(control, buttons, guards)
   else
     control = Control:new(control)
   end
-  return util.isType(control, Control) and control or nil
+  if util.isType(control, Control) and control._baseCtorCalled then
+    control._baseCtorCalled = nil
+    return control
+  end
 end
 
 local function initControl(control, varname, guards, buttons)

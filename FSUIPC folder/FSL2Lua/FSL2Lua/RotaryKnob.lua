@@ -4,8 +4,7 @@ local util = require "FSL2Lua.FSL2Lua.util"
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
 local Control = require "FSL2Lua.FSL2Lua.Control"
-
----Knobs with no fixed positions
+---<span>
 --@type RotaryKnob
 local RotaryKnob = setmetatable({}, Switch)
 

@@ -10,6 +10,11 @@ local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local Control = {}
 Control.__index = Control
 
+local timeoutMsg = "\nControl %s isn't responding to mouse macro commands\r\n" ..
+"Most likely its macro is invalid\r\n" ..
+"FSL2Lua version: " .. _FSL2LUA_VERSION ..
+"\r\nCheck compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432"
+
 Control.clickTypes = {
   leftPress = 3,
   leftRelease = 13,
@@ -21,6 +26,7 @@ Control.clickTypes = {
 
 function Control:new(control)
   control = control or {}
+  control._baseCtorCalled = true
   if control.rectangle then
     control.rectangle = tonumber(control.rectangle)
   end
@@ -30,7 +36,7 @@ function Control:new(control)
   return setmetatable(control, self)
 end
 
---- Invokes the mouse macro with the given click type on the controls mouse rectangle.
+--- Invokes the mouse macro with the given click type on the control's mouse rectangle.
 --- @string clickType One of the following:
 --
 -- * 'leftPress'
@@ -41,7 +47,7 @@ end
 -- * 'wheelDown'
 function Control:macro(clickType)
   self:_macro(
-    self.clickTypes[clickType] 
+    Control.clickTypes[clickType] 
       or error("'" .. clickType .. "' is not a valid click type.", 2)
   )
 end
@@ -64,10 +70,7 @@ function Control:_interact(time)
 end
 
 function Control:_handleTimeout(level)
-  util.handleError ("\nControl " .. self.name .. " isn't responding to mouse macro commands\r\n" ..
-              "Most likely its macro is invalid\r\n" ..
-              "FSL2Lua version: " .. _FSL2LUA_VERSION ..
-              "\r\nCheck compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432", level + 1)
+  util.handleError(timeoutMsg:format(self.name), level + 1)
 end
 
 --- Checks if the control's light is on.
