@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
     <title>Copilot for FSLabs 1.2.0</title>
-    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
 
@@ -55,7 +55,7 @@
 </ul>
 <h2>Manual</h2>
 <ul class="nowrap">
-  <li><a href="../manual/flows.md.html">Flows</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
   <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
@@ -63,8 +63,10 @@
 <h2>Examples</h2>
 <ul class="nowrap">
   <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
-  <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
   <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
+  <li><a href="../examples/set_seat.lua.html">set_seat.lua</a></li>
 </ul>
 
 </div>
@@ -79,15 +81,15 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#checkWithTimeout">checkWithTimeout([timeout=5000], condition)</a></td>
-	<td class="summary">Executes the condition callback until it signals the condition or the timeout elapses.</td>
+	<td class="name" nowrap><a href="#checkWithTimeout">checkWithTimeout([timeout=5000], block, ...)</a></td>
+	<td class="summary">Executes the callback until it signals a truthy value or the timeout elapses.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#withTimeout">withTimeout([timeout=5000], block)</a></td>
-	<td class="summary">Executes the callback until the timeout elapses or the callback returns any value other than nil.</td>
+	<td class="name" nowrap><a href="#withTimeout">withTimeout([timeout=5000], block, ...)</a></td>
+	<td class="summary">Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block)</a></td>
+	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block, ..., block)</a></td>
 	<td class="summary">Repeats the callback until the timeout elapses</td>
 	</tr>
 	<tr>
@@ -305,10 +307,10 @@
     <dl class="function">
     <dt>
     <a name = "checkWithTimeout"></a>
-    <strong>checkWithTimeout([timeout=5000], condition)</strong>
+    <strong>checkWithTimeout([timeout=5000], block, ...)</strong>
     </dt>
     <dd>
-    Executes the condition callback until it signals the condition or the timeout elapses.
+    Executes the callback until it signals a truthy value or the timeout elapses.
 
 
     <h3>Parameters:</h3>
@@ -318,9 +320,12 @@
          Timeout in milliseconds
          (<em>default</em> 5000)
         </li>
-        <li><span class="parameter">condition</span>
+        <li><span class="parameter">block</span>
             <span class="types"><span class="type">function</span></span>
-         A callback that should return a truthy value to signal the condition.
+         A callback that should return a truthy first value to signal the condition.
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to block.
         </li>
     </ul>
 
@@ -328,7 +333,7 @@
     <ol>
 
            <span class="types"><span class="type">bool</span></span>
-        True if the condition was signaled, false if the timeout has elapsed.
+        True + the rest of the values returned by block if the condition was signaled, false if the timeout has elapsed.
     </ol>
 
 
@@ -337,10 +342,10 @@
 </dd>
     <dt>
     <a name = "withTimeout"></a>
-    <strong>withTimeout([timeout=5000], block)</strong>
+    <strong>withTimeout([timeout=5000], block, ...)</strong>
     </dt>
     <dd>
-    Executes the callback until the timeout elapses or the callback returns any value other than nil.
+    Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.
 
 
     <h3>Parameters:</h3>
@@ -356,12 +361,15 @@
 
 
         </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to block.
+        </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-        Either nil  if the timeout has elapsed, or the value returned by block.
+        Either nil if the timeout has elapsed, or the values returned by block.
     </ol>
 
 
@@ -370,7 +378,7 @@
 </dd>
     <dt>
     <a name = "repeatWithTimeout"></a>
-    <strong>repeatWithTimeout([timeout=5000], block)</strong>
+    <strong>repeatWithTimeout([timeout=5000], block, ..., block)</strong>
     </dt>
     <dd>
     Repeats the callback until the timeout elapses
@@ -382,6 +390,15 @@
             <span class="types"><span class="type">int</span></span>
          Timeout in milliseconds
          (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">block</span>
+            <span class="types"><span class="type">function</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to block.
         </li>
         <li><span class="parameter">block</span>
             <span class="types"><span class="type">function</span></span>
@@ -1458,7 +1475,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-18 21:04:09 </i>
+<i style="float:right;">Last updated 2021-02-21 09:04:37 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

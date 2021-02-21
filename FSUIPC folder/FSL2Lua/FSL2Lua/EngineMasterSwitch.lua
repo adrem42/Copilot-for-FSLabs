@@ -27,14 +27,14 @@ end
 
 EngineMasterSwitch.decrease = EngineMasterSwitch.increase
 
-function EngineMasterSwitch:_set(targetPos)
+function EngineMasterSwitch:_setPositionToLvar(targetPos)
   local lvar = self:getLvarValue()
   if lvar == 10 or lvar == 20 then
     self:macro "rightRelease"
     self:macro "leftRelease"
     self:_waitForLvarChange()
   end
-  Switch._set(self, targetPos)
+  Switch._setPositionToLvar(self, targetPos)
 end
 
 return EngineMasterSwitch

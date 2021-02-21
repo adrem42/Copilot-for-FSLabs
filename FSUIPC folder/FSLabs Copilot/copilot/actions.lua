@@ -9,6 +9,8 @@ local firstFlight = true
 
 local flapsLimits = {}
 
+copilot.flapsLimits = flapsLimits
+
 if FSL:getAcType() == "A321" then
   flapsLimits.flapsOne = 235
   flapsLimits.flapsTwo = 215
@@ -239,7 +241,7 @@ function copilot.dontClearScratchPad(value, thread)
   pauseScratchpadClearerThreads[thread or coroutine.running()] = not value and nil or true
 end
 
-if copilot.UserOptions.actions.PM_clears_scratchpad == 1 then
+if copilot.UserOptions.actions.PM_clears_scratchpad == copilot.UserOptions.TRUE then
   copilot.addCallback(coroutine.create(function()
     local clearScratchpadTime, scratchpadMsg
 
@@ -377,18 +379,18 @@ function copilot.sequences:afterStart()
   FSL.PED_SPD_BRK_LEVER "ARM"
 
   local flapsSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
-  local msg
+  local flapsMessage
   if flapsSetting then
-    msg = "Setting the takeoff flaps using the setting found in the MCDU: %s"
+    flapsMessage = "Setting the takeoff flaps using the setting found in the MCDU: %s"
   else
     flapsSetting = FSL.atsuLog:getTakeoffFlaps()
     if flapsSetting then
-      msg = "No takeoff flaps setting found in the MCDU, taking the setting from the latest ATSU performance request: %s"
+      flapsMessage = "No takeoff flaps setting found in the MCDU, taking the setting from the latest ATSU performance request: %s"
     else
-      msg = "Unable to set takeoff flaps: no setting found in the MCDU, no performance request found in the ATSU log."
+      flapsMessage = "Unable to set takeoff flaps: no setting found in the MCDU, no performance request found in the ATSU log."
     end
   end
-  copilot.logger:info(string.format(msg, flapsSetting))
+  copilot.logger:info(flapsMessage:format(flapsSetting))
   if flapsSetting then
     FSL.PED_FLAP_LEVER(tostring(flapsSetting))
   end
@@ -396,23 +398,23 @@ function copilot.sequences:afterStart()
   repeat copilot.suspend() until not copilot.GSX_pushback()
   
   local CG = FSL.atsuLog:getMACTOW()
-  local msg
+  local trimMessage
   if CG then
-    msg = "Setting the takeoff trim using the MACTOW from the latest ATSU loadsheet: %.2f%%"
+    trimMessage = "Setting the takeoff trim using the MACTOW from the latest ATSU loadsheet: %.2f%%"
   else
     CG = ipc.readDBL(0x2EF8) * 100
-    msg = "No ATSU loadsheet found, setting the takeoff trim using the simulator CG variable: %.2f%%"
+    trimMessage = "No ATSU loadsheet found, setting the takeoff trim using the simulator CG variable: %.2f%%"
   end
-  copilot.logger:info(msg:format(CG))
+  copilot.logger:info(trimMessage:format(CG))
 
   FSL.trimwheel:set(CG)
 end
 
 function copilot.sequences:taxiSequence()
   FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == 1 and "2" or "1")
-  FSL.PED_WXRadar_PWS_Switch("AUTO")
+  FSL.PED_WXRadar_PWS_Switch "AUTO"
   copilot.sleep(100)
-  FSL.PED_WXRadar_PWS_Switch("AUTO")
+  FSL.PED_WXRadar_PWS_Switch "AUTO"
   FSL.MIP_BRAKES_AUTOBRK_MAX_Button()
   for _ = 1, 5 do
     FSL.PED_ECP_TO_CONFIG_Button()
@@ -444,19 +446,30 @@ function copilot.sequences:lineUpSequence()
   FSL.PED_ATCXPDR_ON_OFF_Switch "ON"
   FSL.PED_ATCXPDR_MODE_Switch "TARA"
 
-  local packs = FSL.atsuLog:getTakeoffPacks()
-  local msgLeaveAlone, msgOff
-  if packs then
-    msgOff = "Switching the packs off as per the latest ATSU performance request."
-    msgLeaveAlone = "'PACKS ON' found in the latest ATSU performance request, leaving the packs at the current setting."
-  else
-    packs = copilot.UserOptions.actions.packs_on_takeoff
-    msgOff = "No ATSU performance request found, packs_on_takeoff=0 — switching the packs off."
-    msgLeaveAlone = "No ATSU performance request found, packs_on_takeoff=1 — leaving the packs at the current setting."
-  end
-  copilot.logger:info(packs == 0 and msgOff or msgLeaveAlone)
+  local _, atsuTakeoffPacks = FSL.atsuLog:getTakeoffPacks()
+  local shouldTurnoffPacks, logMsg
 
-  if packs == 0 then
+  if atsuTakeoffPacks then
+    shouldTurnoffPacks = atsuTakeoffPacks == "OFF"
+    if shouldTurnoffPacks then
+      logMsg = "Switching the packs off as per the latest ATSU performance request."
+    else
+      logMsg = "'PACKS ON' found in the latest ATSU performance request, leaving the packs at the current setting."
+    end
+  else
+    shouldTurnoffPacks = copilot.UserOptions.actions.packs_on_takeoff == copilot.TAKEOFF_PACKS_TURN_OFF
+    if shouldTurnoffPacks then
+      logMsg = ("No ATSU performance request found, packs_on_takeoff=%d: switching the packs off.")
+        :format(copilot.TAKEOFF_PACKS_TURN_OFF)
+    else
+      logMsg = ("No ATSU performance request found, packs_on_takeoff=%d: leaving the packs at the current setting.")
+        :format(copilot.TAKEOFF_PACKS_LEAVE_ALONE)
+    end
+  end
+
+  copilot.logger:info(logMsg)
+
+  if shouldTurnoffPacks then
     FSL.OVHD_AC_Pack_1_Button:toggleUp()
     FSL.OVHD_AC_Pack_2_Button:toggleUp()
   end
@@ -465,7 +478,7 @@ end
 function copilot.sequences:takeoffSequence()
   firstFlight = false
   FSL.MIP_CHRONO_ELAPS_SEL_Switch "RUN"
-  if copilot.UserOptions.actions.after_landing == 1 then 
+  if copilot.UserOptions.actions.after_landing == copilot.UserOptions.ENABLED  then 
     FSL.GSLD_Chrono_Button() 
   end
 end
@@ -577,7 +590,7 @@ function copilot.sequences.afterLanding:__call()
   FSL.PED_ATCXPDR_MODE_Switch "STBY"
 
   FSL.MIP_CHRONO_ELAPS_SEL_Switch "STP"
-  if copilot.UserOptions.actions.takeoff_sequence == 1 then 
+  if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then 
     FSL.GSLD_Chrono_Button() 
   end
 
@@ -589,7 +602,7 @@ function copilot.sequences.afterLanding:__call()
   FSL.PED_WXRadar_SYS_Switch "OFF"
   FSL.PED_WXRadar_PWS_Switch "OFF"
 
-  local shouldFDsBeOn = copilot.UserOptions.actions.FDs_off_after_landing == 0
+  local shouldFDsBeOn = copilot.UserOptions.actions.FDs_off_after_landing == copilot.UserOptions.FALSE
 
   FSL.PF.GSLD_EFIS_FD_Button:pressForLightState(shouldFDsBeOn)
   FSL.PF.GSLD_EFIS_LS_Button:pressIfLit()
@@ -601,7 +614,7 @@ function copilot.sequences.afterLanding:__call()
   FSL.GSLD_EFIS_LS_Button:pressIfLit()
   FSL.GSLD_EFIS_FD_Button:pressForLightState(shouldFDsBeOn)
 
-  if copilot.UserOptions.actions.pack2_off_after_landing == 1 then 
+  if copilot.UserOptions.actions.pack2_off_after_landing == copilot.UserOptions.TRUE then 
     FSL.OVHD_AC_Pack_2_Button:toggleUp()
   end
 
@@ -624,11 +637,12 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
   if not firstFlight then
     copilot.suspend(1 * 60000, 3 * 60000)
     FSL.MIP_CHRONO_ELAPS_SEL_Switch("RST")
-    if copilot.UserOptions.actions.after_landing == 1 and copilot.UserOptions.actions.takeoff_sequence == 1 then 
+    if copilot.UserOptions.actions.after_landing == copilot.UserOptions.ENABLED
+      and copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then 
       FSL.GSLD_Chrono_Button()
     end
   end
-  if copilot.UserOptions.actions.preflight == 1 then
+  if copilot.UserOptions.actions.preflight == copilot.UserOptions.ENABLED then
     repeat copilot.suspend() until copilot.mcduWatcher:getVar("isFmgcSetup")
     copilot.logger:info("FMGC is set up")
     if prob(0.05) then
@@ -645,11 +659,11 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
 end, "runAsCoroutine")
   :stopOn(copilot.events.enginesStarted)
 
-if copilot.UserOptions.actions.after_start == 1 then
+if copilot.UserOptions.actions.after_start == copilot.UserOptions.ENABLED then
   copilot.actions.afterStart = copilot.events.enginesStarted:addAction(function() copilot.sequences:afterStart() end, "runAsCoroutine")
 end
 
-if copilot.UserOptions.actions.during_taxi == 1 then
+if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
 
   copilot.actions.taxi = copilot.events.enginesStarted:addAction(function()
     Event.waitForEvents({copilot.events.brakesChecked, copilot.events.flightControlsChecked}, true)
@@ -660,14 +674,14 @@ if copilot.UserOptions.actions.during_taxi == 1 then
 
 end
 
-if copilot.UserOptions.actions.lineup == 1 then
+if copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.lineup = VoiceCommand:new {
       phrase = "lineup procedure",
       persistent = "ignore",
       confidence = 0.94,
       action = {function()
-        if copilot.UserOptions.actions.takeoff_sequence == 1 then
+        if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
           copilot.voiceCommands.takeoff:activate()
         end
         copilot.sequences.lineUpSequence()
@@ -699,15 +713,15 @@ do
   end
 
   copilot.actions.takeoff = copilot.events.takeoffInitiated2:addAction(function()
-    if copilot.isVoiceControlEnabled and copilot.UserOptions.actions.lineup == 1 then
+    if copilot.isVoiceControlEnabled and copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
       copilot.voiceCommands.lineup:deactivate()
     end
-    if copilot.UserOptions.actions.takeoff_sequence == 1 then
+    if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
       copilot.sequences.takeoffSequence()
     end
   end)
 
-  if copilot.UserOptions.actions.after_takeoff == 1 then
+  if copilot.UserOptions.actions.after_takeoff == copilot.UserOptions.ENABLED then
     copilot.actions.afterTakeoff = copilot.events.airborne:addAction(function()
       repeat copilot.suspend() until FSL:getThrustLeversPos() == "CLB"
       copilot.suspend(plusminus(2000))
@@ -737,7 +751,7 @@ copilot.actions.aboveTenThousand = copilot.events.aboveTenThousand:addAction(fun
     copilot.voiceCommands.flapsUp:deactivate()
     copilot.voiceCommands.gearUp:deactivate()
   end
-  if copilot.UserOptions.actions.ten_thousand_dep == 1 then
+  if copilot.UserOptions.actions.ten_thousand_dep == copilot.UserOptions.ENABLED then
     copilot.dontClearScratchPad(true)
     copilot.sequences.tenThousandDep()
   end
@@ -763,7 +777,7 @@ copilot.actions.belowTenThousand = copilot.events.belowTenThousand:addAction(fun
     copilot.voiceCommands.flapsUp:ignore()
     copilot.voiceCommands.gearUp:ignore()
   end
-  if copilot.UserOptions.actions.ten_thousand_arr == 1 then
+  if copilot.UserOptions.actions.ten_thousand_arr == copilot.UserOptions.ENABLED then
     copilot.sequences:tenThousandArr()
   end
 end, "runAsCoroutine")
@@ -778,18 +792,19 @@ copilot.actions.landing = copilot.events.landing:addAction(function()
     copilot.voiceCommands.gearDown:deactivate()
     copilot.voiceCommands.gearUp:deactivate()
   end
-  if copilot.UserOptions.actions.after_landing == 1 then
-    if copilot.isVoiceControlEnabled and copilot.UserOptions.actions.after_landing_trigger == 1 then
+  if copilot.UserOptions.actions.after_landing == copilot.UserOptions.ENABLED then
+    if copilot.isVoiceControlEnabled 
+      and copilot.UserOptions.actions.after_landing_trigger == copilot.AFTER_LANDING_TRIGGER_VOICE then
       repeat copilot.suspend() until copilot.GS() < 40
       copilot.voiceCommands.afterLanding:activate()
       copilot.voiceCommands.afterLandingNoApu:activate()
     else
       repeat copilot.suspend() until (copilot.GS() < 30 and FSL.PED_SPD_BRK_LEVER:getPosn() ~= "ARM") or not copilot.enginesRunning()
+      if copilot.isVoiceControlEnabled then
+        copilot.voiceCommands.noApu:activate()
+      end
       copilot.sleep(plusminus(5000, 0.5))
       if copilot.enginesRunning() then
-        if copilot.isVoiceControlEnabled then
-          copilot.voiceCommands.noApu:activate()
-        end
         copilot.sequences:afterLanding()
       end
     end

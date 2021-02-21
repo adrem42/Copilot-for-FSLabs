@@ -344,6 +344,7 @@ std::optional<std::string> initLua(sol::this_state ts)
 
 	auto RecognizerType = lua.new_usertype<Recognizer>("Recognizer");
 	RecognizerType["addRule"] = &Recognizer::addRule;
+	RecognizerType["removeRule"] = &Recognizer::removeRule;
 	RecognizerType["activateRule"] = &Recognizer::activateRule;
 	RecognizerType["deactivateRule"] = &Recognizer::deactivateRule;
 	RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;

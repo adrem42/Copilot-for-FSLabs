@@ -49,18 +49,13 @@ local shiftsList = {
   Apps = {key = 93, shift = 64}
 }
 
-local KeyBind = {}
+local KeyBind = setmetatable({}, require "FSL2Lua.FSL2Lua.BindMeta")
 
 function KeyBind:new(data)
   self.__index = self
   local bind = setmetatable({}, self)
   bind.data = bind:prepareData(data)
-  if bind.data.onPress then
-    bind:registerOnPressEvents()
-  end
-  if bind.data.onRelease then
-    bind:registerOnReleaseEvents()
-  end
+  bind:rebind()
   return bind
 end
 
@@ -111,18 +106,18 @@ function KeyBind:registerOnPressEvents()
   end
   local downup = self.data.Repeat and 4 or 1
   if shifts and self.data.onRelease then
-    event.key(key, shiftsVal, downup, Bind:addGlobalFuncs(function()
+    event.key(key, shiftsVal, downup, self:addGlobalFunc(function()
       self.isPressedWithShifts = true
       self.data.onPress()
     end))
   else
     if not shifts and self.data.onRelease then
-      event.key(key, shiftsVal, downup, Bind:addGlobalFuncs(function()
+      event.key(key, shiftsVal, downup, self:addGlobalFunc(function()
         self.isPressedPlain = true
         self.data.onPress()
       end))
     else
-      event.key(key, shiftsVal, downup, Bind:addGlobalFuncs(self.data.onPress))
+      event.key(key, shiftsVal, downup, self:addGlobalFunc(self.data.onPress))
     end
   end
 end
@@ -143,7 +138,7 @@ function KeyBind:registerOnReleaseEvents()
   local key = self.data.keys.key
   local shifts = self.data.keys.shifts
   if shifts then
-    local funcName = Bind:addGlobalFuncs(function()
+    local funcName = self:addGlobalFunc(function()
       if self.isPressedWithShifts then
         self.isPressedWithShifts = false
         self.data.onRelease()
@@ -168,11 +163,9 @@ function KeyBind:registerOnReleaseEvents()
     end
   else
     if not self.data.onPress then
-      event.key(key, nil, 1, Bind:addGlobalFuncs(function()
-        self.isPressedPlain = true
-      end))
+      event.key(key, nil, 1, self:addGlobalFunc(function() self.isPressedPlain = true end))
     end
-    event.key(key, nil, 2, Bind:addGlobalFuncs(function()
+    event.key(key, nil, 2, self:addGlobalFunc(function()
       if self.isPressedPlain then
         self.isPressedPlain = false
         self.data.onRelease()

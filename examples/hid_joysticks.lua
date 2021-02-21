@@ -1,5 +1,6 @@
 
 -- Example usage of the `Joystick` library
+-- @{standalonescripts.md|How do I launch this script?}
 
 FSL = require "FSL2Lua"
 FSL:setPilot "CPT"

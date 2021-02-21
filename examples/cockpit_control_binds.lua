@@ -1,4 +1,5 @@
 -- Example usage of `FSL2Lua.Bind`
+-- @{standalonescripts.md|How do I launch this script?}
 
 local FSL = require "FSL2Lua"
 FSL:setPilot "CPT"

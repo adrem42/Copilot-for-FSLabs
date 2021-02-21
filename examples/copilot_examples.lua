@@ -147,37 +147,3 @@ local getMetar = VoiceCommand:new {
 VoiceCommand.resetGrammar()
 
 getMetar:activate()
-
-------------------------------------------------------------------------------
--- Waiting for events
-------------------------------------------------------------------------------
-
-local abortWithKey = Event.fromKeyPress "A"
-local abortWithVoice = VoiceCommand:new {phrase = "Abort the launch"}
-local launchCommand = VoiceCommand:new {phrase = "Launch it"}
-
-local function rocketLaunch()
-
-  copilot.logger:info "Preparing for rocket launch..."
-  copilot.suspend(5000, 10000)
-
-  copilot.logger:info "Launching the rocket on your command"
-  Event.waitForEvent(launchCommand:activate())
-
-  copilot.logger:info "You have 5 seconds to abort the launch"
-  local res = Event.waitForEventsWithTimeout(
-    5000, {abortWithKey, abortWithVoice:activate()}
-  )
-
-  abortWithVoice:deactivate()
-  
-  if res == Event.TIMEOUT then
-    copilot.logger:info "The rocket has been launched successfully!"
-  elseif res == abortWithKey then
-    copilot.logger:info "The launch was aborted with a key press"
-  elseif res == abortWithVoice then
-    copilot.logger:info "The launch was aborted with a voice command"
-  end
-end
-
-copilot.addCallback(coroutine.create(rocketLaunch))

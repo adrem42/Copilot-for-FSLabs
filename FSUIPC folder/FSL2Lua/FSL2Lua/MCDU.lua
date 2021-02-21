@@ -98,14 +98,14 @@ end
 function MCDU:type(str)
   str = tostring(str)
   local _FSL = FSL[self.sideStr]
+  local chars = {
+    [" "] = "SPACE",
+    ["."] = "DOT",
+    ["/"] = "SLASH",
+    ["-"] = "PLUSMINUS"
+  }
   for i = 1, #str do
-    local chars = {
-      [" "] = "SPACE",
-      ["."] = "DOT",
-      ["/"] = "SLASH",
-      ["-"] = "PLUSMINUS"
-    }
-    local char = str:sub(i,i):upper()
+    local char = str:sub(i, i):upper()
     char = chars[char] or char
     if char == "+" then
       _FSL.PED_MCDU_KEY_PLUSMINUS()

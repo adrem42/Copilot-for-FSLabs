@@ -1,17 +1,12 @@
 local util = require "FSL2Lua.FSL2Lua.util"
 
-local JoyBind = {}
+local JoyBind = setmetatable({}, require "FSL2Lua.FSL2Lua.BindMeta")
 
 function JoyBind:new(data)
   self.__index = self
   local bind = setmetatable({}, self)
   bind.data = bind:prepareData(data)
-  if bind.data.onPress then
-    bind:registerOnPressEvents()
-  end
-  if bind.data.onRelease or bind.data.Repeat then
-    bind:registerOnReleaseEvents()
-  end
+  bind:rebind()
   return bind
 end
 
@@ -27,33 +22,33 @@ end
 
 function JoyBind:registerOnPressEvents()
   if self.data.Repeat then
-    self.data.timerFuncName = Bind:addGlobalFuncs(function()
+    self.data.timerFuncName = self:addGlobalFunc(function()
       self.data.onPress()
     end)
-    event.button(self.data.joyLetter, self.data.btnNum, 1, Bind:addGlobalFuncs(function()
+    event.button(self.data.joyLetter, self.data.btnNum, 1, self:addGlobalFunc(function()
       event.timer(20, self.data.timerFuncName)
       self.isPressed = true
       self.data.onPress()
     end))
   else
-    event.button(self.data.joyLetter, self.data.btnNum, 1, Bind:addGlobalFuncs(self.data.onPress))
+    event.button(self.data.joyLetter, self.data.btnNum, 1, self:addGlobalFunc(self.data.onPress))
   end
 end
 
 function JoyBind:registerOnReleaseEvents()
   local funcName
   if self.data.Repeat and not self.data.onRelease then
-    funcName = Bind:addGlobalFuncs(function()
+    funcName = self:addGlobalFunc(function()
       self.isPressed = false
       event.cancel(self.data.timerFuncName)
     end)
   elseif self.data.Repeat and self.data.onRelease then
-    funcName = Bind:addGlobalFuncs(function()
+    funcName = self:addGlobalFunc(function()
       self.isPressed = false
       self.data.onRelease()
     end)
   elseif self.data.onRelease then
-    funcName = Bind:addGlobalFuncs(self.data.onRelease)
+    funcName = self:addGlobalFunc(self.data.onRelease)
   end
   event.button(self.data.joyLetter, self.data.btnNum, 2, funcName)
 end

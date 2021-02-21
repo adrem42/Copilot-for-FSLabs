@@ -1,72 +1,12 @@
-local options = {
-  {
-    "General",
-    {
-      {"http_port", 8080, "The port of the web MCDU - leave it at default unless you changed it in the FSLabs settings"},
-      {"log_level", 2},
-      {"PM_seat", "right", "Where the Pilot Monitoring sits in the cockpit - left or right"},
-      {"debugger", hidden = true},
-      {"debugger_bind", hidden = true}
-    }
-  },
-  {
-    "Voice_control",
-    {
-      {"enable", 1}
-    }
-  },
-  {
-    "Callouts",
-    {
-      {"sound_set", "Hannes"},
-      {"enable", 1},
-      {"volume", 60, "This sets the maximum volume from 0-100. You can also adjust the volume with the INT volume knob in the cockpit"},
-      {"device_id", -1, "-1 is the default device"},
-      {"PM_announces_flightcontrol_check", 1},
-      {"PM_announces_brake_check", 1}
-    }
-  },
-  {
-    "Actions",
-    {
-      {"enable", 1},
-      {"PM_clears_scratchpad", 1, "If enabled, PM will press the CLR button whenever his scratchpad displays a message."},
-      {"preflight", 1},
-      {"after_start", 1},
-      {"during_taxi", 1},
-      {"lineup", 1},
-      {"takeoff_sequence", 1},
-      {"after_takeoff", 1},
-      {"ten_thousand_dep",1},
-      {"ten_thousand_arr", 1},
-      {"after_landing", 1},
-      {"after_landing_trigger", 1, "explained in the manual"},
-      {"FDs_off_after_landing", 1, "explained in the manual"},
-      {"packs_on_takeoff", 0, "If you make an ATSU performance request, whatever you enter there will override this option"},
-      {"pack2_off_after_landing", 0}
-    }
-  },
-  {
-    "Failures",
-    {
-      {"enable", 0},
-      {"global_rate", 1 / 10000},
-      {"per_airframe", 1, "track failures separately for each airframe - 1 or 0"},
-    },
-    {
-      "If enable is set to 1, the script will set up random failures in the MCDU when the flight is loaded.",
-      "By default, the rate of each failure is set to 1 / 10000 hours.",
-      "You can change the global rate and the rate for each individual failure below"
-    }
-  }
-}
 
 file = require "FSL2Lua.FSL2Lua.file"
 
 local optionIndex = {key = 1, value = 2, comment = 3}
 local sectionIndex = {title = 1, options = 2, comments = 3}
 
-local UserOptions = {}
+local options = require "FSLabs Copilot.copilot.options"
+
+local UserOptions = copilot.UserOptions
 
 do
   local failureOptions
@@ -80,16 +20,47 @@ do
   end
 end
 
+local function checkOption(option, iniValue)
+  local val
+  if option.type == "bool" or option.type == "boolean" then
+    val = tonumber(iniValue) == UserOptions.FALSE 
+      and UserOptions.FALSE 
+      or UserOptions.TRUE
+  elseif option.type == "number" or option.type == "double" then
+    val = tonumber(iniValue)
+  elseif option.type == "int" then
+    val = tonumber(iniValue) and math.floor(tonumber(iniValue))
+  elseif option.type == "string" then
+    val = tostring(iniValue)
+  elseif option.type == "enum" then
+    for _, enumVal in ipairs(option.values) do
+      if iniValue == enumVal then
+        val = iniValue
+        break
+      end
+    end
+    if val == nil and option.required then
+      copilot.exit(string.format(
+        "Invalid value for option %s: %s. Only the following values are accepted: %s.",
+        option[optionIndex.key], iniValue, table.concat(option.values, ", ")
+      ))
+    end
+  else error "wtf" end
+  return val ~= nil and val or option[optionIndex.value]
+end
+
 local function loadUserOptions(path)
   local iniFile = file.read(path)
   if iniFile then
     for sectionTitle, iniSection in iniFile:gmatch("%[(.-)%]([^%[%]]+)") do
       for _, section in ipairs(options) do
         if section[sectionIndex.title] == sectionTitle then
-          for iniKey, iniValue in iniSection:gmatch("([%w _]+)=([%w_%.%+]+)") do
+          local pattern = "([%w _]+)=([%w_%.%+]+)"
+          for iniKey, iniValue in iniSection:gmatch(pattern) do
             for _, option in ipairs(section[sectionIndex.options]) do
               if option[optionIndex.key] == iniKey then
-                option[optionIndex.value] = tonumber(iniValue) or iniValue
+                option[optionIndex.value] = checkOption(option, iniValue)
+                break
               end
             end
           end
@@ -140,7 +111,5 @@ saveUserOptions(optionFilePath)
 
 if not ipc then return end
 
-local seat = UserOptions.general.PM_seat:lower()
-UserOptions.general.PM_seat = seat == "left" and 1 or seat == "right" and 2 or copilot.exit("The PM_seat option value needs to be 'left' or 'right'")
-
-return UserOptions
+local seat = UserOptions.general.PM_seat
+UserOptions.general.PM_seat = seat == "left" and 1 or seat == "right" and 2

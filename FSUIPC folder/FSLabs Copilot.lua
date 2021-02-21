@@ -10,7 +10,7 @@ addPackagePath(APPDIR)
 
 copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
 require "copilot.util"
-copilot.UserOptions = require "copilot.UserOptions"
+require "copilot.LoadUserOptions"
 
 do
   local err = copilot.init()
@@ -25,10 +25,10 @@ FSL:enableSequences()
 local util = require "FSL2Lua.FSL2Lua.util"
 
 copilot.soundDir = APPDIR .. "\\Sounds\\"
-copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == 1
+copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == copilot.UserOptions.TRUE
 
 local debugger = {
-  enable = copilot.UserOptions.general.debugger == 1,
+  enable = copilot.UserOptions.general.debugger == copilot.UserOptions.TRUE,
   bind = copilot.UserOptions.general.debugger_bind
 }
 if debugger.enable then
@@ -150,10 +150,10 @@ if debugger.enable then
 end
 
 local function wrapSequencesWithLogging()
-  
+
   local seqNames = {
     checkFmgcData = "FMGC data check",
-    setupEFIS = "Setting up EFIS",
+    setupEFIS = "EFIS setup",
     afterStart = "After start",
     taxiSequence = "During taxi",
     lineUpSequence = "Line up",
@@ -163,7 +163,7 @@ local function wrapSequencesWithLogging()
     tenThousandArr = "Below ten thousand",
     afterLanding = "After landing"
   }
-  
+
   for name, seq in pairs(copilot.sequences) do
     if seqNames[name] then
       local isFuncTable = util.isFuncTable(seq)
@@ -184,10 +184,12 @@ end
 
 local function setup()
 
-  if copilot.UserOptions.callouts.PM_announces_brake_check == 0 or
-    copilot.UserOptions.callouts.PM_announces_flightcontrol_check == 0 or
-    copilot.UserOptions.callouts.enable == 0 then
-    copilot.UserOptions.actions.during_taxi = 0
+  local options = copilot.UserOptions
+
+  if options.callouts.PM_announces_brake_check == options.FALSE or
+    options.callouts.PM_announces_flightcontrol_check == options.FALSE or
+    options.callouts.enable == options.FALSE then
+    options.actions.during_taxi = options.FALSE
   end
 
   copilot.addCallback(coroutine.create(function() FlightPhaseProcessor:update() end), "FlightPhaseProcessor")
@@ -196,12 +198,13 @@ local function setup()
     event.flag(0, "Event.fetchRecoResults")
   end
 
-  if copilot.UserOptions.callouts.enable == 1 then
+  if options.callouts.enable == options.TRUE then
     require "copilot.callouts"
     copilot.callouts:setup()
     copilot.callouts:start()
   end
-  if copilot.UserOptions.actions.enable == 1 then
+
+  if options.actions.enable == options.TRUE then
     require "copilot.actions"
   end
 
@@ -230,7 +233,8 @@ local function setup()
     end
   end
 
-  if copilot.UserOptions.failures.enable == 1 and not debugger.enable then 
+  if options.failures.enable == options.TRUE 
+    and debugger.enable == options.FALSE then 
     require "copilot.failures"
   end
   

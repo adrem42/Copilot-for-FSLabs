@@ -1,22 +1,20 @@
 
 if false then module "FSL2Lua" end
 
-local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local util = require "FSL2Lua.FSL2Lua.util"
 local KeyBind = require "FSL2Lua.FSL2Lua.KeyBind"
 local JoyBind = require "FSL2Lua.FSL2Lua.JoyBind"
+
+local Positionable = require "FSL2Lua.FSL2Lua.Positionable"
+local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
 local PushPullSwitch = require "FSL2Lua.FSL2Lua.PushPullSwitch"
 local Button = require "FSL2Lua.FSL2Lua.Button"
 local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 
-local Bind = {
-  binds = {},
-  funcCount = 0
-}
-
-setmetatable(Bind, Bind)
+local Bind = setmetatable({funcCount = 0}, {})
+Bind.__index = Bind
 
 --- Convenience wrapper around event.key and event.button from the FSUIPC Lua library.
 --- For joystick buttons, consider @{hid_joysticks.lua|using} the `Joystick` library instead. 
@@ -81,17 +79,35 @@ setmetatable(Bind, Bind)
 -- * RightAlt
 -- * Windows
 -- * Apps
-function Bind:__call(data)
+
+local bindMt = getmetatable(Bind)
+
+function bindMt:__call(data)
+
   util.assert(data.key or data.btn, "You need to specify a key and/or button", 2)
-  data = self:prepareData(data)
-  local _keyBind = data.key and KeyBind:new(data)
-  local _joyBind = data.btn and JoyBind:new(data)
-  if _keyBind then
-    self.binds[#self.binds+1] = _keyBind
+  local bind = self:prepareBind(data)
+  
+  bind._keyBind = data.key and KeyBind:new(data)
+  bind._joyBind = data.btn and JoyBind:new(data)
+
+  if data.dispose == true then
+    bind._dummyUserdata = newproxy(true)
+    getmetatable(bind._dummyUserdata).__gc = function() print "gc called" bind:_destroy() end
   end
-  if _joyBind then
-    self.binds[#self.binds+1] = _joyBind
-  end
+
+  return setmetatable(bind, Bind)
+end
+
+function Bind:_destroy()
+  if self._keyBind then self._keyBind:destroy() end
+  if self._joyBind then self._joyBind:destroy() end
+end
+
+Bind.unbind = Bind._destroy
+
+function Bind:rebind()
+  if self._keyBind then self._keyBind:rebind() end
+  if self._joyBind then self._joyBind:rebind() end
 end
 
 local function makeTable(data)
@@ -105,7 +121,7 @@ local function specialButtonBinding(data, onPress, onRelease)
   data.onRelease[#data.onRelease+1] = onRelease
 end
 
-function Bind:prepareData(data)
+function Bind:prepareBind(data)
 
   if data.onPress ~= nil and data.onPressRepeat ~= nil then
     error("You can't have both onPress and onPressRepeat in the same bind.", 3)
@@ -133,13 +149,13 @@ function Bind:prepareData(data)
   end
   
   if data.onPress then
-    data.onPress = self:makeSingleFunc(data.onPress)
+    data.onPress = Bind.makeSingleFunc(data.onPress)
     if data.cond then
       local onPress = data.onPress
       data.onPress = function() if data.cond() then onPress() end end
     end
   end
-  data.onRelease = data.onRelease and self:makeSingleFunc(data.onRelease)
+  data.onRelease = data.onRelease and Bind.makeSingleFunc(data.onRelease)
   return data
 end
 
@@ -161,16 +177,16 @@ local function checkCallable(elem, nextElem)
   end
 end
 
-local function checkIsValidSwitchPosition(switch, position, errLevel)
-  local lvar, err = switch:_getTargetLvarVal(position)
+local function checkIsValidPosition(control, position, errLevel)
+  local lvar, err = control:_getTargetLvarVal(position)
   if not lvar then error(err, (errLevel or 1) + 1) end
   return lvar
 end
 
 local function checkFslControl(elem, callableType, args, errLevel)
   if callableType == "method" then return end
-  if util.isType(elem, Switch) then
-    checkIsValidSwitchPosition(elem, args[1], errLevel + 1)
+  if util.isType(elem, Positionable) then
+    checkIsValidPosition(elem, args[1], errLevel + 1)
   end
 end
 
@@ -209,7 +225,7 @@ parseCallableArgs = function(i, candidates, funcs, prevArgs)
 
   funcs = funcs or {}
   local errLevel = 5
-  local callableType, elem
+  local elem, callableType, arg
 
   while i <= #candidates do
     elem = candidates[i]
@@ -225,13 +241,29 @@ parseCallableArgs = function(i, candidates, funcs, prevArgs)
   end
 
   if callableType then
-    local func = makeFuncFromCallable(
-      i, elem, callableType, candidates, funcs, errLevel
-    )
+    local func = makeFuncFromCallable(i, elem, callableType, candidates, funcs, errLevel)
     funcs[#funcs+1] = func
   end
 
   return funcs
+end
+
+function Bind.makeSingleFunc(args)
+  if type(args) == "function" then return args end
+  if type(args) ~= "table" then 
+    error("Invalid callback arguments", 4) 
+  end
+  if util.isFuncTable(args) then args = {args} end
+  local funcs = parseCallableArgs(1, args)
+  if #funcs == 0 then
+    error("There needs to be at least one callable object", 4)
+  end
+  if #funcs == 1 then return funcs[1] end
+  return function()
+    for i = #funcs, 1, -1 do
+      funcs[i]()
+    end
+  end
 end
 
 function Bind._bindButton(butt, pressMacro, releaseMacro)
@@ -305,9 +337,9 @@ local function initSwitchCycling(switch, ...)
 
   local posNames = {...}
 
-  util.assert(#posNames == 0 or #posNames > 1, "You need at lest two positions to cycle between", 5)
+  util.assert(#posNames == 0 or #posNames > 1, "You need to specify at least two positions", 5)
 
-  local lvars = {}
+  local lvars = {lvarToIdx = {}}
 
   if #posNames == 0 then
     for _, lvar in pairs(switch.posn) do
@@ -315,25 +347,55 @@ local function initSwitchCycling(switch, ...)
     end
   else
     for _, position in ipairs(posNames) do
-      lvars[#lvars+1] = checkIsValidSwitchPosition(switch, position)
+      lvars[#lvars+1] = checkIsValidPosition(switch, position)
     end
   end
 
   table.sort(lvars)
 
-  return lvars, 1
+  for i, lvar in ipairs(lvars) do 
+    lvars.lvarToIdx[lvar] = i 
+  end
+
+  return lvars, 1, DECREASE
 end
 
 local function cycle(switch, lvars, currIdx, direction)
 
-  if currIdx == #lvars then direction = DECREASE
-  elseif currIdx == 1 then direction = INCREASE end
+  local nextIdx
 
-  local nextIdx = currIdx + (direction == INCREASE and 1 or -1)
+  local currLvar = switch:getLvarValue()
+  local lastLvar = lvars[currIdx]
 
-  local nextLvar = lvars[nextIdx]
+  if currLvar == lastLvar then
+    if currIdx == #lvars then direction = DECREASE
+    elseif currIdx == 1 then direction = INCREASE end
+    nextIdx = currIdx + (direction == INCREASE and 1 or -1)
+  else -- The switch has been moved by something other than the calling cycler
+    local idx = lvars.lvarToIdx[currLvar]
+    if idx then -- Our position set contains the current position, pretend we had set it ourselves
+      return cycle(switch, lvars, idx, idx > currIdx and INCREASE or DECREASE)
+    elseif currLvar > lvars[#lvars] then -- The current position is to the right of our position set
+      switch:_setPositionToLvar(lvars[#lvars])
+      return #lvars, DECREASE
+    elseif currLvar < lvars[1] then -- The current position is to the left of our position set
+      switch:_setPositionToLvar(lvars[1])
+      return 1, INCREASE
+    else -- The current position is between two positions in our position set
+      direction = currLvar > lastLvar and INCREASE or DECREASE
+      for i, lvar in ipairs(lvars) do
+        if direction == INCREASE and lvar > currLvar then
+          nextIdx = i
+          break
+        elseif direction == DECREASE and lvar < currLvar then
+          nextIdx = i
+          break
+        end
+      end
+    end
+  end
 
-  switch:_set(nextLvar)
+  switch:_setPositionToLvar(lvars[nextIdx] or error "wtf")
 
   return nextIdx, direction
 end
@@ -350,8 +412,7 @@ function Bind.cycleSwitch(switch, ...)
 
   util.checkType(switch, Switch, "switch", 4)
 
-  local lvars, currIdx = initSwitchCycling(switch, ...)
-  local direction = DECREASE
+  local lvars, currIdx, direction = initSwitchCycling(switch, ...)
 
   return function()
     currIdx, direction = cycle(switch, lvars, currIdx, direction)
@@ -367,8 +428,7 @@ function Bind.cycleLandingLights(...)
   local left = FSL.OVHD_EXTLT_Land_L_Switch
   local right = FSL.OVHD_EXTLT_Land_R_Switch
 
-  local direction = false
-  local lvars, currIdx = initSwitchCycling(right, ...)
+  local lvars, currIdx, direction = initSwitchCycling(right, ...)
 
   return function()
     left(right:getPosn())
@@ -389,15 +449,15 @@ function Bind.cycleRotaryKnob(knob, steps)
   steps = math.floor(steps)
   local cycleVal = 0
   local prev = 0
-  local cycleDir = DECREASE
+  local direction = DECREASE
 
   return function()
     local step = 100 / steps
     local curr = knob:getPosn()
     if curr ~= prev then cycleVal = curr end
-    if cycleVal == 100 then cycleDir = DECREASE
-    elseif cycleVal == 0 then cycleDir = INCREASE  end
-    if cycleDir == INCREASE then cycleVal = math.min(cycleVal + step, 100)
+    if cycleVal == 100 then direction = DECREASE
+    elseif cycleVal == 0 then direction = INCREASE  end
+    if direction == INCREASE then cycleVal = math.min(cycleVal + step, 100)
     else cycleVal = math.max(cycleVal - step, 0) end
     cycleVal = cycleVal - cycleVal % step
     prev = knob(cycleVal)
@@ -426,41 +486,6 @@ function Bind.toggleButtons(...)
       butt:setToggleState(toggleState)
     end
   end
-end
-
-function Bind:makeSingleFunc(args)
-  if type(args) == "function" then return args end
-  if type(args) ~= "table" then 
-    error("Invalid callback arguments", 4) 
-  end
-  if util.isFuncTable(args) then args = {args} end
-  local funcs = parseCallableArgs(1, args)
-  if #funcs == 0 then
-    error("There needs to be at least one callable object", 4)
-  end
-  if #funcs == 1 then return funcs[1] end
-  return function()
-    for i = #funcs, 1, -1 do
-      funcs[i]()
-    end
-  end
-end
-
-function Bind:addGlobalFuncs(...)
-  local funcNames = {}
-  for _, func in ipairs {...} do
-    self.funcCount = self.funcCount + 1
-    local funcName = "FSL2LuaGFunc" .. self.funcCount
-    if util.isFuncTable(func) then
-      _G[funcName] = function() func() end
-    else
-      _G[funcName] = func
-    end
-    funcNames[#funcNames+1] = funcName
-  end
-  if #funcNames == 1 then
-    return funcNames[1]
-  else return funcNames end
 end
 
 return Bind

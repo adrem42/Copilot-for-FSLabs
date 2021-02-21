@@ -107,7 +107,7 @@
       </ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
-      <Command>copy "$(SolutionDir)x64\$(Configuration)\$(TargetName).dll"  "$(solutiondir)Modules\FSL2Lua\FSL2Lua" /y &amp;&amp; cd $(solutiondir) &amp;&amp; copytosim</Command>
+      <Command>copy "$(SolutionDir)x64\$(Configuration)\$(TargetName).dll"  "$(solutiondir)FSUIPC folder\FSL2Lua\FSL2Lua" /y &amp;&amp; cd $(solutiondir) &amp;&amp; copytosim</Command>
       <Outputs>$(TargetName).dll</Outputs>
     </CustomBuildStep>
     <ProjectReference>

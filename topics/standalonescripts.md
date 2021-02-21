@@ -10,7 +10,9 @@ The syntax for writing the scripts is straightforward enough that you don't need
 
 `cockpit_control_binds.lua`
 
-`hid_joysticks.lua`<br><br>
+`hid_joysticks.lua`
+
+`set_seat.lua`<br><br>
 
 All controls are listed @{listofcontrols.md|here}.
 
@@ -31,5 +33,3 @@ You can bind it to a button or key in the FSUIPC menu - it will be listed in the
 
 [Auto]  
 1=Lua my_script
-<br><br>
-<iframe style="position: relative; width: 100%; height:480px" src="https://www.youtube.com/embed/D75G7qVwChY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

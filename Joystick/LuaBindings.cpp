@@ -82,7 +82,7 @@ void Joystick::makeLuaBindings(sol::state_view& lua)
 			}
 		}
 		auto args = std::vector<sol::object>(va.begin(), va.end());
-		return lua["Bind"]["makeSingleFunc"](lua["Bind"], sol::as_table(args));
+		return lua["Bind"]["makeSingleFunc"](sol::as_table(args));
 	};
 
 	JoystickType["onPress"] = [parseCallbackArgs](Joystick& joy, int buttonNum, sol::variadic_args va) {

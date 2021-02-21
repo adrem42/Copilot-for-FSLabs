@@ -7,6 +7,7 @@
 #include <memory>
 #include <atomic>
 #include <sol/sol.hpp>
+#include <unordered_map>
 
 using RuleID = DWORD;
 
@@ -37,8 +38,9 @@ private:
 	CComPtr<ISpRecoContext> recoContext;
 	CComPtr<ISpAudio> audio;
 	RuleID CurrRuleId = 0;
+	static const size_t DEAD_RULE_CLEANUP_THRESHOLD = 50;
 	void logRuleStatus(std::string& prefix, const Rule& rule);
-	std::vector<Rule> rules;
+	std::unordered_map<RuleID, Rule> rules;
 	std::recursive_mutex mtx;
 public:
 	bool init();

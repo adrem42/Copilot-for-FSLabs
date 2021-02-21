@@ -9,7 +9,7 @@ Encoder = {
 if Joystick then
   getmetatable(Joystick).gottaGoFast = function(howFast, ...)
 
-    local func = Bind:makeSingleFunc {...}
+    local func = Bind.makeSingleFunc {...}
 
     local prevTimestamp = 0
 
@@ -80,7 +80,7 @@ end
 
 function Encoder:_makeCallback(...)
   if not self._calculateTicks then
-    local func = Bind:makeSingleFunc {...}
+    local func = Bind.makeSingleFunc {...}
     return function() func() end
   end
   return Joystick.gottaGoFast(self._calculateTicks, ...)

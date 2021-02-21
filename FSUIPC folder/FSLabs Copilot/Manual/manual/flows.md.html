@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
     <title>Copilot for FSLabs 1.2.0</title>
-    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
 
@@ -34,7 +34,7 @@
 
 <h2>Manual</h2>
 <ul class="nowrap">
-  <li><strong>Flows</strong></li>
+  <li><strong>Flows of the Pilot Monitoring</strong></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
   <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
@@ -49,8 +49,10 @@
 <h2>Examples</h2>
 <ul class="nowrap">
   <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
-  <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
   <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
+  <li><a href="../examples/set_seat.lua.html">set_seat.lua</a></li>
 </ul>
 
 </div>
@@ -58,12 +60,12 @@
 <div id="content">
 
 
-<h1>Flows</h1>
+<h1>Flows of the Pilot Monitoring</h1>
 <hr/>
 <h3>Preflight</h3>
 
 <ul>
-    <li>Check FMGC data insertion (doesn't actually check anything, just cycles through the pages :)</li>
+    <li>Check FMGC data insertion (or rather, pretend to be checking something while just staring at the pages :)</li>
     <li>Set up the EFIS</li>
 </ul>
 
@@ -105,11 +107,8 @@ full up or full down elevator deflection</p>
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
-
-<p>Say 'Brake check' during taxi with the ground speed  below 3 knots</p>
-
+<p>Say 'Brake check' during taxi with the ground speed  below 3 knots<br><br></p>
 <h5>voice_control = 0:</h5>
-
 <p>The first brake application during taxi with the ground speed below 3 knots</p>
 <hr/>
 <p>Note: you can do the checks above in any order.</p>
@@ -138,14 +137,11 @@ full up or full down elevator deflection</p>
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
-
-<p>Say 'Lineup procedure'</p>
-
+<p>Say 'Lineup procedure'<br><br></p>
 <h5>voice_control = 0:</h5>
-
-<p>Cycle the seat belts sign switch twice within two seconds</p>
+<p>Cycle the seat belts sign switch twice within two seconds  </p>
 <hr/>
-<p>Note: To decide whether to turn the packs off, the script first looks for a performance request in the ATSU log. If it finds a performance request and the packs are off in it, the PM will turn the packs off. Otherwise, he will turn them off or leave them on based on the packs<em>on</em>takeoff option</p>
+<p>Note: To decide whether to turn the packs off, the script first looks for a performance request in the ATSU log. If it finds a performance request and the packs are off in it, the PM will turn the packs off. Otherwise, he will turn them off or leave them in their current setting when <em>packs_on_takeoff</em> is set to 0 and 1, respectively.</p>
 <hr/>
 <h3>Takeoff</h3>
 
@@ -157,11 +153,8 @@ full up or full down elevator deflection</p>
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
-
-<p>Say 'Takeoff'</p>
-
+<p>Say 'Takeoff'<br><br></p>
 <h5>voice_control = 0:</h5>
-
 <p>Thrust levers in FLX or TOGA and landing lights on</p>
 <hr/>
 <h3>Takeoff roll callouts</h3>
@@ -184,13 +177,17 @@ full up or full down elevator deflection</p>
 
 <ul>
     <li><p>Select the packs back on if they were turned off for takeoff</p></li>
-    <li><p>Voice commands *(if voice_control=1)*:</p></li>
-    <li><p><em>'Flaps two'</em></p></li>
-    <li><p><em>'Flaps one'</em></p></li>
-    <li><p><em>'Flaps up' or 'flaps zero'</em></p></li>
+    <li><p>Voice commands <em>(if voice_control=1)</em>:</p>
+    <blockquote>
+        <ul>
+            <li><em>'Flaps two'</em></li>
+            <li><em>'Flaps one'</em></li>
+            <li><em>'Flaps up' or 'flaps zero'</em></li>
+        </ul>
+    </blockquote></li>
 </ul>
 
-<p>When the flaps are retracted:</p>
+<p>Once the flaps are retracted:</p>
 
 <ul>
     <li>Disarm the ground spoilers</li>
@@ -224,11 +221,15 @@ full up or full down elevator deflection</p>
     <li><p>Voice commands become available:</p></li>
 </ul>
 
-<p>   'Gear down' <br/>
-   'Flaps one' <br/>
-   'Flaps two' <br/>
-   'Flaps three' <br/>
-   'Flaps full'  </p>
+<blockquote>
+    <ul>
+        <li>'Gear down'  </li>
+        <li>'Flaps one'  </li>
+        <li>'Flaps two'  </li>
+        <li>'Flaps three'  </li>
+        <li>'Flaps full'  </li>
+    </ul>
+</blockquote>
 <hr/>
 <h3>Landing roll callouts</h3>
 
@@ -249,12 +250,20 @@ full up or full down elevator deflection</p>
     <li><p>Nose light switch TAXI</p></li>
     <li><p>Weather radar SYS switch OFF</p></li>
     <li><p>Weather radar PWS switch OFF</p></li>
-    <li><p>*option FDs<em>off</em>after_landing:*</p></li>
-    <li><p><em>Turn off both  flight directors if the option value is 1 or turn them back on if the value is 0.</em></p></li>
+    <li><p><em>option FDs_off_after_landing:</em></p>
+    <blockquote>
+        <ul>
+            <li><em>Turn off both  flight directors if the option is set to 1 or turn them back on if it is set to 0.</em></li>
+        </ul>
+    </blockquote></li>
     <li><p>Select LS off on both sides</p></li>
     <li><p>Disable the 'bird' mode if it's active</p></li>
-    <li><p>*pack2<em>off</em>after_landing=1:*</p></li>
-    <li><p><em>Turn off pack 2</em></p></li>
+    <li><p><em>pack2_off_after_landing=1:</em></p>
+    <blockquote>
+        <ul>
+            <li><em>Turn off pack 2</em></li>
+        </ul>
+    </blockquote></li>
     <li><p>Start the APU unless you told not to</p></li>
     <li><p>Voice command 'Taxi light off' becomes available</p></li>
 </ul>
@@ -262,18 +271,17 @@ full up or full down elevator deflection</p>
 <h4>Trigger:</h4>
 
 <h5>voice_control = 1:</h5>
-<p>* ###### *after<em>landing</em>trigger = 1*
-   Say 'After landing' or 'After landing, no APU'. <br/>
-   Saying 'No APU' can be delayed until the PM is just about to start the APU. <br/>
-   If you chose not to start the APU during the after landing procedure, you can say 'Start APU' at any time until the engines are shut down.
-<br><br></p>
-
-<ul>
-    <li><h6>*after<em>landing</em>trigger = 2*</h6>
-    Disarm the ground spoilers
-    A few seconds before or after that you can say 'No APU'
-    <br><br></li>
-</ul>
+<blockquote>
+    <ul>
+        <li><h6><em>after_landing_trigger = 1</em></h6>
+        <p>Say 'After landing' or 'After landing, no APU'. <br/>
+        Saying 'No APU' can be delayed until the PM is just about to start the APU. <br/>
+        If you chose not to start the APU during the after landing procedure, you can say 'Start APU' at any time until the engines are shut down.<br><br></p></li>
+        <li><h6><em>after_landing_trigger = 2</em></h6>
+        <p>Disarm the ground spoilers. After that, you may say 'no APU'.
+        <br><br></p></li>
+    </ul>
+</blockquote>
 
 <h5>voice_control = 0:</h5>
 
@@ -284,7 +292,7 @@ full up or full down elevator deflection</p>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-18 21:04:09 </i>
+<i style="float:right;">Last updated 2021-02-21 09:04:37 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -23,12 +23,14 @@ for _, v in ipairs(require "FSLabs Copilot.copilot.failurelist") do
   failures[failureName] = {rate = copilot.UserOptions.failures[failureName], A321 = v.A321 ~= 0}
 end
 
-local function waitForDisplay(str, disappear)
-  if disappear then 
-    repeat sleep() until not FSL.MCDU:getString():find(str) 
-  else 
-    repeat sleep() until FSL.MCDU:getString():find(str) 
-  end
+local function waitForDisplay(substring, disappear)
+  local newDisp
+  while true do
+    newDisp = FSL.MCDU:getString()
+    if disappear and not newDisp:find(substring) then break end
+    if not disappear and newDisp:find(substring) then break end
+  end 
+  return newDisp
 end
 
 local function dimDisplay()
@@ -157,23 +159,23 @@ local function setupFailures()
         if not prevNotFound then
           
           if failureCount < 2 and not clearAll then 
-            waitForDisplay("FAILURES LISTING")
+            local disp = waitForDisplay "FAILURES LISTING"
             FSL.PED_MCDU_LSK_L1()
-            waitForDisplay(FSL.MCDU:getString(), true)
-            if failureCount == 0 and FSL.MCDU:getString():find("CLEAR ALL") then
+            waitForDisplay(disp, true)
+            if failureCount == 0 and FSL.MCDU:getString():find "CLEAR ALL" then
               FSL.PED_MCDU_LSK_R6()
               clearAll = true
             end
           end
           if failureCount > 0 or clearAll then
-            waitForDisplay("ARMED FAILURES")
+            waitForDisplay "ARMED FAILURES"
             FSL.PED_MCDU_LSK_R1()
           end
         end
         prevNotFound = false
-        waitForDisplay("NEW CONDITION")
+        waitForDisplay "NEW CONDITION"
         FSL.PED_MCDU_LSK_L1()
-        waitForDisplay("FAILURES")
+        waitForDisplay "FAILURES"
         local found, line, disp, prevDisp
         while true do
           disp = disp or FSL.MCDU:getString()

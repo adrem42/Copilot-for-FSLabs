@@ -19,7 +19,7 @@ end
 
 function atsuLog:getTakeoffPacks()
   local packs = self:get():match(".+PACKS%s+(%a+)")
-  return packs == "OFF" and 0 or packs == "ON" and 1
+  return (packs == "OFF" and 0 or packs == "ON" and 1), packs
 end
 
 function atsuLog:getTakeoffFlaps()

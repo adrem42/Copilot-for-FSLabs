@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
     <title>Copilot for FSLabs 1.2.0</title>
-    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
 
@@ -47,7 +47,7 @@
 </ul>
 <h2>Manual</h2>
 <ul class="nowrap">
-  <li><a href="../manual/flows.md.html">Flows</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
   <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
@@ -55,8 +55,10 @@
 <h2>Examples</h2>
 <ul class="nowrap">
   <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
-  <li><a href="../examples/custom.lua.html">custom.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
   <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
+  <li><a href="../examples/set_seat.lua.html">set_seat.lua</a></li>
 </ul>
 
 </div>
@@ -136,20 +138,20 @@
 	<td class="summary">A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Event.fromKeyPress">Event.fromKeyPress(key[, ...])</a></td>
-	<td class="summary">Builds an event from a key press.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#Event.waitForEventWithTimeout">Event.waitForEventWithTimeout(timeout, event)</a></td>
 	<td class="summary">Waits for the event or until the timeout is elapsed.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event.waitForEvents">Event.waitForEvents(events[, waitForAll=false])</a></td>
+	<td class="summary">Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event.waitForEventsWithTimeout">Event.waitForEventsWithTimeout(timeout, events, waitForAll)</a></td>
 	<td class="summary">Waits for multiple events or until the timeout is elapsed.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Event.waitForEvents">Event.waitForEvents(events[, waitForAll=false])</a></td>
-	<td class="summary">Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events</td>
+	<td class="name" nowrap><a href="#Event.fromKeyPress">Event.fromKeyPress(key[, ...])</a></td>
+	<td class="summary">Builds an event from a key press.</td>
 	</tr>
 </table>
 <h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
@@ -160,7 +162,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#VoiceCommand.resetGrammar">VoiceCommand.resetGrammar()</a></td>
-	<td class="summary">Call this static function inside a plugin lua file before activating or deactivating voice commands.</td>
+	<td class="summary">Call this function inside a plugin lua before activating or deactivating voice commands.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#VoiceCommand:getPhrases">VoiceCommand:getPhrases(dummy)</a></td>
@@ -710,35 +712,6 @@ myEvent:removeAction(myAction)</pre>
 
 </dd>
     <dt>
-    <a name = "Event.fromKeyPress"></a>
-    <strong>Event.fromKeyPress(key[, ...])</strong>
-    </dt>
-    <dd>
-    Builds an event from a key press.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">key</span>
-         See <a href="../libraries/FSL2Lua.html#Bind">FSL2Lua.Bind</a>
-        </li>
-        <li><span class="parameter">...</span>
-         Arguments to forward to the <a href="../libraries/Event.html#">Event</a> constructor.
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        <a href="#Class_Event">Event</a>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "Event.waitForEventWithTimeout"></a>
     <strong>Event.waitForEventWithTimeout(timeout, event)</strong>
     </dt>
@@ -763,6 +736,42 @@ myEvent:removeAction(myAction)</pre>
         Event.TIMEOUT</li>
         <li>
         True if the event was signaled.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEvents"></a>
+    <strong>Event.waitForEvents(events[, waitForAll=false])</strong>
+    </dt>
+    <dd>
+    Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">events</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Array of <a href="#Class_Event">Event</a>'s
+        </li>
+        <li><span class="parameter">waitForAll</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        if waitForAll is true, this function works the same as the one returned by <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> and returns true once all events have been triggered</p>
+
+<p> Otherwise, for every event that has been triggered, it returns the event
     </ol>
 
 
@@ -807,35 +816,28 @@ myEvent:removeAction(myAction)</pre>
 
 </dd>
     <dt>
-    <a name = "Event.waitForEvents"></a>
-    <strong>Event.waitForEvents(events[, waitForAll=false])</strong>
+    <a name = "Event.fromKeyPress"></a>
+    <strong>Event.fromKeyPress(key[, ...])</strong>
     </dt>
     <dd>
-    Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events
+    Builds an event from a key press.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">events</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Array of <a href="#Class_Event">Event</a>'s
+        <li><span class="parameter">key</span>
+         See <a href="../libraries/FSL2Lua.html#Bind">FSL2Lua.Bind</a>
         </li>
-        <li><span class="parameter">waitForAll</span>
-            <span class="types"><span class="type">bool</span></span>
-
-
-
-         (<em>default</em> false)
+        <li><span class="parameter">...</span>
+         Arguments to forward to the <a href="../libraries/Event.html#">Event</a> constructor.
+         (<em>optional</em>)
         </li>
     </ul>
 
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">function</span></span>
-        if waitForAll is true, this function works the same as the one returned by <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> and returns true once all events have been triggered</p>
-
-<p> Otherwise, for every event that has been triggered, it returns the event
+        <a href="#Class_Event">Event</a>
     </ol>
 
 
@@ -919,7 +921,7 @@ myEvent:removeAction(myAction)</pre>
     <strong>VoiceCommand.resetGrammar()</strong>
     </dt>
     <dd>
-    Call this static function inside a plugin lua file before activating or deactivating voice commands.
+    Call this function inside a plugin lua before activating or deactivating voice commands.
 
 
 
@@ -1288,7 +1290,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-18 21:04:09 </i>
+<i style="float:right;">Last updated 2021-02-21 09:04:37 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

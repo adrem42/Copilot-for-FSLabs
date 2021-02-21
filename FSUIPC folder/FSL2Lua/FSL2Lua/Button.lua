@@ -42,10 +42,9 @@ function Button:_pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   end
 end
 
-function Button:_hasBeenPressed(lvarBefore) return self:getLvarValue() ~= lvarBefore end
+function Button:_hasBeenPressed() return self:isDown() end
 
 function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
-  local lvarBefore = self:getLvarValue()
   self:_macro(pressClickType)
   -- For the press to register, the button needs to be held down
   -- for a certain amount of time that depends on the framerate.
@@ -55,11 +54,11 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   if twoSwitches then
     checkWithTimeout(timeout, function()
       coroutine.yield()
-      return self:_hasBeenPressed(lvarBefore)
+      return self:_hasBeenPressed()
     end)
     repeatWithTimeout(sleepAfterPress, coroutine.yield)
   else
-    checkWithTimeout(timeout, function() return self:_hasBeenPressed(lvarBefore) end)
+    checkWithTimeout(timeout, function() return self:_hasBeenPressed() end)
     util.sleep(sleepAfterPress)
   end
   self:_macro(releaseClickType)
@@ -75,9 +74,7 @@ function Button:__call() self:_pressAndRelease() end
 --- has a special function if you click on it with the right mouse button. 
 --- I don't think it's useful for anything else.
 function Button:rightClick() 
-  self:_pressAndRelease(
-    false, self.clickTypes.rightPress, self.clickTypes.rightRelease
-  ) 
+  self:_pressAndRelease(false, self.clickTypes.rightPress, self.clickTypes.rightRelease) 
 end
 
 --- @treturn bool True if the button is depressed.

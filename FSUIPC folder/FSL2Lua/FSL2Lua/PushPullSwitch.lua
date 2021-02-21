@@ -1,25 +1,20 @@
 if false then module "FSL2Lua" end
 
 local Control = require "FSL2Lua.FSL2Lua.Control"
+
 local ButtonImpl = setmetatable({}, require "FSL2Lua.FSL2Lua.Button")
 ButtonImpl.__index = ButtonImpl
 
-function ButtonImpl:_hasBeenPressed() 
-  return self:getLvarValue() == self._targetLvarVal 
-end
+function ButtonImpl:_hasBeenPressed() return self:getLvarValue() == self._targetLvarVal end
 
 function ButtonImpl:push()
   self._targetLvarVal = 10
-  self:_pressAndRelease(
-    false, self.clickTypes.leftPress, self.clickTypes.leftRelease
-  ) 
+  self:_pressAndRelease(false, self.clickTypes.leftPress, self.clickTypes.leftRelease) 
 end
-
+ 
 function ButtonImpl:pull()
   self._targetLvarVal = 20
-  self:_pressAndRelease(
-    false, self.clickTypes.rightPress, self.clickTypes.rightRelease
-  ) 
+  self:_pressAndRelease(false, self.clickTypes.rightPress, self.clickTypes.rightRelease) 
 end
 
 ---<span>

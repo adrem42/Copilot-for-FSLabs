@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 1.2.0</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 1.2.0</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+  <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
+  <li><strong>set_seat.lua</strong></li>
+</ul>
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>set_seat.lua</h2>
+<pre>
+<span class="comment">-- <a href="../manual/standalonescripts.md.html#">How do I launch this script?</a>
+</span>
+<span class="keyword">local</span> FSL = <span class="global">require</span> <span class="string">"FSL2Lua"</span>
+
+FSL:setPilot <span class="string">"FO"</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> pressAndWait(key, pattern, init, plain)
+  key()
+  <span class="keyword">return</span> checkWithTimeout(<span class="number">5000</span>, <span class="keyword">function</span>()
+    <span class="keyword">return</span> FSL.MCDU:getString():find(pattern, init, plain)
+  <span class="keyword">end</span>)
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> goToPage(steps)
+  <span class="keyword">for</span> i, v <span class="keyword">in</span> <span class="global">ipairs</span>(steps) <span class="keyword">do</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> pressAndWait(<span class="global">unpack</span>(v)) <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">false</span>, i <span class="keyword">end</span>
+  <span class="keyword">end</span>
+  <span class="keyword">return</span> <span class="keyword">true</span>
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> readSelection()
+  <span class="keyword">return</span> FSL.MCDU:getString():sub(<span class="number">97</span>, <span class="number">97</span>) == <span class="string">"["</span> <span class="keyword">and</span> <span class="string">"CPT"</span> <span class="keyword">or</span> <span class="string">"FO"</span> 
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> setSeat(getSelection)
+  <span class="keyword">local</span> ok, errIdx = goToPage {
+    {FSL.PED_MCDU_KEY_MENU, <span class="string">"MCDU MENU"</span>},
+    {FSL.PED_MCDU_LSK_R5, <span class="string">"SYSTEMS 1"</span>},
+    {FSL.PED_MCDU_KEY_RIGHT, <span class="string">"SYSTEMS 2"</span>},
+    {FSL.PED_MCDU_KEY_RIGHT, <span class="string">"SEAT SELECTION"</span>},
+  }
+  <span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">then</span>
+    <span class="keyword">return</span> <span class="global">print</span>(<span class="string">"Attempt to open page #"</span> .. errIdx .. <span class="string">" has timed out :("</span>)
+  <span class="keyword">end</span>
+  <span class="keyword">local</span> newSelection = <span class="global">type</span>(getSelection) == <span class="string">"string"</span>
+    <span class="keyword">and</span> getSelection <span class="keyword">or</span> getSelection(readSelection())
+  <span class="keyword">local</span> keyPress =
+    newSelection == <span class="string">"CPT"</span> <span class="keyword">and</span> FSL.PED_MCDU_LSK_L2 <span class="keyword">or</span> FSL.PED_MCDU_LSK_R2
+  <span class="keyword">local</span> <span class="keyword">function</span> changeSelection()
+    keyPress()
+    <span class="keyword">return</span> readSelection() == newSelection
+  <span class="keyword">end</span>
+  <span class="keyword">if</span> <span class="keyword">not</span> checkWithTimeout(<span class="number">5000</span>, changeSelection) <span class="keyword">then</span>
+    <span class="global">print</span> <span class="string">"Attemp to set the seat selection has timed out :("</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> toggleSeat()
+  setSeat(<span class="keyword">function</span>(currSelection)
+    <span class="keyword">return</span> currSelection == <span class="string">"CPT"</span> <span class="keyword">and</span> <span class="string">"FO"</span> <span class="keyword">or</span> <span class="string">"CPT"</span>
+  <span class="keyword">end</span>)
+<span class="keyword">end</span>
+
+Bind {key = <span class="string">"1"</span>, onPress = {setSeat, <span class="string">"CPT"</span>, FSL.PED_MCDU_KEY_FPLN}}
+Bind {key = <span class="string">"2"</span>, onPress = {setSeat, <span class="string">"FO"</span>, FSL.PED_MCDU_KEY_FPLN}}
+Bind {key = <span class="string">"3"</span>, onPress = {toggleSeat, FSL.PED_MCDU_KEY_PERF}}</pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-02-21 09:04:37 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

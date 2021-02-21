@@ -2,24 +2,25 @@ if false then module "FSL2Lua" end
 
 local util = require "FSL2Lua.FSL2Lua.util"
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
-local Switch = require "FSL2Lua.FSL2Lua.Switch"
-local Control = require "FSL2Lua.FSL2Lua.Control"
+local Positionable = require "FSL2Lua.FSL2Lua.Positionable"
+
 ---<span>
 --@type RotaryKnob
-local RotaryKnob = setmetatable({}, Switch)
+local RotaryKnob = setmetatable({}, Positionable)
 
 RotaryKnob.__index = RotaryKnob
 RotaryKnob.__class = "RotaryKnob"
 
 function RotaryKnob:new(control)
+  control = Positionable:new(control)
   util.assert(type(control.range) == "number", "Failed to create control: " .. control.name or control.LVar)
-  return setmetatable(Control:new(control), self)
+  return setmetatable(control, self)
 end
 
 --- @function __call
 --- @number targetPos Relative position from 0-100.
 --- @usage FSL.OVHD_INTLT_Integ_Lt_Knob(42)
-RotaryKnob.__call = Switch.__call
+RotaryKnob.__call = Positionable.__call
 
 function RotaryKnob:_rotateLeft() self:macro "wheelDown" end
 function RotaryKnob:_rotateRight() self:macro "wheelUp" end
@@ -39,13 +40,11 @@ function RotaryKnob:_getTargetLvarVal(targetPos)
   return self.range / 100 * targetPos
 end
 
-function RotaryKnob:_set(targetPos)
-  local timeStarted = ipc.elapsedtime()
-  --local tolerance = (targetPos == 0 or targetPos == self.range) and 0 or 5
-  local tolerance = 0
+function RotaryKnob:_setPositionToLvar(targetPos, initPos)
+  
   local wasLower, wasGreater
   local tick = 1
-  local currPos = self:getLvarValue()
+  local currPos = initPos or self:getLvarValue()
   if self.prevTargetPos and currPos == self.prevPos then
     if targetPos >= self.prevTargetPos and self.wasLower then
       wasLower = self.wasLower
@@ -53,23 +52,24 @@ function RotaryKnob:_set(targetPos)
       wasGreater = self.wasGreater
     end
   end
+
+  local startTime = ipc.elapsedtime()
+
   while true do
-    if math.abs(currPos - targetPos) > tolerance then
-      if currPos < targetPos then
-        if wasGreater then break end
-        self:_rotateRight()
-        wasLower = true
-      elseif currPos > targetPos then
-        if wasLower then break end
-        self:_rotateLeft()
-        wasGreater = true
-      end
-      if not self:_waitForLvarChange(1000, currPos, 3) then
-        self:_handleTimeout(4)
-        return
-      end
+    if currPos < targetPos then
+      if wasGreater then break end
+      self:_rotateRight()
+      wasLower = true
+    elseif currPos > targetPos then
+      if wasLower then break end
+      self:_rotateLeft()
+      wasGreater = true
     else
       break
+    end
+    if not self:_waitForLvarChange(1000, currPos, 3) then
+      self:_handleTimeout(4)
+      return
     end
     if FSL.areSequencesEnabled and tick % 2 == 0 then
       util.sleep(1)
@@ -77,14 +77,17 @@ function RotaryKnob:_set(targetPos)
     tick = tick + 1
     currPos = self:getLvarValue()
   end
+
   self.prevPos = currPos
   self.prevTargetPos = targetPos
   self.wasLower = wasLower
   self.wasGreater = wasGreater
   hideCursor()
+
   if FSL.areSequencesEnabled then 
-    util.log("Interaction with the control took " .. ipc.elapsedtime() - timeStarted .. " ms") 
+    util.log("Interaction with the control took " .. ipc.elapsedtime() - startTime .. " ms") 
   end
+
   return currPos / self.range * 100
 end
 

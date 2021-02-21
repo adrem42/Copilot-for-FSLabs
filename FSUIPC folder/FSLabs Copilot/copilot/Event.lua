@@ -206,7 +206,6 @@ function Event:new(data)
     end
     event.action = nil
   end
-  Event.events[event] = event
   return event
 end
 
@@ -494,6 +493,10 @@ function Event.resumeThreads()
   end
 end
 
+Event.TIMEOUT = {}
+Event.INFINITE = {}
+local NO_PAYLOAD = {}
+
 ---A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.
 ---@static
 ---@param event <a href="#Class_Event">Event</a>
@@ -501,24 +504,24 @@ end
 ---@usage Event.waitForEvent(copilot.events.landing)
 ---@treturn function If returnFunction is true, returns a function that will return true after the event is signaled.
 function Event.waitForEvent(event, returnFunction)
-  local isEventTriggered = false
-  event:addOneOffAction(function() isEventTriggered = true end)
-  if returnFunction then return function() return isEventTriggered end end
-  repeat copilot.suspend() until isEventTriggered
-end
 
-Event.TIMEOUT = {}
-Event.INFINITE = {}
+  local getPayload
 
----Builds an event from a key press.
----@static
----@param key See `FSL2Lua.Bind`
----@param[opt] ... Arguments to forward to the `Event` constructor.
----@return <a href="#Class_Event">Event</a>
-function Event.fromKeyPress(key, ...)
-  local event = Event:new(...)
-  Bind {key = key, onPress = function() event:trigger() end}
-  return event
+  event:addOneOffAction(function(_, ...) 
+    local payload = {...}
+    getPayload = function() return unpack(payload) end
+  end)
+
+  local function checkEvent(wait)
+    if wait then
+      repeat copilot.suspend() until checkEvent()
+      return getPayload()
+    end
+    if getPayload then return true, getPayload end
+    return false
+  end
+
+  return returnFunction and checkEvent or checkEvent(true)
 end
 
 --- Waits for the event or until the timeout is elapsed.
@@ -528,36 +531,18 @@ end
 ---@return Event.TIMEOUT
 ---@return True if the event was signaled.
 function Event.waitForEventWithTimeout(timeout, event)
-  if timeout == Event.INFINITE then
-    Event.waitForEvent(event)
-    return true
-  end
-  local isEventSignaled = Event.waitForEvent(event, true)
-  local timedOut = not checkWithTimeout(timeout, function()
-    copilot.suspend()
-    return isEventSignaled()
-  end)
-  return timedOut and Event.TIMEOUT or true
-end
 
---- Waits for multiple events or until the timeout is elapsed.
----@static
----@int timeout Timeout in milliseconds
----@param events Array of <a href="#Class_Event">Event</a>'s
----@bool waitForAll Whether to wait for any event or all events to be signaled.
----@return Event.TIMEOUT
----@return True if waitForAll is true and all events were signaled.
----@return The event that was signaled if waitForAll is false.
-function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
-  if timeout == Event.INFINITE then
-    return Event.waitForEvents(events, waitForAll, false)
-  end
-  local checkEvents = Event.waitForEvents(events, waitForAll, true)
-  local res = withTimeout(timeout, function()
+  local checkEvent = Event.waitForEvent(event, true)
+
+  if timeout == Event.INFINITE then return checkEvent(true) end
+
+  local signaled, getPayload = checkWithTimeout(timeout, function()
     copilot.suspend()
-    return checkEvents() or nil
+    return checkEvent()
   end)
-  return res or Event.TIMEOUT
+  
+  if signaled then return true, getPayload end
+  return Event.TIMEOUT
 end
 
 ---Same as @{waitForEvent} but for multiple events
@@ -569,40 +554,114 @@ end
 -- Otherwise, for every event that has been triggered, it returns the event
 function Event.waitForEvents(events, waitForAll, returnFunction)
 
-  local flags = {}
+  local payloadGetters = {}
 
   for _, event in ipairs(events) do
-    flags[event] = false
-    event:addOneOffAction(function()
-      flags[event] = true
+    payloadGetters[event] = NO_PAYLOAD
+    event:addOneOffAction(function(_, ...)
+      local payload = {...}
+      payloadGetters[event] = function() return unpack(payload) end
     end)
   end
 
+  local checkEvents
+
   if waitForAll then
-    local function areEventsTriggered()
-      for _, flag in pairs(flags) do
-        if flag == false then return false end
+
+    checkEvents = function(wait)
+
+      if wait then
+        repeat copilot.suspend() until checkEvents()
+        return payloadGetters
       end
-      return true
+
+      for _, getPayload in pairs(payloadGetters) do
+        if getPayload == NO_PAYLOAD then return false end
+      end
+      return true, payloadGetters
     end
-    if returnFunction then return areEventsTriggered end
-    repeat copilot.suspend() until areEventsTriggered()
   else
-    local function checkEvents()
-      for event, flag in pairs(flags) do
-        if flag == true then
-          flags[event] = false
-          return event
+
+    checkEvents = function(wait)
+
+      if wait then
+        while true do
+          copilot.suspend()
+          local event, getPayload = checkEvents()
+          if event then return event, getPayload end
+        end
+      end
+
+      for event, getPayload in pairs(payloadGetters) do
+        if getPayload ~= NO_PAYLOAD then
+          payloadGetters[event] = NO_PAYLOAD
+          return event, getPayload
         end
       end
     end
-    if returnFunction then return checkEvents end
-    while true do
-      copilot.suspend()
-      local event = checkEvents()
-      if event then return event end
-    end
   end
+
+  if returnFunction then return checkEvents end
+  return checkEvents(true)
+end
+
+--- Waits for multiple events or until the timeout is elapsed.
+---@static
+---@int timeout Timeout in milliseconds
+---@param events Array of <a href="#Class_Event">Event</a>'s
+---@bool waitForAll Whether to wait for any event or all events to be signaled.
+---@return Event.TIMEOUT
+---@return True if waitForAll is true and all events were signaled.
+---@return The event that was signaled if waitForAll is false.
+function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
+
+  local checkEvents = Event.waitForEvents(events, waitForAll, true)
+  if timeout == Event.INFINITE then return checkEvents(true) end
+
+  local function timeoutCallback() copilot.suspend() return checkEvents() end
+
+  if waitForAll then
+    local allSignaled, payloadGetters = checkWithTimeout(timeout, timeoutCallback)
+    return allSignaled and payloadGetters or Event.TIMEOUT
+  end
+
+  local event, getPayload = withTimeout(timeout, timeoutCallback)
+  if event then return event, getPayload end
+  return Event.TIMEOUT
+end
+
+---Builds an event from a key press.
+---@static
+---@param key See `FSL2Lua.Bind`
+---@param[opt] ... Arguments to forward to the `Event` constructor.
+---@return <a href="#Class_Event">Event</a>
+function Event.fromKeyPress(key, ...)
+  local event = Event:new(...)
+  event._keyBind = Bind {
+    key = key, 
+    onPress = function(...) event:trigger(...) end,
+  }
+  return event
+end
+
+function Event._simConnectMenuEventHandler(res)
+  local e = Event._simConnectMenuEvent
+  if not e then return end
+  e:trigger(e.menu.results[res], res, e.menu)
+  Event._simConnectMenuEvent = nil
+end
+
+event.MenuSelect("Event._simConnectMenuEventHandler")
+
+Event.MENU_REPLACED = {}
+
+function Event.fromSimConnectMenu(title, prompt, results)
+  if Event._simConnectMenuEvent then 
+    Event._simConnectMenuEvent:trigger(Event.MENU_REPLACED) 
+  end
+  ipc.SetMenu(title, prompt, results)
+  Event._simConnectMenuEvent = Event:new {menu = {title = title, prompt = prompt, results = results}}
+  return Event._simConnectMenuEvent
 end
 
 local recognizer = copilot.recognizer
@@ -658,14 +717,18 @@ end
 --  action = function() print "hi there" end
 -- }
 
-function VoiceCommand:new(data)
+function VoiceCommand:new(data, confidence)
+  data = type(data) == "string"
+    and {phrase = data, confidence = confidence}
+    or type(data) == "table" and data
+    or error("Bad argument", 2)
   local voiceCommand = data
   voiceCommand.confidence = data.confidence or VoiceCommand.DefaultConfidence
   voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
   if copilot.isVoiceControlEnabled then
-    voiceCommand.ruleID = recognizer:addRule(voiceCommand.phrase,
-                                             voiceCommand.confidence,
-                                             _persistenceMode(data.persistent))
+    voiceCommand.ruleID = recognizer:addRule(
+      voiceCommand.phrase, voiceCommand.confidence, _persistenceMode(data.persistent)
+    )
     voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
   end
@@ -680,7 +743,7 @@ function VoiceCommand:new(data)
   return voiceCommand
 end
 
---- Call this static function inside a plugin lua file before activating or deactivating voice commands.
+--- Call this function inside a plugin lua before activating or deactivating voice commands. 
 ---@static
 function VoiceCommand.resetGrammar()
   if not VoiceCommand.isGrammarReset then

@@ -12,7 +12,7 @@ Control.__index = Control
 
 local timeoutMsg = "\nControl %s isn't responding to mouse macro commands\r\n" ..
 "Most likely its macro is invalid\r\n" ..
-"FSL2Lua version: " .. _FSL2LUA_VERSION ..
+"FSL2Lua version: " .. (_FSL2LUA_VERSION or "") ..
 "\r\nCheck compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432"
 
 Control.clickTypes = {
@@ -97,10 +97,10 @@ function Control:_getLvarValueErr()
   error("The Lvar of control " .. self.name .. " is inoperable: you can't call functions that need to read the Lvar.")
 end
 
-function Control:_waitForLvarChange(timeout, startPos)
-  startPos = startPos or self:getLvarValue()
+function Control:_waitForLvarChange(timeout, initPos)
+  initPos = initPos or self:getLvarValue()
   return checkWithTimeout(timeout or 5000, function() 
-    return self:getLvarValue() ~= startPos 
+    return self:getLvarValue() ~= initPos 
   end)
 end
 

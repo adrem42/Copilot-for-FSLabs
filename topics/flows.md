@@ -1,8 +1,8 @@
-# Flows
+# Flows of the Pilot Monitoring
 ___
 ### Preflight
 
-* Check FMGC data insertion (doesn't actually check anything, just cycles through the pages :)
+* Check FMGC data insertion (or rather, pretend to be checking something while just staring at the pages :)
 * Set up the EFIS
 
 #### Trigger:
@@ -39,11 +39,8 @@ Apply some brakes and the PM will announce 'pressure zero'
 #### Trigger:
 
 ##### voice_control = 1:
-
-Say 'Brake check' during taxi with the ground speed  below 3 knots
-
+Say 'Brake check' during taxi with the ground speed  below 3 knots<br><br>
 ##### voice_control = 0:
-
 The first brake application during taxi with the ground speed below 3 knots
 ___
 Note: you can do the checks above in any order.
@@ -68,14 +65,11 @@ ___
 #### Trigger:
 
 ##### voice_control = 1:
-
-Say 'Lineup procedure'
-
+Say 'Lineup procedure'<br><br>
 ##### voice_control = 0:
-
-Cycle the seat belts sign switch twice within two seconds
+Cycle the seat belts sign switch twice within two seconds  
 ___
-Note: To decide whether to turn the packs off, the script first looks for a performance request in the ATSU log. If it finds a performance request and the packs are off in it, the PM will turn the packs off. Otherwise, he will turn them off or leave them on based on the packs_on_takeoff option
+Note: To decide whether to turn the packs off, the script first looks for a performance request in the ATSU log. If it finds a performance request and the packs are off in it, the PM will turn the packs off. Otherwise, he will turn them off or leave them in their current setting when *packs\_on\_takeoff* is set to 0 and 1, respectively.
 ___
 ### Takeoff
 
@@ -85,11 +79,8 @@ ___
 #### Trigger:
 
 ##### voice_control = 1:
-
-Say 'Takeoff'
-
+Say 'Takeoff'<br><br>
 ##### voice_control = 0:
-
 Thrust levers in FLX or TOGA and landing lights on
 ___
 ### Takeoff roll callouts
@@ -110,12 +101,12 @@ ___
 
 * Select the packs back on if they were turned off for takeoff
 
-* Voice commands *(if voice_control=1)*:
-   * *'Flaps two'*
-   * *'Flaps one'*
-   * *'Flaps up' or 'flaps zero'*
+* Voice commands *(if voice\_control=1)*:
+>* *'Flaps two'*
+>* *'Flaps one'*
+>* *'Flaps up' or 'flaps zero'*
 
-When the flaps are retracted:
+Once the flaps are retracted:
 
 * Disarm the ground spoilers
 
@@ -148,11 +139,11 @@ ___
 
 * Voice commands become available:
 
-   'Gear down'  
-   'Flaps one'  
-   'Flaps two'  
-   'Flaps three'  
-   'Flaps full'  
+> * 'Gear down'  
+> * 'Flaps one'  
+> * 'Flaps two'  
+> * 'Flaps three'  
+> * 'Flaps full'  
 ___
 ### Landing roll callouts
 
@@ -173,27 +164,25 @@ ___
 * Nose light switch TAXI
 * Weather radar SYS switch OFF
 * Weather radar PWS switch OFF
-* *option FDs_off_after_landing:*
-   * *Turn off both  flight directors if the option value is 1 or turn them back on if the value is 0.*
+* *option FDs\_off\_after\_landing:*
+>* *Turn off both  flight directors if the option is set to 1 or turn them back on if it is set to 0.*
 * Select LS off on both sides
 * Disable the 'bird' mode if it's active
-* *pack2_off_after_landing=1:*
-   * *Turn off pack 2*
+* *pack2\_off\_after\_landing=1:*
+>* *Turn off pack 2*
 * Start the APU unless you told not to
 * Voice command 'Taxi light off' becomes available
 
 #### Trigger:
 
 ##### voice_control = 1:
-* ###### *after_landing_trigger = 1*
+>* ###### *after\_landing\_trigger = 1*
    Say 'After landing' or 'After landing, no APU'.  
    Saying 'No APU' can be delayed until the PM is just about to start the APU.  
-   If you chose not to start the APU during the after landing procedure, you can say 'Start APU' at any time until the engines are shut down.
-<br><br>
+   If you chose not to start the APU during the after landing procedure, you can say 'Start APU' at any time until the engines are shut down.<br><br>
 
-* ###### *after_landing_trigger = 2*
-   Disarm the ground spoilers
-   A few seconds before or after that you can say 'No APU'
+>* ###### *after\_landing\_trigger = 2*
+   Disarm the ground spoilers. After that, you may say 'no APU'.
 <br><br>
 
 ##### voice_control = 0:

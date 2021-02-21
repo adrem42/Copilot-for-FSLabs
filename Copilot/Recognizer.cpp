@@ -66,13 +66,14 @@ bool Recognizer::registerCallback(ISpNotifyCallback* callback)
 RuleID Recognizer::addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
-	rules.emplace_back(Rule{ phrases, confidence, ++CurrRuleId, persistenceMode});
+	CurrRuleId++;
+	rules.emplace(CurrRuleId, Rule{ phrases, confidence, CurrRuleId, persistenceMode});
 	return CurrRuleId;
 }
 
 Recognizer::Rule& Recognizer::getRuleById(RuleID ruleID)
 {
-	return rules[ruleID - 1];
+	return rules[ruleID];
 }
 
 void Recognizer::logRuleStatus(std::string& prefix, const Rule& rule)
@@ -218,6 +219,7 @@ void Recognizer::setRulePersistence(RulePersistenceMode persistenceMode, RuleID 
 
 void Recognizer::resetGrammar()
 {
+	copilot::logger->debug("Resetting grammar and reloading grammar rules...");
 	HRESULT hr;
 	hr = recognizer->SetRecoState(SPRST_INACTIVE);
 	checkResult("Error deactivating reco state", hr);
@@ -234,11 +236,11 @@ void Recognizer::resetGrammar()
 		}	
 	}
 
-	std::map<Rule*, RuleState> statesBefore;
+	std::unordered_map<Rule*, RuleState> statesBefore;
 
 	if (SUCCEEDED(hr)) {
 		std::lock_guard<std::recursive_mutex> lock(mtx);
-		for (auto& rule : rules) {
+		for (auto& [_, rule] : rules) {
 			statesBefore[&rule] = rule.state;
 			if (rule.state != RuleState::Disabled)
 				rule.state = RuleState::Inactive;
@@ -260,10 +262,8 @@ void Recognizer::resetGrammar()
 	hr = recoContext->Resume(NULL);
 	checkResult("Error while resuming reco context", hr);
 
-	for (auto& ruleStatePair : statesBefore) {
-		Rule* rule = ruleStatePair.first;
-		RuleState stateBefore = ruleStatePair.second;
-		switch (stateBefore) {
+	for (auto& [rule, state] : statesBefore) {
+		switch (state) {
 			case RuleState::Active:
 				activateRule(rule->ruleID);
 				break;
@@ -276,6 +276,7 @@ void Recognizer::resetGrammar()
 
 void Recognizer::afterRecoEvent(RuleID ruleID)
 {
+	std::lock_guard<std::recursive_mutex> lock(mtx);
 	switch (getRuleById(ruleID).persistenceMode) {
 		case RulePersistenceMode::Ignore:
 			ignoreRule(ruleID);

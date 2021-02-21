@@ -26,7 +26,7 @@ You can restart or stop the script (no need to do either during normal operation
 
 **If anything goes wrong during the script's operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make it more verbose by setting log_level to 1).
 
-If you want to extend the functionality of the script, see @{custom.lua | some examples here.}
+If you want to extend the functionality of the script, see @{copilot_example1.lua | some examples here.}
 
 @{cockpit_control_binds.lua | A few examples of binding cockpit controls to keyboard keys and joystick buttons}
 

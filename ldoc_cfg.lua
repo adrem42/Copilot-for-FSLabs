@@ -39,6 +39,8 @@ readme = {
   'topics',
 }
 
+style='!pale'
+
 examples={'examples'}
 
 backtick_references = true

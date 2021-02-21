@@ -4,39 +4,42 @@
 -- @module FSL2Lua
 
 local file = require "FSL2Lua.FSL2Lua.file"
-local config = require "FSL2Lua.config"
-local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
---- Executes the condition callback until it signals the condition or the timeout elapses.
+--- Executes the callback until it signals a truthy value or the timeout elapses.
 --@int[opt=5000] timeout Timeout in milliseconds
---@tparam function condition A callback that should return a truthy value to signal the condition.
---@treturn bool True if the condition was signaled, false if the timeout has elapsed.
-function checkWithTimeout(timeout, condition)
+--@tparam function block A callback that should return a truthy first value to signal the condition.
+--@param ... Arguments to forward to block.
+--@treturn bool True + the rest of the values returned by block if the condition was signaled, false if the timeout has elapsed.
+function checkWithTimeout(timeout, block, ...)
   timeout = ipc.elapsedtime() + (timeout or 5000)
   repeat 
-    if condition() then return true end
+    local results = {block(...)}
+    if results[1] then return true, unpack(results, 2) end
   until ipc.elapsedtime() > timeout
   return false
 end
 
---- Executes the callback until the timeout elapses or the callback returns any value other than nil.
+--- Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.
 --@int[opt=5000] timeout Timeout in milliseconds
 --@tparam function block
---@return Either nil  if the timeout has elapsed, or the value returned by block.
-function withTimeout(timeout, block)
+--@param ... Arguments to forward to block.
+--@return Either nil if the timeout has elapsed, or the values returned by block.
+function withTimeout(timeout, block, ...)
   timeout = ipc.elapsedtime() + (timeout or 5000)
   repeat
-    local val = block()
-    if val ~= nil then return val end
+    local results = {block(...)}
+    if results[1] ~= nil then return unpack(results) end
   until ipc.elapsedtime() > timeout
 end
 
 --- Repeats the callback until the timeout elapses
 --@int[opt=5000] timeout Timeout in milliseconds
 --@tparam function block
-function repeatWithTimeout(timeout, block)
+--@param ... Arguments to forward to block.
+--@tparam function block
+function repeatWithTimeout(timeout, block, ...)
   timeout = ipc.elapsedtime() + (timeout or 5000)
-  repeat block() until ipc.elapsedtime() > timeout
+  repeat block(...) until ipc.elapsedtime() > timeout
 end
 
 math.randomseed(os.time())
@@ -147,10 +150,10 @@ function util.disableLogging()
   util._loggingEnabled = false
 end
 
-function util._wrapDeprecated(name, suggestion, func)
+function util._wrapDeprecated(name, replacement, func)
   local msg = string.format(
     "%s is deprecated and will be removed in a future version. Use %s instead.",
-    name, suggestion
+    name, replacement
   )
   return function(...)
     util.handleError(msg, 2)
