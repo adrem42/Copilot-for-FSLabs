@@ -140,8 +140,8 @@ end
 --   self._cycler()
 -- end)
 
+-- Don't use these, use Bind.cycleSwitch instead
 function Switch:cycle() self._cycler() end
-
 Switch.toggle = Switch.cycle
 
 return Switch

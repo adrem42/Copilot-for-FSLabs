@@ -91,8 +91,7 @@ function bindMt:__call(data)
   bind._joyBind = data.btn and JoyBind:new(data)
 
   if data.dispose == true then
-    bind._dummyUserdata = newproxy(true)
-    getmetatable(bind._dummyUserdata).__gc = function() print "gc called" bind:_destroy() end
+    util.setOnGCcallback(bind, function() bind:_destroy() end)
   end
 
   return setmetatable(bind, Bind)

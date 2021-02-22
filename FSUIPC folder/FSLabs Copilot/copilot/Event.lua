@@ -38,12 +38,16 @@ function Action:new(callback, flags)
   local isCallable, callableType = util.isCallable(callback)
   util.assert(isCallable, "Action callback must be a callable", 2)
   local mt = getmetatable(callback)
-  return setmetatable ({
+  local a = setmetatable ({
     callback = callableType == "function" and callback or function(...) mt.__call(callback, ...) end,
     isEnabled = true,
     runAsCoroutine = flags == "runAsCoroutine",
     eventRefs = {stop = {}}
   }, self)
+  util.setOnGCcallback(a, function() 
+    copilot.logger:trace("Action gc: " .. a:toString()) 
+  end)
+  return a
 end
 
 function Action:toString()
@@ -206,6 +210,9 @@ function Event:new(data)
     end
     event.action = nil
   end
+  util.setOnGCcallback(event, function() 
+    copilot.logger:trace("Event gc: " .. event:toString()) 
+  end)
   return event
 end
 
@@ -507,21 +514,27 @@ function Event.waitForEvent(event, returnFunction)
 
   local getPayload
 
-  event:addOneOffAction(function(_, ...) 
+  local a = event:addOneOffAction(function(_, ...) 
     local payload = {...}
     getPayload = function() return unpack(payload) end
   end)
-
-  local function checkEvent(wait)
-    if wait then
-      repeat copilot.suspend() until checkEvent()
-      return getPayload()
+  a:addLogMsg("waitForEvent event signal: " .. event:toString())
+  
+  local checkEvent = setmetatable({}, {
+    __call = function (self, wait)
+      if wait then
+        repeat copilot.suspend() until self()
+        return getPayload()
+      end
+      if getPayload then return true, getPayload end
+      return false
     end
-    if getPayload then return true, getPayload end
-    return false
-  end
+  })
 
-  return returnFunction and checkEvent or checkEvent(true)
+  util.setOnGCcallback(checkEvent, function() event:removeAction(a) end)
+
+  if returnFunction then return checkEvent end
+  return checkEvent(true)
 end
 
 --- Waits for the event or until the timeout is elapsed.
@@ -554,24 +567,30 @@ end
 -- Otherwise, for every event that has been triggered, it returns the event
 function Event.waitForEvents(events, waitForAll, returnFunction)
 
-  local payloadGetters = {}
+  local payloadGetters = setmetatable({}, {__mode = "k"})
+  local actions = setmetatable({}, {__mode = "k"})
 
   for _, event in ipairs(events) do
     payloadGetters[event] = NO_PAYLOAD
-    event:addOneOffAction(function(_, ...)
+    actions[event] = event:addOneOffAction(function(_, ...)
       local payload = {...}
       payloadGetters[event] = function() return unpack(payload) end
     end)
+    actions[event]:addLogMsg("waitForEvents event signal: " .. event:toString())
   end
 
-  local checkEvents
+  local checkEvents = setmetatable({}, {})
+
+  util.setOnGCcallback(checkEvents, function()
+    for e, a in pairs(actions) do e:removeAction(a) end
+  end)
 
   if waitForAll then
 
-    checkEvents = function(wait)
+    getmetatable(checkEvents).__call = function(self, wait)
 
       if wait then
-        repeat copilot.suspend() until checkEvents()
+        repeat copilot.suspend() until self()
         return payloadGetters
       end
 
@@ -582,12 +601,12 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
     end
   else
 
-    checkEvents = function(wait)
+    getmetatable(checkEvents).__call = function(self, wait)
 
       if wait then
         while true do
           copilot.suspend()
-          local event, getPayload = checkEvents()
+          local event, getPayload = self()
           if event then return event, getPayload end
         end
       end
@@ -636,12 +655,21 @@ end
 ---@param[opt] ... Arguments to forward to the `Event` constructor.
 ---@return <a href="#Class_Event">Event</a>
 function Event.fromKeyPress(key, ...)
-  local event = Event:new(...)
-  event._keyBind = Bind {
-    key = key, 
-    onPress = function(...) event:trigger(...) end,
-  }
-  return event
+
+  local e = Event:new(...)
+  e.logMsg = e.logMsg or ("Key press event: " .. key)
+
+  -- The following is necessary because Bind will make onPress global
+  -- Bind internally calls event.key which takes a global function name
+  local weakRef = setmetatable({e = e}, {__mode = "v"})
+  copilot.callOnce(function() -- event.key and other event library functions don't work when called from coroutines
+    e._keyBind = Bind {
+      key = key, dispose = true,
+      onPress = function(...) if weakRef.e then weakRef.e:trigger(...) end end,
+    }
+  end)
+
+  return e
 end
 
 function Event._simConnectMenuEventHandler(res)
@@ -660,7 +688,10 @@ function Event.fromSimConnectMenu(title, prompt, results)
     Event._simConnectMenuEvent:trigger(Event.MENU_REPLACED) 
   end
   ipc.SetMenu(title, prompt, results)
-  Event._simConnectMenuEvent = Event:new {menu = {title = title, prompt = prompt, results = results}}
+  Event._simConnectMenuEvent = Event:new {
+    menu = {title = title, prompt = prompt, results = results},
+    logMsg = "SimConnect menu event: " .. (title or "?")
+  }
   return Event._simConnectMenuEvent
 end
 
@@ -732,9 +763,10 @@ function VoiceCommand:new(data, confidence)
     voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
   end
-  voiceCommand.phrase = nil
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
+  voiceCommand.logMsg = voiceCommand.logMsg or ("VoiceCommand: " .. (voiceCommand.phrase[1] or "?"))
+  voiceCommand.phrase = nil
   voiceCommand = setmetatable(Event:new(voiceCommand), self)
   if data.dummy then
     voiceCommand:addPhrase(data.dummy, true)

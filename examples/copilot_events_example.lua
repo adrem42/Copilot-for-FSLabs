@@ -15,7 +15,7 @@ local function askDestination(choices)
 end
 
 local function makeCountdown(numSeconds)
-  local e = Event:new()
+  local e = Event:new {logMsg = "Rocket launch countdown"}
   local co = coroutine.create(function()
     copilot.logger:warn(
       "You have " .. numSeconds .. " seconds to abort the launch!"

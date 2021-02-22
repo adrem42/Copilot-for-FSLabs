@@ -161,4 +161,10 @@ function util._wrapDeprecated(name, replacement, func)
   end
 end
 
+function util.setOnGCcallback(t, callback)
+  local ud = newproxy(true)
+  getmetatable(ud).__gc = callback
+  t.__gc_ud = ud
+end
+
 return util

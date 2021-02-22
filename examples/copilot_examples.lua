@@ -55,7 +55,7 @@ startApu:removeAllPhrases():addPhrase("start apu"):setConfidence(0.90)
 -- Adding a new action and voice command
 ------------------------------------------------------------------------------
 
-local pleaseStop = VoiceCommand:new {phrase = "please stop"}
+local pleaseStop = VoiceCommand:new "please stop"
 
 local newAction = copilot.events.enginesStarted:addAction(function()
   -- wait a random amount of time between 5 and 10 seconds

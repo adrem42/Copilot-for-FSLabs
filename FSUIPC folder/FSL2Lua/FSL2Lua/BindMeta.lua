@@ -7,8 +7,10 @@ local funcCount = 0
 function BindMeta:destroy()
   if not self.globalFuncs then return end
   for _, funcName in ipairs(self.globalFuncs) do
-    event.cancel(funcName)
-    _G[funcName] = nil
+    if type(_G[funcName]) == "function" then
+      event.cancel(funcName)
+      _G[funcName] = nil
+    end
   end
   self.globalFuncs = nil
 end
