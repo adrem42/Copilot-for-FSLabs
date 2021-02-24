@@ -17,10 +17,7 @@ function Button:_checkMacro()
 
   if guard and not guard:isOpen() then
     guard:open()
-    local timedOut = not checkWithTimeout(2000, function()
-      return guard:isOpen()
-    end)
-    if timedOut then return false end
+    if not checkWithTimeout(2000, guard.isOpen, guard) then return false end
   end
 
   local LVarbefore = self:getLvarValue()
@@ -117,10 +114,7 @@ function RotaryKnob:_checkMacro()
         local switch = LVar:find("switch") and LVar:find(self.LVar:lower():gsub("(.+)_.+","%1"))
         if switch and control.isDown and control:isDown() then
           control()
-          local timedOut = not checkWithTimeout(2000, function()
-            return not control:isDown()
-          end)
-          if timedOut then return false end
+          if not checkWithTimeout(2000, control.isDown, control) then return false end
           break
         end
       end

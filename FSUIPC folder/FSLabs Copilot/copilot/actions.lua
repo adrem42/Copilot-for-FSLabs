@@ -235,53 +235,6 @@ if copilot.isVoiceControlEnabled then
 
 end
 
-local pauseScratchpadClearerThreads = {}
-
-function copilot.dontClearScratchPad(value, thread)
-  pauseScratchpadClearerThreads[thread or coroutine.running()] = not value and nil or true
-end
-
-if copilot.UserOptions.actions.PM_clears_scratchpad == copilot.UserOptions.TRUE then
-  copilot.addCallback(coroutine.create(function()
-    local clearScratchpadTime, scratchpadMsg
-
-    local function dirtyScratchpad()
-      local disp = FSL.MCDU:getString()
-      local scratchpad = disp:sub(313, 330)
-      return scratchpad:find "%S" and not disp:find "MCDU MENU"
-    end
-
-    while true do
-      copilot.suspend(1000)
-      if dirtyScratchpad() then
-        local now = ipc.elapsedtime()
-        if not clearScratchpadTime then
-          scratchpadMsg = scratchpad
-          clearScratchpadTime = now + math.random(1000, 5000)
-        elseif scratchpad ~= scratchpadMsg then
-          clearScratchpadTime = nil
-        elseif now > clearScratchpadTime then
-          local okToClear = true
-          for thread in pairs(pauseScratchpadClearerThreads) do
-            if Action.getActionFromThread(thread) then
-              okToClear = false
-            else
-              copilot.dontClearScratchPad(false, thread)
-            end
-          end
-          if okToClear then
-            repeat
-              FSL.PED_MCDU_KEY_CLR()
-              copilot.sleep(500, 1000)
-            until not dirtyScratchpad()
-          end
-          clearScratchpadTime = nil
-        end
-      end
-    end
-  end), "scratchpadClearer")
-end
-
 function copilot.sequences:checkFmgcData()
 
   FSL.PED_MCDU_KEY_DATA()
@@ -642,6 +595,7 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
       FSL.GSLD_Chrono_Button()
     end
   end
+
   if copilot.UserOptions.actions.preflight == copilot.UserOptions.ENABLED then
     repeat copilot.suspend() until copilot.mcduWatcher:getVar("isFmgcSetup")
     copilot.logger:info("FMGC is set up")
@@ -651,10 +605,18 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
       copilot.suspend(20000, 2 * 60000)
       if prob(0.5) then copilot.suspend(0, 60000) end
     end
+
+    if copilot.UserOptions.actions.PM_clears_scratchpad == copilot.UserOptions.TRUE then
+      copilot.scratchpadClearer:start()
+    end
+
     copilot.sequences:checkFmgcData()
     copilot.suspend(0,10000)
+
     if prob(0.2) then copilot.suspend(10000, 20000) end
     copilot.sequences:setupEFIS()
+
+    copilot.scratchpadClearer:stop()
   end
 end, "runAsCoroutine")
   :stopOn(copilot.events.enginesStarted)

@@ -1,6 +1,5 @@
 if false then module "FSL2Lua" end
 
-local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local Control = require "FSL2Lua.FSL2Lua.Control"
 
 --- @type Guard
@@ -11,15 +10,12 @@ Guard.__class = "Guard"
 
 --- <span>
 function Guard:open()
-  if FSL.areSequencesEnabled then
-    self:_moveHandHere()
-  end
+  self:_moveHandHere()
   if not self:isOpen() then
+    local endInteract = self:_startInteract(plusminus(1000))
     self:macro "rightPress"
-    checkWithTimeout(5000, function() return self:isOpen() end)
-  end
-  if FSL.areSequencesEnabled then
-    self:_interact(plusminus(1000))
+    checkWithTimeout(5000, self.isOpen, self)
+    endInteract()
   end
 end
 
@@ -29,15 +25,9 @@ Guard.lift = Guard.open
 
 --- <span>
 function Guard:close()
-  if FSL.areSequencesEnabled then
-    self:_moveHandHere()
-  end
-  if self:isOpen() then
-    self:macro(self.toggle and "rightPress" or "rightRelease")
-  end
-  if FSL.areSequencesEnabled then
-    self:_interact(plusminus(500))
-  end
+  self:_moveHandHere()
+  if self:isOpen() then self:macro(self.toggle and "rightPress" or "rightRelease") end
+  self:_startInteract(plusminus(500))()
 end
 
 --- @treturn bool

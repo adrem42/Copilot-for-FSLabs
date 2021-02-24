@@ -65,71 +65,129 @@ copilot.actions = {}
 --- Predefined sequences
 copilot.sequences = {}
 
-require "copilot.Event"
-local Event = Event
+Event = require "copilot.Event"
+VoiceCommand = require "copilot.VoiceCommand"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor
 
 local callbacks = {}
-copilot._callbacks = callbacks
+local callbackNames = {}
+local activeThreads = {}
 
---- Adds function or coroutine callback to the main callback loop.
+--- Adds a callback to the main callback loop.
 --- Dead coroutines are removed automatically.
---- @param callback A function or thread
+--- @param callback A function, callable table or thread. It will be called with a timestamp (milliseconds).
 --- @string[opt] name Can be used later to remove the callback with @{removeCallback}
---- @return callback
-function copilot.addCallback(callback, name)
-  callbacks[name or callback] = callback
-  return callback
+--- @int[opt] interval Interval in milliseconds
+--- @int[opt] delay Initial delay in milliseconds
+--- @return The callback that was passed in
+--- @treturn int current timestamp
+function copilot.addCallback(callback, name, interval, delay)
+  if callbacks[callback] or callbackNames[name] then 
+    return callback
+  end
+  local now = ipc.elapsedtime()
+  callbacks[callback] = {
+    name = name,
+    interval = interval,
+    nextTime = 0,
+    initTime = delay and now + delay
+  }
+  if name then callbackNames[name] = callback end
+  return callback, now
+end
+
+function copilot.isThreadActive(thread) 
+  return activeThreads[thread] == true
 end
 
 local coroutine = coroutine
 
---- Adds function or coroutine callback to the main callback loop which will be removed after being called once (if it's a coroutine - when the coroutine ends).
---- @param callback A function or thread.
---- @number[opt] delay Milliseconds by which to delay calling the callback.
+--- Adds callback to the main callback loop. The callback will be removed after being called once.
+--- For coroutines, it doesn't matter whether you use `addCallback` or callOnce as `addCallback` removes dead
+--- coroutines anyway.
+--- @param callback A function, callable table or thread. It will be called with a timestamp (milliseconds).
+--- @int[opt] delay Initial delay in milliseconds
+--- @return The callback that was passed in
+--- @treturn int current timestamp
 function copilot.callOnce(callback, delay)
   local deletthis
-  local callTime = delay and ipc.elapsedtime() + delay
-  if type(callback) == "function" then
+  if util.isCallable(callback) then
     deletthis = function(...)
-      if not callTime or ipc.elapsedtime() > callTime then
-        callback(...)
-        copilot.removeCallback(deletthis)
-      end
+      callback(...)
+      copilot.removeCallback(deletthis)
     end
-  else
-    local itsTime = not delay
-    deletthis = function(...)
-      itsTime = itsTime or ipc.elapsedtime() > callTime
-      if itsTime and not coroutine.resume(callback, ...) then
-        copilot.removeCallback(deletthis)
-      end
-    end
+  elseif type(callback) == "thread" then
+    deletthis = callback
+  else 
+    error("Bad callback parameter", 2) 
   end
-  copilot.addCallback(deletthis)
+  return copilot.addCallback(deletthis, nil, nil, delay)
 end
 
 --- Removes a previously added callback.
---- @param key Either the function or thread itself or the name argument passed to @{addCallback}
+--- @param key Either the callable itself or the name passed to @{addCallback}
 function copilot.removeCallback(key)
-  callbacks[key] = nil
+  if callbackNames[key] then
+    callbackNames[key] = nil
+    callbacks[callbackNames[key]] = nil
+  elseif callbacks[key] then
+    local name = callbacks[key].name
+    if name then callbackNames[name] = nil end
+    callbacks[key] = nil
+  end
 end
 
-function copilot.update(time)
-  for key, callback in pairs(callbacks) do
-    if type(callback) == "function" then
-      callback(time)
+local function runFuncCallback(callback, _, timestamp)
+  callback(timestamp)
+end
+
+local function runThreadCallback(thread, _, timestamp)
+
+  activeThreads[thread] = true
+
+  local ok, err = coroutine.resume(thread, timestamp)
+  if not ok then
+    event.cancel("copilot.update")
+    error(err)
+  end
+
+  if coroutine.status(thread) == "dead" then
+    activeThreads[thread] = nil
+    copilot.removeCallback(thread)
+  end
+end
+
+local function checkCallbackTiming(timestamp, props)
+
+  if props.initTime then
+    if timestamp < props.initTime then return false end
+    props.initTime = nil
+  end
+
+  if props.interval then
+    if timestamp < props.nextTime then return false end
+    props.nextTime = timestamp + props.interval
+  end
+
+  return true
+end
+
+local function runCallback(callback, props, timestamp)
+  local shouldRun = checkCallbackTiming(timestamp, props)
+  if shouldRun then
+    if util.isCallable(callback) then
+      runFuncCallback(callback, props, timestamp)
     elseif type(callback) == "thread" then
-      local _, err = coroutine.resume(callback, time)
-      if err then
-        event.cancel("copilot.update")
-        error(err)
-      end
-      if coroutine.status(callback) == "dead" then
-        copilot.removeCallback(key)
-      end
+      runThreadCallback(callback, props, timestamp)
     end
+  end
+end
+
+function copilot.update()
+  local timestamp = ipc.elapsedtime()
+  for callback, props in pairs(callbacks) do
+    runCallback(callback, props, timestamp)
   end
 end
 
@@ -208,6 +266,8 @@ local function setup()
     require "copilot.actions"
   end
 
+  require "copilot.ScratchpadClearer"
+
   local customDir = APPDIR .. "custom\\"
   local userFiles = false
   for _file in lfs.dir(customDir) do
@@ -233,8 +293,7 @@ local function setup()
     end
   end
 
-  if options.failures.enable == options.TRUE 
-    and debugger.enable == options.FALSE then 
+  if options.failures.enable == options.TRUE and not debugger.enable then 
     require "copilot.failures"
   end
   

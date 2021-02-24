@@ -20,13 +20,11 @@ end
 ---@param state Truthy for 'down', falsy for 'up'
 function ToggleButton:setToggleState(state)
   state = state and true or false
-  if self:isDown() == state then return end
+  local function success() return self:isDown() == state end
+  if success() then return end
   for _ = 1, 5 do
     self()
-    local ok = checkWithTimeout(1000, function()
-      return self:isDown() == state
-    end)
-    if ok then return end
+    if checkWithTimeout(1000, success) then return end
   end
 end
 

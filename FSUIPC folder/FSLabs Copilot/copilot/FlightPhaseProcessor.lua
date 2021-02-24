@@ -104,13 +104,13 @@ local function waitForEngineStart()
 end
 
 function flightPhases.engineShutdown:update()
-  local waitForEngineStart = coroutine.wrap(waitForEngineStart)
+  local _waitForEngineStart = coroutine.wrap(waitForEngineStart)
   local newFlightPhase
   repeat
     if ipc.readLvar("FSLA320_Wheel_Chocks") == 1 then
       newFlightPhase = flightPhases.onChocks
     end
-    newFlightPhase = newFlightPhase or waitForEngineStart()
+    newFlightPhase = newFlightPhase or _waitForEngineStart()
     copilot.suspend()
   until newFlightPhase
   return newFlightPhase

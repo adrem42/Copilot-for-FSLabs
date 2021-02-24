@@ -35,6 +35,7 @@
 <h2>Examples</h2>
 <ul class="nowrap">
   <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
   <li><strong>copilot_events_example.lua</strong></li>
   <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
   <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
@@ -65,20 +66,16 @@
 </span><span class="comment">-- any lua files in that directory
 </span>
 <span class="keyword">local</span> <span class="keyword">function</span> askDestination(choices)
-  <span class="keyword">local</span> destination
-  <span class="keyword">repeat</span>
-    destination = Event.waitForEvent(
-      Event.fromSimConnectMenu(
-      <span class="string">"Where do you want to send the rocket?"</span>,
-      <span class="string">"Please select a destination:"</span>, choices
-      )
+  <span class="keyword">return</span> Event.waitForEvent(
+    Event.fromSimConnectMenu(
+    <span class="string">"Where do you want to send the rocket?"</span>,
+    <span class="string">"Please select a destination:"</span>, choices
     )
-  <span class="keyword">until</span> destination ~= Event.MENU_REPLACED
-  <span class="keyword">return</span> destination
+  )
 <span class="keyword">end</span>
 
 <span class="keyword">local</span> <span class="keyword">function</span> makeCountdown(numSeconds)
-  <span class="keyword">local</span> e = Event:new()
+  <span class="keyword">local</span> e = Event:new {logMsg = <span class="string">"Rocket launch countdown"</span>}
   <span class="keyword">local</span> co = <span class="global">coroutine</span>.create(<span class="keyword">function</span>()
     copilot.logger:warn(
       <span class="string">"You have "</span> .. numSeconds .. <span class="string">" seconds to abort the launch!"</span>
@@ -93,18 +90,25 @@
   <span class="keyword">return</span> co, e
 <span class="keyword">end</span>
 
+<span class="comment">-- VoiceCommands have to be created statically
+</span><span class="comment">-- because otherwise the recognizer grammar would need
+</span><span class="comment">-- to be recompiled after each new VoiceCommand
+</span>
+<span class="keyword">local</span> abortWithVoice = VoiceCommand:new <span class="string">"Abort the launch"</span>
+<span class="keyword">local</span> launchCommand = VoiceCommand:new <span class="string">"Launch it"</span>
+
 <span class="keyword">local</span> <span class="keyword">function</span> rocketLaunch()
 
   copilot.logger:info <span class="string">"Preparing for rocket launch..."</span>
   copilot.suspend(<span class="number">5000</span>, <span class="number">10000</span>)
 
-  <span class="keyword">local</span> destination = askDestination {
+  <span class="keyword">local</span> _, destination = askDestination {
     <span class="string">"Mercury"</span>, <span class="string">"Venus"</span>, <span class="string">"Mars"</span>, <span class="string">"Jupiter"</span>, <span class="string">"Saturn"</span>, <span class="string">"Uranus"</span>, <span class="string">"Neptune"</span>
   }
 
   copilot.logger:info <span class="string">"Launching the rocket on your command"</span>
   <span class="keyword">if</span> Event.waitForEventWithTimeout(
-    <span class="number">30000</span>, VoiceCommand:new <span class="string">"Launch it"</span> :activate()
+    <span class="number">30000</span>, launchCommand:activate()
   ) == Event.TIMEOUT <span class="keyword">then</span>
     <span class="keyword">return</span> copilot.logger:warn <span class="string">"The launch routine has timed out"</span>
   <span class="keyword">end</span>
@@ -113,7 +117,6 @@
   copilot.addCallback(countdownCoro)
 
   <span class="keyword">local</span> abortWithKey = Event.fromKeyPress <span class="string">"A"</span>
-  <span class="keyword">local</span> abortWithVoice = VoiceCommand:new <span class="string">"Abort the launch"</span>
 
   <span class="keyword">local</span> event, getPayload = Event.waitForEvents {
     countdownEnd, abortWithKey, abortWithVoice:activate()
@@ -127,15 +130,23 @@
       <span class="string">"The rocket has successfully been launched to "</span> .. destination .. <span class="string">"!"</span>
     )
     <span class="keyword">local</span> countStart, countEnd = getPayload()
-    copilot.logger:info(
+    <span class="keyword">return</span> copilot.logger:info(
       <span class="global">os</span>.date(<span class="string">"Countdown start: %X, "</span>, countStart) ..
       <span class="global">os</span>.date(<span class="string">"countdown end: %X."</span>, countEnd)
     )
-  <span class="keyword">elseif</span> event == abortWithKey <span class="keyword">then</span>
-    copilot.logger:info <span class="string">"The launch was aborted with a key press!"</span>
-  <span class="keyword">elseif</span> event == abortWithVoice <span class="keyword">then</span>
-    copilot.logger:info <span class="string">"The launch was aborted with a voice command!"</span>
   <span class="keyword">end</span>
+
+  copilot.logger:info(
+    event == abortWithKey
+    <span class="keyword">and</span> <span class="string">"The launch was aborted with a key press!"</span>
+    <span class="keyword">or</span> <span class="string">"The launch was aborted with a voice command!"</span>
+  )
+
+  <span class="keyword">local</span> choice = Event.waitForEvent(
+    Event.fromSimConnectMenu(<span class="string">"Try again?"</span>, <span class="keyword">nil</span>, {<span class="string">"Yes"</span>, <span class="string">"No"</span>})
+  )
+
+  <span class="keyword">if</span> choice == <span class="number">1</span> <span class="keyword">then</span> copilot.addCallback(<span class="global">coroutine</span>.create(rocketLaunch)) <span class="keyword">end</span>
 <span class="keyword">end</span>
 
 copilot.addCallback(<span class="global">coroutine</span>.create(rocketLaunch))</pre>
@@ -145,7 +156,7 @@ copilot.addCallback(<span class="global">coroutine</span>.create(rocketLaunch))<
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-21 09:04:37 </i>
+<i style="float:right;">Last updated 2021-02-23 12:29:23 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -29,7 +29,12 @@ file = {
 
   'FSUIPC folder/FSLabs Copilot.lua',
   'FSUIPC folder/FSLabs Copilot/copilot/util.lua',
+
+
+  'FSUIPC folder/FSLabs Copilot/copilot/Action.lua',
   'FSUIPC folder/FSLabs Copilot/copilot/Event.lua',
+  'FSUIPC folder/FSLabs Copilot/copilot/ActionOrderSetter.lua',
+  'FSUIPC folder/FSLabs Copilot/copilot/VoiceCommand.lua',
   'Joystick/Joystick.h',
 }
 

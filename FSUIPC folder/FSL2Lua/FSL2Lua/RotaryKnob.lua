@@ -53,7 +53,7 @@ function RotaryKnob:_setPositionToLvar(targetPos, initPos)
     end
   end
 
-  local startTime = ipc.elapsedtime()
+  local endInteract = self:_startInteract()
 
   while true do
     if currPos < targetPos then
@@ -64,16 +64,9 @@ function RotaryKnob:_setPositionToLvar(targetPos, initPos)
       if wasLower then break end
       self:_rotateLeft()
       wasGreater = true
-    else
-      break
-    end
-    if not self:_waitForLvarChange(1000, currPos, 3) then
-      self:_handleTimeout(4)
-      return
-    end
-    if FSL.areSequencesEnabled and tick % 2 == 0 then
-      util.sleep(1)
-    end
+    else break end
+    if not self:_waitForLvarChange(1000, currPos, 3) then return self:_handleTimeout(4) end
+    if FSL.areSequencesEnabled and tick % 2 == 0 then util.sleep(1) end
     tick = tick + 1
     currPos = self:getLvarValue()
   end
@@ -83,11 +76,7 @@ function RotaryKnob:_setPositionToLvar(targetPos, initPos)
   self.wasLower = wasLower
   self.wasGreater = wasGreater
   hideCursor()
-
-  if FSL.areSequencesEnabled then 
-    util.log("Interaction with the control took " .. ipc.elapsedtime() - startTime .. " ms") 
-  end
-
+  endInteract()
   return currPos / self.range * 100
 end
 
@@ -101,12 +90,10 @@ end
 --- @number ticks positive to rotate right, negative to rotate left
 --- @number[opt=70] pause milliseconds to sleep between each tick
 function RotaryKnob:rotateBy(ticks, pause)
-  pause = pause or 70
-  if FSL.areSequencesEnabled then
-    self:_moveHandHere()
-    self:_interact(300)
-  end
-  local startTime = ipc.elapsedtime()
+  pause = FSL.areSequencesEnabled and 70 or (pause or 70)
+  self:_moveHandHere()
+  self:_startInteract(300)()
+  local endInteract = self:_startInteract()
   if ticks > 0 then
     for _ = 1, ticks do
       self:_rotateRight()
@@ -122,9 +109,7 @@ function RotaryKnob:rotateBy(ticks, pause)
       end
     end
   end
-  if FSL.areSequencesEnabled then
-    util.log("Interaction with the control took " .. (ipc.elapsedtime() - startTime) .. " ms")
-  end
+  endInteract()
   hideCursor()
 end
 

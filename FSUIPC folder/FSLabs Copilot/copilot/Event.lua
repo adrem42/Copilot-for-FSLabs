@@ -1,164 +1,13 @@
----- Copilot's event library.
--- @module Event
+if false then module "Event" end
 
 local Ouroboros = require "FSLabs Copilot.libs.ouroboros"
-local coroutine = coroutine
 local copilot = copilot
 local util = require "FSL2Lua.FSL2Lua.util"
 
-local function removeEventRef(self, refType, ...)
-  if refType == "all" then
-    for _, refTable in pairs(self.eventRefs) do
-      for event, action in pairs(refTable) do
-        event:removeAction(action)
-      end
-    end
-  else
-    for _, event in ipairs {...} do
-      event:removeAction(self.eventRefs[refType][event])
-    end
-  end
-end
-
-local function makeEventRef(self, func, refType, ...)
-  for _, event in ipairs {...}  do
-    self.eventRefs[refType][event] = event:addAction(func)
-  end
-end
-
---- @type Action
-Action = {threads = {}}
-local Action = Action
-
---- Constructor
---- @tparam function callback
---- @string[opt] flags 'runAsCoroutine'
-function Action:new(callback, flags)
-  self.__index = self
-  local isCallable, callableType = util.isCallable(callback)
-  util.assert(isCallable, "Action callback must be a callable", 2)
-  local mt = getmetatable(callback)
-  local a = setmetatable ({
-    callback = callableType == "function" and callback or function(...) mt.__call(callback, ...) end,
-    isEnabled = true,
-    runAsCoroutine = flags == "runAsCoroutine",
-    eventRefs = {stop = {}}
-  }, self)
-  util.setOnGCcallback(a, function() 
-    copilot.logger:trace("Action gc: " .. a:toString()) 
-  end)
-  return a
-end
-
-function Action:toString()
-  return self.logMsg or tostring(self):gsub("table: 0+", "")
-end
-
---- Enables or disables the action.
---- @bool value True to enable the action, false to disable.
-function Action:setEnabled(value)
-  self.isEnabled = value
-end
-
---- Returns true if the callback was configured to be run as a coroutine and is running now.
-function Action:isThreadRunning()
-  return self.currentThread ~= nil
-end
-
-function Action:runCallback(...)
-  copilot.logger:debug("Starting action: " .. self:toString())
-  self.callback(...)
-end
-
-function Action.getActionFromThread(threadID)
-  return Action.threads[threadID]
-end
-
-function Action:createThread(dependencies)
-  if not self.currentThread then
-    if dependencies then
-      self.currentThread = coroutine.create(function(...)
-        for _, dependency in ipairs(dependencies) do
-          while dependency:isThreadRunning() do copilot.suspend() end
-        end
-        copilot.logger:debug("Starting action: " .. self:toString())
-        self.callback(...)
-      end)
-    else
-      copilot.logger:debug("Starting action: " .. self:toString())
-      self.currentThread = coroutine.create(self.callback)
-    end
-    Action.threads[self.currentThread] = self
-    return true
-  end
-end
-
-function Action:removeThread()
-  Action.threads[self.currentThread] = nil
-  self.currentThread = nil
-end
-
-function Action:resumeThread(...)
-  if not self.currentThread then return false end
-  local _, err = coroutine.resume(self.currentThread, ...)
-  if err then
-    self:removeThread()
-    error(err) 
-  end
-  if coroutine.status(self.currentThread) == "dead" then
-    self:removeThread()
-    return false
-  end
-  return true
-end
-
---- Use this you want to disable the effect of @{stopOn} for one of the predefined actions in @{copilot.actions}
---- @function removeEventRef
---- @string refType 'stop'
---- @param ... One or more <a href="#Class_Event">Event</a>'s
---- @usage copilot.actions.preflight:removeEventRef('stop', copilot.events.enginesStarted)
-
-Action.removeEventRef = removeEventRef
-
---- If the action was configured to be run as a coroutine, stops the execution of the currently running coroutine immediately.
-function Action:stopCurrentThread()
-  if self.currentThread then
-    self:removeThread()
-    copilot.logger:debug("Stopping action: " .. self:toString())
-    if self.cleanUpCallback then self.cleanUpCallback() end
-  end
-end
-
-Action.makeEventRef = makeEventRef
-
---- <span>
---- @param ... One or more events. If the 'runAsCoroutine' flag was passed to the constructor, the callback coroutine will be stopped when these events are triggered. 
---- @usage myAction:stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
---- @return self
-function Action:stopOn(...)
-  self:makeEventRef(function() self:stopCurrentThread() end, "stop", ...)
-  return self
-end
-
---- Can be used when the action can be stopped - the callback will be executed when the action is stopped.
---- @tparam function callback
---- @return self
-function Action:addCleanup(callback)
-  self.cleanUpCallback = callback
-  return self
-end
-
---- Add log info that will be logged when the action is started or stopped
---- @string msg
---- @return self
-function Action:addLogMsg(msg)
-  self.logMsg = msg
-  return self
-end
+Event = {events = {}, voiceCommands = {}, runningThreads = {}}
+Action = Action or require "copilot.Action"
 
 --- @type Event
-
-Event = {events = {}, voiceCommands = {}, runningThreads = {}}
 
 --- Constructor
 --- @tparam[opt] table data A table containing the following fields:
@@ -192,7 +41,7 @@ function Event:new(data)
     if type(event.action) == "function" then
       event:addAction(event.action)
     elseif type(event.action) == "table" then
-      if getmetatable(event.action) == Action then
+      if util.isType(event.action, Action) then
         event:addAction(event.action)
       else
         for i, v in ipairs(event.action) do
@@ -202,7 +51,7 @@ function Event:new(data)
               flags = nil
             end
             event:addAction(v, flags)
-          elseif type(v) == "table" and getmetatable(v) == Action then
+          elseif type(v) == "table" and util.isType(v, Action) then
             event:addAction(v)
           end
         end
@@ -261,163 +110,6 @@ function Event:sortActions()
     error("Unable to sort actions in event '" .. self:toString() .. "' due to cyclic dependencies.", 2)
   end
   self.areActionsSorted = true
-end
-
-local OrderSetter = {}
-
-function OrderSetter._checkCoro(action)
-  if not action.runAsCoroutine then
-    error("Action " .. action:toString() .. " needs to be a coroutine to be able to wait for other coroutines to complete", 3)
-  end
-end
-
-function OrderSetter:front(wait)
-  local nodes = self.event.actions.nodes
-  for otherAction in pairs(nodes) do
-    if otherAction ~= self.anchor then
-      nodes[otherAction][self.anchor] = true
-      if wait ~= false and self.anchor.runAsCoroutine then
-        self._checkCoro(otherAction)
-        local depends = self.event.coroDepends[otherAction]
-        depends[#depends+1] = self.anchor
-      end
-    end
-  end
-  self.event.areActionsSorted = false
-end
-
-function OrderSetter:back(wait)
-  local nodes = self.event.actions.nodes
-  for otherAction in pairs(nodes) do
-    if otherAction ~= self.anchor then
-      nodes[self.anchor][otherAction] = true
-      if wait ~= false and otherAction.runAsCoroutine then
-        self._checkCoro(self.anchor)
-        local depends = self.event.coroDepends[self.anchor]
-        depends[#depends+1] = otherAction
-      end
-    end
-  end
-  self.event.areActionsSorted = false
-end
-
-function OrderSetter:before(...)
-  local nodes = self.event.actions.nodes
-  local args = {...}
-  local lastArg = args[#args]
-  for _, otherAction in ipairs {...} do
-    if getmetatable(otherAction) == Action then
-      nodes[otherAction][self.anchor] = true
-      if lastArg ~= false and self.anchor.runAsCoroutine then
-        self._checkCoro(otherAction)
-        local depends = self.event.coroDepends[otherAction]
-        depends[#depends+1] = self.anchor
-      end
-    end
-  end
-  self.event.areActionsSorted = false
-  return self
-end
-
-function OrderSetter:after(...)
-  local node = self.event.actions.nodes[self.anchor]
-  local args = {...}
-  local lastArg = args[#args]
-  for _, otherAction in ipairs {...} do
-    if getmetatable(otherAction) == Action then
-      node[otherAction] = true
-      if lastArg ~= false and otherAction.runAsCoroutine then
-        self._checkCoro(self.anchor)
-        local depends = self.event.coroDepends[self.anchor]
-        depends[#depends+1] = otherAction
-      end
-    end
-  end
-  self.event.areActionsSorted = false
-  return self
-end
-
---- Sets order of the event's actions relative to each other.
----@param action An <a href="#Class_Action">Action</a> which will serve as an anchor for positioning other actions in front or after it.
----@return A table with four functions: 'front', 'back', 'before' and 'after. 'Before' and 'after' take a variable
----number of <a href="#Class_Action">Action</a>'s. All four functions optionally take a boolean as the last parameter which defaults to true
--- if omitted. If the last parameter is true and both the anchor action and the other actions are coroutines,
--- the coroutines will not be run simultaneously.
---
--- An error will be thrown if there is a cycle in the ordering.
---- 
---- @usage
---local event = Event:new()
---
---local second = event:addAction(function() print "second" end)
---local first = event:addAction(function() print "first" end)
---local fourth = event:addAction(function() print "fourth" end)
---local third = event:addAction(function() print "third" end)
---
---event:trigger()
--- -- second
--- -- first
--- -- fourth
--- -- third
---
---print "--------------------------------------------------"
---
---event:setActionOrder(first):before(second)
---event:setActionOrder(second):before(third)
---event:setActionOrder(third):before(fourth)
---
--- --[[ 
---Another possibility:
---
---event:setActionOrder(first):front()
---event:setActionOrder(fourth):back()
---event:setActionOrder(second):after(first):before(third)
---
---]]
---
---event:trigger()
---
--- -- first
--- -- second
--- -- third
--- -- fourth
---
---print "--------------------------------------------------"
---
---event = event:new()
---
---second = event:addAction(function()
---  for _ = 1, 4 do coroutine.yield() end
---  print "second"
---end, "runAsCoroutine")
---
---first = event:addAction(function()
---  for _ = 1, 5 do coroutine.yield() end
---  print "first"
---end, "runAsCoroutine")
---
---fourth = event:addAction(function()
---  print "fourth"
---end, "runAsCoroutine")
---
---third = event:addAction(function()
---  for _ = 1, 3 do coroutine.yield() end
---  print "third"
---end, "runAsCoroutine")
---
---event:setActionOrder(second):before(third):after(first)
---event:setActionOrder(third):before(fourth)
---
---event:trigger()
---
--- -- first
--- -- second
--- -- third
--- -- fourth
---
-function Event:setActionOrder(action)
-  OrderSetter.__index = OrderSetter
-  return setmetatable({event = self, anchor = action}, OrderSetter)
 end
 
 --- Same as @{addAction} but the action will be removed from event's action list after it's executed once.
@@ -486,6 +178,9 @@ function Event:trigger(...)
   self.actionsToRemove = nil
 end
 
+-- Copilot receives SAPI recognition event notifications on a background
+-- thread, which then tells FSUIPC to notify this lua thread through the
+-- LuaToggle command and in turn trigger this callback.
 function Event.fetchRecoResults()
   for _, ruleID in ipairs(copilot.recoResultFetcher:getResults()) do
     Event.voiceCommands[ruleID]:trigger()
@@ -504,12 +199,15 @@ Event.TIMEOUT = {}
 Event.INFINITE = {}
 local NO_PAYLOAD = {}
 
----A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.
+---Waits for an event or returns a function that tells whether the event was signaled.
 ---@static
 ---@param event <a href="#Class_Event">Event</a>
----@bool returnFunction If true, returns a function that returns true once the event is signaled, else waitForEvent waits itself for the event to be signaled.
+---@bool[opt=false] returnFunction 
 ---@usage Event.waitForEvent(copilot.events.landing)
----@treturn function If returnFunction is true, returns a function that will return true after the event is signaled.
+---@return If returnFunction is false, waitForEvent waits for the event itself and returns you its payload.
+--- If returnFunction is true, waitForEvent returns a function that returns:<br>
+--- 1. Boolean that indicates whether the event was signaled<br>
+--- 2. Function that returns the event's payload.
 function Event.waitForEvent(event, returnFunction)
 
   local getPayload
@@ -541,8 +239,8 @@ end
 ---@static
 ---@int timeout Timeout in milliseconds
 ---@param event <a href="#Class_Event">Event</a>
----@return Event.TIMEOUT
----@return True if the event was signaled.
+---@return True if the event was signaled or Event.TIMEOUT
+---@return Function that returns the event's payload.
 function Event.waitForEventWithTimeout(timeout, event)
 
   local checkEvent = Event.waitForEvent(event, true)
@@ -558,13 +256,25 @@ function Event.waitForEventWithTimeout(timeout, event)
   return Event.TIMEOUT
 end
 
----Same as @{waitForEvent} but for multiple events
+---Same as `waitForEvent` but for multiple events
 ---@static
----@tparam table events Array of <a href="#Class_Event">Event</a>'s
+---@tparam table events Array of <a href="#Class_Event">Event</a>'s.
+---@bool[opt=false] returnFunction 
 ---@bool[opt=false] waitForAll
----@treturn function if waitForAll is true, this function works the same as the one returned by @{waitForEvent} and returns true once all events have been triggered
---
--- Otherwise, for every event that has been triggered, it returns the event
+---@return If returnFunction is false:
+---
+--- * If waitForall is true: Table with events as keys and functions that return their payload as values.
+--- * If waitForAll is false: The first event that was signaled.
+---
+---If returnFunction is true, a function that returns the following values: 
+---
+--- * If waitForall is true:
+---     1. Boolean that indicates whether all events were signaled.
+---     2. Table with events as keys and functions that return their payload as values.
+---  * If waitForAll is false:
+---     1. An event that was signaled or nil.
+---     2. Function that returns the signaled event's payload.
+---@return Only when returnFunction and waitForAll are false: Function that returns the signaled event's payload.
 function Event.waitForEvents(events, waitForAll, returnFunction)
 
   local payloadGetters = setmetatable({}, {__mode = "k"})
@@ -628,10 +338,10 @@ end
 ---@static
 ---@int timeout Timeout in milliseconds
 ---@param events Array of <a href="#Class_Event">Event</a>'s
----@bool waitForAll Whether to wait for any event or all events to be signaled.
----@return Event.TIMEOUT
----@return True if waitForAll is true and all events were signaled.
----@return The event that was signaled if waitForAll is false.
+---@bool[opt=false] waitForAll Whether to wait for any event or all events to be signaled.
+---@return If waitForAll is true: Table with events as keys and functions that return their payload as values or Event.TIMEOUT<br>
+--- If waitForAll is false: The first event that was signaled or Event.TIMEOUT
+---@return If waitForAll is false: Function that returns the signaled event's payload.
 function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
 
   local checkEvents = Event.waitForEvents(events, waitForAll, true)
@@ -649,7 +359,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
   return Event.TIMEOUT
 end
 
----Builds an event from a key press.
+---Constructs an event from a key press.
 ---@static
 ---@param key See `FSL2Lua.Bind`
 ---@param[opt] ... Arguments to forward to the `Event` constructor.
@@ -664,7 +374,8 @@ function Event.fromKeyPress(key, ...)
   local weakRef = setmetatable({e = e}, {__mode = "v"})
   copilot.callOnce(function() -- event.key and other event library functions don't work when called from coroutines
     e._keyBind = Bind {
-      key = key, dispose = true,
+      key = key, 
+      dispose = true,
       onPress = function(...) if weakRef.e then weakRef.e:trigger(...) end end,
     }
   end)
@@ -675,7 +386,7 @@ end
 function Event._simConnectMenuEventHandler(res)
   local e = Event._simConnectMenuEvent
   if not e then return end
-  e:trigger(e.menu.results[res], res, e.menu)
+  e:trigger(res, e.menu.items[res], e.menu)
   Event._simConnectMenuEvent = nil
 end
 
@@ -683,255 +394,27 @@ event.MenuSelect("Event._simConnectMenuEventHandler")
 
 Event.MENU_REPLACED = {}
 
-function Event.fromSimConnectMenu(title, prompt, results)
+--- Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)
+--- @string title The title of the menu
+--- @string prompt The message that is displayed between the title and the items. Set to nil, "", or whitespace if you don't want a prompt.
+--- @table items Array of strings representing the menu items
+--- @return <a href="#Class_Event">Event</a>. Consumers of the event will receive the following payload values:
+--- 1. The index of the item in the array.
+--- 2. The item that was selected: string.
+--- 3. A table with the fields 'title', 'prompt', and 'items'.
+--- @usage 
+function Event.fromSimConnectMenu(title, prompt, items)
   if Event._simConnectMenuEvent then 
     Event._simConnectMenuEvent:trigger(Event.MENU_REPLACED) 
   end
-  ipc.SetMenu(title, prompt, results)
+  if prompt == nil or prompt == "" then prompt = " " end
+  ipc.SetMenu(title, prompt, items) 
+  
   Event._simConnectMenuEvent = Event:new {
-    menu = {title = title, prompt = prompt, results = results},
+    menu = {title = title, prompt = prompt, items = items},
     logMsg = "SimConnect menu event: " .. (title or "?")
   }
   return Event._simConnectMenuEvent
 end
 
-local recognizer = copilot.recognizer
-
---- VoiceCommand is a subclass of <a href="#Class_Event">Event</a> and is implemented with the Windows Speech API.
---
--- A voice command can be in one of these  states:
---
--- * Active
---
--- * Inactive
---
--- * Ignore mode: the phrases are active in the recognizer but recognition events don't trigger the voice command.
---
--- If you only have a couple of phrases active in the recognizer at a given time, especially short ones, the accuracy will be low and
--- the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of active phrases
--- will also degrade the quality of recognition.<br>
---
---- @type VoiceCommand
-VoiceCommand = {DefaultConfidence = 0.93}
-setmetatable(VoiceCommand, {__index = Event})
-
-local PersistenceMode = {
-  ignore = RulePersistenceMode.Ignore,
-  [true] = RulePersistenceMode.Persistent,
-  [false] = RulePersistenceMode.NonPersistent
-}
-
-local function _persistenceMode(persistence)
-  if persistence == nil then
-    return RulePersistenceMode.NonPersistent
-  else
-    return PersistenceMode[persistence] or error("Invalid persistence mode", 3)
-  end
-end
-
---- Constructor
---- @param data A table containing the following fields (also the fields taken by @{Event:new|the parent constructor}):
---  @param data.phrase string or array of strings. @{addPhrase|You can modify the required confidence of each word in the phrase}
---  @param data.dummy string or array of strings. One or multiple dummy phrase variants which will activated and deactivated 
--- synchronously with the voice command's actual phrase variants to help the recognizer discriminate between them and similarly 
--- sounding phrases. For example, the default 'takeoff' voice command has a 'takeoff runway' dummy phrase which is an item on the
--- standard takeoff checklist. 
---  @number[opt=0.93] data.confidence between 0 and 1
---  @param[opt=false] data.persistent
--- * omitted or false: the voice command will be deactivated after being triggered.
--- * 'ignore': the voice command will be put into ignore mode after being triggered.
--- * true: the voice command will stay active after being triggered.
---- @usage
--- local myVoiceCommand = VoiceCommand:new {
---  phrase = "hello",
---  confidence = 0.95,
---  action = function() print "hi there" end
--- }
-
-function VoiceCommand:new(data, confidence)
-  data = type(data) == "string"
-    and {phrase = data, confidence = confidence}
-    or type(data) == "table" and data
-    or error("Bad argument", 2)
-  local voiceCommand = data
-  voiceCommand.confidence = data.confidence or VoiceCommand.DefaultConfidence
-  voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
-  if copilot.isVoiceControlEnabled then
-    voiceCommand.ruleID = recognizer:addRule(
-      voiceCommand.phrase, voiceCommand.confidence, _persistenceMode(data.persistent)
-    )
-    voiceCommand.persistent = nil
-    Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
-  end
-  voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
-  self.__index = self
-  voiceCommand.logMsg = voiceCommand.logMsg or ("VoiceCommand: " .. (voiceCommand.phrase[1] or "?"))
-  voiceCommand.phrase = nil
-  voiceCommand = setmetatable(Event:new(voiceCommand), self)
-  if data.dummy then
-    voiceCommand:addPhrase(data.dummy, true)
-    voiceCommand.dummy = nil
-  end
-  return voiceCommand
-end
-
---- Call this function inside a plugin lua before activating or deactivating voice commands. 
----@static
-function VoiceCommand.resetGrammar()
-  if not VoiceCommand.isGrammarReset then
-    recognizer:resetGrammar()
-    VoiceCommand.isGrammarReset = true
-  end
-end
-
---- Returns all phrase variants of a voice command.
----@bool dummy True to return dummy phrase variants, omitted or false to return actual phrase variants.
----@return Array of strings.
-function VoiceCommand:getPhrases(dummy)
-  return recognizer:getPhrases(self.ruleID, dummy == true and true or false)
-end
-
---- Sets persistence mode of a voice command.
----@param persistenceMode
--- * omitted or false: the voice command will be deactivated after being triggered.
--- * 'ignore': the voice command will be put into ignore mode after being triggered.
--- * true: the voice command will stay active after being triggered.
----@return self
-function VoiceCommand:setPersistence(persistenceMode)
-  recognizer:setRulePersistence(_persistenceMode(persistenceMode), self.ruleID)
-  return self
-end
-
---- Adds phrase variants to a voice command.
---
----The SAPI recognizer has two confidence metrics - a float from 0-1 and another one that has three states: low, normal and high.
----If a word is preceded by a '+' or '-', its required confidence is set to 'high' or 'low', respectively, otherwise, it has the default required confidence 'normal'.
----@param phrase string or array of strings
----@bool dummy True to add dummy phrase variants, omitted or false to add actual phrase variants.
----@return self
-function VoiceCommand:addPhrase(phrase, dummy)
-  phrase = type(phrase) == "table" and phrase or {phrase}
-  recognizer:addPhrases(phrase, self.ruleID, dummy == true and true or false)
-  return self
-end
-
-local function trimPhrase(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
-
---- Removes phrase variants from a voice command.
----@param phrase string or array of strings
----@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
----@return self
-function VoiceCommand:removePhrase(phrase, dummy)
-  local phrasesToRemove = type(phrase) == "table" and phrase or {phrase}
-  local deletthis = {}
-  for _, phraseToRemove in ipairs(phrasesToRemove) do
-   phraseToRemove = trimPhrase(phraseToRemove)
-    for _, _phrase in ipairs(self:getPhrases(dummy == true and true or false)) do
-      if phraseToRemove == _phrase then
-        deletthis[#deletthis+1] = _phrase
-      end
-    end
-  end
-  recognizer:removePhrases(deletthis, self.ruleID, dummy == true and true or false)
-  return self
-end
-
---- Removes all phrase variants from a voice command.
----@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
----@return self
-function VoiceCommand:removeAllPhrases(dummy)
-  recognizer:removeAllPhrases(self.ruleID, dummy == true and true or false)
-  return self
-end
-
---- Sets required confidence of a voice command.
---- @number confidence A number from 0-1
----@return self
-function VoiceCommand:setConfidence(confidence)
-  recognizer:setConfidence(confidence, self.ruleID)
-  return self
-end
-
----<span>
----@return self
-function VoiceCommand:activate()
-  if copilot.isVoiceControlEnabled then
-    recognizer:activateRule(self.ruleID)
-  end
-  return self
-end
-
----<span>
----@return self
-function VoiceCommand:ignore()
-  if copilot.isVoiceControlEnabled then
-    recognizer:ignoreRule(self.ruleID)
-  end
-  return self
-end
-
----<span>
----@return self
-function VoiceCommand:deactivate()
-  if copilot.isVoiceControlEnabled then
-    recognizer:deactivateRule(self.ruleID)
-  end
-  return self
-end
-
----Deactivates the voice command and makes successive calls to @{activate} and @{ignore} have no effect.
-function VoiceCommand:disable()
-  recognizer:disableRule(self.ruleID)
-  return self
-end
-
----If the voice command has only one action, returns that action. All default voice commands have only one action.
-function VoiceCommand:getAction()
-  if self:getActionCount() ~= 1 then
-    error(string.format("Cannot get action of voice command %s - action count isn't 1", self:getPhrases()[1]), 2)
-  end
-  for action in pairs(self.actions.nodes) do return action end
-end
-
-function VoiceCommand:react(plus)
-  ipc.sleep(math.random(80, 120) * 0.01 * (500 + (plus or 0)))
-end
-
-VoiceCommand.makeEventRef = makeEventRef
-
---- The voice command will become active when the events passed as parameters are triggered.
---
---- Adds an 'activate' event reference that can be removed from the event via @{removeEventRef}
---- @param ...  one or more events
-function VoiceCommand:activateOn(...)
-  self:makeEventRef(function() self:activate() end, "activate", ...)
-  return self
-end
-
---- The voice command will be deactivated when the events passed as parameters are triggered.
---
---- Adds a 'deactivate' event reference that can be removed from the event via @{removeEventRef}
---- @param ...  one or more events
-function VoiceCommand:deactivateOn(...)
-  self:makeEventRef(function() self:deactivate() end, "deactivate", ...)
-  return self
-end
-
---- The voice command will go into ignore mode when the events passed as parameters
---
---- are triggered.
---
---- Adds a 'ignore' event reference that can be removed from the event via @{removeEventRef}
---- @param ...  one or more events
-function VoiceCommand:ignoreOn(...)
-  self:makeEventRef(function() self:ignore() end, "ignore", ...)
-  return self
-end
-
---- Disables the effect of @{activateOn}, @{deactivateOn} or @{ignore} for the default voice commands in @{copilot.voiceCommands}
---- @function removeEventRef
---- @string refType 'activate', 'deactivate' or 'ignore'
---- @param ... one or more <a href="#Class_Event">Event</a>'s
---- @usage copilot.voiceCommands.gearUp:removeEventRef('activate',
---copilot.events.goAround, copilot.events.takeoffInitiated)
-VoiceCommand.removeEventRef = removeEventRef
+return Event

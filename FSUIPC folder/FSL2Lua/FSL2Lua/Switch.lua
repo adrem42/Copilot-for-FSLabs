@@ -1,7 +1,6 @@
 if false then module "FSL2Lua" end
 
 local util = require "FSL2Lua.FSL2Lua.util"
-local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
 --- All controls that have named positions
 --- @type Switch
@@ -79,33 +78,23 @@ end
 function Switch:_setPositionToLvar(targetPos, initPos, twoSwitches)
   
   local currPos = initPos or self:getLvarValue()
+
+  self:_startInteract(plusminus(100), twoSwitches)()
+
   while true do
-    if currPos < targetPos then
-      self:increase()
-    elseif currPos > targetPos then
-      self:decrease()
+    local endInteract = self:_startInteract(plusminus(self.interactionLength or 80))
+    if currPos < targetPos then self:increase()
+    elseif currPos > targetPos then self:decrease()
     else
       if self.springLoaded[targetPos] then self.letGo = true end
       hideCursor()
       break
     end
-    if FSL.areSequencesEnabled then
-      local interactionLength = plusminus(self.interactionLength or 100)
-      if twoSwitches then
-        repeatWithTimeout(interactionLength, coroutine.yield)
-        util.log("Interaction with the control took " .. interactionLength .. " ms")
-      else
-        self:_interact(interactionLength)
-      end
-    end
-    if not self:_waitForLvarChange(1000, currPos) then
-      self:_handleTimeout(4)
-    end
+    endInteract()
+    if not self:_waitForLvarChange(1000, currPos) then return self:_handleTimeout(4) end
     currPos = self:getLvarValue()
   end
-  if FSL.areSequencesEnabled and not twoSwitches then
-    self:_interact(plusminus(100))
-  end
+
 end
 
 --- @treturn string Current position of the switch in uppercase.

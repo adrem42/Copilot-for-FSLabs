@@ -12,14 +12,10 @@ EngineMasterSwitch.__class = "EngineMasterSwitch"
 function EngineMasterSwitch:increase()
   self:macro "rightPress"
   self:_waitForLvarChange()
-  if FSL.areSequencesEnabled then
-    self:_interact(100)
-  end
+  self:_startInteract(100)()
   self:macro "leftPress"
   self:_waitForLvarChange()
-  if FSL.areSequencesEnabled then
-    self:_interact(100)
-  end
+  self:_startInteract(100)()
   self:macro "rightRelease"
   self:macro "leftRelease"
   self:_waitForLvarChange()

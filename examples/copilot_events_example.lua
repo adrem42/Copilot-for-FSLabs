@@ -2,16 +2,12 @@
 -- any lua files in that directory
 
 local function askDestination(choices)
-  local destination
-  repeat 
-    destination = Event.waitForEvent(
-      Event.fromSimConnectMenu(
-      "Where do you want to send the rocket?", 
-      "Please select a destination:", choices
-      )
+  return Event.waitForEvent(
+    Event.fromSimConnectMenu(
+    "Where do you want to send the rocket?", 
+    "Please select a destination:", choices
     )
-  until destination ~= Event.MENU_REPLACED
-  return destination
+  )
 end
 
 local function makeCountdown(numSeconds)
@@ -30,9 +26,9 @@ local function makeCountdown(numSeconds)
   return co, e
 end
 
--- VoiceCommands have to be created in the top-level scope
+-- VoiceCommands have to be created statically
 -- because otherwise the recognizer grammar would need
--- to be reset for each VoiceCommand you create dynamically.
+-- to be recompiled after each new VoiceCommand
 
 local abortWithVoice = VoiceCommand:new "Abort the launch"
 local launchCommand = VoiceCommand:new "Launch it"
@@ -42,7 +38,7 @@ local function rocketLaunch()
   copilot.logger:info "Preparing for rocket launch..."
   copilot.suspend(5000, 10000)
 
-  local destination = askDestination {
+  local _, destination = askDestination {
     "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
   }
 
@@ -70,15 +66,23 @@ local function rocketLaunch()
       "The rocket has successfully been launched to " .. destination .. "!"
     )
     local countStart, countEnd = getPayload()
-    copilot.logger:info(
+    return copilot.logger:info(
       os.date("Countdown start: %X, ", countStart) .. 
       os.date("countdown end: %X.", countEnd)
     )
-  elseif event == abortWithKey then
-    copilot.logger:info "The launch was aborted with a key press!"
-  elseif event == abortWithVoice then
-    copilot.logger:info "The launch was aborted with a voice command!"
   end
+
+  copilot.logger:info(
+    event == abortWithKey
+    and "The launch was aborted with a key press!"
+    or "The launch was aborted with a voice command!"
+  )
+
+  local choice = Event.waitForEvent(
+    Event.fromSimConnectMenu("Try again?", nil, {"Yes", "No"})
+  )
+
+  if choice == 1 then copilot.addCallback(coroutine.create(rocketLaunch)) end
 end
 
 copilot.addCallback(coroutine.create(rocketLaunch))

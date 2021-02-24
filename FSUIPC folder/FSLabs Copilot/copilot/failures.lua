@@ -35,22 +35,18 @@ end
 
 local function dimDisplay()
   repeatWithTimeout(7000, function()
-    FSL.PED_MCDU_KEY_BRT:macro("leftPress")
+    FSL.PED_MCDU_KEY_BRT:macro "leftPress"
     ipc.sleep(100)
   end)
-  FSL.PED_MCDU_KEY_BRT:macro("leftRelease")
+  FSL.PED_MCDU_KEY_BRT:macro "leftRelease"
   ipc.sleep(1000)
-  for i=1,30 do 
+  for _=1, 30 do 
     FSL.PED_MCDU_KEY_DIM() 
     repeat sleep() until not FSL.PED_MCDU_KEY_DIM:isDown() 
   end
 end
 
-local function restoreBrightness()
-  for i=1,10 do 
-    FSL.PED_MCDU_KEY_BRT() 
-  end
-end
+local function restoreBrightness() for _ = 1, 10 do FSL.PED_MCDU_KEY_BRT() end end
 
 local function turnOffDisplay()
   repeat
@@ -60,14 +56,10 @@ local function turnOffDisplay()
   FSL.PED_MCDU_KEY_DIM:macro("leftRelease")
 end
 
-local function debug(msg)
-  if debugging then
-    copilot.logger:debug(msg)
-  end
-end
+local function debug(msg) if debugging then copilot.logger:debug(msg) end end
 
-local function saveTime()
-  local logged = math.floor((ipc.elapsedtime() - scriptStartTime) / 60000) + minutesLoggedAtStart
+local function saveTime(timestamp)
+  local logged = math.floor((timestamp - scriptStartTime) / 60000) + minutesLoggedAtStart
   file.write(aircraftRegDir .. "\\logged", tostring(logged), "w")
 end
 
@@ -295,13 +287,4 @@ else
   copilot.logger:info "Failures have already been set up during this simming session" 
 end
 
-scriptStartTime = ipc.elapsedtime()
-local nextTimeSave = scriptStartTime + 60000
-
-copilot.addCallback(function()
-  local now = ipc.elapsedtime()
-  if now > nextTimeSave then
-    saveTime()
-    nextTimeSave = now + 60000
-  end
-end)
+_, scriptStartTime = copilot.addCallback(saveTime, nil, 60000, 60000)

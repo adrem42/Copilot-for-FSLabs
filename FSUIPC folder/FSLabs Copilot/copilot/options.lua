@@ -52,7 +52,7 @@ return {
       {"enable", UserOptions.ENABLED, type = "bool"},
       {
         "PM_clears_scratchpad", UserOptions.TRUE,
-        "If enabled, PM will press the CLR button whenever his scratchpad displays a message.",
+        "If enabled, PM will clear his scratchpad during the preflight FMGC check.",
         type = "bool"
       },
       {"preflight", UserOptions.ENABLED, type = "bool"},

@@ -2,10 +2,9 @@ if false then module "FSL2Lua" end
 
 local Control = require "FSL2Lua.FSL2Lua.Control"
 local util = require "FSL2Lua.FSL2Lua.util"
-local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
 --- @type Button
-local Button = setmetatable({}, Control)
+local Button = setmetatable({interactionLength = 250}, Control)
 Button.__index = Button
 Button.__class = "Button"
 
@@ -14,7 +13,7 @@ Button.guard = nil
 
 function Button:new(control)
   control = getmetatable(self):new(control)
-  if control.LVar and control.LVar:find("MCDU") then control.interactionLength = 50 end
+  if control.name:find "MCDU" then control.interactionLength = 100 end
   return setmetatable(control, self)
 end
 
@@ -23,23 +22,11 @@ function Button:_pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   pressClickType = pressClickType or self.clickTypes.leftPress
   releaseClickType = releaseClickType or self.clickTypes.leftRelease
 
-  if FSL.areSequencesEnabled and not twoSwitches then
-    self:_moveHandHere()
-  end
+  if not twoSwitches then self:_moveHandHere() end
 
-  local startTime = ipc.elapsedtime()
-
+  local endInteract = self:_startInteract(self.interactionLength, twoSwitches)
   self:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
-
-  if FSL.areSequencesEnabled then
-    local interactionLength = plusminus(self.interactionLength or 150) - ipc.elapsedtime() + startTime
-    if twoSwitches then
-      repeatWithTimeout(interactionLength, coroutine.yield)
-    else
-      util.sleep(interactionLength)
-    end
-    util.log("Interaction with the control took " .. interactionLength .. " ms")
-  end
+  endInteract()
 end
 
 function Button:_hasBeenPressed() return self:isDown() end
@@ -58,7 +45,7 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
     end)
     repeatWithTimeout(sleepAfterPress, coroutine.yield)
   else
-    checkWithTimeout(timeout, function() return self:_hasBeenPressed() end)
+    checkWithTimeout(timeout, self._hasBeenPressed, self)
     util.sleep(sleepAfterPress)
   end
   self:_macro(releaseClickType)
@@ -84,13 +71,11 @@ function Button:isDown() return self:getLvarValue() == 10 end
 ---@param state Truthy for 'the light should be on', falsy for 'the light should be off'.
 function Button:pressForLightState(state)
   state = state and true or false
-  if self:isLit() == state then return end
+  local function success() return self:isLit() == state end
+  if success() then return end
   for _ = 1, 5 do
     self()
-    local ok = checkWithTimeout(1000, function()
-      return self:isLit() == state
-    end)
-    if ok then return end
+    if checkWithTimeout(1000, success) then return end
   end
 end
 

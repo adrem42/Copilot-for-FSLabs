@@ -55,6 +55,7 @@
 <h2>Examples</h2>
 <ul class="nowrap">
   <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
   <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
   <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
   <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
@@ -118,10 +119,6 @@
 	<td class="summary"><span></td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Event:setActionOrder">Event:setActionOrder(action)</a></td>
-	<td class="summary">Sets order of the event's actions relative to each other.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#Event:addOneOffAction">Event:addOneOffAction(...)</a></td>
 	<td class="summary">Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.</td>
 	</tr>
@@ -134,24 +131,32 @@
 	<td class="summary">Triggers the event which in turn executes all actions (if they are enabled).</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Event.waitForEvent">Event.waitForEvent(event, returnFunction)</a></td>
-	<td class="summary">A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.</td>
+	<td class="name" nowrap><a href="#Event.waitForEvent">Event.waitForEvent(event[, returnFunction=false])</a></td>
+	<td class="summary">Waits for an event or returns a function that tells whether the event was signaled.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event.waitForEventWithTimeout">Event.waitForEventWithTimeout(timeout, event)</a></td>
 	<td class="summary">Waits for the event or until the timeout is elapsed.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Event.waitForEvents">Event.waitForEvents(events[, waitForAll=false])</a></td>
+	<td class="name" nowrap><a href="#Event.waitForEvents">Event.waitForEvents(events[, returnFunction=false[, waitForAll=false]])</a></td>
 	<td class="summary">Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Event.waitForEventsWithTimeout">Event.waitForEventsWithTimeout(timeout, events, waitForAll)</a></td>
+	<td class="name" nowrap><a href="#Event.waitForEventsWithTimeout">Event.waitForEventsWithTimeout(timeout, events[, waitForAll=false])</a></td>
 	<td class="summary">Waits for multiple events or until the timeout is elapsed.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Event.fromKeyPress">Event.fromKeyPress(key[, ...])</a></td>
-	<td class="summary">Builds an event from a key press.</td>
+	<td class="summary">Constructs an event from a key press.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event.items">Event.items</a></td>
+	<td class="summary">Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Event:setActionOrder">Event:setActionOrder(action)</a></td>
+	<td class="summary">Sets order of the event's actions relative to each other.</td>
 	</tr>
 </table>
 <h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
@@ -505,6 +510,307 @@
 
 </dd>
     <dt>
+    <a name = "Event:addOneOffAction"></a>
+    <strong>Event:addOneOffAction(...)</strong>
+    </dt>
+    <dd>
+    Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event:removeAction"></a>
+    <strong>Event:removeAction(action)</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">action</span>
+         An <a href="#Class_Action">Action</a> that was added to this event.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> myAction = myEvent:addAction(<span class="keyword">function</span>() <span class="keyword">end</span>)
+myEvent:removeAction(myAction)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Event:trigger"></a>
+    <strong>Event:trigger(...)</strong>
+    </dt>
+    <dd>
+    Triggers the event which in turn executes all actions (if they are enabled).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEvent"></a>
+    <strong>Event.waitForEvent(event[, returnFunction=false])</strong>
+    </dt>
+    <dd>
+    Waits for an event or returns a function that tells whether the event was signaled.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">event</span>
+         <a href="#Class_Event">Event</a>
+        </li>
+        <li><span class="parameter">returnFunction</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         If returnFunction is false, waitForEvent waits for the event itself and returns you its payload.
+ If returnFunction is true, waitForEvent returns a function that returns:<br>
+ 1. Boolean that indicates whether the event was signaled<br>
+ 2. Function that returns the event's payload.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">Event.waitForEvent(copilot.events.landing)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEventWithTimeout"></a>
+    <strong>Event.waitForEventWithTimeout(timeout, event)</strong>
+    </dt>
+    <dd>
+    Waits for the event or until the timeout is elapsed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">event</span>
+         <a href="#Class_Event">Event</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        True if the event was signaled or Event.TIMEOUT</li>
+        <li>
+        Function that returns the event's payload.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEvents"></a>
+    <strong>Event.waitForEvents(events[, returnFunction=false[, waitForAll=false]])</strong>
+    </dt>
+    <dd>
+    Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">events</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Array of <a href="#Class_Event">Event</a>'s.
+        </li>
+        <li><span class="parameter">returnFunction</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+         (<em>default</em> false)
+        </li>
+        <li><span class="parameter">waitForAll</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+
+<p> If returnFunction is false:</p>
+
+<ul>
+    <li>If waitForall is true: Table with events as keys and functions that return their payload as values.</li>
+    <li>If waitForAll is false: The first event that was signaled.</li>
+</ul>
+
+<p>If returnFunction is true, a function that returns the following values: </p>
+
+<ul>
+    <li>If waitForall is true:
+    <ol>
+        <li>Boolean that indicates whether all events were signaled.</li>
+        <li>Table with events as keys and functions that return their payload as values.</li>
+    </ol></li>
+    <li>If waitForAll is false:
+    <ol>
+        <li>An event that was signaled or nil.</li>
+        <li>Function that returns the signaled event's payload.</li>
+    </ol></li>
+</ul>
+</li>
+        <li>
+        Only when returnFunction and waitForAll are false: Function that returns the signaled event's payload.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.waitForEventsWithTimeout"></a>
+    <strong>Event.waitForEventsWithTimeout(timeout, events[, waitForAll=false])</strong>
+    </dt>
+    <dd>
+    Waits for multiple events or until the timeout is elapsed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">events</span>
+         Array of <a href="#Class_Event">Event</a>'s
+        </li>
+        <li><span class="parameter">waitForAll</span>
+            <span class="types"><span class="type">bool</span></span>
+         Whether to wait for any event or all events to be signaled.
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        If waitForAll is true: Table with events as keys and functions that return their payload as values or Event.TIMEOUT<br>
+ If waitForAll is false: The first event that was signaled or Event.TIMEOUT</li>
+        <li>
+        If waitForAll is false: Function that returns the signaled event's payload.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.fromKeyPress"></a>
+    <strong>Event.fromKeyPress(key[, ...])</strong>
+    </dt>
+    <dd>
+    Constructs an event from a key press.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">key</span>
+         See <a href="../libraries/FSL2Lua.html#Bind">FSL2Lua.Bind</a>
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to the <a href="../libraries/Event.html#">Event</a> constructor.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <a href="#Class_Event">Event</a>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Event.items"></a>
+    <strong>Event.items</strong>
+    </dt>
+    <dd>
+    Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">title</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The title of the menu
+        </li>
+        <li><span class="parameter">prompt</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The message that is displayed between the title and the items. Set to nil, "", or whitespace if you don't want a prompt.
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"></pre>
+    </ul>
+
+</dd>
+    <dt>
     <a name = "Event:setActionOrder"></a>
     <strong>Event:setActionOrder(action)</strong>
     </dt>
@@ -603,245 +909,6 @@ event:trigger()
 </span> <span class="comment">-- third
 </span> <span class="comment">-- fourth</span></pre>
     </ul>
-
-</dd>
-    <dt>
-    <a name = "Event:addOneOffAction"></a>
-    <strong>Event:addOneOffAction(...)</strong>
-    </dt>
-    <dd>
-    Same as <a href="../libraries/Event.html#Event:addAction">addAction</a> but the action will be removed from event's action list after it's executed once.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">...</span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Event:removeAction"></a>
-    <strong>Event:removeAction(action)</strong>
-    </dt>
-    <dd>
-    <span>
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">action</span>
-         An <a href="#Class_Action">Action</a> that was added to this event.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        self
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example"><span class="keyword">local</span> myAction = myEvent:addAction(<span class="keyword">function</span>() <span class="keyword">end</span>)
-myEvent:removeAction(myAction)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "Event:trigger"></a>
-    <strong>Event:trigger(...)</strong>
-    </dt>
-    <dd>
-    Triggers the event which in turn executes all actions (if they are enabled).
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">...</span>
-         Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Event.waitForEvent"></a>
-    <strong>Event.waitForEvent(event, returnFunction)</strong>
-    </dt>
-    <dd>
-    A function that that either waits for the event itself or returns a function with which you can check if the event was signaled.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">event</span>
-         <a href="#Class_Event">Event</a>
-        </li>
-        <li><span class="parameter">returnFunction</span>
-            <span class="types"><span class="type">bool</span></span>
-         If true, returns a function that returns true once the event is signaled, else waitForEvent waits itself for the event to be signaled.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">function</span></span>
-        If returnFunction is true, returns a function that will return true after the event is signaled.
-    </ol>
-
-
-
-    <h3>Usage:</h3>
-    <ul>
-        <pre class="example">Event.waitForEvent(copilot.events.landing)</pre>
-    </ul>
-
-</dd>
-    <dt>
-    <a name = "Event.waitForEventWithTimeout"></a>
-    <strong>Event.waitForEventWithTimeout(timeout, event)</strong>
-    </dt>
-    <dd>
-    Waits for the event or until the timeout is elapsed.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">timeout</span>
-            <span class="types"><span class="type">int</span></span>
-         Timeout in milliseconds
-        </li>
-        <li><span class="parameter">event</span>
-         <a href="#Class_Event">Event</a>
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-        <li>
-        Event.TIMEOUT</li>
-        <li>
-        True if the event was signaled.</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Event.waitForEvents"></a>
-    <strong>Event.waitForEvents(events[, waitForAll=false])</strong>
-    </dt>
-    <dd>
-    Same as <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> but for multiple events
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">events</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Array of <a href="#Class_Event">Event</a>'s
-        </li>
-        <li><span class="parameter">waitForAll</span>
-            <span class="types"><span class="type">bool</span></span>
-
-
-
-         (<em>default</em> false)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">function</span></span>
-        if waitForAll is true, this function works the same as the one returned by <a href="../libraries/Event.html#Event.waitForEvent">waitForEvent</a> and returns true once all events have been triggered</p>
-
-<p> Otherwise, for every event that has been triggered, it returns the event
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Event.waitForEventsWithTimeout"></a>
-    <strong>Event.waitForEventsWithTimeout(timeout, events, waitForAll)</strong>
-    </dt>
-    <dd>
-    Waits for multiple events or until the timeout is elapsed.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">timeout</span>
-            <span class="types"><span class="type">int</span></span>
-         Timeout in milliseconds
-        </li>
-        <li><span class="parameter">events</span>
-         Array of <a href="#Class_Event">Event</a>'s
-        </li>
-        <li><span class="parameter">waitForAll</span>
-            <span class="types"><span class="type">bool</span></span>
-         Whether to wait for any event or all events to be signaled.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-        <li>
-        Event.TIMEOUT</li>
-        <li>
-        True if waitForAll is true and all events were signaled.</li>
-        <li>
-        The event that was signaled if waitForAll is false.</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Event.fromKeyPress"></a>
-    <strong>Event.fromKeyPress(key[, ...])</strong>
-    </dt>
-    <dd>
-    Builds an event from a key press.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">key</span>
-         See <a href="../libraries/FSL2Lua.html#Bind">FSL2Lua.Bind</a>
-        </li>
-        <li><span class="parameter">...</span>
-         Arguments to forward to the <a href="../libraries/Event.html#">Event</a> constructor.
-         (<em>optional</em>)
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        <a href="#Class_Event">Event</a>
-    </ol>
-
-
-
 
 </dd>
 </dl>
@@ -1290,7 +1357,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-21 09:04:37 </i>
+<i style="float:right;">Last updated 2021-02-23 12:29:23 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

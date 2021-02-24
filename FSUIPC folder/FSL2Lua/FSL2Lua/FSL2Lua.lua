@@ -109,6 +109,7 @@ function FSL:setPilot(pilot)
   end
   if pilot == "CPT" then pilot = 1
   elseif pilot == "FO" then pilot = 2 end
+  if pilot == self._pilot then return end
   self._pilot = pilot
   for controlName, control in pairs(self) do
     if type(control) == "table" and control.side then
@@ -131,17 +132,11 @@ function FSL:setPilot(pilot)
   hand:init()
 end
 
-function FSL:getPilot()
-  return self._pilot
-end
+function FSL:getPilot() return self._pilot end
 
-function FSL:enableLogging(startNewLog)
-  return util.enableLogging(startNewLog)
-end
+function FSL:enableLogging(startNewLog) return util.enableLogging(startNewLog) end
 
-function FSL:disableLogging()
-  return util.disableLogging()
-end
+function FSL:disableLogging() return util.disableLogging() end
 
 function FSL:enableSequences()
   if not self:getPilot() then
@@ -150,9 +145,7 @@ function FSL:enableSequences()
   self.areSequencesEnabled = true
 end
 
-function FSL:disableSequences()
-  self.areSequencesEnabled = false
-end
+function FSL:disableSequences() self.areSequencesEnabled = false end
 
 function FSL:setHttpPort(port)
   port = tonumber(port)
@@ -357,6 +350,7 @@ local function findControlSide(control, varname, side)
       control.name = "FSL." .. side .. "." .. controlName
       control.side = side
       if _replace.keep then
+        control.side = nil
         FSL[varname] = control
       end
       return true
@@ -432,13 +426,9 @@ local function initControls()
 
   for varname, control in pairs(rawControls) do
 
-    if config.A319_IS_A320 then
-      control.A319 = control.A320
-    end
+    if config.A319_IS_A320 then control.A319 = control.A320 end
 
-    for _, _type in ipairs(FSL.AC_TYPES) do
-      control[_type] = control[_type] or {}
-    end
+    for _, _type in ipairs(FSL.AC_TYPES) do control[_type] = control[_type] or {} end
 
     if FSL:getAcType() then
       control.rectangle = control[FSL:getAcType()].rectangle

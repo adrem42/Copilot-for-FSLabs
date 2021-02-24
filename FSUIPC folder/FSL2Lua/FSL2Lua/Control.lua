@@ -55,6 +55,7 @@ end
 function Control:_macro(clickType) ipc.mousemacro(self.rectangle, clickType) end
 
 function Control:_moveHandHere()
+  if not FSL.areSequencesEnabled then return end
   local reachtime = hand:moveTo(self.pos)
   util.log(
     ("Position of control %s : x = %s, y = %s, z = %s")
@@ -64,14 +65,27 @@ function Control:_moveHandHere()
   util.log("Control reached in " .. math.floor(reachtime) .. " ms")
 end
 
-function Control:_interact(time)
-  util.sleep(time)
-  util.log("Interaction with the control took " .. time .. " ms")
+local function noop() end
+
+function Control:_startInteract(length, yield)
+
+  if not FSL.areSequencesEnabled then return noop end
+
+  local start = ipc.elapsedtime()
+
+  return function()
+    local elapsed = ipc.elapsedtime() - start
+    length = length or elapsed
+    if elapsed < length then
+      local rest = length - elapsed
+      if yield then repeatWithTimeout(rest, coroutine.yield)
+      else util.sleep(rest) end
+    end
+    util.log("Interaction with the control took " .. math.max(length, elapsed) .. " ms")
+  end
 end
 
-function Control:_handleTimeout(level)
-  util.handleError(timeoutMsg:format(self.name), level + 1)
-end
+function Control:_handleTimeout(level) util.handleError(timeoutMsg:format(self.name), level + 1) end
 
 --- Checks if the control's light is on.
 --- @usage if not FSL.GSLD_EFIS_CSTR_Button:isLit() then

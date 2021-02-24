@@ -4,22 +4,31 @@ local FSL = require "FSL2Lua"
 
 FSL:setPilot "FO"
 
-local function pressAndWait(key, pattern, init, plain)
-  key()
-  return checkWithTimeout(5000, function()
+local function tryOpenPage(key, pattern, init, plain)
+  local function success() 
     return FSL.MCDU:getString():find(pattern, init, plain)
-  end)
+  end
+  for _ = 1, 5 do
+    key()
+    if checkWithTimeout(1000, success) then return true end
+  end
+  return false
 end
 
 local function goToPage(steps)
   for i, v in ipairs(steps) do
-    if not pressAndWait(unpack(v)) then return false, i end
+    if not tryOpenPage(unpack(v)) then return false, i end
   end
   return true
 end
 
 local function readSelection()
   return FSL.MCDU:getString():sub(97, 97) == "[" and "CPT" or "FO" 
+end
+
+local function waitForDisplay()
+  local init = FSL.MCDU:getString()
+  repeat until FSL.MCDU:getString() ~= init
 end
 
 local function setSeat(getSelection)
@@ -51,6 +60,6 @@ local function toggleSeat()
   end)
 end
 
-Bind {key = "1", onPress = {setSeat, "CPT", FSL.PED_MCDU_KEY_FPLN}}
-Bind {key = "2", onPress = {setSeat, "FO", FSL.PED_MCDU_KEY_FPLN}}
-Bind {key = "3", onPress = {toggleSeat, FSL.PED_MCDU_KEY_PERF}}
+Bind {key = "1", onPress = {setSeat, "CPT", FSL.PED_MCDU_KEY_FPLN, waitForDisplay}}
+Bind {key = "2", onPress = {setSeat, "FO", FSL.PED_MCDU_KEY_FPLN, waitForDisplay}}
+Bind {key = "3", onPress = {toggleSeat, FSL.PED_MCDU_KEY_PERF, waitForDisplay}}
