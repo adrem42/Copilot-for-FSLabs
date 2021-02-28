@@ -2,7 +2,7 @@ if false then module "Event" end
 
 Event = Event or require "copilot.Event"
 Action = Action or require "copilot.Action"
-local util = "FSL2Lua.FSL2Lua.util"
+local util = require "FSL2Lua.FSL2Lua.util"
 
 local OrderSetter = {}
 

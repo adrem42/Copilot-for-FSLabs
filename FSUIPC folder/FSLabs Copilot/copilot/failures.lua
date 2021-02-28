@@ -287,4 +287,5 @@ else
   copilot.logger:info "Failures have already been set up during this simming session" 
 end
 
-_, scriptStartTime = copilot.addCallback(saveTime, nil, 60000, 60000)
+copilot.addCallback(saveTime, nil, 60000, 60000)
+scriptStartTime = copilot.getTimestamp()

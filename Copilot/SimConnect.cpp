@@ -53,6 +53,7 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 				case EVENT_SIM_START:
 				{
 					simPaused = false;
+					attachLogToConsole();
 					if (m_fslAircraftLoaded && !m_simStarted) {
 
 						m_simStarted = true;
@@ -67,7 +68,6 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Stop", EVENT_MENU_STOP, 0);
 						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Output log to console", EVENT_MENU_ATTACH_CONSOLE, 0);
 
-						attachLogToConsole();
 						copilot::autoStartLua();
 					}
 					break;

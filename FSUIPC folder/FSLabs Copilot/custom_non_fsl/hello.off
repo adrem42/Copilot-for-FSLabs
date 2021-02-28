@@ -1,0 +1,50 @@
+-- You'll need to run FSLabs Copilot.lua yourself (see 'Standalone FSL2Lua scripts' in the manual)
+
+copilot.logger:setLevel(1)
+
+function FlightPhaseProcessor.chocksOn() 
+  return false
+end
+
+function FlightPhaseProcessor.enginesRunning()
+  return copilot.enginesRunning()
+end
+
+function FlightPhaseProcessor.enginesStarted()
+  return copilot.enginesRunning()
+end
+
+function FlightPhaseProcessor.reverseThrustSelected()
+  return false
+end
+
+function FlightPhaseProcessor.idleThrustSelected()
+  return false
+end
+
+function FlightPhaseProcessor.takeoffThrustSelected()
+  return false
+end
+
+function FlightPhaseProcessor.climbThrustSelected()
+  return false
+end
+
+function FlightPhaseProcessor.goAroundTriggered()
+  return false
+end
+
+function FlightPhaseProcessor.flyingCircuits()
+  return false
+end
+
+FlightPhaseProcessor:start() -- This and the above is only necessary if you want the default events
+-- for k in pairs(copilot.events) do print("copilot.events." .. k) end
+
+local hello = VoiceCommand:new {
+  phrase = "hello",
+  persistent = true,
+  action = function() copilot.logger:info "Hello from a non-FSL aircraft!" end
+}
+
+copilot.callOnce(function() hello:activate() end)

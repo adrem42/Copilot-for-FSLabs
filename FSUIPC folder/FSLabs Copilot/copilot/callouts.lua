@@ -60,7 +60,7 @@ end
 
 function copilot.callouts:rollout(afterAbortedTakeoff)
   if not afterAbortedTakeoff then self:waitForSpoilers()
-  else self.landedTime = ipc.elapsedtime() end
+  else self.landedTime = copilot.getTimestamp() end
   self:waitForReverseGreen()
   if copilot.GS() > 70 then
     while not self.landedTime do copilot.suspend() end
@@ -73,14 +73,14 @@ end
 function copilot.callouts:waitForThrustSet()
   local eng1_N1
   local eng2_N1
-  local eng1_N1_prev = ipc.readDBL(0x2010)
-  local eng2_N1_prev = ipc.readDBL(0x2110)
+  local eng1_N1_prev = copilot.eng1N1()
+  local eng2_N1_prev = copilot.eng2N1()
   local N1_window = 0.5
   local timeWindow = 1000
   repeat
     copilot.suspend(plusminus(timeWindow,0.2))
-    eng1_N1 = ipc.readDBL(0x2010)
-    eng2_N1 = ipc.readDBL(0x2110)
+    eng1_N1 = copilot.eng1N1()
+    eng2_N1 = copilot.eng2N1()
     local thrustSet = eng1_N1 > 80 and eng2_N1 > 80 and math.abs(eng1_N1 - eng1_N1_prev) < N1_window and math.abs(eng2_N1 - eng2_N1_prev) < N1_window
     local skipThis = not thrustSet and copilot.IAS() > 80
     eng1_N1_prev = eng1_N1
@@ -97,13 +97,13 @@ function copilot.callouts:waitForOneHundred()
       copilot.playCallout("oneHundred", PFD_delay)
       return
     end
-    copilot.suspend()
+    copilot.suspend(100)
   end
 end
 
 function copilot.callouts:waitForV1(V1)
   while true do
-    copilot.suspend()
+    copilot.suspend(100)
     if copilot.radALT() < 10 and copilot.IAS() >= V1 then
       copilot.playCallout("V1", PFD_delay)
       return
@@ -113,23 +113,23 @@ end
 
 function copilot.callouts:waitForVr(Vr)
   while true do
-    copilot.suspend()
     if copilot.radALT() < 10 and copilot.IAS() >= Vr then
       copilot.playCallout("rotate", PFD_delay)
       return
     end
+    copilot.suspend(100)
   end
 end
 
 function copilot.callouts:waitForPositiveClimb()
   repeat
-    copilot.suspend()
     local verticalSpeed = ipc.readSW(0x02C8) * 60 * 3.28084 / 256
     local positiveClimb = copilot.radALT() >= 10 and verticalSpeed >= 500
     local skipThis = not positiveClimb and copilot.radALT() > 150.0
     if positiveClimb then
       copilot.playCallout("positiveClimb")
     end
+    copilot.suspend(100)
   until positiveClimb or skipThis
 end
 
@@ -140,13 +140,13 @@ function copilot.callouts:waitForSpoilers()
     local spoilers_left = ipc.readLvar("FSLA320_spoiler_l_1") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_2") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_3") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_4") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_5") > spoilersDeployedThreshold
     local spoilers_right = ipc.readLvar("FSLA320_spoiler_r_1") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_r_2") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_r_3") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_r_4") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_r_5") > spoilersDeployedThreshold
     local spoilers = spoilers_left and spoilers_right
-    local noSpoilers = not spoilers and self.landedTime and ipc.elapsedtime() - self.landedTime > plusminus(1500)
+    local noSpoilers = not spoilers and self.landedTime and copilot.getTimestamp() - self.landedTime > plusminus(1500)
     if spoilers then
       copilot.playCallout("spoilers", delay)
     elseif noSpoilers then
       copilot.playCallout("noSpoilers", delay)
     end
-    copilot.suspend()
+    copilot.suspend(100)
   until spoilers or noSpoilers
 end
 
@@ -154,13 +154,12 @@ function copilot.callouts:waitForReverseGreen()
   local delay = ECAM_delay + reactionTime
   if prob(0.1) then delay = delay + plusminus(500) end
   repeat
-    copilot.suspend()
     local reverseLeftGreen = ipc.readLvar("FSLA320_reverser_left") >= reverserDoorThreshold
     local reverseRightGreen = ipc.readLvar("FSLA320_reverser_right") >= reverserDoorThreshold
     local reverseGreen = reverseLeftGreen and reverseRightGreen
-    local noReverse = (not reverseGreen and self.noReverseTimeRef and ipc.elapsedtime() - self.noReverseTimeRef > plusminus(5500,0.2)) or copilot.GS() < 100
+    local noReverse = (not reverseGreen and self.noReverseTimeRef and copilot.getTimestamp() - self.noReverseTimeRef > plusminus(5500,0.2)) or copilot.GS() < 100
     if self.landedTime and copilot.reverseThrustSelected() and not self.noReverseTimeRef then
-      self.noReverseTimeRef = ipc.elapsedtime() 
+      self.noReverseTimeRef = copilot.getTimestamp() 
     end
     if reverseGreen then
       copilot.playCallout("reverseGreen", delay)
@@ -173,6 +172,7 @@ function copilot.callouts:waitForReverseGreen()
         copilot.playCallout("noReverse", delay)
       end
     end
+    copilot.suspend(100)
   until reverseGreen or noReverse
 end
 
@@ -180,15 +180,15 @@ function copilot.callouts:waitForDecel()
   local delay = plusminus(1200)
   if prob(0.1) then delay = delay + plusminus(500) end
   repeat
-    copilot.suspend()
     local accelLateral = ipc.readDBL(0x3070)
     local decel = accelLateral < -3
-    local noDecel = (not decel and ipc.elapsedtime() - self.noDecelTimeRef > plusminus(3500)) or copilot.GS() < 70
+    local noDecel = (not decel and copilot.getTimestamp() - self.noDecelTimeRef > plusminus(3500)) or copilot.GS() < 70
     if decel then
       copilot.playCallout("decel", delay)
     elseif noDecel then
       copilot.playCallout("noDecel", delay)
     end
+    copilot.suspend(100)
   until decel or noDecel
 end
 
@@ -196,11 +196,11 @@ function copilot.callouts:waitForSeventy()
   local delay = plusminus(200)
   if prob(0.05) then delay = delay + plusminus(200) end
   repeat
-    copilot.suspend()
     local seventy = copilot.GS() <= 70
     if seventy then
       copilot.playCallout("seventy", delay)
     end
+    copilot.suspend(100)
   until seventy
 end
 
@@ -264,7 +264,7 @@ function copilot.callouts.flightControlsCheck:__call()
   self.checkingFlightControls = false
 
   repeat
-    copilot.suspend()
+    copilot.suspend(100)
     -- full left aileron
     if not fullLeft and not ((fullUp or fullDown) and not yNeutral) and self:fullLeft() then
       copilot.sleep(ECAM_delay)
@@ -432,61 +432,52 @@ function copilot.callouts:start()
   if copilot.UserOptions.callouts.PM_announces_brake_check == 1 then
     if copilot.isVoiceControlEnabled then
 
-      copilot.voiceCommands.brakeCheck:deactivateOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
-
       copilot.events.takeoffCancelled:addAction(function()
         if not self.brakesChecked then
           copilot.voiceCommands.brakeCheck:activate()
         end
       end)
 
-      copilot.events.enginesStarted:addAction(function()
-        copilot.voiceCommands.brakeCheck:activate()
-      end)
-
+      copilot.voiceCommands.brakeCheck
+        :activateOn(copilot.events.enginesStarted)
+        :deactivateOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
       copilot.voiceCommands.brakeCheck:addAction(function()
         local timedOut = not checkWithTimeout(5000, function()
-          copilot.suspend()
+            copilot.suspend(100)
           return self.brakeCheck:brakeCheckConditions()
         end)
         if timedOut then return end
         if self:brakeCheck() then
           copilot.voiceCommands.brakeCheck:ignore()
         end
-      end, "runAsCoroutine")
-
+        end, Action.COROUTINE):addLogMsg "Brake check"
     else
 
       copilot.events.enginesStarted:addAction(function()
-        repeat copilot.suspend() until self:brakeCheck()
-        self.brakesChecked  = true
-      end, "runAsCoroutine")
+        repeat copilot.suspend(100) until self:brakeCheck()
+        self.brakesChecked = true
+      end, Action.COROUTINE)
+        :addLogMsg "Waiting for the brake check"
         :stopOn(copilot.events.engineShutdown)
-        :addLogMsg("Waiting for the brake check")
-
     end
   end
 
   if copilot.UserOptions.callouts.PM_announces_flightcontrol_check == 1 then
 
-    local flightControlsCheck = Action:new(function()
-      if not self.flightControlsChecked then
-        repeat copilot.suspend() until self:flightControlsCheck()
-        self.flightControlsChecked = true
-      end
-    end, "runAsCoroutine")
-      :stopOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
+    local flightControlsCheckAction = Action:new(function()
+      if not self.flightControlsChecked then self:flightControlsCheck() end
+    end, Action.COROUTINE)
       :addLogMsg("Waiting for the flight controls check")
+      :stopOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
 
-    copilot.events.enginesStarted:addAction(flightControlsCheck)
-    copilot.events.takeoffCancelled:addAction(flightControlsCheck)
+    copilot.events.enginesStarted:addAction(flightControlsCheckAction)
+    copilot.events.takeoffCancelled:addAction(flightControlsCheckAction)
     copilot.events.engineShutdown:addAction(function() self.flightControlsChecked = false end)
-    
   end
 
-  copilot.events.takeoffInitiated:addAction(function() self:takeoff() end, "runAsCoroutine")
-    :stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
+  copilot.events.takeoffInitiated:addAction(function() self:takeoff() end, Action.COROUTINE)
     :addLogMsg("Takeoff callouts")
+    :stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
 
   copilot.events.takeoffAborted:addAction(function()
     self.flightControlsChecked = true
@@ -494,18 +485,15 @@ function copilot.callouts:start()
     if copilot.GS() > 60 then
       self:rollout(true)
     end
-  end, "runAsCoroutine")
+  end, Action.COROUTINE):addLogMsg "Aborted takeoff callouts"
 
-  copilot.events.touchdown:addAction(function()
-    self:rollout(false)
-  end, "runAsCoroutine")
-    :stopOn(copilot.events.goAround)
+  copilot.events.touchdown:addAction(function() self:rollout(false) end, Action.COROUTINE)
     :addLogMsg("Rollout callouts")
+    :stopOn(copilot.events.goAround)
 
   copilot.events.landing:addAction(function()
-    self.landedTime = ipc.elapsedtime()
+    self.landedTime = copilot.getTimestamp()
   end)
-
 end
 
 return callouts

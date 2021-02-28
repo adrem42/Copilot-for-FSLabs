@@ -25,6 +25,7 @@ McduWatcher* mcduWatcher = nullptr;
 std::thread copilotInitThread, luaInitThread;
 std::atomic_bool scriptStarted = false;
 std::string appDir;
+bool FSL_AIRCRAFT = false;
 
 HANDLE simExit = CreateEventA(NULL, TRUE, FALSE, NULL);
 
@@ -45,7 +46,8 @@ class MessageLoop {
 
 	static VOID timerProc(HWND, UINT, UINT_PTR, DWORD)
 	{
-		mcduWatcher->update();
+		if (FSL_AIRCRAFT)
+			mcduWatcher->update();
 		Sound::processQueue();
 	}
 
@@ -251,7 +253,7 @@ namespace copilot {
 			lua["FSUIPC_DIR"] = FSUIPC_DIR;
 			lua["APPDIR"] = appDir;
 			lua.do_string(R"(package.path = FSUIPC_DIR .. '\\?.lua')");
-			auto result = lua.do_file(appDir + "\\copilot\\UserOptions.lua");
+			auto result = lua.do_file(appDir + "\\copilot\\LoadUserOptions.lua");
 			if (!result.valid()) {
 				sol::error err = result;
 				copilot::logger->error(err.what());
@@ -322,6 +324,8 @@ std::optional<std::string> initLua(sol::this_state ts)
 
 	messageLoop.stop();
 
+	FSL_AIRCRAFT = lua["copilot"]["FSL_AIRCRAFT"];
+
 	auto options = lua["copilot"]["UserOptions"];
 
 	int log_level = options["general"]["log_level"];
@@ -344,7 +348,6 @@ std::optional<std::string> initLua(sol::this_state ts)
 
 	auto RecognizerType = lua.new_usertype<Recognizer>("Recognizer");
 	RecognizerType["addRule"] = &Recognizer::addRule;
-	RecognizerType["removeRule"] = &Recognizer::removeRule;
 	RecognizerType["activateRule"] = &Recognizer::activateRule;
 	RecognizerType["deactivateRule"] = &Recognizer::deactivateRule;
 	RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;

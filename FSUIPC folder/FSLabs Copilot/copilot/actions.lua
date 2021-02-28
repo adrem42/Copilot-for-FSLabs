@@ -146,7 +146,7 @@ if copilot.isVoiceControlEnabled then
     phrase = "gear up",
     action = function()
       local flyingCircuits = copilot.getFlightPhase() == copilot.flightPhases.flyingCircuits
-      if (copilot.airborneTime and ipc.elapsedtime() - copilot.airborneTime < 60000) or flyingCircuits then
+      if (copilot.airborneTime and copilot.getTimestamp() - copilot.airborneTime < 60000) or flyingCircuits then
         local flaps = FSL.PED_FLAP_LEVER:getPosn()
         if flaps == "3" then
           copilot.voiceCommands.flapsOne:activate()
@@ -338,7 +338,7 @@ function copilot.sequences:afterStart()
   else
     flapsSetting = FSL.atsuLog:getTakeoffFlaps()
     if flapsSetting then
-      flapsMessage = "No takeoff flaps setting found in the MCDU, taking the setting from the latest ATSU performance request: %s"
+      flapsMessage = "No takeoff flaps setting found in the MCDU, taking the F/L setting from the latest ATSU performance request: %s"
     else
       flapsMessage = "Unable to set takeoff flaps: no setting found in the MCDU, no performance request found in the ATSU log."
     end
@@ -383,9 +383,9 @@ function copilot.sequences:waitForLineup()
     local switchPos = FSL.OVHD_SIGNS_SeatBelts_Switch:getLvarValue()
     if prevSwitchPos and prevSwitchPos ~= switchPos then
       count = count + 1
-      if count == 0 then countStartTime = ipc.elapsedtime() end
+      if count == 0 then countStartTime = copilot.getTimestamp() end
     end
-    if countStartTime and ipc.elapsedtime() - countStartTime > 2000 then
+    if countStartTime and copilot.getTimestamp() - countStartTime > 2000 then
       count = 0
       countStartTime = nil
     end
@@ -607,7 +607,7 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
     end
 
     if copilot.UserOptions.actions.PM_clears_scratchpad == copilot.UserOptions.TRUE then
-      copilot.scratchpadClearer:start()
+      copilot.scratchpadClearer.setMessages(copilot.scratchpadClearer.ANY)
     end
 
     copilot.sequences:checkFmgcData()
@@ -616,13 +616,15 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
     if prob(0.2) then copilot.suspend(10000, 20000) end
     copilot.sequences:setupEFIS()
 
-    copilot.scratchpadClearer:stop()
   end
 end, "runAsCoroutine")
+  :addLogMsg "Preflight"
   :stopOn(copilot.events.enginesStarted)
+  
 
 if copilot.UserOptions.actions.after_start == copilot.UserOptions.ENABLED then
   copilot.actions.afterStart = copilot.events.enginesStarted:addAction(function() copilot.sequences:afterStart() end, "runAsCoroutine")
+    :addLogMsg "After start"
 end
 
 if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
@@ -632,8 +634,9 @@ if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
     copilot.suspend(plusminus(5000))
     copilot.callOnce(copilot.sequences.taxiSequence)
   end, "runAsCoroutine")
+    :addLogMsg "Taxi"
     :stopOn(copilot.events.chocksSet, copilot.events.takeoffInitiated2)
-
+    
 end
 
 if copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
@@ -656,7 +659,9 @@ if copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
       copilot.sequences:waitForLineup()
       copilot.callOnce(copilot.sequences.lineUpSequence)
     end, "runAsCoroutine")
+      :addLogMsg "Lineup"
       :stopOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
+      
   end
 end
 
@@ -681,7 +686,7 @@ do
     if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
       copilot.sequences.takeoffSequence()
     end
-  end)
+  end):addLogMsg "Takeoff"
 
   if copilot.UserOptions.actions.after_takeoff == copilot.UserOptions.ENABLED then
     copilot.actions.afterTakeoff = copilot.events.airborne:addAction(function()
@@ -689,6 +694,7 @@ do
       copilot.suspend(plusminus(2000))
       copilot.sequences.afterTakeoffSequence()
     end, "runAsCoroutine")
+      :addLogMsg "After takeoff"
       :stopOn(copilot.events.landing)
   end
 
@@ -699,7 +705,7 @@ do
       copilot.voiceCommands.takeoff:deactivate()
     end
     copilot.events.takeoffInitiated2:trigger()
-  end, "runAsCoroutine")
+  end, "runAsCoroutine"):addLogMsg "No voice takeoff trigger"
 
 end
 
@@ -714,10 +720,9 @@ copilot.actions.aboveTenThousand = copilot.events.aboveTenThousand:addAction(fun
     copilot.voiceCommands.gearUp:deactivate()
   end
   if copilot.UserOptions.actions.ten_thousand_dep == copilot.UserOptions.ENABLED then
-    copilot.dontClearScratchPad(true)
     copilot.sequences.tenThousandDep()
   end
-end, "runAsCoroutine")
+end, "runAsCoroutine"):addLogMsg "Above 10'000"
 
 copilot.actions.belowTenThousand = copilot.events.belowTenThousand:addAction(function()
   if copilot.isVoiceControlEnabled then
@@ -742,7 +747,7 @@ copilot.actions.belowTenThousand = copilot.events.belowTenThousand:addAction(fun
   if copilot.UserOptions.actions.ten_thousand_arr == copilot.UserOptions.ENABLED then
     copilot.sequences:tenThousandArr()
   end
-end, "runAsCoroutine")
+end, "runAsCoroutine"):addLogMsg "Below 10'000"
 
 copilot.actions.landing = copilot.events.landing:addAction(function()
   if copilot.isVoiceControlEnabled then
@@ -776,7 +781,7 @@ copilot.actions.landing = copilot.events.landing:addAction(function()
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.taxiLightOff:activate()
   end
-end, "runAsCoroutine")
+end, "runAsCoroutine"):addLogMsg "Landing"
 
 if copilot.isVoiceControlEnabled then
 

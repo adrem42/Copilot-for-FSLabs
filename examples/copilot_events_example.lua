@@ -11,8 +11,7 @@ local function askDestination(choices)
 end
 
 local function makeCountdown(numSeconds)
-  local e = Event:new {logMsg = "Rocket launch countdown"}
-  local co = coroutine.create(function()
+  return coroutine.create(function()
     copilot.logger:warn(
       "You have " .. numSeconds .. " seconds to abort the launch!"
     )
@@ -21,9 +20,8 @@ local function makeCountdown(numSeconds)
       copilot.suspend(1000)
       copilot.logger:info(i .. "...")
     end
-    e:trigger(countdownStart, os.time())
+    return countdownStart, os.time()
   end)
-  return co, e
 end
 
 -- VoiceCommands have to be created statically
@@ -49,19 +47,17 @@ local function rocketLaunch()
     return copilot.logger:warn "The launch routine has timed out"
   end
 
-  local countdownCoro, countdownEnd = makeCountdown(10)
-  copilot.addCallback(countdownCoro)
-
+  local countdownCoro, countdownEvent = copilot.addCallback(makeCountdown(10))
   local abortWithKey = Event.fromKeyPress "A"
   
   local event, getPayload = Event.waitForEvents {
-    countdownEnd, abortWithKey, abortWithVoice:activate()
+    countdownEvent, abortWithKey, abortWithVoice:activate()
   }
 
-  abortWithVoice:deactivate()
   copilot.removeCallback(countdownCoro)
+  abortWithVoice:deactivate()
 
-  if event == countdownEnd then
+  if event == countdownEvent then
     copilot.logger:info(
       "The rocket has successfully been launched to " .. destination .. "!"
     )

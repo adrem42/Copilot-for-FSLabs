@@ -1,49 +1,39 @@
 
-ScratchpadClearer = {
-  instances = setmetatable({}, {__mode = "k"}),
-  ANY_MESSAGE = {}
-}
+copilot.scratchpadClearer = {ANY = {}, NONE = {}}
 
-function ScratchpadClearer:new(messages)
-  local clearer = {messages = messages, pauseThreads = {}}
-  self.instances[clearer] = true
-  self.__index = self
-  return setmetatable(clearer, self)
+local messageSets = {{thread = "global", msgs = copilot.scratchpadClearer.NONE}}
+local lastMessage, nextClearTime
+
+function copilot.scratchpadClearer.getScratchpad(disp)
+  disp = disp or FSL.MCDU:getString()
+  return disp:sub(313, 330), disp
 end
 
-function ScratchpadClearer:__call(timestamp)
+function copilot.scratchpadClearer.clearScratchpad()
 
-  if self:isPaused() then return end
+  local old = copilot.scratchpadClearer.getScratchpad()
+  if old:find "SELECT DESIRED SYSTEM" then return false end
 
-  local msg = self:_checkScratchpad()
-  if not msg then return end
+  copilot.logger:debug("Clearing scratchpad: " .. old)
 
-  if msg == self.lastMessage then
-    if timestamp > self.nextClearTime then
-      self.clearScratchpad()
-      self.lastMessage = nil
-    end
-    return
-  end
+  repeat FSL.PED_MCDU_KEY_CLR()
+  until not copilot.scratchpadClearer.getScratchpad():find "%S"
 
-  self.lastMessage = msg
-  self.nextClearTime = timestamp + math.random(1000, 5000)
+  return true
 end
 
-function ScratchpadClearer:start() copilot.addCallback(self) end
+local function getTop() return messageSets[#messageSets].msgs end
 
-function ScratchpadClearer:stop() copilot.removeCallback(self) end
-
-function ScratchpadClearer:_checkScratchpad()
+local function checkScratchpad(msgs)
 
   local disp = FSL.MCDU:getString()
   if disp:find "MCDU MENU" then return end
 
-  local scratchpad = self.getScratchpad()
+  local scratchpad = copilot.scratchpadClearer.getScratchpad(disp)
   if not scratchpad:find "%S" then return
-  elseif self.messages == self.ANY_MESSAGE then return scratchpad end
+  elseif msgs == copilot.scratchpadClearer.ANY then return scratchpad end
 
-  for _, msg in ipairs(self.messages) do
+  for _, msg in ipairs(msgs) do
     if scratchpad:sub(1, #msg) == msg 
       and not scratchpad:sub(#msg + 1, #scratchpad):find "%S" then
       return msg
@@ -51,66 +41,50 @@ function ScratchpadClearer:_checkScratchpad()
   end
 end
 
-function ScratchpadClearer:isPaused()
-  for thread in pairs(self.pauseThreads) do
-    local isPaused = Action.getActionFromThread(thread) or copilot.isThreadActive(thread)
-    if isPaused then return true end
-    self.pauseThreads[thread] = nil
-  end
-  return false
-end
+local function run(timestamp)
 
-function ScratchpadClearer.clearScratchpad()
+  local msg = checkScratchpad(getTop())
+  if not msg then return end
 
-  local old = ScratchpadClearer.getScratchpad()
-  if old:find "SELECT DESIRED SYSTEM" then return false end
-
-  copilot.logger:debug("Clearing scratchpad: " .. old)
-
-  repeat FSL.PED_MCDU_KEY_CLR()
-  until not ScratchpadClearer.getScratchpad():find "%S"
-
-  return true
-end
-
-function ScratchpadClearer.getScratchpad()
-  return FSL.MCDU:getScratchpad()
-end
-
-function ScratchpadClearer:_pause(thread) self.pauseThreads[thread] = true end
-
-function ScratchpadClearer.pause(self)
-
-  local thread = coroutine.running()
-  if not Action.getActionFromThread(thread) 
-    and not copilot.isThreadActive(thread) then
+  if msg == lastMessage then
+    if timestamp > nextClearTime then
+      copilot.scratchpadClearer.clearScratchpad()
+      lastMessage = nil
+    end
     return
   end
 
-  if self then 
-    self:_pause(thread)
-  else
-    for clearer in pairs(ScratchpadClearer.instances) do
-      clearer:_pause(thread)
-    end
-  end
+  lastMessage = msg
+  nextClearTime = timestamp + math.random(1000, 5000)
 end
 
-function ScratchpadClearer:_unpause(thread) self.pauseThreads[thread] = nil end
+local function refresh()
+  if getTop() == copilot.scratchpadClearer.NONE then copilot.removeCallback(run)
+  else copilot.addCallback(run, nil, 1000) end
+end
 
-function ScratchpadClearer.unpause(self)
+local function removeThread(thread)
+  for i, v in ipairs(messageSets) do
+    if v.thread == thread then 
+      table.remove(messageSets, i)
+      return
+    end
+  end
+  refresh()
+end
 
+function copilot.scratchpadClearer.setMessages(msgs, globally)
   local thread = coroutine.running()
-
-  if self then 
-    self:_unpause(thread)
+  globally = globally or not thread or not copilot.getCallbackStatus(thread)
+  if globally then
+    messageSets[1].msgs = msgs
   else
-    for clearer in pairs(ScratchpadClearer.instances) do
-      clearer:_unpause(thread)
-    end
+    for _, v in ipairs(messageSets) do if v.thread == thread then return end end
+    messageSets[#messageSets+1] = {thread = thread, msgs = msgs}
+    copilot.getThreadEvent(thread):addOneOffAction(function() removeThread(thread) end)
   end
+  refresh()
 end
 
-copilot.scratchpadClearer = ScratchpadClearer:new(ScratchpadClearer.ANY_MESSAGE)
-
-function copilot.dontClearScratchPad() copilot.scratchpadClearer:pause() end
+function copilot.scratchpadClearer.restore() removeThread(coroutine.running()) end
+function copilot.dontClearScratchPad() end

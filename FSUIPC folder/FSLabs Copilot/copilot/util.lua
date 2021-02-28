@@ -8,33 +8,26 @@ local coroutine = coroutine
 --- If both are specified: `ipc.sleep(math.random(time1, time2))`
 function copilot.sleep(time1,time2)
   local time
-  if time1 and time2 then
-    time = math.random(time1,time2)
-  elseif time1 then
-    time = time1
-  else
-    time = 100
-  end
+  if time1 and time2 then time = math.random(time1, time2)
+  elseif time1 then time = time1
+  else time = 100 end
   ipc.sleep(time)
 end
 
 --- If both parameters omitted: `coroutine.yield()`<br><br>
---- If time1 specified: `couroutine.yield()` until time1 milliseconds pass<br><br>
---- If both are specified: `couroutine.yield()` a random amount of milliseconds between time1 and time2
+--- Otherwise, suspend the execution of this coroutine for:<br><br>
+--- If time1 specified: time1 milliseconds<br><br>
+--- If time1 and time2 specified: random amount of milliseconds between time1 and time2
 function copilot.suspend(time1, time2)
-  if time1 then
-    local endTime
-    if time2 then
-      endTime = math.random(time1, time2) + ipc.elapsedtime()
-    else
-      endTime = time1 + ipc.elapsedtime()
-    end
-    while ipc.elapsedtime() < endTime do
-      coroutine.yield()
-    end
-  else
-    coroutine.yield()
+  if not time1 then return coroutine.yield() end
+  local timeout = time2 and math.random(time1, time2) or time1
+  local thisThread = coroutine.running()
+  if copilot.getCallbackStatus(thisThread) then
+    copilot.setCallbackTimeout(thisThread, timeout)
+    return
   end
+  local timeoutEnd = copilot.getTimestamp() + timeout
+  repeat coroutine.yield() until copilot.getTimestamp() > timeoutEnd
 end
 
 function copilot.GSX_pushback() return ipc.readLvar("FSLA320_NWS_Pin") == 1 and not ipc.readLvar("FSDT_GSX_DEPARTURE_STATE") == 6 end
@@ -60,13 +53,14 @@ function copilot.thrustLeversSetForTakeoff()
   return TL1 < TL_reverseThreshold and TL1 >= TL_takeoffThreshold and TL2 < TL_reverseThreshold and TL2 >= TL_takeoffThreshold
 end
 
+function copilot.eng1N1() return ipc.readDBL(0x2010) end
+function copilot.eng2N1() return ipc.readDBL(0x2110) end
+
 --- Returns true if the engines are running.
 --- @bool both If true, will return true if both engines are running. If omitted or false, returns true if either engine is running.
 function copilot.enginesRunning(both)
-  local eng1_N1 = ipc.readDBL(0x2010)
-  local eng2_N1 = ipc.readDBL(0x2110)
-  local eng1_running = eng1_N1 > 15
-  local eng2_running = eng2_N1 > 15
+  local eng1_running = copilot.eng1N1() > 15
+  local eng2_running = copilot.eng2N1() > 15
   if both then return eng1_running and eng2_running end
   return eng1_running or eng2_running
 end

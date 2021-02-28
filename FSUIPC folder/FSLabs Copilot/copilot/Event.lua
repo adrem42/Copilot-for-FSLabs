@@ -83,7 +83,6 @@ end
 --- @usage
 -- myEvent:addAction(function() end, 'runAsCoroutine')
 --- @return The added <a href="#Class_Action">Action</a>.
-
 function Event:addAction(...)
   local args = {...}
   local action
@@ -101,6 +100,13 @@ function Event:addAction(...)
   return action
 end
 
+--- Same as @{addAction} but the action will be removed from event's action list after it's executed once.
+function Event:addOneOffAction(...)
+  local action = self:addAction(...)
+  self.runOnce[action] = true
+  return action
+end
+
 function Event:sortActions()
   if self.runningActions then
     error("Can't sort actions while actions are running", 2)
@@ -110,13 +116,6 @@ function Event:sortActions()
     error("Unable to sort actions in event '" .. self:toString() .. "' due to cyclic dependencies.", 2)
   end
   self.areActionsSorted = true
-end
-
---- Same as @{addAction} but the action will be removed from event's action list after it's executed once.
-function Event:addOneOffAction(...)
-  local action = self:addAction(...)
-  self.runOnce[action] = action
-  return action
 end
 
 --- <span>
@@ -130,8 +129,8 @@ function Event:removeAction(action)
     self.actionsToRemove[#self.actionsToRemove+1] = action
     return self
   end
-  for i, _action in ipairs(self.sortedActions) do
-    if action == _action then
+  for i, a in ipairs(self.sortedActions) do
+    if action == a then
       table.remove(self.sortedActions, i)
       break
     end
@@ -147,34 +146,38 @@ function Event:getActionCount()
   return #self.sortedActions
 end
 
+function Event:_runCoroutineAction(action, ...)
+  if action:isThreadRunning() then return false end
+  action:_initNewThread(
+    #self.coroDepends[action] > 0 and self.coroDepends[action] or nil,
+    ...
+  )
+  return true
+end
+
+function Event:_runAction(action, ...)
+  if action.isEnabled then
+    if action.runAsCoroutine then self:_runCoroutineAction(action, self, ...)
+    else action:_runFuncCallback(self, ...) end
+    return true
+  end
+  return false
+end
+
 --- Triggers the event which in turn executes all actions (if they are enabled). 
 --- @param ... Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
 function Event:trigger(...)
   copilot.logger:debug("Event: " .. self:toString())
-  if not self.areActionsSorted then
-    self:sortActions()
-  end
+  if not self.areActionsSorted then self:sortActions() end
   self.actionsToRemove = {}
   self.runningActions = true
-  for _, action in ipairs(self.sortedActions) do
-    if action.isEnabled then
-      if action.runAsCoroutine then
-        local depends = self.coroDepends[action]
-        if action:createThread(#depends == 0 and nil or depends) and action:resumeThread(self, ...) then
-          Event.runningThreads[action] = action
-        end
-      else
-        action:runCallback(self, ...)
-      end
-      if self.runOnce[action] then
-        self.actionsToRemove[#self.actionsToRemove+1] = action
-      end
+  for _, action in ipairs(self.sortedActions) do 
+    if self:_runAction(action, ...) and self.runOnce[action] then
+      self.actionsToRemove[#self.actionsToRemove+1] = action
     end
   end
   self.runningActions = false
-  for _, action in ipairs(self.actionsToRemove) do
-    self:removeAction(action)
-  end
+  for _, action in ipairs(self.actionsToRemove) do self:removeAction(action)  end
   self.actionsToRemove = nil
 end
 
@@ -187,15 +190,7 @@ function Event.fetchRecoResults()
   end
 end
 
-function Event.resumeThreads()
-  for action in pairs(Event.runningThreads) do
-    if not action:resumeThread() then
-      Event.runningThreads[action] = nil
-    end
-  end
-end
-
-Event.TIMEOUT = {}
+Event.TIMEOUT = setmetatable({}, {__tostring = function() return "Event.TIMEOUT" end})
 Event.INFINITE = {}
 local NO_PAYLOAD = {}
 
@@ -210,29 +205,37 @@ local NO_PAYLOAD = {}
 --- 2. Function that returns the event's payload.
 function Event.waitForEvent(event, returnFunction)
 
+  if not returnFunction then 
+    local _, getPayload = Event.waitForEventWithTimeout(Event.INFINITE, event)
+    return getPayload()
+  end
+
   local getPayload
 
   local a = event:addOneOffAction(function(_, ...) 
     local payload = {...}
     getPayload = function() return unpack(payload) end
   end)
-  a:addLogMsg("waitForEvent event signal: " .. event:toString())
+
+  a:addLogMsg("waitForEvent signal for event: " .. event:toString())
   
   local checkEvent = setmetatable({}, {
-    __call = function (self, wait)
-      if wait then
-        repeat copilot.suspend() until self()
-        return getPayload()
-      end
+    __call = function ()
       if getPayload then return true, getPayload end
       return false
     end
   })
 
   util.setOnGCcallback(checkEvent, function() event:removeAction(a) end)
+  return checkEvent
+end
 
-  if returnFunction then return checkEvent end
-  return checkEvent(true)
+local function checkCallingThread(func)
+  local thread = coroutine.running()
+  if not copilot.getCallbackStatus(thread) then
+    error(func .. " must be called from an Action coroutine or one that was passed to copilot.addCallback", 3)
+  end
+  return thread
 end
 
 --- Waits for the event or until the timeout is elapsed.
@@ -243,16 +246,25 @@ end
 ---@return Function that returns the event's payload.
 function Event.waitForEventWithTimeout(timeout, event)
 
-  local checkEvent = Event.waitForEvent(event, true)
+  local thisThread = checkCallingThread "waitForEventWithTimeout"
+  local getPayload
+  local action
 
-  if timeout == Event.INFINITE then return checkEvent(true) end
-
-  local signaled, getPayload = checkWithTimeout(timeout, function()
-    copilot.suspend()
-    return checkEvent()
+  copilot.callOnce(function()
+    action = event:addOneOffAction(function(_, ...) 
+      local payload = {...}
+      getPayload = function() return unpack(payload) end
+      copilot.cancelCallbackTimeout(thisThread)
+    end)
   end)
   
-  if signaled then return true, getPayload end
+  copilot.setCallbackTimeout(
+    thisThread,
+    timeout == Event.INFINITE and copilot.INDEFINITE or timeout
+  )
+
+  if getPayload then return true, getPayload end
+  event:removeAction(action)
   return Event.TIMEOUT
 end
 
@@ -277,6 +289,15 @@ end
 ---@return Only when returnFunction and waitForAll are false: Function that returns the signaled event's payload.
 function Event.waitForEvents(events, waitForAll, returnFunction)
 
+  if not returnFunction then
+    if waitForAll then
+      local _, payloadGetters = Event.waitForEventsWithTimeout(Event.INFINITE, events, true) 
+      return payloadGetters
+    else
+      return Event.waitForEventsWithTimeout(Event.INFINITE, events) 
+    end
+  end
+
   local payloadGetters = setmetatable({}, {__mode = "k"})
   local actions = setmetatable({}, {__mode = "k"})
 
@@ -286,7 +307,7 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
       local payload = {...}
       payloadGetters[event] = function() return unpack(payload) end
     end)
-    actions[event]:addLogMsg("waitForEvents event signal: " .. event:toString())
+    actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
   end
 
   local checkEvents = setmetatable({}, {})
@@ -296,31 +317,14 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
   end)
 
   if waitForAll then
-
-    getmetatable(checkEvents).__call = function(self, wait)
-
-      if wait then
-        repeat copilot.suspend() until self()
-        return payloadGetters
-      end
-
+    getmetatable(checkEvents).__call = function()
       for _, getPayload in pairs(payloadGetters) do
         if getPayload == NO_PAYLOAD then return false end
       end
       return true, payloadGetters
     end
   else
-
-    getmetatable(checkEvents).__call = function(self, wait)
-
-      if wait then
-        while true do
-          copilot.suspend()
-          local event, getPayload = self()
-          if event then return event, getPayload end
-        end
-      end
-
+    getmetatable(checkEvents).__call = function()
       for event, getPayload in pairs(payloadGetters) do
         if getPayload ~= NO_PAYLOAD then
           payloadGetters[event] = NO_PAYLOAD
@@ -344,18 +348,47 @@ end
 ---@return If waitForAll is false: Function that returns the signaled event's payload.
 function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
 
-  local checkEvents = Event.waitForEvents(events, waitForAll, true)
-  if timeout == Event.INFINITE then return checkEvents(true) end
+  local payloadGetters = {}
+  local actions = {}
+  local numEvents, numSignaled = 0, 0
+  local singleEvent
 
-  local function timeoutCallback() copilot.suspend() return checkEvents() end
+  local callingThread = checkCallingThread "waitForEventsWithTimeout"
 
-  if waitForAll then
-    local allSignaled, payloadGetters = checkWithTimeout(timeout, timeoutCallback)
-    return allSignaled and payloadGetters or Event.TIMEOUT
+  copilot.callOnce(function() 
+
+    for _, event in ipairs(events) do
+
+      numEvents = numEvents + 1
+      payloadGetters[event] = NO_PAYLOAD
+  
+      actions[event] = event:addOneOffAction(function(_, ...)
+        local payload = {...}
+        payloadGetters[event] = function() return unpack(payload) end
+        numSignaled = numSignaled + 1
+        if not waitForAll or numSignaled == numEvents then
+          copilot.cancelCallbackTimeout(callingThread)
+        end
+        if not waitForAll then singleEvent = singleEvent or event end
+      end)
+  
+      actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+    end
+  end)
+
+  copilot.setCallbackTimeout(
+    callingThread,
+    timeout == Event.INFINITE and copilot.INDEFINITE or timeout
+  )
+
+  for e, a in pairs(actions) do e:removeAction(a) end
+  
+  if waitForAll and numSignaled == numEvents then
+    return true, payloadGetters 
+  elseif not waitForAll and singleEvent then 
+    return singleEvent, payloadGetters[singleEvent] 
   end
 
-  local event, getPayload = withTimeout(timeout, timeoutCallback)
-  if event then return event, getPayload end
   return Event.TIMEOUT
 end
 
@@ -367,10 +400,8 @@ end
 function Event.fromKeyPress(key, ...)
 
   local e = Event:new(...)
-  e.logMsg = e.logMsg or ("Key press event: " .. key)
+  e.logMsg = e.logMsg or ("Key press: " .. key)
 
-  -- The following is necessary because Bind will make onPress global
-  -- Bind internally calls event.key which takes a global function name
   local weakRef = setmetatable({e = e}, {__mode = "v"})
   copilot.callOnce(function() -- event.key and other event library functions don't work when called from coroutines
     e._keyBind = Bind {
@@ -379,42 +410,51 @@ function Event.fromKeyPress(key, ...)
       onPress = function(...) if weakRef.e then weakRef.e:trigger(...) end end,
     }
   end)
-
   return e
 end
+
+require "copilot.SingleEvent"
+
+Event.MENU_GONE = setmetatable({}, {__tostring = function() return "Event.MENU_GONE" end})
 
 function Event._simConnectMenuEventHandler(res)
   local e = Event._simConnectMenuEvent
   if not e then return end
-  e:trigger(res, e.menu.items[res], e.menu)
+  if res < 0 then
+    e:trigger(Event.MENU_GONE, nil, e.menu)
+  else
+    e:trigger(res, e.menu.items[res], e.menu)
+  end
   Event._simConnectMenuEvent = nil
 end
 
 event.MenuSelect("Event._simConnectMenuEventHandler")
-
-Event.MENU_REPLACED = {}
 
 --- Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)
 --- @string title The title of the menu
 --- @string prompt The message that is displayed between the title and the items. Set to nil, "", or whitespace if you don't want a prompt.
 --- @table items Array of strings representing the menu items
 --- @return <a href="#Class_Event">Event</a>. Consumers of the event will receive the following payload values:
---- 1. The index of the item in the array.
+--- 1. The index of the item in the array or Event.MENU_GONE
 --- 2. The item that was selected: string.
 --- 3. A table with the fields 'title', 'prompt', and 'items'.
 --- @usage 
 function Event.fromSimConnectMenu(title, prompt, items)
+  
   if Event._simConnectMenuEvent then 
-    Event._simConnectMenuEvent:trigger(Event.MENU_REPLACED) 
+    Event._simConnectMenuEvent:trigger(Event.MENU_GONE, nil, Event._simConnectMenuEvent.menu) 
   end
+
   if prompt == nil or prompt == "" then prompt = " " end
   ipc.SetMenu(title, prompt, items) 
   
-  Event._simConnectMenuEvent = Event:new {
+  Event._simConnectMenuEvent = SingleEvent:new {
     menu = {title = title, prompt = prompt, items = items},
     logMsg = "SimConnect menu event: " .. (title or "?")
   }
   return Event._simConnectMenuEvent
 end
+
+require "copilot.ActionOrderSetter"
 
 return Event

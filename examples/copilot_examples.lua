@@ -2,9 +2,46 @@
 -- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
 -- any lua files in that directory
 
-local FSL = FSL
-local copilot = copilot
-copilot.logger:setLevel(1)
+------------------------------------------------------------------------------
+-- Adding a simple voice command
+------------------------------------------------------------------------------
+
+local getMetar = VoiceCommand:new {
+
+  phrase = {"get the metar please", "get the metar"},
+
+  -- persistent = false can be omitted as voice commands are created 
+  -- non-persistent by default, meaning they deactivate after being recognized.
+  -- We don't want this voice command to be persistent because it wouldn't make
+  -- sense to trigger it again during the execution of the action.
+  persistent = false,
+  
+  action = function(voiceCommand) -- Voice commands and events pass a reference
+    -- to themselves as the first argument to their action callbacks.
+    copilot.sleep(500, 1000)
+    if not FSL.MCDU:getString():find "MCDU MENU" then
+      FSL.PED_MCDU_KEY_MENU()
+    end
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_L6()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_L6()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_R2()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_R2()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_R6()
+    -- Reactivate the voice command
+    voiceCommand:activate()
+  end
+
+}
+
+getMetar:activate()
+
+--- It's necessary to call this before activating any voice commands here
+VoiceCommand.resetGrammar()
 
 ------------------------------------------------------------------------------
 -- Changing a default sequence
@@ -57,7 +94,7 @@ startApu:removeAllPhrases():addPhrase("start apu"):setConfidence(0.90)
 
 local pleaseStop = VoiceCommand:new "please stop"
 
-local newAction = copilot.events.enginesStarted:addAction(function()
+local funAction = copilot.events.enginesStarted:addAction(function()
   -- wait a random amount of time between 5 and 10 seconds
   copilot.suspend(5000, 10000)
   pleaseStop:activate()
@@ -81,8 +118,13 @@ local newAction = copilot.events.enginesStarted:addAction(function()
   FSL.OVHD_ELEC_BAT_2_Button()
   FSL.OVHD_FUEL_L_TK_1_PUMP_Button()
   FSL.OVHD_FUEL_L_TK_2_PUMP_Button()
-  FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button()
-  FSL.OVHD_FUEL_CTR_TK_2_VALVE_Button()
+  if FSL:getAcType() == "A321" then
+    FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button()
+    FSL.OVHD_FUEL_CTR_TK_2_VALVE_Button()
+  else
+    FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button()
+    FSL.OVHD_FUEL_CTR_TK_2_PUMP_Button()
+  end
   FSL.OVHD_FUEL_R_TK_1_PUMP_Button()
   FSL.OVHD_FUEL_R_TK_2_PUMP_Button()
   FSL.OVHD_INTLT_AnnLt_Switch "TEST"
@@ -92,58 +134,17 @@ local newAction = copilot.events.enginesStarted:addAction(function()
   FSL.PF.MIP_DU_PNL_PFD_BRT_Knob(0)
   FSL.PF.MIP_DU_PNL_ND_BRT_Knob(0)
 
-end, "runAsCoroutine") -- For this action to be stoppable through a voice
+end, Action.COROUTINE) -- For this action to be stoppable through a voice
 -- command, we need to run it as a coroutine and yield periodically so that 
 -- the code that triggers the voice commands has a chance to run.
 -- The action will stop when our 'please stop' voice command is triggered.
 -- Even though you don't see any coroutine.yield() calls inside the function,
 -- FSL2Lua yields automatically in between control interactions when it sees
 -- that it's inside a coroutine.
-newAction:stopOn(pleaseStop)
+funAction:stopOn(pleaseStop)
 
 -- Since both the newly added action and the default after start sequence are 
 -- coroutines, we may want to make sure that the after start sequence ends
 -- before we proceed.
-copilot.events.enginesStarted:setActionOrder(newAction) 
+copilot.events.enginesStarted:setActionOrder(funAction) 
   :after(copilot.actions.afterStart)
-
-------------------------------------------------------------------------------
--- Another voice command that triggers an interaction with the MCDU
-------------------------------------------------------------------------------
-
-local getMetar = VoiceCommand:new {
-
-  phrase = {"get the metar please", "get the metar"},
-
-  -- persistent = false can be omitted as voice commands are created 
-  -- non-persistent by default, meaning they deactivate after being recognized.
-  -- We don't want this voice command to be persistent because it wouldn't make
-  -- sense to trigger it again during the execution of the action.
-  persistent = false,
-  
-  action = function(voiceCommand) -- Voice commands and events pass a reference
-    -- to themselves as the first argument to their action callbacks.
-    copilot.sleep(500, 1000)
-    if not FSL.MCDU:getString():find "MCDU MENU" then
-      FSL.PED_MCDU_KEY_MENU()
-    end
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_L6()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_L6()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_R2()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_R2()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_R6()
-    -- Reactivate the voice command
-    voiceCommand:activate()
-  end
-
-}
-
---- It's necessary to call this before activating any voice commands here
-VoiceCommand.resetGrammar()
-
-getMetar:activate()

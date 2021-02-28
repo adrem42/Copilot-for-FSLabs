@@ -4,11 +4,6 @@ if FSL2LUA_MAKE_CONTROL_LIST then
   FSL2LUA_STANDALONE = true
 end
 
-if not FSL2LUA_STANDALONE 
-  and not ipc.readLvar "AIRCRAFT_A319" 
-  and not ipc.readLvar "AIRCRAFT_A320"
-  and not ipc.readLvar "AIRCRAFT_A321" then ipc.exit() end
-
 if FSL2LUA_STANDALONE then
   ipc = {readLvar = function() end}
 end

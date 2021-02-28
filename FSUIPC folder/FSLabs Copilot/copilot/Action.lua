@@ -17,77 +17,65 @@ function Action:new(callback, flags)
   local isCallable, callableType = util.isCallable(callback)
   util.assert(isCallable, "Action callback must be a callable", 2)
   local a = setmetatable ({
-    callback = callableType == "function" and callback or function(...) callback(...) end,
+    callback = callableType == "function" and callback or function(...) return callback(...) end,
     isEnabled = true,
-    runAsCoroutine = flags == "runAsCoroutine",
+    runAsCoroutine = flags == Action.COROUTINE,
     eventRefs = {stop = {}}
   }, self)
-  util.setOnGCcallback(a, function() 
-    copilot.logger:trace("Action gc: " .. a:toString()) 
-  end)
+  if a.runAsCoroutine then
+    a.threadFinishedEvent = Event:new()
+    a.threadFinishedEvent:addAction(function(_, ...) a:_onThreadFinished(...) end)
+  end
+  util.setOnGCcallback(a, function() copilot.logger:trace("Action gc: " .. a:toString()) end)
   return a
 end
 
-function Action:toString()
-  return self.logMsg or tostring(self):gsub("table: 0+", "")
-end
+function Action:toString() return self.logMsg or tostring(self):gsub("table: 0+", "") end
 
 --- Enables or disables the action.
 --- @bool value True to enable the action, false to disable.
-function Action:setEnabled(value)
-  self.isEnabled = value
-end
+function Action:setEnabled(value) self.isEnabled = value end
 
 --- Returns true if the callback was configured to be run as a coroutine and is running now.
-function Action:isThreadRunning()
-  return self.currentThread ~= nil
-end
+function Action:isThreadRunning() return self.currentThread ~= nil end
 
-function Action:runCallback(...)
-  copilot.logger:debug("Starting action: " .. self:toString())
+function Action:_runFuncCallback(...)
+  copilot.logger:debug("Action: " .. self:toString())
   self.callback(...)
 end
 
-function Action.getActionFromThread(threadID)
-  return Action.threads[threadID]
-end
-
-function Action:createThread(dependencies)
-  if not self.currentThread then
-    if dependencies then
-      self.currentThread = coroutine.create(function(...)
-        for _, dependency in ipairs(dependencies) do
-          while dependency:isThreadRunning() do copilot.suspend() end
-        end
-        copilot.logger:debug("Starting action: " .. self:toString())
-        self.callback(...)
-      end)
-    else
-      copilot.logger:debug("Starting action: " .. self:toString())
-      self.currentThread = coroutine.create(self.callback)
-    end
-    Action.threads[self.currentThread] = self
-    return true
-  end
-end
-
-function Action:removeThread()
-  Action.threads[self.currentThread] = nil
+function Action:_onThreadFinished(payload)
+  copilot.logger:debug("Finished coroutine action: " .. self:toString())
   self.currentThread = nil
+  if self.cleanUpCallback and payload == copilot.THREAD_REMOVED then
+    self.cleanUpCallback()
+  end
 end
 
-function Action:resumeThread(...)
-  if not self.currentThread then return false end
-  local _, err = coroutine.resume(self.currentThread, ...)
-  if err then
-    self:removeThread()
-    error(err) 
+function Action:_initNewThread(dependencies, ...)
+
+  if dependencies then
+    self.currentThread = coroutine.create(function(...)
+      local events = {}
+      for _, dependency in ipairs(dependencies) do
+        if dependency.currentThread then
+          events[#events+1] = dependency.threadFinishedEvent
+        end
+      end
+      if #events > 0 then Event.waitForEvents(events, true) end
+      copilot.logger:debug("Coroutine action: " .. self:toString())
+      return self.callback(...)
+    end)
+  else
+    copilot.logger:debug("Coroutine action: " .. self:toString())
+    self.currentThread = coroutine.create(self.callback)
   end
-  if coroutine.status(self.currentThread) == "dead" then
-    self:removeThread()
-    return false
-  end
-  return true
+
+  local _, threadEvent = copilot.addCallback(
+    self.currentThread, ("%s for action '%s'"):format(tostring(self.currentThread), self:toString())
+  )
+  threadEvent:addOneOffAction(function(_, ...) self.threadFinishedEvent:trigger(...) end)
+  copilot._initActionThread(self.currentThread, ...)
 end
 
 --- Use this you want to disable the effect of @{stopOn} for one of the predefined actions in @{copilot.actions}
@@ -102,9 +90,8 @@ Action.makeEventRef = EventUtils.makeEventRef
 --- If the action was configured to be run as a coroutine, stops the execution of the currently running coroutine immediately.
 function Action:stopCurrentThread()
   if self.currentThread then
-    self:removeThread()
-    copilot.logger:debug("Stopping action: " .. self:toString())
-    if self.cleanUpCallback then self.cleanUpCallback() end
+    copilot.logger:debug("Stopping coroutine action: " .. self:toString())
+    copilot.removeCallback(self.currentThread)
   end
 end
 

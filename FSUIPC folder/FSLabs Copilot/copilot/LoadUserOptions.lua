@@ -1,11 +1,10 @@
-
+copilot = copilot or {}
 file = require "FSL2Lua.FSL2Lua.file"
 
 local optionIndex = {key = 1, value = 2, comment = 3}
 local sectionIndex = {title = 1, options = 2, comments = 3}
 
 local options = require "FSLabs Copilot.copilot.options"
-
 local UserOptions = copilot.UserOptions
 
 do

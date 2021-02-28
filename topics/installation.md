@@ -22,17 +22,15 @@ To do that, unzip *FSUIPC folder\FSL2Lua* into your FSUIPC install directory.
 
 The script will auto-run after you load a flight with FSLabs.
 
-You can restart or stop the script (no need to do either during normal operation :) and output its log to the console (which needs to be enabled in the FSUIPC settings first) from its Add-ons submenu.
+You can restart or stop the script from its Add-ons submenu.
 
-**If anything goes wrong during the script's operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make it more verbose by setting log_level to 1).
+**If anything goes wrong during the script's operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make the log more verbose by setting log_level to 1).
 
-If you want to extend the functionality of the script, see @{copilot_example1.lua | some examples here.}
-
-@{cockpit_control_binds.lua | A few examples of binding cockpit controls to keyboard keys and joystick buttons}
+If you want to extend the functionality of the script, see the examples in the sidebar that are prefixed with 'copilot_'.
 
 ## Setting up speech recognition
 
-You need to have English as the Windows language in order for speech recognition to work  
+You need to have English as the Windows language in order for the speech recognition to work . 
 
 1. Go to Control Panel -> Speech Recognition -> Advanced speech options <p><img src="../img/recosetup1.jpg" width="500px"></p>
 
