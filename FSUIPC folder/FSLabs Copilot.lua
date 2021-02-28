@@ -17,6 +17,10 @@ FSL:setPilot(copilot.UserOptions.general.PM_seat)
 FSL:setHttpPort(copilot.UserOptions.general.http_port)
 FSL:enableSequences()
 
+if copilot.UserOptions.general.button_sleep_mult then
+  FSL:setButtonSleepMult(copilot.UserOptions.general.button_sleep_mult)
+end
+
 copilot.FSL_AIRCRAFT = FSL:getAcType() ~= nil
 
 do

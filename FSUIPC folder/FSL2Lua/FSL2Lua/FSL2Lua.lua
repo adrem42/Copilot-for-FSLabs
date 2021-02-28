@@ -184,6 +184,8 @@ function FSL:startTheApu()
   self.OVHD_APU_Start_Button()
 end
 
+function FSL:setButtonSleepMult(mult) Button.sleepMult = mult end
+
 function FSL:getTakeoffFlapsFromMcdu(side)
   side = side or self._pilot
   local sideStr = side == 1 and "CPT" or side == 2 and "FO"

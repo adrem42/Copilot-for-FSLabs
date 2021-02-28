@@ -4,7 +4,10 @@ local Control = require "FSL2Lua.FSL2Lua.Control"
 local util = require "FSL2Lua.FSL2Lua.util"
 
 --- @type Button
-local Button = setmetatable({interactionLength = 250}, Control)
+local Button = setmetatable({
+  interactionLength = 250,
+  sleepMult = 1
+}, Control)
 Button.__index = Button
 Button.__class = "Button"
 
@@ -36,7 +39,7 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   -- For the press to register, the button needs to be held down
   -- for a certain amount of time that depends on the framerate.
   local FPS = util.frameRate()
-  local sleepAfterPress = FPS > 30 and 100 or FPS > 20 and 150 or 200
+  local sleepAfterPress = (FPS > 30 and 100 or FPS > 20 and 150 or 200) * Button.sleepMult
   local timeout = 1000
   if twoSwitches then
     checkWithTimeout(timeout, function()

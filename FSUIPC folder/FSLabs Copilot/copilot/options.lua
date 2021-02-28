@@ -23,7 +23,8 @@ return {
         type = "enum", values = {"left", "right"}, required = true
       },
       {"debugger", hidden = true, type = "bool"},
-      {"debugger_bind", hidden = true, type = "string"}
+      {"debugger_bind", hidden = true, type = "string"},
+      {"button_sleep_mult", hidden = true, type = "number"}
     }
   },
   {

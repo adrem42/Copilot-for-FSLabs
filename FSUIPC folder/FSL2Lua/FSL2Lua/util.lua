@@ -121,13 +121,9 @@ end
 
 function util.sleep(time1,time2)
   local time
-  if time1 and time2 then
-    time = math.random(time1,time2)
-  elseif time1 then
-    time = time1
-  else
-    time = 100
-  end
+  if time1 and time2 then time = math.random(time1,time2)
+  elseif time1 then time = time1
+  else time = 100 end
   ipc.sleep(time)
 end
 

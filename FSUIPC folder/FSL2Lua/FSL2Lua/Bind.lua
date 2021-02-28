@@ -449,16 +449,19 @@ function Bind.cycleRotaryKnob(knob, steps)
   local cycleVal = 0
   local prev = 0
   local direction = DECREASE
+  local step = 100 / steps
 
   return function()
-    local step = 100 / steps
     local curr = knob:getPosn()
     if curr ~= prev then cycleVal = curr end
     if cycleVal == 100 then direction = DECREASE
     elseif cycleVal == 0 then direction = INCREASE  end
     if direction == INCREASE then cycleVal = math.min(cycleVal + step, 100)
     else cycleVal = math.max(cycleVal - step, 0) end
+
+    cycleVal = cycleVal + step / 2
     cycleVal = cycleVal - cycleVal % step
+
     prev = knob(cycleVal)
   end
 end
