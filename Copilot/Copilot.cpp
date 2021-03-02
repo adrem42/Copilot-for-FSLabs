@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS 1
-#include "../lua515/include/lua.hpp"
+#include "lua.hpp"
 #include <sol/sol.hpp>
 #include <Windows.h>
 #include <thread>
@@ -10,12 +10,17 @@
 #include <gauges.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <regex>
-
 #include "Copilot.h"
 #include "Sound.h"
 #include "Recognizer.h"
 #include "McduWatcher.h"
 #include "versioninfo.h"
+#include <Pdk.h>
+#include <initpdk.h>
+#include "FSUIPC.h"
+#include "SimInterface.h"
+#include "LuaPlugin.h"
+#include "FSL2LuaScript.h"
 
 using namespace std::literals::chrono_literals;
 
@@ -24,8 +29,10 @@ McduWatcher* mcduWatcher = nullptr;
 
 std::thread copilotInitThread, luaInitThread;
 std::atomic_bool scriptStarted = false;
-std::string appDir;
+
 bool FSL_AIRCRAFT = false;
+
+using namespace P3D;
 
 HANDLE simExit = CreateEventA(NULL, TRUE, FALSE, NULL);
 
@@ -130,40 +137,24 @@ public:
 
 } messageLoop;
 
-bool connectToFSUIPC()
-{
-	DWORD dwResult;
-	static BYTE* pMem = new BYTE[1024];
-	bool connected = FSUIPC_Open2(SIM_ANY, &dwResult, pMem, 1024);
-	FSUIPC_Process(&dwResult);
-	return connected;
-}
+
+
 
 namespace copilot {
 
+	std::string appDir;
+
 	RecoResultFetcher* recoResultFetcher = nullptr;
 	std::shared_ptr<spdlog::logger> logger = nullptr;
-	std::unique_ptr<SimConnect> simConnect = nullptr;
 	std::mutex FSUIPCmutex;
 
-	double readLvar(PCSTRINGZ lvname)
+	double readLvar(const std::string& name)
 	{
-		if (lvname == 0) return 0;
-		if (strlen(lvname) == 0) return 0;
-		ID i = check_named_variable(lvname);
-		return get_named_variable_value(i);
+		auto val = SimInterface::readLvar(name);
+		return val.has_value() ? *val : 0;
 	}
 
-	void startLuaThread()
-	{
-		const char* request = "Lua FSLabs Copilot";
-		DWORD dwResult;
-		std::lock_guard<std::mutex> lock(FSUIPCmutex);
-		FSUIPC_Write(0x0D70, strlen(request) + 1, (void*)request, &dwResult);
-		FSUIPC_Process(&dwResult);
-	}
-
-	void shutDown()
+	/*void shutDown()
 	{
 		const char* request = "LuaKill FSLabs Copilot";
 		DWORD dwResult;
@@ -178,86 +169,54 @@ namespace copilot {
 		copilot::recoResultFetcher = nullptr;
 		recognizer = nullptr;
 		mcduWatcher = nullptr;
-	}
+	}*/
 
-	void autoStartLua()
+	void initLogger()
 	{
-		luaInitThread = std::thread([] {
-			if (WaitForSingleObject(simExit, 30000) == WAIT_OBJECT_0) return;
-			while (!scriptStarted) {
-				startLuaThread();
-				if (WaitForSingleObject(simExit, 5000) == WAIT_OBJECT_0) return;
-			};
-		});
-	}
+		logger = std::make_shared<spdlog::logger>("Copilot");
+		logger->flush_on(spdlog::level::trace);
 
-	void createAdditionalLog()
-	{
-		char lpFilename[MAX_PATH];
-		HMODULE hMod = GetModuleHandleA("FSLCopilot.dll");
-		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
-		std::string logFilePath(lpFilename);
-		logFilePath = logFilePath.substr(0, logFilePath.find("FSLCopilot.dll"));
-		logFilePath += "Copilot.log";
-
+		std::string logFilePath = appDir + "Copilot.log";
 		auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFilePath, 1048576 * 5, 0, true);
 		fileSink->set_pattern("[%T] [%l] %v");
+		logger->sinks().push_back(fileSink);
+	}
 
-		copilot::logger->sinks().push_back(fileSink);
+	void initConsoleSink()
+	{
+		auto consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+		consoleSink->set_pattern("[%T] %^[Copilot]%$ %v");
+		logger->sinks().push_back(consoleSink);
+	}
 
+	void findAppDir()
+	{
+		HMODULE hMod = GetModuleHandleA("Copilot.dll");
+		char lpFilename[MAX_PATH];
+		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
+		appDir = std::string(lpFilename);
+		appDir = appDir.substr(0, appDir.find("Copilot.dll"));
 	}
 
 	void init()
 	{
 
-		std::string logName = "FSLabs Copilot";
-#ifdef DEBUG
-		logName += "(debug)";
-#endif
-		copilot::logger = std::make_shared<spdlog::logger>(logName);
-		copilot::logger->flush_on(spdlog::level::trace);
-
-		//createAdditionalLog();
-
-		while (!connectToFSUIPC()) {
-			if (WaitForSingleObject(simExit, 2000) == WAIT_OBJECT_0) return;
-		}
-
-		char lpFilename[MAX_PATH];
-		HMODULE hMod = GetModuleHandleA("FSUIPC5");
-		if (!hMod) hMod = GetModuleHandleA("FSUIPC6");
-		GetModuleFileNameA(hMod, lpFilename, MAX_PATH);
-		std::string FSUIPC_DIR = std::regex_replace(lpFilename, std::regex("FSUIPC\\d.dll", std::regex_constants::icase), "");
-		std::string appDir = FSUIPC_DIR + "FSLabs Copilot\\";
-
-		bool appDirExists = GetFileAttributes(appDir.c_str()) != INVALID_FILE_ATTRIBUTES;
-
-		if (appDirExists) {
-			std::string logFileName = appDir + "\\Copilot.log";
-#ifdef DEBUG
-			logFileName = appDir + "\\Copilot(debug).log";
-#endif
-			auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFileName, 1048576 * 5, 0, true);
-			fileSink->set_pattern("[%T] [%l] %v");
-
-			copilot::logger->sinks().push_back(fileSink);
-		}
+		findAppDir();
+		initLogger();
 
 		int lineWidth = 60;
 		copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
 		copilot::logger->info("");
 
-		if (appDirExists) {
-			sol::state lua;
-			lua.open_libraries();
-			lua["FSUIPC_DIR"] = FSUIPC_DIR;
-			lua["APPDIR"] = appDir;
-			lua.do_string(R"(package.path = FSUIPC_DIR .. '\\?.lua')");
-			auto result = lua.do_file(appDir + "\\copilot\\LoadUserOptions.lua");
-			if (!result.valid()) {
-				sol::error err = result;
-				copilot::logger->error(err.what());
-			}
+		sol::state lua;
+		lua.open_libraries();
+		lua["APPDIR"] = appDir;
+		lua.do_string(R"(package.path = APPDIR .. '\\?.lua')");
+		auto result = lua.do_file(appDir + "copilot\\copilot\\LoadUserOptions.lua");
+
+		if (!result.valid()) {
+			sol::error err = result;
+			copilot::logger->error(err.what());
 		}
 
 		BASS_DEVICEINFO info;
@@ -271,50 +230,53 @@ namespace copilot {
 		copilot::logger->info("{:*^{}}", "", lineWidth);
 		copilot::logger->info("");
 
-		//copilot::logger->info("FSUIPC folder: {}", FSUIPC_DIR);
+		initConsoleSink();
 
-		if (!appDirExists) {
-			copilot::logger->error("Folder {} doesn't exist!", appDir);
-		}
-
-	}
-
-	void onSimStart()
-	{
-		simConnect = std::make_unique<SimConnect>();
-		simConnect->init();
-
-		if (Panels != NULL) {
-			ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
-		}
-
-		copilotInitThread = std::thread(copilot::init);
-	}
-
-	void onSimExit()
-	{
-		SetEvent(simExit);
-		if (copilotInitThread.joinable())
-			copilotInitThread.join();
-		if (luaInitThread.joinable())
-			luaInitThread.join();
-		shutDown();
-		simConnect->close();
 	}
 
 	void onSimEvent(SimConnect::EVENT_ID event)
 	{
 		switch (event) {
+
 			case SimConnect::EVENT_SIM_START:
 				messageLoop.startTimer();
 				break;
+
 			case SimConnect::EVENT_EXIT:
+
 			case SimConnect::EVENT_ABORT:
 				messageLoop.stopTimer();
 				break;
+
 			default:
 				break;
 		}
+	}
+
+	void onFlightLoaded(bool isFslAircraft)
+	{
+		DWORD res = FSUIPC::connect();
+		if (res == FSUIPC_ERR_OK) {
+			logger->info("Connected to FSUIPC");
+		} else {
+			logger->error("Failed to connect to FSUIPC: {}", FSUIPC::errorString(res));
+		}
+		launchFSL2LuaScript();
+	}
+
+	std::unique_ptr<FSL2LuaScript> FSL2LuaScriptInstance;
+
+	void launchFSL2LuaScript()
+	{
+		if (!FSL2LuaScriptInstance)
+			FSL2LuaScriptInstance = std::make_unique<FSL2LuaScript>(appDir + "scripts\\autorun.lua");
+		FSL2LuaScriptInstance->launchThread();
+
+	}
+
+	IWindowPluginSystemV440* GetWindowPluginSystem()
+	{
+		return PdkServices::GetWindowPluginSystem();
 	}
 }
 
@@ -393,34 +355,46 @@ std::optional<std::string> initLua(sol::this_state ts)
 	return {};
 }
 
-void DLLStart()
+void DLLStart(P3D::IPdk* pPdk)
 {
-	copilot::onSimStart();
+
+	SimConnect::init();
+
+	if (Panels != NULL) 
+		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
+	
+	if (pPdk != nullptr)
+	    PdkServices::Init(pPdk);
+
+	copilot::init();
 }
 
 void DLLStop()
 {
-	copilot::onSimExit();
+	SetEvent(simExit);
+	//shutDown();
+	SimConnect::close();
+	SimInterface::onSimShutdown();
 }
 
-extern "C"
-__declspec(dllexport) int luaopen_FSLCopilot(lua_State * L)
-{
-	sol::state_view lua(L);
-	scriptStarted = true;
-
-	using logger = spdlog::logger;
-	sol::usertype<logger> LoggerType = lua.new_usertype<logger>("Logger");
-	LoggerType["trace"] = static_cast<void (logger::*)(const std::string&)>(&logger::trace);
-	LoggerType["debug"] = static_cast<void (logger::*)(const std::string&)>(&logger::debug);
-	LoggerType["info"] = static_cast<void (logger::*)(const std::string&)>(&logger::info);
-	LoggerType["warn"] = static_cast<void (logger::*)(const std::string&)>(&logger::warn);
-	LoggerType["error"] = static_cast<void (logger::*)(const std::string&)>(&logger::error);
-	LoggerType["setLevel"] = &logger::set_level;
-
-	auto copilot = lua.create_table();
-	copilot["init"] = initLua;
-	copilot["logger"] = copilot::logger;
-	copilot.push();
-	return 1;
-}
+//extern "C"
+//__declspec(dllexport) int luaopen_FSLCopilot(lua_State * L)
+//{
+//	sol::state_view lua(L);
+//	scriptStarted = true;
+//
+//	using logger = spdlog::logger;
+//	sol::usertype<logger> LoggerType = lua.new_usertype<logger>("Logger");
+//	LoggerType["trace"] = static_cast<void (logger::*)(const std::string&)>(&logger::trace);
+//	LoggerType["debug"] = static_cast<void (logger::*)(const std::string&)>(&logger::debug);
+//	LoggerType["info"] = static_cast<void (logger::*)(const std::string&)>(&logger::info);
+//	LoggerType["warn"] = static_cast<void (logger::*)(const std::string&)>(&logger::warn);
+//	LoggerType["error"] = static_cast<void (logger::*)(const std::string&)>(&logger::error);
+//	LoggerType["setLevel"] = &logger::set_level;
+//
+//	auto copilot = lua.create_table();
+//	copilot["init"] = initLua;
+//	copilot["logger"] = copilot::logger;
+//	copilot.push();
+//	return 1;
+//}

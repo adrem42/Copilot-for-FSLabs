@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static-md</VcpkgTriplet>
     <VcpkgEnabled>true</VcpkgEnabled>
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{998436FF-3A5B-4867-B892-6567C955B44E}</ProjectGuid>
@@ -46,13 +45,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>FSL2LuaDLL</TargetName>
+    <TargetName>FSL2Lua</TargetName>
     <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <CustomBuildAfterTargets>Build</CustomBuildAfterTargets>
-    <TargetName>FSL2LuaDLL</TargetName>
+    <TargetName>FSL2Lua</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -62,24 +61,28 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\Users\Peter\source\repos\FSLabs Copilot\Joystick;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Users\Peter\source\repos\FSLabs Copilot\sol;C:\Users\Peter\source\repos\FSLabs Copilot\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <AdditionalIncludeDirectories>C:\Users\Peter\source\repos\FSLabs Copilot\Joystick;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Users\Peter\source\repos\FSLabs Copilot\lua51\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SimConnectDebug.lib;ModuleUser64.lib;lua51.lib;Hid.lib;SetupAPI.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;C:\Users\Peter\source\repos\FSLabs Copilot\Copilot\FSUIPC\lib;$(SolutionDir)x64\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Comctl32.lib;lua5.1.lib;ModuleUser64.lib;Hid.lib;SetupAPI.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;SimConnectDebug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;C:\Users\Peter\source\repos\FSLabs Copilot\Copilot\FSUIPC\lib;$(solutiondir)lua51;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile>FSL2Lua.def</ModuleDefinitionFile>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>
       </UseLibraryDependencyInputs>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
+    <CustomBuildStep>
+      <Command>copy "$(targetpath)"  "$(solutiondir)Prepar3D vx Add-ons\Copilot for FSLabs\FSL2Lua" /y &amp;&amp; cd $(solutiondir) &amp;&amp; copytosim</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(targetname).dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -91,41 +94,39 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\Users\Peter\source\repos\FSLabs Copilot\Joystick;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Users\Peter\source\repos\FSLabs Copilot\sol;C:\Users\Peter\source\repos\FSLabs Copilot\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ExceptionHandling>Sync</ExceptionHandling>
+      <AdditionalIncludeDirectories>C:\Users\Peter\source\repos\FSLabs Copilot\Joystick;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Users\Peter\source\repos\FSLabs Copilot\lua51\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SimConnect.lib;ModuleUser64.lib;lua51.lib;Hid.lib;SetupAPI.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;C:\Users\Peter\source\repos\FSLabs Copilot\Copilot\FSUIPC\lib;$(SolutionDir)x64\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Comctl32.lib;ModuleUser64.lib;lua5.1.lib;Hid.lib;SetupAPI.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;C:\Users\Peter\source\repos\FSLabs Copilot\Copilot\FSUIPC\lib;$(solutiondir)lua51;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
+      <ModuleDefinitionFile>FSL2Lua.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
-      <Command>copy "$(SolutionDir)x64\$(Configuration)\$(TargetName).dll"  "$(solutiondir)FSUIPC folder\FSL2Lua\FSL2Lua" /y &amp;&amp; cd $(solutiondir) &amp;&amp; copytosim</Command>
-      <Outputs>$(TargetName).dll</Outputs>
+      <Command>copy "$(targetpath)"  "$(solutiondir)Prepar3D vx Add-ons\Copilot for FSLabs\FSL2Lua" /y &amp;&amp; cd $(solutiondir) &amp;&amp; copytosim</Command>
+      <Outputs>$(targetname).dll</Outputs>
     </CustomBuildStep>
     <ProjectReference>
       <UseLibraryDependencyInputs>
       </UseLibraryDependencyInputs>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Joystick\AxisCallback.cpp" />
-    <ClCompile Include="..\Joystick\AxisProperties.cpp" />
-    <ClCompile Include="..\Joystick\Button.cpp" />
-    <ClCompile Include="..\Joystick\Init.cpp" />
-    <ClCompile Include="..\Joystick\InputBindings.cpp" />
-    <ClCompile Include="..\Joystick\JoystickMain.cpp" />
-    <ClCompile Include="..\Joystick\Logging.cpp" />
-    <ClCompile Include="..\Joystick\LuaBindings.cpp" />
-    <ClCompile Include="..\Joystick\Util.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_AxisCallback.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_AxisProperties.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_Button.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_Init.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_InputBindings.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_Logging.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_LuaBindings.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_Main.cpp" />
+    <ClCompile Include="..\Joystick\Joystick_Util.cpp" />
     <ClCompile Include="FSL2Lua.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -136,6 +137,9 @@
     <ClInclude Include="..\Joystick\Button.h" />
     <ClInclude Include="..\Joystick\Exceptions.h" />
     <ClInclude Include="..\Joystick\Joystick.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FSL2Lua.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

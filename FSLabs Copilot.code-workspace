@@ -2,6 +2,10 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"name": "FSLabs Copilot @ 4f5511b",
+			"uri": "gitlens://4f5511b/c:/Users/Peter/source/repos/FSLabs Copilot?{\"path\":\"/c:/Users/Peter/source/repos/FSLabs Copilot\",\"ref\":\"4f5511b25a512c6be4ed3768c00ea5a9235127fc\",\"repoPath\":\"c:/Users/Peter/source/repos/FSLabs Copilot\"}"
 		}
 	],
 	"settings": {

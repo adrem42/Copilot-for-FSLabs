@@ -2,6 +2,7 @@
 #include "Copilot.h"
 #include <cmath>
 
+
 TimePoint Sound::nextFreeSlot = std::chrono::system_clock::now();
 std::queue<std::pair<Sound*, TimePoint>> Sound::soundQueue;
 Sound* Sound::prevSound;

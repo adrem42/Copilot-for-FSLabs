@@ -1,93 +1,109 @@
 #include "SimConnect.h"
 #include "Copilot.h"
+#include "SimInterface.h"
 #include <mutex>
 
-enum MuteKeyStatus {
-	Depressed = 0,
-	Released
-};
+const unsigned short MUTE_KEY_DEPRESSED = 0;
+const unsigned short MUTE_KEY_RELEASED = 1;
 
-std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink;
+using namespace SimConnect;
 
-void attachLogToConsole()
-{
-	auto& sinks = copilot::logger->sinks();
-	auto it = std::find(sinks.begin(), sinks.end(), consoleSink);
-	if (it != sinks.end())
-		sinks.erase(it);
-	consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-	consoleSink->set_pattern("[%T] %^[FSL Copilot]%$ %v");
-	copilot::logger->sinks().push_back(consoleSink);
+namespace SimConnect {
+	bool fslAircraftLoaded, simStarted;
+	std::atomic_bool simPaused;
+	HANDLE hSimConnect;
 }
 
-void SimConnect::dispatchCallback(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
+void onMuteControlEvent(DWORD param)
 {
-	SimConnect* pThis = reinterpret_cast<SimConnect*>(pContext);
-	pThis->process(pData, cbData);
+	if (copilot::recoResultFetcher) {
+
+		switch (param) {
+
+			case MUTE_KEY_DEPRESSED:
+				copilot::recoResultFetcher->onMuteKeyEvent(true);
+				break;
+
+			case MUTE_KEY_RELEASED:
+				copilot::recoResultFetcher->onMuteKeyEvent(false);
+				break;
+		}
+	}
 }
 
-void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
+void setupMenu()
+{
+	HRESULT hr;
+
+	hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_MUTE_CONTROL, "SMOKE_TOGGLE");
+	hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_MUTE_CONTROL);
+
+	hr = SimConnect_MenuAddItem(hSimConnect, "Copilot for FSLabs", EVENT_COPILOT_MENU, 0);
+	hr = SimConnect_MenuAddSubItem(
+		hSimConnect, EVENT_COPILOT_MENU, "Restart", EVENT_COPILOT_MENU_ITEM_START, 0);
+	hr = SimConnect_MenuAddSubItem(
+		hSimConnect, EVENT_COPILOT_MENU, "Stop", EVENT_COPILOT_MENU_ITEM_STOP, 0);
+
+	hr = SimConnect_MenuAddItem(hSimConnect, "FSL2Lua", EVENT_FSL2LUA_MENU, 0);
+
+	hr = SimConnect_MenuAddSubItem(
+		hSimConnect, EVENT_FSL2LUA_MENU, "Restart script", EVENT_FSL2LUA_MENU_ITEM_RESTART_SCRIPT, 0);
+}
+
+void onFlightLoaded(bool isFslAircraft)
+{
+	setupMenu();
+	SimInterface::createWindow();
+	copilot::onFlightLoaded(isFslAircraft);
+}
+
+void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 {
 	switch (pData->dwID) {
 
 		case SIMCONNECT_RECV_ID_EVENT:
 		{
+
 			SIMCONNECT_RECV_EVENT* evt = (SIMCONNECT_RECV_EVENT*)pData;
 			EVENT_ID eventID = (EVENT_ID)evt->uEventID;
 			copilot::onSimEvent(eventID);
+
 			switch (eventID) {
 
 				case EVENT_MUTE_CONTROL:
-					if (copilot::recoResultFetcher) {
-						switch ((MuteKeyStatus)evt->dwData) {
-							case Depressed:
-								copilot::recoResultFetcher->onMuteKeyEvent(true);
-								break;
-							case Released:
-								copilot::recoResultFetcher->onMuteKeyEvent(false);
-								break;
-						}
-					}
+
+					onMuteControlEvent(evt->dwData);
 					break;
 
 				case EVENT_SIM_START:
 				{
 					simPaused = false;
-					attachLogToConsole();
-					if (m_fslAircraftLoaded && !m_simStarted) {
 
-						m_simStarted = true;
-
-						HRESULT hr;
-
-						hr = SimConnect_MapClientEventToSimEvent(m_hSimConnect, EVENT_MUTE_CONTROL, "SMOKE_TOGGLE");
-						hr = SimConnect_AddClientEventToNotificationGroup(m_hSimConnect, GROUP0, EVENT_MUTE_CONTROL);
-
-						hr = SimConnect_MenuAddItem(m_hSimConnect, "Copilot for FSLabs", EVENT_MENU, 0);
-						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Restart", EVENT_MENU_START, 0);
-						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Stop", EVENT_MENU_STOP, 0);
-						hr = SimConnect_MenuAddSubItem(m_hSimConnect, EVENT_MENU, "Output log to console", EVENT_MENU_ATTACH_CONSOLE, 0);
-
-						copilot::autoStartLua();
+					if (!simStarted) {
+						simStarted = true;
+						onFlightLoaded(fslAircraftLoaded);
 					}
+
 					break;
 				}
 
+			
 				case EVENT_SIM_STOP:
 					simPaused = true;
 					break;
 
-				case EVENT_MENU_START:
-					copilot::startLuaThread();
+				case EVENT_COPILOT_MENU_ITEM_START:
+					//copilot::startLuaThread();
 					break;
 
-				case EVENT_MENU_STOP:
-					copilot::shutDown();
+				case EVENT_COPILOT_MENU_ITEM_STOP:
+					//copilot::shutDown();
 					break;
 
-				case EVENT_MENU_ATTACH_CONSOLE:
-					attachLogToConsole();
+				case EVENT_FSL2LUA_MENU_ITEM_RESTART_SCRIPT:
+					copilot::launchFSL2LuaScript();
 					break;
+
 			}
 			break;
 		}
@@ -100,7 +116,7 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 				case EVENT_AIRCRAFT_LOADED:
 				{
 					std::string path(evt->szFileName);
-					m_fslAircraftLoaded = path.find("FSLabs") != std::string::npos;
+					fslAircraftLoaded = path.find("FSLabs") != std::string::npos;
 					break;
 				}
 				default:
@@ -114,23 +130,23 @@ void SimConnect::process(SIMCONNECT_RECV* pData, DWORD cbData)
 
 bool SimConnect::init()
 {
-	if (SUCCEEDED(SimConnect_Open(&m_hSimConnect, "FSLabs Copilot", NULL, 0, NULL, 0))) {
+	if (SUCCEEDED(SimConnect_Open(&hSimConnect, "FSLabs Copilot", NULL, 0, NULL, 0))) {
 
 		HRESULT hr = S_OK;
 
-		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_AIRCRAFT_LOADED, "AircraftLoaded");
-		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_SIM_START, "SimStart");
-		hr = SimConnect_SubscribeToSystemEvent(m_hSimConnect, EVENT_SIM_STOP, "SimStop");
+		hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_AIRCRAFT_LOADED, "AircraftLoaded");
+		hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_START, "SimStart");
+		hr = SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_SIM_STOP, "SimStop");
 
-		hr = SimConnect_MapClientEventToSimEvent(m_hSimConnect, EVENT_EXIT, "Exit");
-		hr = SimConnect_AddClientEventToNotificationGroup(m_hSimConnect, GROUP0, EVENT_EXIT);
+		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_EXIT, "Exit");
+		hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_EXIT);
 
-		hr = SimConnect_MapClientEventToSimEvent(m_hSimConnect, EVENT_ABORT, "Abort");
-		hr = SimConnect_AddClientEventToNotificationGroup(m_hSimConnect, GROUP0, EVENT_ABORT);
+		hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_ABORT, "Abort");
+		hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_ABORT);
 
-		hr = SimConnect_SetNotificationGroupPriority(m_hSimConnect, GROUP0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+		hr = SimConnect_SetNotificationGroupPriority(hSimConnect, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
 
-		hr = SimConnect_CallDispatch(m_hSimConnect, dispatchCallback, this);
+		hr = SimConnect_CallDispatch(hSimConnect, SimConnectCallback, nullptr);
 
 		return true;
 
@@ -140,8 +156,8 @@ bool SimConnect::init()
 
 void SimConnect::close()
 {
-	if (m_hSimConnect != NULL) {
-		SimConnect_Close(m_hSimConnect);
-		m_hSimConnect = NULL;
+	if (hSimConnect != NULL) {
+		SimConnect_Close(hSimConnect);
+		hSimConnect = NULL;
 	}
 }

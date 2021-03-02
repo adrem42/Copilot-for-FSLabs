@@ -1,6 +1,11 @@
 #include "RecoResultFetcher.h"
 #include "Copilot.h"
+#include "SimConnect.h"
 #include "FSUIPC/include/FSUIPC_User64.h"
+
+bool fslAircraftLoaded = false, simStarted = false;
+HANDLE hSimConnect = NULL;
+std::atomic_bool simPaused;
 
 RecoResultFetcher::RecoResultFetcher(Recognizer* recognizer)
 	:m_recognizer(recognizer)
@@ -47,7 +52,7 @@ void RecoResultFetcher::fetchResults()
 			copilot::logger->info("Recognized phrase '{}', confidence: {:.4f}", recoResult.phrase, recoResult.confidence);
 			m_recognizer->afterRecoEvent(recoResult.ruleID);
 			m_recoResults.emplace_back(recoResult.ruleID);
-			if (!copilot::simConnect->simPaused && !m_luaNotified) {
+			if (!SimConnect::simPaused && !m_luaNotified) {
 				notifyLua();
 				m_luaNotified = true;
 			}

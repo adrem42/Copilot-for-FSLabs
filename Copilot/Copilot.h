@@ -8,22 +8,31 @@
 #include <memory>
 #include <chrono>
 #include <string>
+#include <IWindowPluginSystem.h>
 
 namespace copilot {
+
 	extern RecoResultFetcher* recoResultFetcher;
 	extern std::shared_ptr<spdlog::logger> logger;
-	extern std::unique_ptr<SimConnect> simConnect;
 	extern std::mutex FSUIPCmutex;
-	double readLvar(PCSTRINGZ lvname);
-	void startLuaThread();
-	void shutDown();
-	void autoStartLua();
+	extern std::string appDir;
+	double readLvar(const std::string& name);
+	//void startLuaThread();
+	//void shutDown();
+	//void autoStartLua();
 	void onSimEvent(SimConnect::EVENT_ID event);
+	void onFlightLoaded(bool isFslAircraft);
+
+	void launchFSL2LuaScript();
+
+	P3D::IWindowPluginSystemV440* GetWindowPluginSystem();
 
 	class Timer {
+	
 		using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 		TimePoint start = std::chrono::system_clock::now();
 		std::string prefix;
+
 	public:
 		Timer(const std::string& prefix)
 			:prefix(prefix)

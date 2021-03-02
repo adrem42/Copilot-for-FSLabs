@@ -1,4 +1,4 @@
-LIBRARY "FSL2Json"
+LIBRARY "FSLSerialize"
 EXPORTS
 Panels DATA
 DLLStart

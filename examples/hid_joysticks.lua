@@ -2,10 +2,10 @@
 -- Example usage of the `Joystick` library
 -- @{standalonescripts.md|How do I launch this script?}
 
-FSL = require "FSL2Lua"
+
 FSL:setPilot "CPT"
 
-Joystick.printDeviceInfo() -- Print info on all devices
+
 
 -- 0x06A3 is the vendor ID and 0x0C2D is the product ID
 -- You can get the IDs from Joystick.printDeviceInfo()
@@ -100,21 +100,3 @@ else
   myJoy:bindButton(7, FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button)
 end
 
-------------------------------------------
-
--- Start reading the data
-Joystick.read()
-
---[[
-
-Joystick.read() never returns, so if you need to do 
-other things in the same script, call Joystick.peek()
-in a loop or timer instead:
-
-while true do
-  ipc.sleep(0)
-  Joystick.peek()
-  print "doing stuff"
-end
-
-]]

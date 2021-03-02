@@ -18,31 +18,31 @@
     <ClCompile Include="FSL2Lua.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\AxisCallback.cpp">
+    <ClCompile Include="..\Joystick\Joystick_AxisCallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\AxisProperties.cpp">
+    <ClCompile Include="..\Joystick\Joystick_AxisProperties.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\Button.cpp">
+    <ClCompile Include="..\Joystick\Joystick_Button.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\Init.cpp">
+    <ClCompile Include="..\Joystick\Joystick_Init.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\InputBindings.cpp">
+    <ClCompile Include="..\Joystick\Joystick_InputBindings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\JoystickMain.cpp">
+    <ClCompile Include="..\Joystick\Joystick_Logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\Logging.cpp">
+    <ClCompile Include="..\Joystick\Joystick_LuaBindings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\LuaBindings.cpp">
+    <ClCompile Include="..\Joystick\Joystick_Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Joystick\Util.cpp">
+    <ClCompile Include="..\Joystick\Joystick_Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,5 +64,10 @@
     <ClInclude Include="..\Joystick\Joystick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FSL2Lua.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
