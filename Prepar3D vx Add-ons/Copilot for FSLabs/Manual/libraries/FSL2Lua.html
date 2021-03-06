@@ -58,16 +58,14 @@
   <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
-  <li><a href="../manual/standalonescripts.md.html">Standalone FSL2Lua scripts</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
 </ul>
 <h2>Examples</h2>
 <ul class="nowrap">
-  <li><a href="../examples/cockpit_control_binds.lua.html">cockpit_control_binds.lua</a></li>
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
   <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
   <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
   <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
-  <li><a href="../examples/hid_joysticks.lua.html">hid_joysticks.lua</a></li>
-  <li><a href="../examples/set_seat.lua.html">set_seat.lua</a></li>
 </ul>
 
 </div>
@@ -95,7 +93,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Bind">Bind(data)</a></td>
-	<td class="summary">Convenience wrapper around event.key and event.button from the FSUIPC Lua library.</td>
+	<td class="summary">Function for making key bindings.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Bind.cycleSwitch">Bind.cycleSwitch(switch[, ...])</a></td>
@@ -420,10 +418,7 @@
     </dt>
     <dd>
 
-<p>Convenience wrapper around event.key and event.button from the FSUIPC Lua library.
- For joystick buttons, consider <a href="../examples/hid_joysticks.lua.html#">using</a> the <a href="../libraries/Joystick.html#">Joystick</a> library instead. </p>
-
-<p> <a href="../examples/cockpit_control_binds.lua.html#">Click here for usage examples</a></p>
+<p>Function for making key bindings. </p>
 
 <p> Accepted values for onPress, onRelease, and onPressRepeat are:</p>
 
@@ -461,27 +456,23 @@
         <li><span class="parameter">bindPull</span>
          <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as <code>bindButton</code> — for pulling the switch.
         </li>
-        <li><span class="parameter">btn</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number: <code>&quot;A5&quot;</code>.
-        </li>
         <li><span class="parameter">key</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
 
-<p> Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br></p>
+<p> The keyboard key. The following values for are accepted (case-insensitive):<br><br></p>
 
 <ul>
     <li>Alphanumeric character keys</li>
-    <li>Escaped keycodes: <code>key = &quot;\222&quot;</code>.
-    The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging option.</li>
-    <li>Enter</li>
-    <li>Pause</li>
-    <li>CapsLock</li>
+    <li>Keycodes: <code>key = &quot;\222&quot;</code>. </li>
+    <li>Backspace</li>
+    <li>Enter </li>
+    <li>Pause </li>
+    <li>CapsLock </li>
     <li>Esc</li>
     <li>Escape</li>
     <li>Space</li>
     <li>PageUp</li>
-    <li>PageDown</li>
+    <li>PageDown </li>
     <li>End</li>
     <li>Home </li>
     <li>LeftArrow</li>
@@ -489,17 +480,36 @@
     <li>RightArrow </li>
     <li>DownArrow</li>
     <li>PrintScreen</li>
-    <li>Ins</li>
-    <li>Insert</li>
-    <li>Del</li>
+    <li>Ins </li>
+    <li>Insert </li>
+    <li>Del </li>
     <li>Delete</li>
-    <li>NumpadEnter</li>
+    <li>NumpadEnter </li>
     <li>NumpadPlus</li>
     <li>NumpadMinus</li>
     <li>NumpadDot </li>
     <li>NumpadDel</li>
-    <li>NumpadDiv</li>
+    <li>NumpadDiv </li>
     <li>NumpadMult</li>
+    <li>NumpadIns</li>
+    <li>NumpadHome </li>
+    <li>NumpadEnd</li>
+    <li>NumpadPageUp </li>
+    <li>NumpadPageDown</li>
+    <li>NumpadLeftArrow </li>
+    <li>NumpadRightArrow </li>
+    <li>NumpadUpArrow</li>
+    <li>NumpadDownArrow</li>
+    <li>Clear</li>
+    <li>Numpad1</li>
+    <li>Numpad2</li>
+    <li>Numpad3</li>
+    <li>Numpad4</li>
+    <li>Numpad5</li>
+    <li>Numpad6</li>
+    <li>Numpad7</li>
+    <li>Numpad8</li>
+    <li>Numpad9</li>
 </ul>
 
 <p> You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br></p>
@@ -507,11 +517,14 @@
 <ul>
     <li>Tab</li>
     <li>Shift</li>
-    <li>Ctrl</li>
-    <li>LeftAlt</li>
-    <li>RightAlt</li>
+    <li>Ctrl </li>
+    <li>RightCtrl </li>
+    <li>Alt</li>
+    <li>RightAlt </li>
     <li>Windows</li>
+    <li>RightWindows </li>
     <li>Apps</li>
+    <li>RightApps</li>
 </ul>
 
         </li>
@@ -1476,7 +1489,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-02-27 21:19:49 </i>
+<i style="float:right;">Last updated 2021-03-05 19:22:24 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

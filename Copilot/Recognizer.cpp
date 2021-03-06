@@ -10,7 +10,7 @@ bool checkResult(const std::string& msg, HRESULT hr)
 	return false;
 }
 
-bool Recognizer::init()
+Recognizer::Recognizer()
 {
 	HRESULT hr;
 	hr = CoInitialize(NULL);
@@ -20,12 +20,12 @@ bool Recognizer::init()
 		hr = recognizer.CoCreateInstance(CLSID_SpInprocRecognizer);
 		checkResult("Error creating recognizer", hr);
 	}
-		
+
 	if (SUCCEEDED(hr)) {
 		hr = SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio);
 		checkResult("Error in SpCreateDefaultObjectFromCategoryId", hr);
 	}
-	
+
 	if (SUCCEEDED(hr)) {
 		hr = recognizer->SetInput(audio, TRUE);
 		checkResult("Error in SetInput", hr);
@@ -38,13 +38,15 @@ bool Recognizer::init()
 		hr = recoContext->SetInterest(interest, interest);
 		checkResult("Error creating reco context", hr);
 	}
-	
+
 	if (SUCCEEDED(hr)) {
 		hr = recoContext->CreateGrammar(0, &recoGrammar);
 		checkResult("Error creating grammar", hr);
 	}
+
+	if (!SUCCEEDED(hr))
+		throw std::exception();
 	
-	return SUCCEEDED(hr);
 }
 
 Recognizer::~Recognizer()
@@ -60,7 +62,8 @@ Recognizer::~Recognizer()
 bool Recognizer::registerCallback(ISpNotifyCallback* callback)
 {
 	HRESULT hr = recoContext->SetNotifyCallbackInterface(callback, 0, 0);
-	return checkResult("Error setting up notification callback", hr);
+	if (!checkResult("Error setting up notification callback", hr))
+		throw std::exception();
 }
 
 RuleID Recognizer::addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode)

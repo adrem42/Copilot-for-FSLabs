@@ -3,10 +3,11 @@
 #include <SimConnect.h>
 #include "SimInterface.h"
 #include <IWindowPluginSystem.h>
+#include <commctrl.h>
 #include "SimConnect.h"
 #include "Copilot.h"
+#include "KeyBindManager.h"
 #include <memory>
-
 
 HHOOK mouseHook = 0;
 HWND p3dWnd;
@@ -53,33 +54,54 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-namespace SimInterface {
+void createWindow()
+{
 
-    void createWindow()
-    {
-        HRESULT hr;
-        p3dWnd = FindWindow("FS98MAIN", NULL);
+    auto hInst = GetModuleHandle(NULL);
 
-        auto hInst = GetModuleHandle(NULL);
+    WNDCLASSEX wcex = {};
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.lpfnWndProc = WindowProc;
+    wcex.hInstance = hInst;
+    wcex.hIcon = NULL;
+    wcex.lpszClassName = TEXT("FSL2Lua");
 
-        WNDCLASSEX wcex = {};
-        wcex.cbSize = sizeof(WNDCLASSEX);
-        wcex.lpfnWndProc = WindowProc;
-        wcex.hInstance = hInst;
-        wcex.hIcon = NULL;
-        wcex.lpszClassName = "FSL2Lua";
+    RegisterClassEx(&wcex);
 
-        RegisterClassEx(&wcex);
+    copilotWnd = CreateWindowEx(
+        0, wcex.lpszClassName, TEXT("Copilot"), WS_CHILD,
+        0, 0, 0, 0, p3dWnd, NULL, hInst, NULL
+    );
+}
 
-        copilotWnd = CreateWindowEx(
-            0, wcex.lpszClassName, "Copilot", WS_CHILD,
-            0, 0, 0, 0, p3dWnd, NULL, hInst, NULL
-        );
+LRESULT Subclassproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+    switch (uMsg) {
+        case WM_KEYDOWN: case WM_KEYUP: case WM_SYSKEYDOWN: case WM_SYSKEYUP:
+            if (Keyboard::onKeyEvent(uMsg, wParam, lParam))
+                return 0;
+            break;
+        default:
+            break;
     }
 
-    void onSimShutdown()
+    return DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
+namespace SimInterface {
+
+    bool init()
+    {
+        p3dWnd = FindWindow(TEXT("FS98MAIN"), NULL);
+        SetWindowSubclass(p3dWnd, Subclassproc, 0, 0);
+        createWindow();
+        return true;
+    }
+
+    void close()
     {
         CloseWindow(copilotWnd);
+        RemoveWindowSubclass(p3dWnd, Subclassproc, 0);
     }
 
     void fireMouseMacro(size_t rectId, unsigned short clickType)
@@ -90,13 +112,6 @@ namespace SimInterface {
     void hideCursor()
     {
         SendMessage(copilotWnd, MSG_HIDE_CURSOR, 0, 0);
-    }
-
-    void initSimConnect()
-    {
-        SimConnect_MapClientEventToSimEvent(SimConnect::hSimConnect, SimConnect::EVENT_HIDE_CURSOR, "FSL2Lua.hideCursor");
-        SimConnect_AddClientEventToNotificationGroup(SimConnect::hSimConnect, 0, SimConnect::EVENT_HIDE_CURSOR);
-        SimConnect_SetNotificationGroupPriority(SimConnect::hSimConnect, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
     }
 
     std::optional<double> readLvar(const std::string& name)
@@ -112,11 +127,16 @@ namespace SimInterface {
         set_named_variable_value(check_named_variable(name.c_str()), value);
     }
 
-    void createLvar(const std::string& name, double initialValue = 0)
+    void createLvar(const std::string& name, double initialValue)
     {
         ID i = check_named_variable(name.c_str());
         if (i != -1) return;
         register_named_variable(name.c_str());
         writeLvar(name, initialValue);
+    }
+
+    void sendFSControl(size_t id, size_t param)
+    {
+        SendMessage(p3dWnd, WM_COMMAND, id, param);
     }
 }

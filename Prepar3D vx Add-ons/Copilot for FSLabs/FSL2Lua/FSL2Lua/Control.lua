@@ -12,7 +12,7 @@ Control.__index = Control
 
 local timeoutMsg = "\nControl %s isn't responding to mouse macro commands\r\n" ..
 "Most likely its macro is invalid\r\n" ..
-"FSL2Lua version: " .. (_FSL2LUA_VERSION or "") ..
+"FSL2Lua version: " .. (_FSL2LUA_VERSION or "?") ..
 "\r\nCheck compatibility at https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432"
 
 Control.clickTypes = {

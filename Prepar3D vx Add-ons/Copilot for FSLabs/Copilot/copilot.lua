@@ -1,14 +1,6 @@
 
 if false then module("copilot") end
 
-local function addPackagePath(dir)
-  package.path = dir .. "\\?.lua;" .. package.path
-end
-
-APPDIR = debug.getinfo(1, "S").source:gsub(".(.*\\).*", "%1Copilot\\")
-addPackagePath(APPDIR)
-
-copilot = package.loadlib("FSLCopilot", "luaopen_FSLCopilot")()
 require "copilot.util"
 require "copilot.LoadUserOptions"
 
@@ -20,16 +12,11 @@ if copilot.UserOptions.general.button_sleep_mult then
   FSL:setButtonSleepMult(copilot.UserOptions.general.button_sleep_mult)
 end
 
-copilot.FSL_AIRCRAFT = FSL:getAcType() ~= nil
-
-do
-  local err = copilot.init()
-  if err then copilot.exit(err) end
-end
+copilot.IS_FSL_AIRCRAFT = FSL:getAcType() ~= nil
 
 local util = require "FSL2Lua.FSL2Lua.util"
 
-copilot.soundDir = APPDIR .. "\\Sounds\\"
+copilot.soundDir = APPDIR .. "Copilot\\Sounds\\"
 copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == copilot.UserOptions.TRUE
 
 local debugger = {
@@ -135,32 +122,28 @@ local function setup()
     options.actions.during_taxi = options.FALSE
   end
   
-  if copilot.FSL_AIRCRAFT then
+  if copilot.IS_FSL_AIRCRAFT then
     FlightPhaseProcessor.start()
   end
 
-  if copilot.isVoiceControlEnabled then
-    event.flag(0, "Event.fetchRecoResults")
-  end
-
-  if copilot.FSL_AIRCRAFT and options.callouts.enable == options.TRUE  then
+  if copilot.IS_FSL_AIRCRAFT and options.callouts.enable == options.TRUE  then
     require "copilot.callouts"
     copilot.callouts:setup()
     copilot.callouts:start()
   end
 
-  if copilot.FSL_AIRCRAFT and options.actions.enable == options.TRUE then
+  if copilot.IS_FSL_AIRCRAFT and options.actions.enable == options.TRUE then
     require "copilot.actions"
   end
 
-  if copilot.FSL_AIRCRAFT then
+  if copilot.IS_FSL_AIRCRAFT then
     require "copilot.ScratchpadClearer"
   end
 
   local userFiles = false
 
   local function load(dir)
-    local customDir = APPDIR .. dir
+    local customDir = APPDIR .. "\\Copilot\\" .. dir
     for _file in lfs.dir(customDir) do
       if _file:find("%.lua$") then
         if not userFiles then
@@ -174,7 +157,7 @@ local function setup()
   end
 
   load "custom_common\\"
-  load(copilot.FSL_AIRCRAFT and "custom\\" or "custom_non_fsl\\")
+  load(copilot.IS_FSL_AIRCRAFT and "custom\\" or "custom_non_fsl\\")
 
   wrapSequencesWithLogging()
 
@@ -188,7 +171,7 @@ local function setup()
     end
   end
 
-  if copilot.FSL_AIRCRAFT 
+  if copilot.IS_FSL_AIRCRAFT 
     and options.failures.enable == options.TRUE 
     and not debugger.enable then 
     require "copilot.failures"
@@ -197,5 +180,4 @@ local function setup()
 end
 
 setup()
-copilot.resume()
 copilot.logger:info ">>>>>> Setup finished <<<<<<"

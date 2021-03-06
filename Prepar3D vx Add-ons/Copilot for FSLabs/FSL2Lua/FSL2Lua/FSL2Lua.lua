@@ -49,10 +49,6 @@ local trimwheel = require "FSL2Lua.FSL2Lua.trimwheel"
 Bind = require "FSL2Lua.FSL2Lua.Bind"
 Encoder = require "FSL2Lua.FSL2Lua.Encoder"
 
-if not FSL2LUA_STANDALONE and util.FSUIPCversion < 0x5154 then
-  util.handleError("FSUIPC version 5.154 or later is required", nil, true)
-end
-
 FSL.CPT.MCDU = MCDU:new(1)
 FSL.FO.MCDU = MCDU:new(2)
 MCDU.new = nil

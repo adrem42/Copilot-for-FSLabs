@@ -8,6 +8,8 @@ const unsigned short MUTE_KEY_RELEASED = 1;
 
 using namespace SimConnect;
 
+std::string aircraftName;
+
 namespace SimConnect {
 	bool fslAircraftLoaded, simStarted;
 	std::atomic_bool simPaused;
@@ -16,18 +18,15 @@ namespace SimConnect {
 
 void onMuteControlEvent(DWORD param)
 {
-	if (copilot::recoResultFetcher) {
+	switch (param) {
 
-		switch (param) {
+		case MUTE_KEY_DEPRESSED:
+			copilot::onMuteKey(true);
+			break;
 
-			case MUTE_KEY_DEPRESSED:
-				copilot::recoResultFetcher->onMuteKeyEvent(true);
-				break;
-
-			case MUTE_KEY_RELEASED:
-				copilot::recoResultFetcher->onMuteKeyEvent(false);
-				break;
-		}
+		case MUTE_KEY_RELEASED:
+			copilot::onMuteKey(false);
+			break;
 	}
 }
 
@@ -50,11 +49,11 @@ void setupMenu()
 		hSimConnect, EVENT_FSL2LUA_MENU, "Restart script", EVENT_FSL2LUA_MENU_ITEM_RESTART_SCRIPT, 0);
 }
 
-void onFlightLoaded(bool isFslAircraft)
+void onFlightLoaded()
 {
 	setupMenu();
-	SimInterface::createWindow();
-	copilot::onFlightLoaded(isFslAircraft);
+	bool isFslAircraft = aircraftName.find("FSLabs") != std::string::npos;
+	copilot::onFlightLoaded(isFslAircraft, aircraftName);
 }
 
 void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
@@ -81,23 +80,22 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 
 					if (!simStarted) {
 						simStarted = true;
-						onFlightLoaded(fslAircraftLoaded);
+						onFlightLoaded();
 					}
 
 					break;
 				}
 
-			
 				case EVENT_SIM_STOP:
 					simPaused = true;
 					break;
 
 				case EVENT_COPILOT_MENU_ITEM_START:
-					//copilot::startLuaThread();
+					copilot::startCopilotScript();
 					break;
 
 				case EVENT_COPILOT_MENU_ITEM_STOP:
-					//copilot::shutDown();
+					copilot::stopCopilotScript();
 					break;
 
 				case EVENT_FSL2LUA_MENU_ITEM_RESTART_SCRIPT:
@@ -115,8 +113,7 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 
 				case EVENT_AIRCRAFT_LOADED:
 				{
-					std::string path(evt->szFileName);
-					fslAircraftLoaded = path.find("FSLabs") != std::string::npos;
+					aircraftName = std::string(evt->szFileName);
 					break;
 				}
 				default:

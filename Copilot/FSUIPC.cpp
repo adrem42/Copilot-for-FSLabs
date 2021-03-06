@@ -35,4 +35,25 @@ namespace FSUIPC {
 	{
 		return FSUIPCerrors[res];
 	}
+
+	void writeSTR(DWORD offset, const std::string& str, size_t length)
+	{
+		DWORD result;
+		FSUIPC_Write(offset, length, const_cast<char*>(str.c_str()), &result);
+		FSUIPC_Process(&result);
+	}
+
+	void writeSTR(DWORD offset, const std::string& str)
+	{
+		writeSTR(offset, str, str.length());
+	}
+
+	std::string readSTR(DWORD offset, size_t length)
+	{
+		DWORD result;
+		char str[256] = {};
+		FSUIPC_Read(offset, length, str, &result);
+		FSUIPC_Process(&result);
+		return str;
+	}
 }

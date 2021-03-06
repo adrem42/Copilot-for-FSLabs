@@ -5,21 +5,28 @@
 #include <vector>
 #include <Windows.h>
 #include "Recognizer.h"
+#include "functional"
 
 class RecoResultFetcher : ISpNotifyCallback {
-	Recognizer* m_recognizer;
-	std::vector<RuleID> m_recoResults;
-	bool m_muted = false, m_muteKeyDepressed = false;
-	std::atomic_bool m_luaNotified = false;
-	std::chrono::milliseconds m_delayBeforeUnmute = std::chrono::milliseconds(1000);
-	std::mutex m_mutex;
-	std::chrono::time_point<std::chrono::system_clock> m_muteKeyReleasedTime = std::chrono::system_clock::now();
-	void notifyLua();
+public:
+	using UserNotifyCallback = std::function<void()>;
+private:
+	const std::shared_ptr<Recognizer> recognizer;
+	std::vector<RuleID> recoResults;
+	bool muted = false, muteKeyDepressed = false;
+	std::atomic_bool luaNotified = false;
+	std::chrono::milliseconds delayBeforeUnmute = std::chrono::milliseconds(1000);
+	std::mutex mutex;
+	std::chrono::time_point<std::chrono::system_clock> muteKeyReleasedTime = std::chrono::system_clock::now();
 	void fetchResults();
 	HRESULT NotifyCallback(WPARAM wParam, LPARAM lParam) override;
+	HANDLE newResultsEvent = CreateEvent(0, 0, 0, 0);
+
 public:
-	RecoResultFetcher(Recognizer* recognizer);
-	bool registerCallback();
-	void onMuteKeyEvent(bool isMuteKeyPressed);
+
+	HANDLE event();
+	RecoResultFetcher(std::shared_ptr<Recognizer>);
+	void registerCallback();
+	void onMuteKey(bool state);
 	sol::as_table_t<std::vector<RuleID>> getResults();
 };

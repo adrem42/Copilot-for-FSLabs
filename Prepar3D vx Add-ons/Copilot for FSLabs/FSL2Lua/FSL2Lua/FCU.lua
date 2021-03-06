@@ -1,6 +1,6 @@
 local util = require "FSL2Lua.FSL2Lua.util"
 
-local FCU = {request = HttpRequest and HttpRequest:new("http://localhost:8080/FCU/Display")}
+local FCU = {request = HttpSession and HttpSession:new("http://localhost:8080/FCU/Display", 0)}
 
 function FCU:getField(json, fieldName)
   return json:match(fieldName .. ".-([%d%s]+)"):gsub(" ","")

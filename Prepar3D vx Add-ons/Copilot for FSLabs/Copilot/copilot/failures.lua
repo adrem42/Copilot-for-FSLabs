@@ -15,7 +15,7 @@ if copilot.UserOptions.failures.per_airframe == 1 then
 else
   aircraftReg = "common"
 end
-local aircraftRegDir = APPDIR .. "failures\\" .. aircraftReg
+local aircraftRegDir = APPDIR .. "Copilot\\failures\\" .. aircraftReg
 local stateFilePath = aircraftRegDir .. "\\state.lua"
 
 for _, v in ipairs(require "Copilot.copilot.failurelist") do
@@ -240,7 +240,7 @@ end
 
 local function init()
 
-  lfs.mkdir(APPDIR .. "failures")
+  lfs.mkdir(APPDIR .. "Copilot\\failures")
   lfs.mkdir(aircraftRegDir)
 
   local path = ipc.readSTR(0x3C00,256):gsub("SimObjects.+", "A320XGauges.ini")
@@ -253,7 +253,7 @@ local function loadStates()
     minutesLoggedAtStart = 0
     initLivery()
   else
-    failureStates = require("FSLabs Copilot.failures." .. aircraftReg .. ".state")
+    failureStates = require("Copilot.failures." .. aircraftReg .. ".state")
     minutesLoggedAtStart = tonumber(file.read(aircraftRegDir .. "\\logged") or 0)
     for failureName in pairs(failures) do
       if not failureStates[failureName] then

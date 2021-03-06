@@ -8,36 +8,36 @@ project = '%s'
 merge = true
 
 file = {
-  'FSUIPC folder/FSL2lua/FSL2Lua/util.lua',
-  'FSUIPC folder/FSL2lua/FSL2Lua/Bind.lua',
-  'FSUIPC folder/FSL2lua/FSL2Lua/FSL2Lua.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/util.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/Bind.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/FSL2Lua.lua',
 
-  'FSUIPC folder/FSL2lua/FSL2Lua/Control.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/Control.lua',
 
-  'FSUIPC folder/FSL2lua/FSL2Lua/Button.lua',
-  'FSUIPC folder/FSL2lua/FSL2Lua/ToggleButton.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/Button.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/ToggleButton.lua',
 
-  'FSUIPC folder/FSL2lua/FSL2Lua/Guard.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/Guard.lua',
 
-  'FSUIPC folder/FSL2lua/FSL2Lua/Switch.lua',
-  'FSUIPC folder/FSL2lua/FSL2Lua/PushPullSwitch.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/Switch.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/PushPullSwitch.lua',
 
-  'FSUIPC folder/FSL2lua/FSL2Lua/RotaryKnob.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/RotaryKnob.lua',
 
-  'FSUIPC folder/FSL2lua/FSL2Lua/MCDU.lua',
-
-
-  'FSUIPC folder/FSLabs Copilot.lua',
-  'FSUIPC folder/FSLabs Copilot/copilot/callbacks.lua',
-  'FSUIPC folder/FSLabs Copilot/copilot/util.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/MCDU.lua',
 
 
-  'FSUIPC folder/FSLabs Copilot/copilot/Action.lua',
-  'FSUIPC folder/FSLabs Copilot/copilot/Event.lua',
-  'FSUIPC folder/FSLabs Copilot/copilot/ActionOrderSetter.lua',
-  'FSUIPC folder/FSLabs Copilot/copilot/SingleEvent.lua',
-  'FSUIPC folder/FSLabs Copilot/copilot/VoiceCommand.lua',
-  'Joystick/Joystick.h',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/Copilot.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/callbacks.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/util.lua',
+
+
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Action.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Event.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/ActionOrderSetter.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/SingleEvent.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/VoiceCommand.lua',
+  'Copilot/Joystick.h',
 }
 
 format = 'markdown'
@@ -64,7 +64,7 @@ pretty='lxsh'
 
 ]]
 
-local file = require "FSUIPC folder.FSL2Lua.FSL2Lua.file"
+local file = require "Prepar3D vx Add-ons.Copilot for FSLabs.FSL2Lua.FSL2Lua.file"
 
 local versionInfo = file.read "Copilot\\versionInfo.h"
 

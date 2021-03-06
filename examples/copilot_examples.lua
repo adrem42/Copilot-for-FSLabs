@@ -1,5 +1,5 @@
 -- A few examples of adding @{Event|actions and voice commands} to Copilot.
--- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
+-- Drop this file into Copilot for FSLabs/Copilot/custom - Copilot auto-loads
 -- any lua files in that directory
 
 ------------------------------------------------------------------------------

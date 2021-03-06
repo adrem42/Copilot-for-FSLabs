@@ -1,7 +1,6 @@
 #include "McduWatcher.h"
 #include "Copilot.h"
 #include <algorithm>
-int HttpRequest::receiveTimeout = 1000;
 
 bool isNumber(const std::string& str) 
 {
@@ -17,8 +16,8 @@ LuaVar toNumber(const std::string& str)
 
 McduWatcher::McduWatcher(int pmSide, int port)
 {
-	cptMcdu = std::make_shared<Mcdu>(1, port);
-	foMcdu = std::make_shared<Mcdu>(2, port);
+	cptMcdu = std::make_shared<MCDU>(1, 1000, port);
+	foMcdu = std::make_shared<MCDU>(2, 1000, port);
 	if (pmSide == 1) {
 		pmMcdu = cptMcdu;
 		pfMcdu = foMcdu;

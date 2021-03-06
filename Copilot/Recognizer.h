@@ -43,7 +43,7 @@ private:
 	std::unordered_map<RuleID, Rule> rules;
 	std::recursive_mutex mtx;
 public:
-	bool init();
+	Recognizer();
 	~Recognizer();
 	bool registerCallback(ISpNotifyCallback* callback);
 	RuleID addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode);

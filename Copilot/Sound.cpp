@@ -9,6 +9,9 @@ Sound* Sound::prevSound;
 std::mutex Sound::mtx;
 double Sound::userVolume = 1, Sound::globalVolume = 0, Sound::volKnobPos = -1;
 
+std::string Sound::knobLvar;
+std::string Sound::switchLvar;
+
 Sound::Sound(const std::string& path, int length, double fileRelVolume)
 	:length(length), fileRelVolume(fileRelVolume)
 {
@@ -58,11 +61,11 @@ void Sound::playNow()
 void Sound::init(int devNum, int pmSide, double userVolume)
 {
 	if (pmSide == 1) {
-		volumeKnob.knobLvar = "VC_PED_COMM_2_INT_Knob";
-		volumeKnob.switchLvar = "VC_PED_COMM_2_INT_Switch";
+		knobLvar = "VC_PED_COMM_2_INT_Knob";
+		switchLvar = "VC_PED_COMM_2_INT_Switch";
 	} else if (pmSide == 2) {
-		volumeKnob.knobLvar = "VC_PED_COMM_1_INT_Knob";
-		volumeKnob.switchLvar = "VC_PED_COMM_1_INT_Switch";
+		knobLvar = "VC_PED_COMM_1_INT_Knob";
+		switchLvar = "VC_PED_COMM_1_INT_Switch";
 	}
 
 	nextFreeSlot = std::chrono::system_clock::now();
@@ -104,8 +107,8 @@ void Sound::adjustVolumeFromGlobal()
 
 double Sound::getVolumeKnobPos()
 {
-	if (copilot::readLvar(volumeKnob.switchLvar) != 10) {
-		return copilot::readLvar(volumeKnob.knobLvar);
+	if (copilot::readLvar(switchLvar) != 10) {
+		return copilot::readLvar(knobLvar);
 	}
 	return 0;
 }

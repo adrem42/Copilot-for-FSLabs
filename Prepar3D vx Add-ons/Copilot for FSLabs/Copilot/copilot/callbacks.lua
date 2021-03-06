@@ -12,9 +12,6 @@ copilot.THREAD_REMOVED = setmetatable({}, {__tostring = function() return "copil
 copilot.INDEFINITE = {}
 
 copilot.getTimestamp = ipc.elapsedtime
---copilot.getTimestamp = elapsedTime
-function copilot.pause() event.cancel "copilot.update" end
-function copilot.resume() event.timer(30, "copilot.update") end
 function copilot.getThreadEvent(thread) return threadEvents[thread] end
 function copilot.await(thread) return Event.waitForEvent(copilot.getThreadEvent(thread)) end
 

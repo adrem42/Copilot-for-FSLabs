@@ -1,5 +1,5 @@
 rmdir docs /S /Q
-rmdir "FSUIPC folder\FSLabs Copilot\Manual" /S /Q
+rmdir "Prepar3D vx Add-ons\Copilot for FSLabs\Manual" /S /Q
 del config.ld
 
 lua5.1 makecontrollist.lua || exit /b 1
@@ -8,4 +8,4 @@ xcopy "topics\img" "docs\img" /i /y
 
 call ldoc . --dir docs || exit /b 1
 del config.ld
-xcopy "docs" "FSUIPC folder\FSLabs Copilot\Manual" /i /y /E /C
+xcopy "docs" "Prepar3D vx Add-ons\Copilot for FSLabs\Manual" /i /y /E /C

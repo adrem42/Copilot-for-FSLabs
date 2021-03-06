@@ -71,6 +71,7 @@ public:
 		m_RefCount(1)
 	{
 	}
+
 	virtual void MouseRectListenerProc(UINT id, MOUSE_CLICK_TYPE clickType) override
 	{
 		if (clickType == MOUSE_CLICK_RIGHT_RELEASE ||

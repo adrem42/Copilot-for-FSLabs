@@ -4,15 +4,32 @@ local BindMeta = {}
 BindMeta.__index = BindMeta
 local funcCount = 0
 
-function BindMeta:destroy()
-  if not self.globalFuncs then return end
-  for _, funcName in ipairs(self.globalFuncs) do
-    if type(_G[funcName]) == "function" then
-      event.cancel(funcName)
-      _G[funcName] = nil
+if _COPILOT then
+  function BindMeta:destroy()
+    local function remove(event, callback)
+      __removeKeyBind(self.keyBind.key, event, callback, self.keyBind.shifts)
+    end
+    if self.data.onPress then
+      remove(KeyEventType.Press, self.data.onPress)
+    end
+    if self.data.onPressRepeat then
+      remove(KeyEventType.PressRepeat, self.data.onPressRepeat)
+    end
+    if self.data.onRelease then
+      remove(KeyEventType.Release, self.data.onRelease)
     end
   end
-  self.globalFuncs = nil
+else
+  function BindMeta:destroy()
+    if not self.globalFuncs then return end
+    for _, funcName in ipairs(self.globalFuncs) do
+      if type(_G[funcName]) == "function" then
+        event.cancel(funcName)
+        _G[funcName] = nil
+      end
+    end
+    self.globalFuncs = nil
+  end
 end
 
 function BindMeta:addGlobalFunc(func)

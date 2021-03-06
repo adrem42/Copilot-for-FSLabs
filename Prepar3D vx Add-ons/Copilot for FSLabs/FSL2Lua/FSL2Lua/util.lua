@@ -94,17 +94,12 @@ end
 
 function util.handleError(msg, level, critical)
   level = (level or 1) + 1
-  msg = "FSL2Lua: " .. msg
-  if copilot then
-    local logFile = string.format("FSUIPC%s.log", ("%x"):format(util.FSUIPCversion):sub(1, 1))
-    copilot.logger[critical and "error" or "warn"](copilot.logger, "FSL2Lua: something went wrong. Check " .. logFile)
-    if critical then copilot.logger:error("Copilot cannot continue") end
-  end
-  if critical then
-    error(msg, level)
-  end
   local trace = debug.getinfo(level, "Sl")
-  ipc.log(string.format("%s\r\nsource: %s:%s", msg, trace.short_src, trace.currentline))
+  if critical then
+    error(msg)
+  else
+    print(string.format("%s\r\nsource: %s:%s", msg, trace.short_src, trace.currentline))
+  end
 end
 
 function util.log(msg, drawline, notimestamp)

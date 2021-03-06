@@ -2,29 +2,27 @@
 
 <a href="https://forums.flightsimlabs.com/index.php?/topic/25298-copilot-lua-script/&tab=comments#comment-194432">Copilot and FSLabs version compatibility</a>
 
-## Installing only FSL2Lua
+## Using the keyboard and joystick binding facilities
 
-You can install FSL2Lua standalone (without Copilot) to bind your keyboard keys, joystick buttons and axes to FSLabs cockpit controls.
+1. Install Copilot using the instructions below.
 
-To do that, unzip *FSUIPC folder\FSL2Lua* into your FSUIPC install directory.
+2. If you don't want the main Copilot functionality, disable Copilot by setting enable=0 in the [General] section in options.ini
 
-@{standalonescripts.md | Click here} to read on how to create a script and tell FSUIPC to run it.
+3. Read more @{standalonescripts.md|here}
 
 ## Installing Copilot
 
-1. Unzip the content of *FSUIPC folder* into your FSUIPC install directory.
+1. Unzip the content of *Prepar3D vx Add-ons* into your Add-ons folder (eg *C:\Users\Username\Documents\Prepar3D v4 Add-ons*).
 
-2. Unzip the content of *Prepar3D vx Add-ons* into your Add-ons folder (eg *C:\Users\Username\Documents\Prepar3D v4 Add-ons*).
+2. Run the simulator and respond to the prompt asking you to enable the addon.
 
-3. Run the simulator and respond to the prompt asking you to enable the addon.
-
-4. After P3D has loaded into the main menu, you'll find the configuration file at *FSUIPC directory\FSLabs Copilot\options.ini*. Open it and adjust the settings.
+3. After P3D has loaded into the main menu, you'll find the configuration file at *Prepar3D vx Add-ons\Copilot for FSLabs\options.ini*. Open it and adjust the settings.
 
 The script will auto-run after you load a flight with FSLabs.
 
 You can restart or stop the script from its Add-ons submenu.
 
-**If anything goes wrong during the script's operation**, look for any lua errors in FSUIPC6.log/FSUIPC5.log or anything unusual in Copilot.log (you can make the log more verbose by setting log_level to 1).
+**If anything goes wrong during the script's operation**, look for any errors in Copilot.log (you can make the log more verbose by setting log_level to 1).
 
 If you want to extend the functionality of the script, see the examples in the sidebar that are prefixed with 'copilot_'.
 

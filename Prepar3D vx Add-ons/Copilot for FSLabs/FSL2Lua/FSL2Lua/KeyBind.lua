@@ -10,26 +10,45 @@ local keyList = {
   Esc = 27,
   Escape = 27,
   Space = 32,
-  PageUp = 33,
-  PageDown = 34,
-  End = 35,
-  Home = 36,
-  LeftArrow = 37,
-  UpArrow = 38,
-  RightArrow = 39,
-  DownArrow = 40,
-  PrintScreen = 44,
-  Ins = 45,
-  Insert = 45,
-  Del = 46,
-  Delete  = 46,
-  NumpadEnter = 135,
+  PageUp = not _COPILOT and 33 or (33 + 0xFF),
+  PageDown = not _COPILOT and 34 or (34 + 0xFF),
+  End = not _COPILOT and 35 or (35 + 0xFF),
+  Home = not _COPILOT and 36 or (36 + 0xFF),
+  LeftArrow = not _COPILOT and 37 or (37 + 0xFF),
+  UpArrow = not _COPILOT and 38 or (38 + 0xFF),
+  RightArrow = not _COPILOT and 39 or (39 + 0xFF),
+  DownArrow = not _COPILOT and 40 or (40 + 0xFF),
+  PrintScreen = not _COPILOT and 44 or (44 + 0xFF),
+  Ins = not _COPILOT and 45 or (45 + 0xFF),
+  Insert = not _COPILOT and 45 or (45 + 0xFF),
+  Del = not _COPILOT and 46 or (46 + 0xFF),
+  Delete  = not _COPILOT and 46 or (46 + 0xFF),
+  NumpadEnter = not _COPILOT and 135 or (13 + 0xFF),
   NumpadPlus = 107,
   NumpadMinus = 109,
   NumpadDot = 110,
-  NumpadDel = 110,
-  NumpadDiv = 111,
-  NumpadMult = 106
+  NumpadDel = not _COPILOT and 110 or 46,
+  NumpadDiv = not _COPILOT and 111 or (111 + 0xFF),
+  NumpadMult = 106,
+  NumpadIns = _COPILOT and 45,
+  NumpadHome = _COPILOT and 36,
+  NumpadEnd = _COPILOT and 35,
+  NumpadPageUp = _COPILOT and 33,
+  NumpadPageDown = _COPILOT and 34,
+  NumpadLeftArrow = _COPILOT and 37,
+  NumpadRightArrow = _COPILOT and 39,
+  NumpadUpArrow = _COPILOT and 38,
+  NumpadDownArrow = _COPILOT and 40,
+  Clear = _COPILOT and 12,
+  Numpad1 = _COPILOT and 97,
+  Numpad2 = _COPILOT and 98,
+  Numpad3 = _COPILOT and 99,
+  Numpad4 = _COPILOT and 100,
+  Numpad5 = _COPILOT and 101,
+  Numpad6 = _COPILOT and 102,
+  Numpad7 = _COPILOT and 103,
+  Numpad8 = _COPILOT and 104,
+  Numpad9 = _COPILOT and 105,
 }
 
 for i = 1, 22 do
@@ -49,17 +68,65 @@ local shiftsList = {
   Apps = {key = 93, shift = 64}
 }
 
-local KeyBind = setmetatable({}, require "FSL2Lua.FSL2Lua.BindMeta")
+local copilotShifts = {
+  Tab = 9,
+  Shift = 16,
+  Ctrl = 17,
+  RightCtrl = 17 + 0xFF,
+  Alt = 18,
+  RightAlt = 18 + 0xFF ,
+  Windows = 92,
+  RightWindows = 92 + 0xFF,
+  Apps = 93,
+  RightApps = 93 + 0xFF
+}
 
-function KeyBind:new(data)
+local KeyBindWrapper = setmetatable({}, require "FSL2Lua.FSL2Lua.BindMeta")
+
+function KeyBindWrapper:new(data)
   self.__index = self
   local bind = setmetatable({}, self)
-  bind.data = bind:prepareData(data)
+  if _COPILOT then 
+    bind.data = bind:prepareDataNew(data)
+  else
+    bind.data = bind:prepareDataOld(data)
+  end
   bind:rebind()
   return bind
 end
 
-function KeyBind:prepareData(data)
+local function findKeyCode(str, keys)
+  keys = keys or keyList
+  for k, v in pairs(keys) do
+    if k:lower() == str:lower() then
+      return v
+    end
+  end
+  return (#str == 1 and string.byte(str:upper())) or nil
+end
+
+function KeyBindWrapper:prepareDataNew(data)
+  local key
+  local keys = {}
+  local shifts = {}
+  for _key in data.key:gmatch("[^(%+)]+") do
+    keys[#keys+1] = _key
+  end
+  local function onError()
+    error("Invalid key combination: " .. data.key, 5)
+  end
+  for i, _key in ipairs(keys) do
+    if i == #keys then
+      key =_key
+    else
+      shifts[#shifts+1] = findKeyCode(_key, copilotShifts) or onError()
+    end
+  end
+  self.keyBind = {key = findKeyCode(key) or onError(), shifts = shifts}
+  return data
+end
+
+function KeyBindWrapper:prepareDataOld(data)
   util.assert(type(data.key) == "string", "The key combination must be a string", 4)
   local keys = {}
   local shifts = {}
@@ -95,83 +162,100 @@ function KeyBind:prepareData(data)
   return data
 end
 
-function KeyBind:registerOnPressEvents()
-  local key = self.data.keys.key
-  local shifts = self.data.keys.shifts
-  local shiftsVal = 0
-  if shifts then
-    for _, shift in ipairs(shifts) do
-      shiftsVal = shiftsVal + shift.shift
+if not _COPILOT then
+
+  function KeyBindWrapper:registerOnPressEvents()
+    local key = self.data.keys.key
+    local shifts = self.data.keys.shifts
+    local shiftsVal = 0
+    if shifts then
+      for _, shift in ipairs(shifts) do
+        shiftsVal = shiftsVal + shift.shift
+      end
     end
-  end
-  local downup = self.data.Repeat and 4 or 1
-  if shifts and self.data.onRelease then
-    event.key(key, shiftsVal, downup, self:addGlobalFunc(function()
-      self.isPressedWithShifts = true
-      self.data.onPress()
-    end))
-  else
-    if not shifts and self.data.onRelease then
+    local downup = self.data.Repeat and 4 or 1
+    if shifts and self.data.onRelease then
       event.key(key, shiftsVal, downup, self:addGlobalFunc(function()
-        self.isPressedPlain = true
+        self.isPressedWithShifts = true
         self.data.onPress()
       end))
     else
-      event.key(key, shiftsVal, downup, self:addGlobalFunc(self.data.onPress))
-    end
-  end
-end
-
-local function subsetSums(arr, l, r, sum, sums)
-  sums = sums or {}
-  sum = sum or 0
-  if l > r then
-    sums[#sums+1] = sum
-    return
-  end
-  subsetSums(arr, l + 1, r, sum + arr[l], sums)
-  subsetSums(arr, l + 1, r, sum, sums)
-  return sums
-end
-
-function KeyBind:registerOnReleaseEvents()
-  local key = self.data.keys.key
-  local shifts = self.data.keys.shifts
-  if shifts then
-    local funcName = self:addGlobalFunc(function()
-      if self.isPressedWithShifts then
-        self.isPressedWithShifts = false
-        self.data.onRelease()
+      if not shifts and self.data.onRelease then
+        event.key(key, shiftsVal, downup, self:addGlobalFunc(function()
+          self.isPressedPlain = true
+          self.data.onPress()
+        end))
+      else
+        event.key(key, shiftsVal, downup, self:addGlobalFunc(self.data.onPress))
       end
-    end)
-    local shiftsValArr = {}
-    for _, v in pairs(shifts) do
-      shiftsValArr[#shiftsValArr+1] = v.shift
     end
-    local shiftCombinations = subsetSums(shiftsValArr, 1, #shiftsValArr)
-    for _, v in pairs(shifts) do
-      for _, _v in pairs(shiftCombinations) do
-        if _v > 0 then
-          event.key(v.key, _v, 2, funcName)
+  end
+
+  local function subsetSums(arr, l, r, sum, sums)
+    sums = sums or {}
+    sum = sum or 0
+    if l > r then
+      sums[#sums+1] = sum
+      return
+    end
+    subsetSums(arr, l + 1, r, sum + arr[l], sums)
+    subsetSums(arr, l + 1, r, sum, sums)
+    return sums
+  end
+
+  function KeyBindWrapper:registerOnReleaseEvents()
+    local key = self.data.keys.key
+    local shifts = self.data.keys.shifts
+    if shifts then
+      local funcName = self:addGlobalFunc(function()
+        if self.isPressedWithShifts then
+          self.isPressedWithShifts = false
+          self.data.onRelease()
+        end
+      end)
+      local shiftsValArr = {}
+      for _, v in pairs(shifts) do
+        shiftsValArr[#shiftsValArr+1] = v.shift
+      end
+      local shiftCombinations = subsetSums(shiftsValArr, 1, #shiftsValArr)
+      for _, v in pairs(shifts) do
+        for _, _v in pairs(shiftCombinations) do
+          if _v > 0 then
+            event.key(v.key, _v, 2, funcName)
+          end
         end
       end
-    end
-    for _, v in pairs(shiftCombinations) do
-      if v > 0 then
-        event.key(key, v, 2, funcName)
+      for _, v in pairs(shiftCombinations) do
+        if v > 0 then
+          event.key(key, v, 2, funcName)
+        end
       end
-    end
-  else
-    if not self.data.onPress then
-      event.key(key, nil, 1, self:addGlobalFunc(function() self.isPressedPlain = true end))
-    end
-    event.key(key, nil, 2, self:addGlobalFunc(function()
-      if self.isPressedPlain then
-        self.isPressedPlain = false
-        self.data.onRelease()
+    else
+      if not self.data.onPress then
+        event.key(key, nil, 1, self:addGlobalFunc(function() self.isPressedPlain = true end))
       end
-    end))
+      event.key(key, nil, 2, self:addGlobalFunc(function()
+        if self.isPressedPlain then
+          self.isPressedPlain = false
+          self.data.onRelease()
+        end
+      end))
+    end
   end
+
+else
+
+  function KeyBindWrapper:registerOnReleaseEvents()
+    __addKeyBind(self.keyBind.key, KeyEventType.Release, self.data.onRelease, self.keyBind.shifts)
+  end
+
+  function KeyBindWrapper:registerOnPressEvents()
+    __addKeyBind(self.keyBind.key, KeyEventType.Press, self.data.onPress, self.keyBind.shifts)
+    if self.data.onPressRepeat then
+      __addKeyBind(self.keyBind.key, KeyEventType.PressRepeat, self.data.onPressRepeat, self.keyBind.shifts)
+    end
+  end
+
 end
 
-return KeyBind
+return KeyBindWrapper

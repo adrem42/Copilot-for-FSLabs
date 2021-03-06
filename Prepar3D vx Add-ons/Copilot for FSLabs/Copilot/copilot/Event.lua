@@ -428,7 +428,7 @@ function Event._simConnectMenuEventHandler(res)
   Event._simConnectMenuEvent = nil
 end
 
-event.MenuSelect("Event._simConnectMenuEventHandler")
+--event.MenuSelect("Event._simConnectMenuEventHandler")
 
 --- Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)
 --- @string title The title of the menu

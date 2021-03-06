@@ -1,5 +1,7 @@
 #pragma once
 
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#define SPDLOG_WCHAR_FILENAMES
 #include "../Copilot/SimConnect.h"
 #include <spdlog/spdlog.h>
 #include "RecoResultFetcher.h"
@@ -12,38 +14,19 @@
 
 namespace copilot {
 
-	extern RecoResultFetcher* recoResultFetcher;
 	extern std::shared_ptr<spdlog::logger> logger;
 	extern std::mutex FSUIPCmutex;
 	extern std::string appDir;
+	extern bool isFslAircraft;
 	double readLvar(const std::string& name);
-	//void startLuaThread();
-	//void shutDown();
-	//void autoStartLua();
+	void startCopilotScript();
+	void stopCopilotScript();
 	void onSimEvent(SimConnect::EVENT_ID event);
-	void onFlightLoaded(bool isFslAircraft);
+	void onMuteKey(bool);
+	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName);
 
 	void launchFSL2LuaScript();
 
 	P3D::IWindowPluginSystemV440* GetWindowPluginSystem();
-
-	class Timer {
-	
-		using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
-		TimePoint start = std::chrono::system_clock::now();
-		std::string prefix;
-
-	public:
-		Timer(const std::string& prefix)
-			:prefix(prefix)
-		{
-		}
-		~Timer()
-		{
-			auto now = std::chrono::system_clock::now();
-			double duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
-			logger->trace("{} took {} ms", prefix, duration);
-		}
-	};
 
 };

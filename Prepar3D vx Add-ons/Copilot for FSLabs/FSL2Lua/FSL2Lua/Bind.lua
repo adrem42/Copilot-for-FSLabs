@@ -16,10 +16,7 @@ local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 local Bind = setmetatable({funcCount = 0}, {})
 Bind.__index = Bind
 
---- Convenience wrapper around event.key and event.button from the FSUIPC Lua library.
---- For joystick buttons, consider @{hid_joysticks.lua|using} the `Joystick` library instead. 
---
---- @{cockpit_control_binds.lua|Click here for usage examples}
+--- Function for making key bindings.
 --
 --- Accepted values for onPress, onRelease, and onPressRepeat are:
 --
@@ -37,20 +34,19 @@ Bind.__index = Bind
 --- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
 --- @param data.bindPush <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pushing the switch.
 --- @param data.bindPull <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pulling the switch.
---- @string data.btn Define this field for a joystick button bind. It should be a string containing the FSUIPC joystick letter and button number: `"A5"`.
---- @string data.key Define this field for a key bind. The following values for are accepted (case-insensitive):<br><br>
+--- @string data.key The keyboard key. The following values for are accepted (case-insensitive):<br><br>
 --
 -- * Alphanumeric character keys
--- * Escaped keycodes: `key = "\222"`. 
--- The keycodes can be looked up in the FSUIPC console after enabling the 'Button and key operations' logging option.
--- * Enter
--- * Pause
--- * CapsLock
+-- * Keycodes: `key = "\222"`. 
+-- * Backspace
+-- * Enter 
+-- * Pause 
+-- * CapsLock 
 -- * Esc
 -- * Escape
 -- * Space
 -- * PageUp
--- * PageDown
+-- * PageDown 
 -- * End
 -- * Home 
 -- * LeftArrow
@@ -58,27 +54,49 @@ Bind.__index = Bind
 -- * RightArrow 
 -- * DownArrow
 -- * PrintScreen
--- * Ins
--- * Insert
--- * Del
+-- * Ins 
+-- * Insert 
+-- * Del 
 -- * Delete
--- * NumpadEnter
+-- * NumpadEnter 
 -- * NumpadPlus
 -- * NumpadMinus
 -- * NumpadDot 
 -- * NumpadDel
--- * NumpadDiv
+-- * NumpadDiv 
 -- * NumpadMult
+-- * NumpadIns
+-- * NumpadHome 
+-- * NumpadEnd
+-- * NumpadPageUp 
+-- * NumpadPageDown
+-- * NumpadLeftArrow 
+-- * NumpadRightArrow 
+-- * NumpadUpArrow
+-- * NumpadDownArrow
+-- * Clear
+-- * Numpad1
+-- * Numpad2
+-- * Numpad3
+-- * Numpad4
+-- * Numpad5
+-- * Numpad6
+-- * Numpad7
+-- * Numpad8
+-- * Numpad9
 --
 -- You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br>
 --
 -- * Tab
 -- * Shift
--- * Ctrl
--- * LeftAlt
--- * RightAlt
+-- * Ctrl 
+-- * RightCtrl 
+-- * Alt
+-- * RightAlt 
 -- * Windows
+-- * RightWindows 
 -- * Apps
+-- * RightApps
 
 local bindMt = getmetatable(Bind)
 
@@ -86,9 +104,10 @@ function bindMt:__call(data)
 
   util.assert(data.key or data.btn, "You need to specify a key and/or button", 2)
   local bind = self:prepareBind(data)
-  
   bind._keyBind = data.key and KeyBind:new(data)
-  bind._joyBind = data.btn and JoyBind:new(data)
+  if not _COPILOT then
+    bind._joyBind = data.btn and JoyBind:new(data)
+  end
 
   if data.dispose == true then
     util.setOnGCcallback(bind, function() bind:_destroy() end)
@@ -122,7 +141,7 @@ end
 
 function Bind:prepareBind(data)
 
-  if data.onPress ~= nil and data.onPressRepeat ~= nil then
+  if not _COPILOT and data.onPress ~= nil and data.onPressRepeat ~= nil then
     error("You can't have both onPress and onPressRepeat in the same bind.", 3)
   end
 
@@ -142,7 +161,7 @@ function Bind:prepareBind(data)
     specialButtonBinding(data, Bind._bindToggleButton(data.bindToggleButton))
   end
   
-  if data.onPressRepeat then
+  if data.onPressRepeat and not _COPILOT then
     data.onPress = data.onPressRepeat
     data.Repeat = true
   end

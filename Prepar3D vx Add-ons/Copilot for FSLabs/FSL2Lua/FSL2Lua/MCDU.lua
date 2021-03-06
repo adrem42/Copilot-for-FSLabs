@@ -19,7 +19,7 @@ local MCDU = {
 function MCDU:new(side)
   self.__index = self
   return setmetatable ({
-    request = McduHttpRequest and McduHttpRequest:new(side, 8080),
+    request = MCDUsession and MCDUsession:new(side, 0, 8080),
     sideStr = side == 1 and "CPT" or side == 2 and "FO"
   }, self)
 end
