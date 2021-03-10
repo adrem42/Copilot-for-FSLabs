@@ -36,7 +36,7 @@ local function checkOption(option, iniValue)
       end
     end
     if val == nil and option.required then
-      copilot.exit(string.format(
+      error(string.format(
         "Invalid value for option %s: %s. Only the following values are accepted: %s.",
         option.name, iniValue, table.concat(option.values, ", ")
       ))
@@ -104,7 +104,7 @@ local optionFilePath = APPDIR .. "\\options.ini"
 loadUserOptions(optionFilePath)
 saveUserOptions(optionFilePath)
 
-if not ipc then return end
+if not ipc then return UserOptions end
 
 local seat = UserOptions.general.PM_seat
 UserOptions.general.PM_seat = seat == "left" and 1 or seat == "right" and 2

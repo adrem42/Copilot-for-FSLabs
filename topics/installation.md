@@ -22,11 +22,11 @@ The script will auto-run after you load a flight with FSLabs.
 
 You can restart or stop the script from its Add-ons submenu.
 
-**If anything goes wrong during the script's operation**, look for any errors in Copilot.log (you can make the log more verbose by setting log_level to 1).
+**If anything goes wrong during the script's operation**, examine Copilot.log for errors or anything else that's unusual.
 
 If you want to extend the functionality of the script, see the examples in the sidebar that are prefixed with 'copilot_'.
 
-## Setting up speech recognition
+## Setting up speech recognition>
 
 You need to have English as the Windows language in order for the speech recognition to work . 
 
@@ -38,5 +38,13 @@ You need to have English as the Windows language in order for the speech recogni
 
 4. Train the profile with the Train Profile wizard <p><img src="../img/recosetup2.jpg" width="400px"></p>
 
-5. If you fly online, you'll want to bind your PTT key or button to mute Copilot: <p><img src="../img/mutekey.png" width="500px"></p> <p><img src="../img/mutebutton.png" width="500px"></p>
+5. If you fly online, you'll want to bind your PTT key or button to mute Copilot. There are two ways of doing it:<br><br>
+
+> 1. Create a separate script as described @{standalonescripts.md|here} and bind a key or button to the muteCopilot and unmuteCopilot functions, for example:
+
+>> `Bind { key = "A", onPress = muteCopilot, onRelease = unmuteCopilot }`
+
+> 2. 
+
+> <p><img src="../img/mutekey.png" width="500px"></p> <p><img src="../img/mutebutton.png" width="500px"></p>
 

@@ -1,14 +1,6 @@
 -- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
 -- any lua files in that directory
 
-local function askDestination(choices)
-  return Event.waitForEvent(
-    Event.fromSimConnectMenu(
-    "Where do you want to send the rocket?", 
-    "Please select a destination:", choices
-    )
-  )
-end
 
 local function makeCountdown(numSeconds)
   return coroutine.create(function()
@@ -36,10 +28,14 @@ local function rocketLaunch()
   copilot.logger:info "Preparing for rocket launch..."
   copilot.suspend(5000, 10000)
 
-  local _, destination = askDestination {
-    "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
-  }
-
+  local _, _, destination = Event.waitForEvent(
+    Event.fromTextMenu(
+      "Where do you want to send the rocket?", 
+      "Please select a destination:", {
+        "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"
+      }
+    )
+  )
   copilot.logger:info "Launching the rocket on your command"
   if Event.waitForEventWithTimeout(
     30000, launchCommand:activate()
@@ -74,8 +70,8 @@ local function rocketLaunch()
     or "The launch was aborted with a voice command!"
   )
 
-  local choice = Event.waitForEvent(
-    Event.fromSimConnectMenu("Try again?", nil, {"Yes", "No"})
+  local _, choice = Event.waitForEvent(
+    Event.fromTextMenu("Try again?", nil, {"Yes", "No"})
   )
 
   if choice == 1 then copilot.addCallback(coroutine.create(rocketLaunch)) end

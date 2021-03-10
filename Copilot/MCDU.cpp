@@ -7,11 +7,6 @@ MCDU::MCDU(unsigned int side, unsigned int timeout, unsigned int port)
     session = std::make_unique<HttpSession>(url, timeout);
 }
 
-void MCDU::setPort(int port)
-{
-    session->setPort(port);
-}
-
 std::optional<std::string> MCDU::getString()
 {
     auto response = session->makeRequest();

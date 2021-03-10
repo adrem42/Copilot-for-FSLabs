@@ -12,8 +12,6 @@ public:
 
     MCDU(unsigned int side, unsigned int timeout, unsigned int port = defaultPort);
 
-    void setPort(int port);
-
     std::optional<std::string> getString();
 
     std::string getRaw();

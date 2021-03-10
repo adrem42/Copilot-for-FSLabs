@@ -1,8 +1,14 @@
 #include "Joystick.h"
 #include "Button.h"
 
-Joystick::Joystick(int vendorId, int productId, int deviceNum)
-	:L(L), vendorId(vendorId), productId(productId), deviceNum(deviceNum)
+Joystick::Joystick(
+	int vendorId, int productId,
+	std::shared_ptr<JoystickManager> manager,
+	int deviceNum
+) : vendorId(vendorId), 
+	productId(productId), 
+	deviceNum(deviceNum),
+	manager(manager)
 {
 
 	int currDevNum = 0;
@@ -71,7 +77,7 @@ NTSTATUS Joystick::initButtonCaps()
 			for (int buttonNum = cap.Range.UsageMin, dataIndex = cap.Range.DataIndexMin;
 				 buttonNum <= cap.Range.UsageMax;
 				 ++buttonNum, ++dataIndex) {
-				buttons.emplace(dataIndex, Button(buttonNum, dataIndex));
+				buttons.emplace(dataIndex, Button(buttonNum, dataIndex, manager));
 			}
 		}
 	}

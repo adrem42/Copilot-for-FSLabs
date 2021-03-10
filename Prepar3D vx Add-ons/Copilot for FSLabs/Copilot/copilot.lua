@@ -140,14 +140,14 @@ local function setup()
     require "copilot.ScratchpadClearer"
   end
 
-  local userFiles = false
+  local hasUserFiles = false
 
   local function load(dir)
     local customDir = APPDIR .. "\\Copilot\\" .. dir
     for _file in lfs.dir(customDir) do
       if _file:find("%.lua$") then
-        if not userFiles then
-          userFiles = true
+        if not hasUserFiles then
+          hasUserFiles = true
           copilot.logger:info "Loading user lua files:"
         end
         copilot.logger:info(dir .. _file)
@@ -158,6 +158,10 @@ local function setup()
 
   load "custom_common\\"
   load(copilot.IS_FSL_AIRCRAFT and "custom\\" or "custom_non_fsl\\")
+
+  if not copilot.IS_FSL_AIRCRAFT and not hasUserFiles then
+    return false
+  end
 
   wrapSequencesWithLogging()
 
@@ -176,8 +180,12 @@ local function setup()
     and not debugger.enable then 
     require "copilot.failures"
   end
+
+  return true
   
 end
 
-setup()
-copilot.logger:info ">>>>>> Setup finished <<<<<<"
+if setup() then 
+  copilot.logger:info ">>>>>> Setup finished <<<<<<"
+  startUpdating()
+end

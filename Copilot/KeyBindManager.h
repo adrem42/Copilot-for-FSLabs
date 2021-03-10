@@ -53,7 +53,7 @@ class KeyBindManager {
 	std::unordered_map<ShiftValue, std::unordered_map<Keyboard::KeyCode, Key>> bindMap;
 
 	std::mutex queueMutex;
-	std::vector<Event> eventQueue;
+	std::queue<Event> eventQueue;
 
 	void addBind(Keyboard::KeyCode, Keyboard::EventType, Callback, ShiftValue);
 
@@ -70,7 +70,9 @@ public:
 
 	bool onKeyEvent(Keyboard::KeyCode, Keyboard::EventType, Keyboard::Timestamp);
 
-	void consumeEvents();
+	void dispatchEvents();
+
+	bool hasEvents();
 
 	static void makeLuaBindings(sol::state_view, std::shared_ptr<KeyBindManager> manager);
 

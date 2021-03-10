@@ -45,7 +45,7 @@ private:
 public:
 	Recognizer();
 	~Recognizer();
-	bool registerCallback(ISpNotifyCallback* callback);
+	void registerCallback(ISpNotifyCallback* callback);
 	RuleID addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode);
 	void ignoreRule(RuleID ruleID);
 	void activateRule(RuleID ruleID);

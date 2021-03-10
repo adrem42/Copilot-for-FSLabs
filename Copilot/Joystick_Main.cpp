@@ -7,14 +7,18 @@ std::vector<std::shared_ptr<JoystickManager>> joystickManagers;
 
 void Joystick::addJoystickManager(std::shared_ptr<JoystickManager> manager)
 {
+	std::lock_guard<std::mutex> lock(bufferThreadMutex);
 	stopAndJoinBufferThread();
 	joystickManagers.push_back(manager);
+	startBufferThread();
 }
 
 void Joystick::removeJoystickManager(std::shared_ptr<JoystickManager> manager)
 {
+	std::lock_guard<std::mutex> lock(bufferThreadMutex);
 	stopAndJoinBufferThread();
 	joystickManagers.erase(std::remove(joystickManagers.begin(), joystickManagers.end(), manager), joystickManagers.end());
+	startBufferThread();
 }
 
 void Joystick::processButtonData(ULONG listSize, size_t timestamp)
@@ -67,13 +71,20 @@ void Joystick::processAxisData(ULONG listSize)
 			const bool valueChanged = axis.props.valueChanged(transformedValue);
 			for (auto& callback : callbacks) {
 				if (callback.axisProps == nullptr) {
-					if (valueChanged && !isInNullzone) callback(transformedValue);
+					if (valueChanged && !isInNullzone) {
+						manager->enqueueAxisEvent(
+							JoystickManager::AxisEvent{ callback.callback, transformedValue }
+						);
+					}
 				} else {
 					const bool isInNullzone = callback.axisProps->isInNullzone(value);
 					const double transformedValue = isInNullzone ? 0.0 : callback.axisProps->transformValue(value);
 					const bool valueChanged = callback.axisProps->valueChanged(transformedValue);
-					if (valueChanged && !isInNullzone)
-						callback(transformedValue);
+					if (valueChanged && !isInNullzone) {
+						manager->enqueueAxisEvent(
+							JoystickManager::AxisEvent{ callback.callback, transformedValue }
+						);
+					}
 					if (valueChanged)
 						callback.axisProps->prevValue = transformedValue;
 				}

@@ -152,7 +152,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_DEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SOL_NO_CHECK_NUMBER_PRECISION=1;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_DEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Users\Peter\source\repos\FSLabs Copilot\lua51\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -214,7 +214,7 @@ cd $(solutiondir) &amp;&amp; copytosim</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;NDEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SOL_NO_CHECK_NUMBER_PRECISION=1;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;NDEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Users\Peter\source\repos\FSLabs Copilot\lua51\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

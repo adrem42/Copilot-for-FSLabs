@@ -76,7 +76,6 @@ void KeyBindManager::removeBind(
                     return callback.target<Callback>() == callbackToRemove.target<Callback>();
                 }), callbacks->end());
             }
-
         }
     }
 }
@@ -110,8 +109,6 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, EventType event, Timestamp time
         }
     }
     
-    std::lock_guard<std::mutex> lock(queueMutex);
-
     auto& keys = bindMap[currShifts];
 
     auto it = keys.find(keyCode);
@@ -149,8 +146,9 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, EventType event, Timestamp time
     }
 
     if (callbacks) {
+        std::lock_guard<std::mutex> lock(queueMutex);
         for (auto& callback : *callbacks) {
-            eventQueue.emplace_back(Event{timestamp, callback});
+            eventQueue.emplace(Event{timestamp, callback});
         }
         SetEvent(queueEvent);
         return true;
@@ -159,17 +157,21 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, EventType event, Timestamp time
     return false;
 }
 
-void KeyBindManager::consumeEvents()
+void KeyBindManager::dispatchEvents()
 {
-    std::vector<Event> queue;
-    {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        queue.assign(eventQueue.begin(), eventQueue.end());
-        eventQueue = std::vector<Event>();
-    }
-    for (auto& event : queue) {
+    while (true) {
+        std::unique_lock<std::mutex> lock(queueMutex);
+        if (eventQueue.empty()) return;
+        Event event = eventQueue.front();
+        eventQueue.pop();
+        lock.unlock();
         event.callback(event.timestamp);
     }
+}
+
+bool KeyBindManager::hasEvents()
+{
+    return !eventQueue.empty();
 }
 
 void KeyBindManager::makeLuaBindings(sol::state_view lua, std::shared_ptr<KeyBindManager> manager)

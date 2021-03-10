@@ -1,7 +1,4 @@
 #pragma once
-
-#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
-#define SPDLOG_WCHAR_FILENAMES
 #include "../Copilot/SimConnect.h"
 #include <spdlog/spdlog.h>
 #include "RecoResultFetcher.h"
@@ -10,11 +7,14 @@
 #include <memory>
 #include <chrono>
 #include <string>
+#include <spdlog/sinks/rotating_file_sink.h>
 #include <IWindowPluginSystem.h>
 
 namespace copilot {
 
 	extern std::shared_ptr<spdlog::logger> logger;
+	extern std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink;
+	extern std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> fileSink;
 	extern std::mutex FSUIPCmutex;
 	extern std::string appDir;
 	extern bool isFslAircraft;

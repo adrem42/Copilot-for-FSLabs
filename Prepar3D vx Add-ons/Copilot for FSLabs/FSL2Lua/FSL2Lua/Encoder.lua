@@ -6,6 +6,7 @@ Encoder = {
   DIR_CW = 0,
   DIR_CCW = 1
 }
+
 if Joystick then
   getmetatable(Joystick).gottaGoFast = function(howFast, ...)
 
@@ -104,8 +105,8 @@ function Encoder:_calculateDirection(this, thisPrev, other)
   end
 end
 
-function Encoder:_onPinEvent(pin, state, timestamp)
-  state = state == 1
+function Encoder:_onPinEvent(pin, event, timestamp)
+  state = event == Joystick.BUTTON_EVENT_PRESS
   local direction, other
   if pin == self._pinA then
     other = self._prevStateB

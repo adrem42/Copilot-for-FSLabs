@@ -69,7 +69,7 @@ function copilot.addCallback(callback, name, interval, delay)
 
   local threadEvent 
   if type == "thread" then
-    threadEvent = SingleEvent:new {logMsg = "Copilot coroutine finished: " .. logName}
+    threadEvent = SingleEvent:new {logMsg = "Coroutine finished: " .. logName}
     threadEvents[callback] = threadEvent
   end
 
@@ -154,16 +154,16 @@ local function runThreadCallback(thread, props, ...)
   props.status = "active"
   if not props.coroutineStarted then
     props.coroutineStarted = true
-    copilot.logger:debug("Starting Copilot coroutine: " .. props.logName)
+    copilot.logger:debug("Launching coroutine: " .. props.logName)
   end
   local ret = {coroutine.resume(thread, ...)}
-  if not ret[1] then
-    copilot.pause()
-    error(ret[2])
-  end
   if coroutine.status(thread) == "dead" then
     removeCallback(thread)
-    threadEvents[thread]:trigger(unpack(ret, 2))
+    if not ret[1] then
+      copilot.logger:error(ret[2] .. "\n" .. debug.traceback(thread))
+    else
+      threadEvents[thread]:trigger(unpack(ret, 2))
+    end
     return false
   end
   return true
@@ -171,7 +171,11 @@ end
 
 local function runFuncCallback(callback, props, ...)
   props.status = "active"
-  callback(...)
+  local ok, err = xpcall(callback, debug.traceback, ...)
+  if not ok then 
+    copilot.logger:error(err) 
+    copilot.removeCallback(callback)
+  end
 end
 
 local function checkCallbackTiming(timestamp, props)

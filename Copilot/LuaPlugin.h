@@ -3,35 +3,129 @@
 #include <thread>
 #include "KeyBindManager.h"
 #include "JoystickManager.h"
+#include <unordered_map>
+#include <variant>
+#include <setjmp.h>
+#include <atomic>
 
 class LuaPlugin {
 
+	LuaPlugin(const std::string&, std::shared_ptr<std::recursive_mutex>);
+
+	static std::mutex globalMutex;
+
+	struct ScriptInst {
+		std::string path;
+		LuaPlugin* script = nullptr;
+		std::shared_ptr<std::recursive_mutex> mutex = std::make_shared<std::recursive_mutex>();
+	};
+
+	jmp_buf jumpBuff;
+
+	std::atomic_bool running = true;
+
+	static void hookFunc(lua_State* L, lua_Debug*);
+
+	static std::vector<ScriptInst> scripts;
+
+	using SessionVariable = std::variant<sol::nil_t, double, std::string, bool>;
+
+	static std::mutex sessionVariableMutex;
+
+	static SessionVariable getSessionVariable(const std::string&);
+
+	static void setSessionVariable(const std::string&, SessionVariable);
+
+	static std::unordered_map<std::string, SessionVariable> sessionVariables;
+
+
 protected:
 
-	std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now();
+	const std::shared_ptr<std::recursive_mutex> scriptMutex;
 
-	std::shared_ptr<KeyBindManager> keyBindManager = nullptr;
-	std::shared_ptr<JoystickManager> joystickManager = nullptr;
+
+	struct ScriptStartupError : public std::exception {
+		std::string _what;
+	public:
+		ScriptStartupError(const std::string&);
+		ScriptStartupError(const sol::protected_function_result& pfr);
+		const char* what() const override;
+	};
+
+	const size_t SHUTDOWN_TIMEOUT = 10000;
+
+	bool callLuaFunction(sol::protected_function func);
+
+	std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now();
 
 	std::thread thread;
 	sol::state lua;
 
 	std::string path;
+	std::string logName;
+
+	HANDLE shutdownEvent = CreateEvent(0, 0, 0, 0);
 
 	virtual void initLuaState(sol::state_view lua);
 
-	void onError(const sol::error&);
+	void yeetLuaThread();
+
+	void onError(sol::error&);
+	void onError(const ScriptStartupError&);
 
 	virtual void run();
-
-public:
-
-	LuaPlugin(const std::string&);
 
 	virtual void stopThread();
 
 	void launchThread();
 
-	~LuaPlugin();
+public:
+
+	template<typename T>
+	static void launchScript(const std::string& path)
+	{
+		std::unique_lock<std::mutex> globalLock(globalMutex);
+		auto it = std::find_if(scripts.begin(), scripts.end(), [&] (ScriptInst& s) {
+			return s.path == path;
+		});
+
+		auto launch = [&](ScriptInst& s) {
+			std::lock_guard<std::recursive_mutex> lock(*s.mutex);
+			globalLock.unlock();
+			delete s.script;
+			s.script = new T(path, s.mutex);
+			s.script->launchThread();
+		};
+
+		if (it == scripts.end()) {
+			launch(scripts.emplace_back(ScriptInst{ path }));
+		} else {
+			launch(*it);
+		}
+	}
+
+	template<typename T, typename F>
+	static void withScript(const std::string& path, F&& block)
+	{
+		std::unique_lock<std::mutex> globalLock(globalMutex);
+		auto it = std::find_if(scripts.begin(), scripts.end(), [&](ScriptInst& s) {
+			return s.path == path;
+		});
+		if (it == scripts.end()) return;
+		auto& inst = *it;
+		std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
+		globalLock.unlock();
+		if (inst.script) {
+			if (T* script = dynamic_cast<T*>(inst.script)) {
+				block(*script);
+			}
+		}
+	}
+
+	static void stopScript(const std::string& path);
+
+	static void stopAllScripts();
+
+	virtual ~LuaPlugin();
 };
 

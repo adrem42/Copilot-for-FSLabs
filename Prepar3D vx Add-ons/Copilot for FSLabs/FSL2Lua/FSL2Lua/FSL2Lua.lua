@@ -51,9 +51,9 @@ Encoder = require "FSL2Lua.FSL2Lua.Encoder"
 
 FSL.CPT.MCDU = MCDU:new(1)
 FSL.FO.MCDU = MCDU:new(2)
-MCDU.new = nil
 
 FSL.FCU = FCU
+FCU.init()
 FSL.atsuLog = atsuLog
 FSL.trimwheel = trimwheel
 
@@ -137,9 +137,9 @@ function FSL:disableSequences() self.areSequencesEnabled = false end
 
 function FSL:setHttpPort(port)
   port = tonumber(port)
-  self.CPT.MCDU.request:setPort(port)
-  self.FO.MCDU.request:setPort(port)
-  self.FCU.request:setPort(port)
+  self.CPT.MCDU = MCDU:new(1, port)
+  self.CPT.MCDU = MCDU:new(2, port)
+  FCU.init(port)
 end
 
 local TL_posns = {

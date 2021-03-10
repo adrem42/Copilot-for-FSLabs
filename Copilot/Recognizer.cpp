@@ -10,42 +10,36 @@ bool checkResult(const std::string& msg, HRESULT hr)
 	return false;
 }
 
+void throwOnBadResult(const std::string& msg, HRESULT hr)
+{
+	if (SUCCEEDED(hr)) return;
+	throw std::runtime_error(fmt::format("{}: 0x{:X}", msg, (unsigned long)hr));
+}
+
 Recognizer::Recognizer()
 {
-	HRESULT hr;
-	hr = CoInitialize(NULL);
-	checkResult("CoInitialize error", hr);
 
-	if (SUCCEEDED(hr)) {
-		hr = recognizer.CoCreateInstance(CLSID_SpInprocRecognizer);
-		checkResult("Error creating recognizer", hr);
-	}
+	throwOnBadResult("CoInitialize error", CoInitialize(NULL));
 
-	if (SUCCEEDED(hr)) {
-		hr = SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio);
-		checkResult("Error in SpCreateDefaultObjectFromCategoryId", hr);
-	}
+	throwOnBadResult(
+		"Error creating recognizer",
+		recognizer.CoCreateInstance(CLSID_SpInprocRecognizer)
+	);
 
-	if (SUCCEEDED(hr)) {
-		hr = recognizer->SetInput(audio, TRUE);
-		checkResult("Error in SetInput", hr);
-	}
+	throwOnBadResult(
+		"Error in SpCreateDefaultObjectFromCategoryId",
+		SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio)
+	);
 
-	if (SUCCEEDED(hr)) {
-		hr = recognizer->CreateRecoContext(&recoContext);
-		checkResult("Error creating reco context", hr);
-		ULONGLONG interest = SPFEI(SPEI_RECOGNITION);
-		hr = recoContext->SetInterest(interest, interest);
-		checkResult("Error creating reco context", hr);
-	}
+	throwOnBadResult("Error in SetInput", recognizer->SetInput(audio, TRUE));
 
-	if (SUCCEEDED(hr)) {
-		hr = recoContext->CreateGrammar(0, &recoGrammar);
-		checkResult("Error creating grammar", hr);
-	}
+	throwOnBadResult("Error creating reco context", recognizer->CreateRecoContext(&recoContext));
 
-	if (!SUCCEEDED(hr))
-		throw std::exception();
+	ULONGLONG interest = SPFEI(SPEI_RECOGNITION);
+
+	throwOnBadResult("Error in SetInterest", recoContext->SetInterest(interest, interest));
+
+	throwOnBadResult("Error creating grammar", recoContext->CreateGrammar(0, &recoGrammar));
 	
 }
 
@@ -59,11 +53,12 @@ Recognizer::~Recognizer()
 	CoUninitialize();
 }
 
-bool Recognizer::registerCallback(ISpNotifyCallback* callback)
+void Recognizer::registerCallback(ISpNotifyCallback* callback)
 {
-	HRESULT hr = recoContext->SetNotifyCallbackInterface(callback, 0, 0);
-	if (!checkResult("Error setting up notification callback", hr))
-		throw std::exception();
+	throwOnBadResult(
+		"Error setting up notification callback",
+		recoContext->SetNotifyCallbackInterface(callback, 0, 0)
+	);
 }
 
 RuleID Recognizer::addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode)
@@ -222,6 +217,9 @@ void Recognizer::setRulePersistence(RulePersistenceMode persistenceMode, RuleID 
 
 void Recognizer::resetGrammar()
 {
+
+	if (rules.empty()) return;
+
 	copilot::logger->debug("Resetting grammar and reloading grammar rules...");
 	HRESULT hr;
 	hr = recognizer->SetRecoState(SPRST_INACTIVE);

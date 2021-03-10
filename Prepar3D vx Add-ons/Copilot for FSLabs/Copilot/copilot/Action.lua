@@ -72,7 +72,7 @@ function Action:_initNewThread(dependencies, ...)
   end
 
   local _, threadEvent = copilot.addCallback(
-    self.currentThread, ("%s for action '%s'"):format(tostring(self.currentThread), self:toString())
+    self.currentThread, ("%s of Action '%s'"):format(tostring(self.currentThread), self:toString())
   )
   threadEvent:addOneOffAction(function(_, ...) self.threadFinishedEvent:trigger(...) end)
   copilot._initActionThread(self.currentThread, ...)

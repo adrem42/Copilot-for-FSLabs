@@ -1,6 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS 1
-#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS 1
-#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+
 #include "lua.hpp"
 #include <sol/sol.hpp>
 #include <Windows.h>
@@ -9,7 +7,6 @@
 #include <chrono>
 #include <SimConnect.h>
 #include <gauges.h>
-#include <spdlog/sinks/rotating_file_sink.h>
 #include <regex>
 #include "Copilot.h"
 #include "Sound.h"
@@ -23,9 +20,10 @@
 #include "LuaPlugin.h"
 #include "FSL2LuaScript.h"
 #include "CopilotScript.h"
+#include <filesystem>
+#include <thread>
 
 using namespace std::literals::chrono_literals;
-
 using namespace P3D;
 
 GAUGESIMPORT ImportTable = {
@@ -39,33 +37,80 @@ namespace copilot {
 	std::string appDir;
 	bool isFslAircraft = false;
 
-	std::shared_ptr<spdlog::logger> logger = nullptr;
-	std::mutex FSUIPCmutex;
+	std::string copilotScriptPath()
+	{
+		return appDir + "Copilot\\copilot.lua";
+	}
 
-	std::unique_ptr<FSL2LuaScript> FSL2LuaScriptInst;
-	std::unique_ptr<CopilotScript> copilotScriptInst;
+	std::shared_ptr<spdlog::logger> logger = nullptr;
+	std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt> consoleSink = nullptr;
+	std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> fileSink = nullptr;
+
+	sol::state loadUserOptions()
+	{
+		sol::state lua;
+
+		lua.open_libraries();
+		lua["print"] = [&](sol::variadic_args va) {
+			std::string str;
+			for (size_t i = 0; i < va.size(); i++) {
+				auto v = va[i];
+				str += lua["tostring"](v.get<sol::object>());
+				if (i != va.size() - 1) {
+					str += " ";
+				}
+			}
+			copilot::logger->info(str);
+		};
+
+		lua["APPDIR"] = appDir;
+		lua.do_string(R"(package.path = APPDIR .. '\\?.lua')");
+
+		sol::protected_function_result res = lua.do_file(appDir + "copilot\\copilot\\LoadUserOptions.lua");
+
+		if (!res.valid()) {
+			sol::error err = res;
+			copilot::logger->error(err.what());
+		}
+
+		return lua;
+	}
 
 	void launchFSL2LuaScript()
 	{
-		FSL2LuaScriptInst = std::make_unique<FSL2LuaScript>(appDir + "scripts\\autorun.lua");
-		FSL2LuaScriptInst->launchThread();
+		auto path = appDir + (isFslAircraft ? "scripts\\autorun.lua" : "scripts_non_fsl\\autorun.lua");
+		if (std::filesystem::exists(path)) {
+			std::thread(&LuaPlugin::launchScript<FSL2LuaScript>, path)
+				.detach();
+		}
+	}
+
+	bool isCopilotEnabled()
+	{
+		auto lua = loadUserOptions();
+		try {
+			return lua["copilot"]["UserOptions"]["general"]["enable"] == 1;
+		} catch (std::exception& ex) {
+			copilot::logger->error("Failed to read options.ini");
+		}
+		return false;
 	}
 
 	void startCopilotScript()
 	{
-		copilotScriptInst = std::make_unique<CopilotScript>(appDir + "Copilot\\copilot.lua");
-		copilotScriptInst->launchThread();
+		std::thread(&LuaPlugin::launchScript<CopilotScript>, copilotScriptPath()).detach();
 	}
 
 	void stopCopilotScript()
 	{
-		copilotScriptInst.reset();
+		LuaPlugin::stopScript(appDir + "Copilot\\copilot.lua");
 	}
 
 	void onMuteKey(bool state)
 	{
-		if (copilotScriptInst)
-			copilotScriptInst->onMuteKey(state);
+		LuaPlugin::withScript<CopilotScript>(copilotScriptPath(), [=](CopilotScript& script) {
+			script.onMuteKey(state);
+		});
 	}
 
 	double readLvar(const std::string& name)
@@ -78,21 +123,26 @@ namespace copilot {
 	{
 		logger = std::make_shared<spdlog::logger>("Copilot");
 		logger->flush_on(spdlog::level::trace);
-
+		logger->set_level(spdlog::level::trace);
 		std::string logFilePath = appDir + "Copilot.log";
-		auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFilePath, 1048576 * 5, 0, true);
+		fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFilePath, 1048576 * 5, 0, true);
 		fileSink->set_pattern("[%T] [%l] %v");
+		fileSink->set_level(spdlog::level::debug);
 		logger->sinks().push_back(fileSink);
 #ifdef _DEBUG
-		logger->set_level(spdlog::level::trace);
+		fileSink->set_level(spdlog::level::trace);
 #endif
 	}
 
 	void initConsoleSink()
 	{
-		auto consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+		consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
 		consoleSink->set_pattern("[%T] %^[Copilot]%$ %v");
 		logger->sinks().push_back(consoleSink);
+		consoleSink->set_level(spdlog::level::info);
+#ifdef _DEBUG
+		consoleSink->set_level(spdlog::level::trace);
+#endif
 	}
 
 	void findAppDir()
@@ -113,6 +163,8 @@ namespace copilot {
 		copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
 		copilot::logger->info("");
 
+		BASS_SetConfig(BASS_CONFIG_UNICODE, true);
+
 		BASS_DEVICEINFO info;
 		copilot::logger->info("{:*^{}}", " Output device info: ", lineWidth);
 		copilot::logger->info("");
@@ -125,33 +177,8 @@ namespace copilot {
 		copilot::logger->info("");
 
 		initConsoleSink();
-
-		sol::state lua;
-
+		loadUserOptions();
 		
-
-		lua.open_libraries();
-		lua["print"] = [&](sol::variadic_args va) {
-			std::string str;
-			for (size_t i = 0; i < va.size(); i++) {
-				auto v = va[i];
-				str += lua["tostring"](v.get<sol::object>());
-				if (i != va.size() - 1) {
-					str += " ";
-				}
-			}
-			copilot::logger->info(str);
-		};
-
-		lua["APPDIR"] = appDir;
-		lua.do_string(R"(package.path = APPDIR .. '\\?.lua')");
-
-		auto result = lua.do_file(appDir + "copilot\\copilot\\LoadUserOptions.lua");
-
-		if (!result.valid()) {
-			sol::error err = result;
-			copilot::logger->error(err.what());
-		}
 	}
 
 	void onSimEvent(SimConnect::EVENT_ID event)
@@ -159,14 +186,16 @@ namespace copilot {
 		switch (event) {
 
 			case SimConnect::EVENT_SIM_START:
-				if (copilotScriptInst)
-					copilotScriptInst->onSimStart();
+				LuaPlugin::withScript<CopilotScript>(copilotScriptPath(), [=](CopilotScript& script) {
+					script.onSimStart();
+				});
 				break;
 
 			case SimConnect::EVENT_EXIT:
 			case SimConnect::EVENT_ABORT:
-				if (copilotScriptInst)
-					copilotScriptInst->onSimExit();
+				LuaPlugin::withScript<CopilotScript>(copilotScriptPath(), [=](CopilotScript& script) {
+					script.onSimExit();
+				});
 				break;
 
 			default:
@@ -174,16 +203,25 @@ namespace copilot {
 		}
 	}
 
+	std::thread launchThread;
+
 	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName)
 	{
+		copilot::isFslAircraft = isFslAircraft;
 		DWORD res = FSUIPC::connect();
 		if (res != FSUIPC_ERR_OK) 
 			logger->error("Failed to connect to FSUIPC: {}", FSUIPC::errorString(res));
 		SimInterface::init();
-		//if (isFslAircraft) {
+		launchThread = std::thread([]{
+			Sleep(10000);
 			launchFSL2LuaScript();
-			startCopilotScript();
-		//}
+			SimConnect::setupFSL2LuaMenu();
+			if (isCopilotEnabled()) {
+				SimConnect::setupCopilotMenu();
+				SimConnect::setupMuteControls();
+				startCopilotScript();
+			}
+		});	
 	}
 
 	IWindowPluginSystemV440* GetWindowPluginSystem()
@@ -192,10 +230,8 @@ namespace copilot {
 	}
 }
 
-
 void DLLStart(P3D::IPdk* pPdk)
 {
-
 	SimConnect::init();
 
 	if (Panels != NULL) 
@@ -209,11 +245,13 @@ void DLLStart(P3D::IPdk* pPdk)
 
 void DLLStop()
 {
-	if (copilot::copilotScriptInst)
-		copilot::copilotScriptInst.reset();
-	if (copilot::FSL2LuaScriptInst)
-		copilot::FSL2LuaScriptInst.reset();
-	SimConnect::close();
-	SimInterface::close();
+	std::thread([] {
+		copilot::launchThread.join();
+		copilot::logger->debug("Shutting down...");
+		LuaPlugin::stopAllScripts();
+		SimConnect::close();
+		SimInterface::close();
+		Joystick::stopAndJoinBufferThread();
+		copilot::logger->debug("Bye!");
+	}).detach();
 }
-

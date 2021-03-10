@@ -2,6 +2,8 @@
 #include "Button.h"
 #include "JoystickExceptions.h"
 
+std::mutex Joystick::bufferThreadMutex;
+
 size_t Joystick::gcd(size_t a, size_t b)
 {
 	if (a == 0)

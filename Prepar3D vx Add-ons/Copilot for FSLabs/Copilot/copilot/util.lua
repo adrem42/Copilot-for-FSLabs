@@ -64,11 +64,3 @@ function copilot.enginesRunning(both)
   if both then return eng1_running and eng2_running end
   return eng1_running or eng2_running
 end
-
-function copilot.exit(msg)
-  if msg then 
-    copilot.logger:error(msg) 
-    copilot.logger:error("Exiting...") 
-  end
-  error(msg, 2)
-end

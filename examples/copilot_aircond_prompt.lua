@@ -1,11 +1,11 @@
 copilot.events.aboveTenThousand:addAction(function()
 
   local function shouldConnect()
-    local menuEvent = Event.fromSimConnectMenu(
+    local menuEvent = Event.fromTextMenu(
       "Hey boss, would you like to connect the air conditioning upon arrival?",
-      nil, {"Yes", "No", "Ask me again in ten minutes"}
+      "", {"Yes", "No", "Ask me again in ten minutes"}
     )
-    local res = Event.waitForEvent(menuEvent)
+    local _, res = Event.waitForEvent(menuEvent)
     if res == 3 then
       copilot.suspend(10 * 60000)
       return shouldConnect()

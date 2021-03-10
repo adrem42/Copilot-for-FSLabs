@@ -6,6 +6,10 @@ local ipc = ipc
 
 local FlightPhaseProcessor = {}
 
+---------------------------------------------------------------
+--- These need to be reimplemented for non-FSL aircraft: ------
+---------------------------------------------------------------
+
 function FlightPhaseProcessor.chocksOn() 
   return ipc.readLvar("FSLA320_Wheel_Chocks") == 1 
 end
@@ -36,6 +40,10 @@ end
 function FlightPhaseProcessor.flyingCircuits()
   return copilot.mcduWatcher:getVar("flyingCircuits")
 end
+
+---------------------------------------------------------------
+---------------------------------------------------------------
+---------------------------------------------------------------
 
 function FlightPhaseProcessor:init()
   if self.initialFlightPhase then

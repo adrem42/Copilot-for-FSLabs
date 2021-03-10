@@ -415,21 +415,6 @@ end
 
 require "copilot.SingleEvent"
 
-Event.MENU_GONE = setmetatable({}, {__tostring = function() return "Event.MENU_GONE" end})
-
-function Event._simConnectMenuEventHandler(res)
-  local e = Event._simConnectMenuEvent
-  if not e then return end
-  if res < 0 then
-    e:trigger(Event.MENU_GONE, nil, e.menu)
-  else
-    e:trigger(res, e.menu.items[res], e.menu)
-  end
-  Event._simConnectMenuEvent = nil
-end
-
---event.MenuSelect("Event._simConnectMenuEventHandler")
-
 --- Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)
 --- @string title The title of the menu
 --- @string prompt The message that is displayed between the title and the items. Set to nil, "", or whitespace if you don't want a prompt.
@@ -439,20 +424,14 @@ end
 --- 2. The item that was selected: string.
 --- 3. A table with the fields 'title', 'prompt', and 'items'.
 --- @usage 
-function Event.fromSimConnectMenu(title, prompt, items)
-  
-  if Event._simConnectMenuEvent then 
-    Event._simConnectMenuEvent:trigger(Event.MENU_GONE, nil, Event._simConnectMenuEvent.menu) 
-  end
-
-  if prompt == nil or prompt == "" then prompt = " " end
-  ipc.SetMenu(title, prompt, items) 
-  
-  Event._simConnectMenuEvent = SingleEvent:new {
-    menu = {title = title, prompt = prompt, items = items},
-    logMsg = "SimConnect menu event: " .. (title or "?")
-  }
-  return Event._simConnectMenuEvent
+function Event.fromTextMenu(title, prompt, items, timeout, show)
+  show = show or true
+  local e = SingleEvent:new()
+  local menu = TextMenu.new(title, prompt, items, timeout, function(res, itemIdx, item)
+    e:trigger(res, itemIdx, item)
+  end)
+  if show then menu:show() end
+  return e, function() menu:show() end
 end
 
 require "copilot.ActionOrderSetter"

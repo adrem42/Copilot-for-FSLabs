@@ -1,5 +1,7 @@
 #include "FSUIPC.h"
 
+std::mutex FSUIPC::mutex;
+
 const char* FSUIPCerrors[] =
 {   "Okay",
 	"Attempt to Open when already Open",
@@ -19,14 +21,14 @@ const char* FSUIPCerrors[] =
 	"Read or Write request cannot be added, memory for Process is full",
 };
 
-uint8_t FSUIPCmemory[1024];
+uint8_t FSUIPCmemory[4096];
 
 namespace FSUIPC {
 
 	DWORD connect()
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		DWORD result;
-		
 		FSUIPC_Open2(SIM_ANY, &result, FSUIPCmemory, sizeof(FSUIPCmemory));
 		return result;
 	}
@@ -38,6 +40,7 @@ namespace FSUIPC {
 
 	void writeSTR(DWORD offset, const std::string& str, size_t length)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		DWORD result;
 		FSUIPC_Write(offset, length, const_cast<char*>(str.c_str()), &result);
 		FSUIPC_Process(&result);
@@ -45,11 +48,13 @@ namespace FSUIPC {
 
 	void writeSTR(DWORD offset, const std::string& str)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		writeSTR(offset, str, str.length());
 	}
 
 	std::string readSTR(DWORD offset, size_t length)
 	{
+		std::lock_guard<std::mutex> lock(mutex);
 		DWORD result;
 		char str[256] = {};
 		FSUIPC_Read(offset, length, str, &result);

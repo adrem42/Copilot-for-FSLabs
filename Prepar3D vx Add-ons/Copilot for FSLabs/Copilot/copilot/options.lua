@@ -23,11 +23,6 @@ return {
         type = "string"
       },
       {
-        name = "log_level", 
-        default = 2, 
-        type = "int"
-      },
-      {
         name = "PM_seat", 
         default = "right", 
         comment = "Where the Pilot Monitoring sits in the cockpit - left or right", 
@@ -145,12 +140,12 @@ return {
       },
       {
         name = "ten_thousand_dep", 
-        defualt = UserOptions.ENABLED, 
+        default = UserOptions.ENABLED, 
         type = "bool"
       },
       {
         name = "ten_thousand_arr", 
-        defautl = UserOptions.ENABLED, 
+        default = UserOptions.ENABLED, 
         type = "bool"
       },
       {
@@ -180,7 +175,7 @@ return {
       },
       {
         name = "pack2_off_after_landing", 
-        defautl = UserOptions.FALSE, 
+        default = UserOptions.FALSE, 
         type = "bool"
       }
     }

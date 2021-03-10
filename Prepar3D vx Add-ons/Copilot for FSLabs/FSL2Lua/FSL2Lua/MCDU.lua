@@ -16,10 +16,10 @@ local MCDU = {
   },
 }
 
-function MCDU:new(side)
+function MCDU:new(side, port)
   self.__index = self
   return setmetatable ({
-    request = MCDUsession and MCDUsession:new(side, 0, 8080),
+    request = MCDUsession and MCDUsession:new(side, 0, port or 8080),
     sideStr = side == 1 and "CPT" or side == 2 and "FO"
   }, self)
 end
@@ -36,10 +36,10 @@ end
 --
 -- * char: The character displayed in the cell (nil if the cell is blank)
 -- * color: The color of the character, one of these : 
---    * 'cyan' 
---    * 'grey' 
---    * 'green' 
---    * 'magenta' 
+--    * 'cyan'
+--    * 'grey'
+--    * 'green'
+--    * 'magenta'
 --    * 'amber' 
 --    * 'white' 
 -- * isBold: bool
@@ -77,7 +77,7 @@ function MCDU:getString(startpos, endpos)
   while true do
     display = self.request:getString()
     if display then break
-    else self:_onHttpError() end
+    else error "wtf" self:_onHttpError() end
   end
   if startpos or endpos then
     return string.sub(display, startpos, endpos)

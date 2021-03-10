@@ -12,7 +12,7 @@ std::vector<HANDLE> JoystickManager::getEvents()
 	return events;
 }
 
-void JoystickManager::onEvent(size_t eventIdx)
+void JoystickManager::onNewDataAvailable(size_t eventIdx)
 {
 	auto& joystick = joysticks.at(eventIdx % (joysticks.size()));
 
@@ -20,4 +20,33 @@ void JoystickManager::onEvent(size_t eventIdx)
 		joystick->getData();
 	else
 		joystick->onButtonRepeatTimer();
+}
+
+void JoystickManager::enqueueButtonEvent(ButtonEvent&& event)
+{
+	buttonEvents.emplace(std::move(event));
+}
+
+void JoystickManager::enqueueAxisEvent(AxisEvent&& event)
+{
+	axisEvents.emplace(std::move(event));
+}
+
+bool JoystickManager::hasEvents()
+{
+	return !buttonEvents.empty() || !axisEvents.empty();
+}
+
+void JoystickManager::dispatchEvents()
+{
+	while (buttonEvents.size()) {
+		ButtonEvent event = buttonEvents.front();
+		buttonEvents.pop();
+		event.callback(event.buttonNum, event.action, event.timestamp);
+	}
+	while (axisEvents.size()) {
+		AxisEvent event = axisEvents.front();
+		axisEvents.pop();
+		event.callback(event.value);
+	}
 }

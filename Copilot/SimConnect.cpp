@@ -2,13 +2,116 @@
 #include "Copilot.h"
 #include "SimInterface.h"
 #include <mutex>
-
-const unsigned short MUTE_KEY_DEPRESSED = 0;
-const unsigned short MUTE_KEY_RELEASED = 1;
+#include <sstream>
+#include <numeric>
+#include <unordered_map>
 
 using namespace SimConnect;
 
 std::string aircraftName;
+namespace { std::mutex mutex; }
+
+size_t SimConnectEvent::currEventId = EVENT_CUSTOM_EVENT_MIN;
+
+std::unordered_map<size_t, std::weak_ptr<SimConnectEvent>> events;
+
+SimConnectEvent::~SimConnectEvent()
+{
+	//copilot::logger->trace("SimConnectEvent destroyed");
+}
+
+TextMenuEvent::TextMenuEvent(
+	const std::string& title,
+	const std::string& prompt,
+	std::vector<std::string> items,
+	size_t timeout,
+	TextMenuEvent::Callback callback
+) : callback(callback), title(title), prompt(prompt), items(items), timeout(timeout)
+{
+	std::lock_guard<std::mutex> lock(mutex);
+
+	items.insert(items.begin(), title);
+	items.insert(items.begin(), prompt);
+
+	buffSize = std::accumulate(
+		items.begin(), items.end(), 0, [](size_t acc, std::string s) {
+		return acc + s.length() + 1;
+	}
+	);
+
+	buff = new char[buffSize]();
+
+	{
+		char* currPos = buff;
+
+		for (const auto& s : items) {
+			memcpy(currPos, s.c_str(), s.length());
+			currPos += s.length() + 1;
+		}
+	}
+
+}
+
+bool TextMenuEvent::dispatch(DWORD data) 
+{
+	MenuItem selectedItem = -1;
+	Result outResult = Result::OK;
+
+	switch (data) {
+
+		case SIMCONNECT_TEXT_RESULT_DISPLAYED:
+		case SIMCONNECT_TEXT_RESULT_QUEUED:
+			return false;
+
+		default:
+			selectedItem = data;
+			break;
+
+		case SIMCONNECT_TEXT_RESULT_REMOVED:
+			outResult = Result::Removed;
+			break;
+
+		case SIMCONNECT_TEXT_RESULT_TIMEOUT:
+			outResult = Result::Timeout;
+			break;
+
+		case SIMCONNECT_TEXT_RESULT_REPLACED:
+			outResult = Result::Replaced;
+			break;
+
+	}
+
+	callback(
+		outResult, selectedItem, items[selectedItem],
+		std::dynamic_pointer_cast<TextMenuEvent>(shared_from_this())
+	);
+	return true;
+}
+
+void TextMenuEvent::show()
+{
+	HRESULT hr = SimConnect_Text(
+		hSimConnect, SIMCONNECT_TEXT_TYPE_MENU, timeout, eventId, buffSize, buff
+	);
+
+	events.emplace(eventId, shared_from_this());
+}
+
+void TextMenuEvent::cancel()
+{
+	char empty[1] = {};
+	HRESULT hr = SimConnect_Text(
+		hSimConnect, SIMCONNECT_TEXT_TYPE_MENU, timeout, eventId, 1, empty
+	);
+}
+
+TextMenuEvent::~TextMenuEvent()
+{
+	cancel();
+}
+
+const unsigned short MUTE_KEY_DEPRESSED = 0;
+const unsigned short MUTE_KEY_RELEASED = 1;
 
 namespace SimConnect {
 	bool fslAircraftLoaded, simStarted;
@@ -30,18 +133,36 @@ void onMuteControlEvent(DWORD param)
 	}
 }
 
-void setupMenu()
+void onCustomEvent(EVENT_ID id, DWORD param)
+{
+	if (auto event = events[id].lock()) {
+		if (event->dispatch(param))
+			events.erase(id);
+	}
+}
+
+void SimConnect::setupMuteControls()
 {
 	HRESULT hr;
 
 	hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_MUTE_CONTROL, "SMOKE_TOGGLE");
 	hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_MUTE_CONTROL);
+}
+
+void SimConnect::setupCopilotMenu()
+{
+	HRESULT hr;
 
 	hr = SimConnect_MenuAddItem(hSimConnect, "Copilot for FSLabs", EVENT_COPILOT_MENU, 0);
 	hr = SimConnect_MenuAddSubItem(
 		hSimConnect, EVENT_COPILOT_MENU, "Restart", EVENT_COPILOT_MENU_ITEM_START, 0);
 	hr = SimConnect_MenuAddSubItem(
 		hSimConnect, EVENT_COPILOT_MENU, "Stop", EVENT_COPILOT_MENU_ITEM_STOP, 0);
+}
+
+void SimConnect::setupFSL2LuaMenu()
+{
+	HRESULT hr;
 
 	hr = SimConnect_MenuAddItem(hSimConnect, "FSL2Lua", EVENT_FSL2LUA_MENU, 0);
 
@@ -51,7 +172,6 @@ void setupMenu()
 
 void onFlightLoaded()
 {
-	setupMenu();
 	bool isFslAircraft = aircraftName.find("FSLabs") != std::string::npos;
 	copilot::onFlightLoaded(isFslAircraft, aircraftName);
 }
@@ -66,6 +186,9 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 			SIMCONNECT_RECV_EVENT* evt = (SIMCONNECT_RECV_EVENT*)pData;
 			EVENT_ID eventID = (EVENT_ID)evt->uEventID;
 			copilot::onSimEvent(eventID);
+
+			if (eventID >= EVENT_CUSTOM_EVENT_MIN)
+				return onCustomEvent(eventID, evt->dwData);
 
 			switch (eventID) {
 

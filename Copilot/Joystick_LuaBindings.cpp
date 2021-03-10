@@ -9,14 +9,16 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		"Joystick",
 		sol::factories(
 			[manager]( int vendorId, int productId) {
-				auto joy = std::make_shared<Joystick>(vendorId, productId);
+				std::lock_guard<std::mutex> lock(bufferThreadMutex);
+				auto joy = std::make_shared<Joystick>(vendorId, productId, manager);
 				stopAndJoinBufferThread();
 				manager->joysticks.push_back(joy);
 				startBufferThread();
 				return joy;
 			}, 
 			[manager]( int vendorId, int productId, int devNum) {
-				auto joy = std::make_shared<Joystick>(vendorId, productId, devNum);
+				std::lock_guard<std::mutex> lock(bufferThreadMutex);
+				auto joy = std::make_shared<Joystick>(vendorId, productId, manager, devNum);
 				stopAndJoinBufferThread();
 				manager->joysticks.push_back(joy);
 				startBufferThread();
@@ -24,6 +26,10 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 			}
 		)
 	);
+
+	JoystickType["BUTTON_EVENT_PRESS"] = sol::var(Joystick::Button::EVENT_TYPE_PRESS);
+	JoystickType["BUTTON_EVENT_REPEATED_PRESS"] = sol::var(Joystick::Button::EVENT_TYPE_REPEATED_PRESS);
+	JoystickType["BUTTON_EVENT_RELEASE"] = sol::var(Joystick::Button::EVENT_TYPE_RELEASE);
 
 	JoystickType["axisProps"] = sol::overload(
 		static_cast<AxisProperties & (Joystick::*)(int, int)>(&Joystick::axisProps),
@@ -67,21 +73,21 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		if (va.leftover_count() == 2
 			&& va[0].get_type() == sol::type::function
 			&& va[1].is<send_event_details_t>()) {
-			sol::function f = va[0];
+			sol::protected_function f = va[0];
 			return f;
 		}
 		if (va.leftover_count() == 1 || va[1].get_type() == sol::type::nil) {
 			if (va[0].get_type() == sol::type::function) {
-				sol::function f = va[0];
-				return [f](size_t, size_t, unsigned short) {f(); };
+				sol::protected_function f = va[0];
+				return [f](size_t, size_t, unsigned short) { f(); };
 			}
 			if (va[0].get_type() == sol::type::table) {
 				sol::table obj = va[0];
 				if (obj[sol::metatable_key].get_type() == sol::type::table) {
 					sol::table mt = obj[sol::metatable_key];
 					if (mt["__call"].get_type() == sol::type::function) {
-						sol::function __call = mt["__call"];
-						return [__call, obj](size_t, size_t, unsigned short) { __call(obj); };
+						sol::protected_function __call = mt["__call"];
+						return [__call, obj](size_t, size_t, unsigned short) { return __call(obj); };
 					}
 				}
 			}

@@ -31,18 +31,23 @@
 #include <Fcntl.h>
 #include <chrono>
 #include <memory>
+#include <mutex>
 
 class JoystickManager;
 
 class Joystick {
 
 	class Button;
+	static std::mutex bufferThreadMutex;
 
 	friend class JoystickManager;
+	friend class LuaPlugin;
+
+	const std::shared_ptr<JoystickManager> manager;
 
 	static size_t gcd(size_t a, size_t b);
 
-	using ButtonCallback = std::function<void(uint16_t buttonNum, uint16_t action, size_t status)>;
+	using ButtonCallback = std::function<void(uint16_t buttonNum, uint16_t action, size_t timestamp)>;
 
 	int productId;
 	int vendorId;
@@ -112,7 +117,9 @@ class Joystick {
 	/*** @type AxisCallback */
 	struct AxisCallback {
 
-		std::function<void(double)> callback;
+		using CallbackType = std::function<void(double)>;
+
+		CallbackType callback;
 		std::shared_ptr<AxisProperties> axisProps;
 
 		void operator()(double value);
@@ -185,7 +192,7 @@ class Joystick {
 	HIDP_DATA* dataList;
 	ULONG dataListSize = 0;
 
-	static void stopAndJoinBufferThread();
+	
 
 	static void startBufferThread();
 
@@ -251,7 +258,7 @@ public:
 	@int productId
 	@int[opt=0] deviceNum Specify this parameter if there are multiple devices with the same vendor and product IDs
 	*/
-	Joystick(int vendorId, int productId, int deviceNum = 0);
+	Joystick(int vendorId, int productId, std::shared_ptr<JoystickManager>, int deviceNum = 0);
 
 	void setLogName(const std::wstring& logName);
 
@@ -390,5 +397,7 @@ public:
 	static void addJoystickManager(std::shared_ptr<JoystickManager>);
 
 	static void removeJoystickManager(std::shared_ptr<JoystickManager>);
+
+	static void stopAndJoinBufferThread();
 
 };
