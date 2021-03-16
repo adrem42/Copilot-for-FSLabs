@@ -41,8 +41,9 @@ class LuaPlugin {
 
 protected:
 
-	const std::shared_ptr<std::recursive_mutex> scriptMutex;
+	std::atomic<DWORD> luaThreadId = 0;
 
+	const std::shared_ptr<std::recursive_mutex> scriptMutex;
 
 	struct ScriptStartupError : public std::exception {
 		std::string _what;
@@ -54,7 +55,7 @@ protected:
 
 	const size_t SHUTDOWN_TIMEOUT = 10000;
 
-	bool callLuaFunction(sol::protected_function func);
+	
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now();
 
@@ -92,7 +93,9 @@ public:
 		auto launch = [&](ScriptInst& s) {
 			std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 			globalLock.unlock();
-			delete s.script;
+			try {
+				delete s.script;
+			} catch (...) {}
 			s.script = new T(path, s.mutex);
 			s.script->launchThread();
 		};
@@ -104,13 +107,36 @@ public:
 		}
 	}
 
-	template<typename T, typename F>
-	static void withScript(const std::string& path, F&& block)
+	size_t elapsedTime();
+
+	template<typename F, typename... Args>
+	void callProtectedFunction(F&& onValid, sol::protected_function func, Args&&... args)
+	{
+		sol::protected_function_result pfr = func(std::forward<Args>(args)...);
+		if (!pfr.valid()) {
+			sol::error err = pfr;
+			onError(err);
+		} else {
+			onValid(pfr);
+		}
+	}
+
+	template<typename... Args>
+	sol::protected_function_result callProtectedFunction(sol::protected_function func, Args&&... args)
+	{
+		sol::protected_function_result pfr = func(std::forward<Args>(args)...);
+		if (!pfr.valid()) {
+			sol::error err = pfr;
+			onError(err);
+		}
+		return pfr;
+	}
+
+	template<typename T, typename Pred>
+	static void withScript(std::function<void(T&)> block, Pred pred)
 	{
 		std::unique_lock<std::mutex> globalLock(globalMutex);
-		auto it = std::find_if(scripts.begin(), scripts.end(), [&](ScriptInst& s) {
-			return s.path == path;
-		});
+		auto it = std::find_if(scripts.begin(), scripts.end(), pred);
 		if (it == scripts.end()) return;
 		auto& inst = *it;
 		std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
@@ -120,6 +146,18 @@ public:
 				block(*script);
 			}
 		}
+	}
+
+	template<typename T>
+	static void withScript(const std::string& path, std::function<void(T&)> block)
+	{
+		withScript<T>(block, [&](ScriptInst& s) {return s.path == path;});
+	}
+
+	template<typename T>
+	static void withScript(T* pScript, std::function<void(T&)> block)
+	{
+		withScript<T>(block, [&](ScriptInst& s) {return s.script == pScript; });
 	}
 
 	static void stopScript(const std::string& path);

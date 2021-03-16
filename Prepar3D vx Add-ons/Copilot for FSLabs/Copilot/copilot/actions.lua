@@ -328,9 +328,9 @@ function copilot.sequences:setupEFIS()
 end
 
 function copilot.sequences:afterStart()
-
+  
   FSL.PED_SPD_BRK_LEVER "ARM"
-
+  
   local flapsSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
   local flapsMessage
   if flapsSetting then
@@ -348,7 +348,7 @@ function copilot.sequences:afterStart()
     FSL.PED_FLAP_LEVER(tostring(flapsSetting))
   end
 
-  repeat copilot.suspend() until not copilot.GSX_pushback()
+  repeat copilot.suspend(1000) until not copilot.GSX_pushback()
   
   local CG = FSL.atsuLog:getMACTOW()
   local trimMessage
@@ -390,7 +390,7 @@ function copilot.sequences:waitForLineup()
       countStartTime = nil
     end
     prevSwitchPos = switchPos
-    copilot.suspend()
+    copilot.suspend(100)
   until count == 4
 end
 
@@ -442,7 +442,7 @@ function copilot.sequences:afterTakeoffSequence()
   copilot.suspend(plusminus(10000,0.2))
   FSL.OVHD_AC_Pack_2_Button:toggleDown()
 
-  repeat copilot.suspend() until ipc.readLvar "FSLA320_slat_l_1" == 0
+  repeat copilot.suspend(1000) until ipc.readLvar "FSLA320_slat_l_1" == 0
 
   copilot.suspend(plusminus(2000, 0.5))
 
@@ -461,32 +461,19 @@ function copilot.sequences.tenThousandDep()
   local ADF1 = (disp[241].isBold and disp[241].char ~= "[") or (disp[246].isBold and disp[246].char ~= "[")
   local ADF2 = (disp[261].isBold and disp[261].char ~= "[") or (disp[254].isBold and disp[254].char ~= "[")
 
-  if VOR1 or VOR2 or ADF1 or ADF2 then 
-    while not (FSL.MCDU:getScratchpad():sub(6,8) == "CLR") do
+  local function clear(field, lsk)
+    if not field then return end
+    while FSL.MCDU:getScratchpad():sub(6,8) ~= "CLR" do
       FSL.PED_MCDU_KEY_CLR()
       copilot.sleep(100)
     end
-    local clr = true
-    if VOR1 then
-      if not clr then FSL.PED_MCDU_KEY_CLR() end
-      FSL.PED_MCDU_LSK_L1()
-      if clr then clr = false end
-    end
-    if VOR2 then
-      if not clr then FSL.PED_MCDU_KEY_CLR() end
-      FSL.PED_MCDU_LSK_R1() 
-      if clr then clr = false end
-    end
-    if ADF1 then 
-      if not clr then FSL.PED_MCDU_KEY_CLR() end
-      FSL.PED_MCDU_LSK_L5() 
-      if clr then clr = false end
-    end
-    if ADF2 then 
-      if not clr then FSL.PED_MCDU_KEY_CLR() end
-      FSL.PED_MCDU_LSK_R5()
-    end
+    FSL["PED_MCDU_LSK_" .. lsk]()
   end
+
+  clear(VOR1, "L1")
+  clear(VOR2, "R1")
+  clear(ADF1, "L5")
+  clear(ADF2, "R5")
 
   copilot.sleep(plusminus(1000))
 
@@ -597,7 +584,7 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
   end
 
   if copilot.UserOptions.actions.preflight == copilot.UserOptions.ENABLED then
-    repeat copilot.suspend() until copilot.mcduWatcher:getVar("isFmgcSetup")
+    repeat copilot.suspend(5000) until copilot.mcduWatcher:getVar("isFmgcSetup")
     copilot.logger:info("FMGC is set up")
     if prob(0.05) then
       copilot.suspend(0, 20000)
@@ -690,7 +677,7 @@ do
 
   if copilot.UserOptions.actions.after_takeoff == copilot.UserOptions.ENABLED then
     copilot.actions.afterTakeoff = copilot.events.airborne:addAction(function()
-      repeat copilot.suspend() until FSL:getThrustLeversPos() == "CLB"
+      repeat copilot.suspend(1000) until FSL:getThrustLeversPos() == "CLB"
       copilot.suspend(plusminus(2000))
       copilot.sequences.afterTakeoffSequence()
     end, "runAsCoroutine")
@@ -699,7 +686,7 @@ do
   end
 
   copilot.actions.noVoiceTakeoffTrigger = copilot.events.enginesStarted:addAction(function()
-    repeat copilot.suspend()
+    repeat copilot.suspend(1000)
     until copilot.thrustLeversSetForTakeoff() and FSL.OVHD_EXTLT_Land_L_Switch:getPosn() == "ON" and FSL.OVHD_EXTLT_Land_R_Switch:getPosn() == "ON"
     if copilot.isVoiceControlEnabled then
       copilot.voiceCommands.takeoff:deactivate()
@@ -762,11 +749,11 @@ copilot.actions.landing = copilot.events.landing:addAction(function()
   if copilot.UserOptions.actions.after_landing == copilot.UserOptions.ENABLED then
     if copilot.isVoiceControlEnabled 
       and copilot.UserOptions.actions.after_landing_trigger == copilot.AFTER_LANDING_TRIGGER_VOICE then
-      repeat copilot.suspend() until copilot.GS() < 40
+      repeat copilot.suspend(1000) until copilot.GS() < 40
       copilot.voiceCommands.afterLanding:activate()
       copilot.voiceCommands.afterLandingNoApu:activate()
     else
-      repeat copilot.suspend() until (copilot.GS() < 30 and FSL.PED_SPD_BRK_LEVER:getPosn() ~= "ARM") or not copilot.enginesRunning()
+      repeat copilot.suspend(1000) until (copilot.GS() < 30 and FSL.PED_SPD_BRK_LEVER:getPosn() ~= "ARM") or not copilot.enginesRunning()
       if copilot.isVoiceControlEnabled then
         copilot.voiceCommands.noApu:activate()
       end
@@ -777,7 +764,7 @@ copilot.actions.landing = copilot.events.landing:addAction(function()
     end
   end
   
-  repeat copilot.suspend() until copilot.GS() < 30
+  repeat copilot.suspend(1000) until copilot.GS() < 30
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.taxiLightOff:activate()
   end

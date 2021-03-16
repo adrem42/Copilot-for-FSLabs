@@ -65,7 +65,7 @@ function RotaryKnob:_setPositionToLvar(targetPos, initPos)
       self:_rotateLeft()
       wasGreater = true
     else break end
-    if not self:_waitForLvarChange(1000, currPos, 3) then return self:_handleTimeout(4) end
+    if not self:_waitForLvarChange(1000, currPos) then return self:_handleTimeout(4) end
     if FSL.areSequencesEnabled and tick % 2 == 0 then util.sleep(1) end
     tick = tick + 1
     currPos = self:getLvarValue()

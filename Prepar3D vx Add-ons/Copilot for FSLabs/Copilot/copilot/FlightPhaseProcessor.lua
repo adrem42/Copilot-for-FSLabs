@@ -62,10 +62,7 @@ function FlightPhaseProcessor:init()
 end
 
 function FlightPhaseProcessor.start()
-  copilot.addCallback(
-    coroutine.create(function() FlightPhaseProcessor:run() end), 
-    "FlightPhaseProcessor"
-  )
+  copilot.addCoroutine(function() FlightPhaseProcessor:run() end, "FlightPhaseProcessor")
 end
 
 events.chocksSet = Event:new{logMsg = "Chocks set"}
@@ -115,11 +112,11 @@ flightPhases.onChocks = FlightPhase:new("On chocks", events.chocksSet)
 flightPhases.taxi = FlightPhase:new("Taxi")
 flightPhases.takeoff = FlightPhase:new("Takeoff", events.takeoffInitiated)
 
-flightPhases.airborne = FlightPhase:new()
+flightPhases.airborne = FlightPhase:new "Airborne"
 flightPhases.climbout = flightPhases.airborne:new("Climbout")
 flightPhases.flyingCircuits = flightPhases.airborne:new("Circuit flying")
-flightPhases.aboveTenThousand = flightPhases.airborne:new(nil, events.aboveTenThousand)
-flightPhases.belowTenThousand = flightPhases.airborne:new(nil, events.belowTenThousand)
+flightPhases.aboveTenThousand = flightPhases.airborne:new("Above ten thousand", events.aboveTenThousand)
+flightPhases.belowTenThousand = flightPhases.airborne:new("Below ten thousand", events.belowTenThousand)
 
 local function checkEngineStart()
   if FlightPhaseProcessor.enginesStarted() then

@@ -46,6 +46,10 @@
   <li><a href="../libraries/Event.html">Event</a></li>
   <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
 <h2>Manual</h2>
 <ul class="nowrap">
   <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
@@ -63,31 +67,29 @@
 <span class="comment">-- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
 </span><span class="comment">-- any lua files in that directory
 </span>
-
 <span class="keyword">local</span> <span class="keyword">function</span> makeCountdown(numSeconds)
   <span class="keyword">return</span> <span class="global">coroutine</span>.create(<span class="keyword">function</span>()
     copilot.logger:warn(
-      <span class="string">"You have "</span> .. numSeconds .. <span class="string">" seconds to abort the launch!"</span>
-    )
+      <span class="string">"You have "</span> .. numSeconds .. <span class="string">" seconds to abort the launch!"</span>)
     <span class="keyword">local</span> countdownStart = <span class="global">os</span>.time()
     <span class="keyword">for</span> i = numSeconds, <span class="number">1</span>, - <span class="number">1</span> <span class="keyword">do</span>
       copilot.suspend(<span class="number">1000</span>)
-      copilot.logger:info(i .. <span class="string">"..."</span>)
+      <span class="global">print</span>(i .. <span class="string">"..."</span>)
     <span class="keyword">end</span>
     <span class="keyword">return</span> countdownStart, <span class="global">os</span>.time()
   <span class="keyword">end</span>)
 <span class="keyword">end</span>
 
-<span class="comment">-- VoiceCommands have to be created statically
+<span class="comment">-- VoiceCommands need to be created at the start of the script
 </span><span class="comment">-- because otherwise the recognizer grammar would need
-</span><span class="comment">-- to be recompiled after each new VoiceCommand
+</span><span class="comment">-- to be recompiled after each dynamically added VoiceCommand
 </span>
 <span class="keyword">local</span> abortWithVoice = VoiceCommand:new <span class="string">"Abort the launch"</span>
 <span class="keyword">local</span> launchCommand = VoiceCommand:new <span class="string">"Launch it"</span>
 
 <span class="keyword">local</span> <span class="keyword">function</span> rocketLaunch()
 
-  copilot.logger:info <span class="string">"Preparing for rocket launch..."</span>
+  <span class="global">print</span> <span class="string">"Preparing for rocket launch..."</span>
   copilot.suspend(<span class="number">5000</span>, <span class="number">10000</span>)
 
   <span class="keyword">local</span> _, _, destination = Event.waitForEvent(
@@ -98,55 +100,57 @@
       }
     )
   )
-  copilot.logger:info <span class="string">"Launching the rocket on your command"</span>
+
+  <span class="global">print</span> <span class="string">"Launching the rocket on your command"</span>
   <span class="keyword">if</span> Event.waitForEventWithTimeout(
     <span class="number">30000</span>, launchCommand:activate()
   ) == Event.TIMEOUT <span class="keyword">then</span>
-    <span class="keyword">return</span> copilot.logger:warn <span class="string">"The launch routine has timed out"</span>
+    copilot.logger:warn <span class="string">"The launch procedure has timed out"</span>
+    <span class="keyword">return</span>
   <span class="keyword">end</span>
 
   <span class="keyword">local</span> countdownCoro, countdownEvent = copilot.addCallback(makeCountdown(<span class="number">10</span>))
   <span class="keyword">local</span> abortWithKey = Event.fromKeyPress <span class="string">"A"</span>
+  abortWithVoice:activate()
 
   <span class="keyword">local</span> event, getPayload = Event.waitForEvents {
-    countdownEvent, abortWithKey, abortWithVoice:activate()
+    countdownEvent, abortWithKey, abortWithVoice
   }
 
   copilot.removeCallback(countdownCoro)
   abortWithVoice:deactivate()
 
   <span class="keyword">if</span> event == countdownEvent <span class="keyword">then</span>
-    copilot.logger:info(
-      <span class="string">"The rocket has successfully been launched to "</span> .. destination .. <span class="string">"!"</span>
-    )
+    <span class="global">print</span>(<span class="string">"The rocket has successfully been launched to "</span> .. destination .. <span class="string">"!"</span>)
     <span class="keyword">local</span> countStart, countEnd = getPayload()
-    <span class="keyword">return</span> copilot.logger:info(
+    <span class="global">print</span>(
       <span class="global">os</span>.date(<span class="string">"Countdown start: %X, "</span>, countStart) ..
       <span class="global">os</span>.date(<span class="string">"countdown end: %X."</span>, countEnd)
     )
+    <span class="keyword">return</span>
   <span class="keyword">end</span>
 
-  copilot.logger:info(
+  <span class="global">print</span>(
     event == abortWithKey
     <span class="keyword">and</span> <span class="string">"The launch was aborted with a key press!"</span>
     <span class="keyword">or</span> <span class="string">"The launch was aborted with a voice command!"</span>
   )
 
   <span class="keyword">local</span> _, choice = Event.waitForEvent(
-    Event.fromTextMenu(<span class="string">"Try again?"</span>, <span class="keyword">nil</span>, {<span class="string">"Yes"</span>, <span class="string">"No"</span>})
+    Event.fromTextMenu(<span class="string">"Try again?"</span>, <span class="string">""</span>, {<span class="string">"Yes"</span>, <span class="string">"No"</span>})
   )
 
-  <span class="keyword">if</span> choice == <span class="number">1</span> <span class="keyword">then</span> copilot.addCallback(<span class="global">coroutine</span>.create(rocketLaunch)) <span class="keyword">end</span>
+  <span class="keyword">if</span> choice == <span class="number">1</span> <span class="keyword">then</span> copilot.addCoroutine(rocketLaunch) <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-copilot.addCallback(<span class="global">coroutine</span>.create(rocketLaunch))</pre>
+copilot.addCoroutine(rocketLaunch)</pre>
 
 
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-03-10 11:36:06 </i>
+<i style="float:right;">Last updated 2021-03-16 23:48:46 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

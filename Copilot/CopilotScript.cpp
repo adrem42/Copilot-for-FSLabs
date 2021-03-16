@@ -1,3 +1,13 @@
+/////////
+// 
+// Class for displaying a SimConnect text menu and handling the result.
+// 
+// SimConnect maintains a queue of menus from all of its clients.<br><br>
+// When the user closes the window without selecting an item, SimConnect doesn't emit any event, so you have to set a timeout if you want to handle this possibility.<br><br>
+// When you call `TextMenu:show`, the object will be kept alive until a result is received.<br><br>
+// 
+// @classmod TextMenu
+
 #include "CopilotScript.h"
 #include "Copilot.h"
 #include "Sound.h"
@@ -5,79 +15,161 @@
 #include <functional>
 #include <string>
 
-class TextMenuWrapper : public std::enable_shared_from_this<TextMenuWrapper> {
+
+/*** @type TextMenu */
+class LuaTextMenu : public SimConnect::TextMenuEvent {
+
+	CopilotScript* pScript;
+	const CopilotScript::RegisterID callbackID;
 
 public:
 
-	static std::unordered_set <std::shared_ptr<TextMenuWrapper>> pendingMenus;
-	static std::mutex pendingMenusMutex;
-
-	std::shared_ptr<SimConnect::TextMenuEvent> menu;
-
-	static std::shared_ptr<TextMenuWrapper> create(
+	/***
+	* Constructor
+	* @static
+	* @function new
+	* @string title
+	* @string prompt Can be an empty string
+	* @tparam table items Array of strings
+	* @int timeout Timeout in seconds. 0 means infinite.
+	* @tparam function callback The function that's going to handle the menu events, with the following parameters:
+	* 
+	*> 1. The result: TextMenuResult.OK, TextMenuResult.Replaced, TextMenuResult.Timeout, TextMenuResult.Removed
+	* 
+	*> 2. The array index of the item
+	* 
+	*> 3. The item itself (string)
+	* 
+	*> 4. The menu
+	*/
+	LuaTextMenu(
 		const std::string& title,
 		const std::string& prompt,
 		std::vector<std::string> items,
 		size_t timeout,
 		sol::function callback,
 		CopilotScript& script
-	)
+	) : LuaTextMenu(timeout, callback, script)
 	{
+		this->title = title;
+		this->prompt = prompt;
+		this->items = items;
+	}
 
-		static size_t currID = 0;
-		const size_t callbackID = currID++;
-		script.lua.registry()[sol::create_if_nil]["textMenuCallbacks"][callbackID] = callback;
+	/***
+	* Constructor
+	* @static
+	* @function new
+	* @string title
+	* @string prompt Can be an empty string
+	* @tparam table items Array of strings
+	* @tparam function callback Same as above
+	*/
 
+	/***
+	* Constructor
+	* @static
+	* @function new
+	* @int timeout Timeout in seconds. 0 means infinite.
+	* @tparam function callback Same as above
+	*/
+	LuaTextMenu(size_t timeout, sol::function callback, CopilotScript& script)
+		: pScript(&script), callbackID(script.registerLuaObject(callback))
+	{
+		this->timeout = timeout;
 		using namespace SimConnect;
-
-		auto sp = std::shared_ptr<TextMenuWrapper>(new TextMenuWrapper(), [path = script.path, callbackID, pScript = &script](TextMenuWrapper* ptr) {
-			LuaPlugin::withScript<CopilotScript>(path, [=](CopilotScript& s) {
-				if (pScript != &s) return;
-				s.enqueueCallback([callbackID] (sol::state_view& lua) {
-					lua.registry()[sol::create_if_nil]["textMenuCallbacks"][callbackID] = sol::nil;
+		this->callback = [=, &script](Result res, MenuItem item, const std::string& str, std::shared_ptr<TextMenuEvent> e)
+		{
+			LuaPlugin::withScript<CopilotScript>(&script, [=](CopilotScript& s) {
+				s.enqueueCallback([=, &s](sol::state_view& lua) {
+					auto f = s.getRegisteredObject<sol::protected_function>(callbackID);
+					sol::object luaItem(sol::nil);
+					if (item != -1)
+						luaItem = sol::make_object(lua.lua_state(), item + 1);
+					lua.registry()[sol::light(this)] = sol::nil;
+					s.callProtectedFunction(f, res, luaItem, str, std::static_pointer_cast<LuaTextMenu>(shared_from_this()));
 				});
 			});
-			delete ptr;
-		});
-
-		auto callbackWrapper = [callbackID, wp = std::weak_ptr<TextMenuWrapper>(sp), path = script.path, pScript = &script](
-			TextMenuEvent::Result res, TextMenuEvent::MenuItem item, const std::string& str,
-			std::shared_ptr<TextMenuEvent> e
-			)
-		{
-			LuaPlugin::withScript<CopilotScript>(path, [=](CopilotScript& s) {
-				if (&s != pScript) return;
-				if (auto sp = wp.lock()) {
-					s.enqueueCallback([=] (sol::state_view& lua) {
-						{
-							std::lock_guard<std::mutex> lock(pendingMenusMutex);
-							pendingMenus.erase(sp);
-						}
-						lua.registry()["textMenuCallbacks"][callbackID](res, item + 1, str, sp);
-					});
-				}
-			});
 		};
-		sp->menu = std::make_shared<TextMenuEvent>(title, prompt, items, timeout, callbackWrapper);
-		return sp;
 	}
 
-	void show()
+	/***
+	* Constructor
+	* @static
+	* @function new
+	* @tparam function callback Same as above
+	*/
+
+	/***
+	* @function show
+	*/
+	void show(sol::this_state s)
 	{
-		menu->show();
-		std::lock_guard<std::mutex> lock(pendingMenusMutex);
-		pendingMenus.insert(shared_from_this());
+		sol::state_view lua(s);
+		lua.registry()[sol::light(this)] = shared_from_this();
+		TextMenuEvent::show();
 	}
 
-	void cancel()
+	/***
+	* @function setTitle
+	* @string title
+	* @return self
+	*/
+	LuaTextMenu& setTitle(const std::string& title)
 	{
-		menu->cancel();
+		this->title = title;
+		invalidateBuffer();
+		return *this;
+	}
+
+	/***
+	* @function setItems
+	* @tparam table items Array of strings
+	* @return self
+	*/
+	LuaTextMenu& setItems(std::vector<std::string> items)
+	{
+		this->items = items;
+		invalidateBuffer();
+		return *this;
+	}
+
+	/***
+	* @function setPrompt
+	* @string prompt
+	* @return self
+	*/
+	LuaTextMenu& setPrompt(const std::string& prompt)
+	{
+		this->prompt = prompt;
+		invalidateBuffer();
+		return *this;
+	}
+
+	/***
+	* @function setItem
+	* @int index The position of the item
+	* @string item
+	* @return self
+	*/
+	LuaTextMenu& setItem(MenuItem idx, const std::string& item)
+	{
+		items.resize(static_cast<size_t>(idx) + 1);
+		items[idx] = item;
+		invalidateBuffer();
+		return *this;
+	}
+
+	/***
+	* @function cancel
+	*/
+
+	~LuaTextMenu()
+	{
+		pScript->unregisterLuaObject(callbackID);
 	}
 
 };
-
-std::unordered_set < std::shared_ptr<TextMenuWrapper>> TextMenuWrapper::pendingMenus;
-std::mutex TextMenuWrapper::pendingMenusMutex;
 
 void CopilotScript::initLuaState(sol::state_view lua)
 {
@@ -164,77 +256,69 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	};
 	copilot["logger"] = copilot::logger;
 
-	{
-		using namespace SimConnect;
-		auto TextMenuEventType = lua.new_usertype<TextMenuWrapper>("TextMenu", sol::factories([=](
-			const std::string& title,
-			const std::string& prompt,
-			std::vector<std::string> items,
-			size_t timeout,
-			sol::function callback
-			) {
-			return TextMenuWrapper::create(title, prompt, items, timeout, callback, *this);
-		}));
-		TextMenuEventType["show"] = &TextMenuWrapper::show;
-		TextMenuEventType["cancel"] = &TextMenuWrapper::cancel;
-	}
+	auto factory1 = [this](
+		const std::string& title,
+		const std::string& prompt,
+		std::vector<std::string> items,
+		size_t timeout,
+		sol::function callback
+	) {
+		return std::make_shared<LuaTextMenu>(title, prompt, items, timeout, callback, *this);
+	};
+
+	auto factory2 = [this](
+		const std::string& title,
+		const std::string& prompt,
+		std::vector<std::string> items,
+		sol::function callback
+	) {
+		return std::make_shared<LuaTextMenu>(title, prompt, items, 0, callback, *this);
+	};
+
+	auto factory3 = [this](size_t timeout, sol::function callback) {
+		return std::make_shared<LuaTextMenu>(timeout, callback, *this);
+	};
+
+	auto factory4 = [this](sol::function callback) {
+		return std::make_shared<LuaTextMenu>(0, callback, *this);
+	};
+
+	auto TextMenuType = lua.new_usertype<LuaTextMenu>("TextMenu", sol::factories(factory1, factory2, factory3, factory4));
+	TextMenuType["show"] = &LuaTextMenu::show;
+	TextMenuType["cancel"] = &LuaTextMenu::cancel;
+	TextMenuType["setMenu"] = &LuaTextMenu::setMenu;
+	TextMenuType["setItems"] = &LuaTextMenu::setItems;
+	TextMenuType["setItem"] = [](LuaTextMenu& menu, LuaTextMenu::MenuItem idx, const std::string& item) -> LuaTextMenu& {
+		return menu.setItem(idx - 1, item);
+	};
+	TextMenuType["setTitle"] = &LuaTextMenu::setTitle;
+	TextMenuType["setPrompt"] = &LuaTextMenu::setPrompt;
+	TextMenuType["setTimeout"] = &LuaTextMenu::setTimeout;
+
+	lua.new_enum<LuaTextMenu::Result>(
+		"TextMenuResult",
+		{
+			{"OK", LuaTextMenu::Result::OK},
+			{"Removed", LuaTextMenu::Result::Removed},
+			{"Replaced", LuaTextMenu::Result::Replaced},
+			{"Timeout", LuaTextMenu::Result::Timeout}
+		}
+	);
+
+	lua.registry()[KEY_OBJECT_REGISTRY] = lua.create_table();
 
 	lua["startUpdating"] = [this] {shouldRun = true; };
 
+	callbackRunner = std::make_unique<CallbackRunner>(
+		lua,
+		[this] { nextUpdate = elapsedTime(); },
+		[this] { return elapsedTime(); },
+		[this] (sol::error& err) { LuaPlugin::onError(err); }
+	);
+
+	callbackRunner->makeLuaBindings(lua, "copilot");
+
 	startBackgroundThread();
-}
-
-bool CopilotScript::updateScript(MSG* pMsg, Events& events)
-{
-	auto res = MsgWaitForMultipleObjects(events.numEvents, events.events, FALSE, INFINITE, QS_ALLINPUT);
-
-	if (res == WAIT_OBJECT_0 + events.numEvents) {
-
-		if (PeekMessage(pMsg, NULL, 0, 0, PM_REMOVE)) {
-			if (pMsg->message == WM_TIMER) {
-				sol::protected_function f = lua["copilot"]["update"];
-				sol::protected_function_result res = f();
-				if (!res.valid()) onError(res);
-			}
-			TranslateMessage(pMsg);
-			DispatchMessage(pMsg);
-		}
-
-	} else if (res == WAIT_OBJECT_0 + events.EVENT_RECO_EVENT) {
-
-		sol::protected_function f = lua["Event"]["fetchRecoResults"];
-		sol::protected_function_result res = f();
-		if (!res.valid()) onError(res);
-
-	} else if (res == WAIT_OBJECT_0 + events.EVENT_LUA_CALLBACK) {
-
-		std::unique_lock<std::mutex> lock(luaCallbackQueueMutex);
-		std::queue<LuaCallback> callbacks = luaCallbacks;
-		luaCallbacks = std::queue<LuaCallback>();
-		lock.unlock();
-
-		while (callbacks.size()) {
-			auto& callback = callbacks.front();
-			callback(lua);
-			callbacks.pop();
-		}
-
-	} else if (res == WAIT_OBJECT_0 + events.SHUTDOWN_EVENT) {
-
-		return false;
-
-	} else if (res < WAIT_OBJECT_0 + events.EVENT_RECO_EVENT) {
-
-		FSL2LuaScript::onEvent(events, res);
-
-	} else {
-
-		copilot::logger->error("Unexpected error. Copilot will stop.");
-		return false;
-	}
-
-	return true;
-
 }
 
 CopilotScript::Events CopilotScript::createEvents()
@@ -270,14 +354,60 @@ void CopilotScript::run()
 
 	if (!shouldRun) return;
 
-	mainThreadTimerId = SetTimer(NULL, mainThreadTimerId, 30, NULL);
-	MSG msg = {};
-
 	auto events = createEvents();
 
+	nextUpdate = elapsedTime();
+
 	while (true) {
-		if (!updateScript(&msg, events))
-			return;
+
+		size_t timeout = 0;
+
+		if (nextUpdate == INFINITE) {
+			timeout = INFINITE;
+		} else {
+			size_t elapsed = elapsedTime();
+			if (nextUpdate > elapsed) 
+				timeout = nextUpdate - elapsed;
+		}
+
+		Sleep(14);
+
+		auto res = WaitForMultipleObjects(events.numEvents, events.events, FALSE, timeout);
+
+		if (res == WAIT_TIMEOUT) {
+
+			auto _nextUpdate = callbackRunner->update();
+			nextUpdate = _nextUpdate == CallbackRunner::INDEFINITE ? INFINITE : _nextUpdate;
+
+		} else {
+
+			if (res == WAIT_OBJECT_0 + events.EVENT_RECO_EVENT) {
+
+				callProtectedFunction(lua["Event"]["fetchRecoResults"]);
+
+			} else if (res == WAIT_OBJECT_0 + events.EVENT_LUA_CALLBACK) {
+
+				std::unique_lock<std::mutex> lock(luaCallbackQueueMutex);
+				std::queue<LuaCallback> callbacks = luaCallbacks;
+				luaCallbacks = std::queue<LuaCallback>();
+				lock.unlock();
+
+				while (callbacks.size()) {
+					auto& callback = callbacks.front();
+					callback(lua);
+					callbacks.pop();
+				}
+
+			} else if (res == WAIT_OBJECT_0 + events.SHUTDOWN_EVENT) {
+
+				return;
+
+			} else if (res < WAIT_OBJECT_0 + events.EVENT_RECO_EVENT) {
+
+				FSL2LuaScript::onEvent(events, res);
+
+			}
+		}
 	}
 }
 
@@ -382,9 +512,19 @@ void CopilotScript::stopBackgroundThreadTimer()
 	}
 }
 
+void CopilotScript::unregisterLuaObject(RegisterID id)
+{
+	auto unregister = [this, id] {
+		lua.registry()[KEY_OBJECT_REGISTRY][id] = sol::nil;
+	};
+	if (GetCurrentThreadId() == luaThreadId) {
+		unregister();
+	} else {
+		enqueueCallback(std::bind(unregister));
+	}
+}
+
 CopilotScript::~CopilotScript()
 {
-	std::lock_guard<std::mutex> lock(TextMenuWrapper::pendingMenusMutex);
-	TextMenuWrapper::pendingMenus = std::unordered_set<std::shared_ptr<TextMenuWrapper>>();
 	stopBackgroundThread();
 }

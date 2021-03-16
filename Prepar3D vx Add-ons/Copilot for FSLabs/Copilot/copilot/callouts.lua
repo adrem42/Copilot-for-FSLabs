@@ -63,7 +63,7 @@ function copilot.callouts:rollout(afterAbortedTakeoff)
   else self.landedTime = copilot.getTimestamp() end
   self:waitForReverseGreen()
   if copilot.GS() > 70 then
-    while not self.landedTime do copilot.suspend() end
+    while not self.landedTime do copilot.suspend(100) end
     self.noDecelTimeRef = ipc.elapsedtime()
     self:waitForDecel()
   end

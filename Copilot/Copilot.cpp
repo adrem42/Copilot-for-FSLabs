@@ -79,10 +79,8 @@ namespace copilot {
 	void launchFSL2LuaScript()
 	{
 		auto path = appDir + (isFslAircraft ? "scripts\\autorun.lua" : "scripts_non_fsl\\autorun.lua");
-		if (std::filesystem::exists(path)) {
-			std::thread(&LuaPlugin::launchScript<FSL2LuaScript>, path)
-				.detach();
-		}
+		if (std::filesystem::exists(path)) 
+			LuaPlugin::launchScript<FSL2LuaScript>(path);
 	}
 
 	bool isCopilotEnabled()
@@ -98,7 +96,7 @@ namespace copilot {
 
 	void startCopilotScript()
 	{
-		std::thread(&LuaPlugin::launchScript<CopilotScript>, copilotScriptPath()).detach();
+		LuaPlugin::launchScript<CopilotScript>(copilotScriptPath());
 	}
 
 	void stopCopilotScript()
@@ -159,26 +157,26 @@ namespace copilot {
 		findAppDir();
 		initLogger();
 
-		int lineWidth = 60;
-		copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
-		copilot::logger->info("");
+		auto lua = loadUserOptions();
 
-		BASS_SetConfig(BASS_CONFIG_UNICODE, true);
+		if (lua["copilot"]["UserOptions"]["general"]["enable"] == 1) {
+			int lineWidth = 60;
+			copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
+			copilot::logger->info("");
 
-		BASS_DEVICEINFO info;
-		copilot::logger->info("{:*^{}}", " Output device info: ", lineWidth);
-		copilot::logger->info("");
-		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
-			copilot::logger->info("{}={} {}",
-								  i, info.name,
-								  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
-		copilot::logger->info("");
-		copilot::logger->info("{:*^{}}", "", lineWidth);
-		copilot::logger->info("");
+			BASS_SetConfig(BASS_CONFIG_UNICODE, true);
 
-		initConsoleSink();
-		loadUserOptions();
-		
+			BASS_DEVICEINFO info;
+			copilot::logger->info("{:*^{}}", " Output device info: ", lineWidth);
+			copilot::logger->info("");
+			for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
+				copilot::logger->info("{}={} {}",
+									  i, info.name,
+									  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
+			copilot::logger->info("");
+			copilot::logger->info("{:*^{}}", "", lineWidth);
+			copilot::logger->info("");
+		}
 	}
 
 	void onSimEvent(SimConnect::EVENT_ID event)
@@ -209,8 +207,10 @@ namespace copilot {
 	{
 		copilot::isFslAircraft = isFslAircraft;
 		DWORD res = FSUIPC::connect();
-		if (res != FSUIPC_ERR_OK) 
+		if (res != FSUIPC_ERR_OK) {
 			logger->error("Failed to connect to FSUIPC: {}", FSUIPC::errorString(res));
+		}
+		initConsoleSink();
 		SimInterface::init();
 		launchThread = std::thread([]{
 			Sleep(10000);
@@ -224,6 +224,11 @@ namespace copilot {
 		});	
 	}
 
+	void onWindowClose()
+	{
+		LuaPlugin::stopAllScripts();
+	}
+
 	IWindowPluginSystemV440* GetWindowPluginSystem()
 	{
 		return PdkServices::GetWindowPluginSystem();
@@ -232,26 +237,24 @@ namespace copilot {
 
 void DLLStart(P3D::IPdk* pPdk)
 {
-	SimConnect::init();
-
-	if (Panels != NULL) 
+	if (Panels != NULL)
 		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
-	
+
 	if (pPdk != nullptr)
-	    PdkServices::Init(pPdk);
+		PdkServices::Init(pPdk);
+
+	SimConnect::init();
 
 	copilot::init();
 }
 
 void DLLStop()
 {
-	std::thread([] {
-		copilot::launchThread.join();
-		copilot::logger->debug("Shutting down...");
-		LuaPlugin::stopAllScripts();
-		SimConnect::close();
-		SimInterface::close();
-		Joystick::stopAndJoinBufferThread();
-		copilot::logger->debug("Bye!");
-	}).detach();
+	copilot::launchThread.join();
+	copilot::logger->debug("Shutting down...");
+	LuaPlugin::stopAllScripts();
+	SimConnect::close();
+	SimInterface::close();
+	Joystick::stopAndJoinBufferThread();
+	copilot::logger->debug("Bye!");
 }

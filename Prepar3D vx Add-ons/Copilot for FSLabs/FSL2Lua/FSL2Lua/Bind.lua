@@ -28,7 +28,6 @@ Bind.__index = Bind
 --- @tparam table data A table that may contain the following fields: 
 --- @param data.onPress See above.
 --- @param data.onPressRepeat See above.
---- **Warning**: for buttons, onPressRepeat uses event.timer. There is only one timer available for a given thread so don't use onPressRepeat with buttons if you need a timer for something else.
 --- @param data.onRelease See above.
 --- @param data.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
 --- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.

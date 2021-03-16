@@ -41,8 +41,9 @@ return {
         type = "string"
       },
       {
-        name = "button_sleep_mult", 
-        hidden = true, 
+        name = "button_sleep_mult",
+        default = 1,
+        comment = "Multiplier for how long to hold buttons depressed. Try increasing this value in steps of 1 if you notice button clicks not registering.",
         type = "number"
       }
     }

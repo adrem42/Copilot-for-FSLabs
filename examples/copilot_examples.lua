@@ -81,9 +81,9 @@ end
 
 local startApu = copilot.voiceCommands.startApu
 
-copilot.logger:info "Replacing these phrase variants with just 'start apu':"
+print "Replacing these phrase variants with just 'start apu':"
 for _, phrase in ipairs(startApu:getPhrases()) do 
-  copilot.logger:info("'" .. phrase .. "'") 
+  print("'" .. phrase .. "'") 
 end
 
 startApu:removeAllPhrases():addPhrase("start apu"):setConfidence(0.90)

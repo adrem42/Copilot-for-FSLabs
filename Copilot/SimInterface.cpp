@@ -39,6 +39,7 @@ const size_t MSG_HIDE_CURSOR = WM_APP + 1;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 
+
     switch (uMsg) {
 
         case MSG_FIRE_MOUSE_RECTANGLE:
@@ -77,10 +78,16 @@ void createWindow()
 LRESULT Subclassproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
     switch (uMsg) {
+
         case WM_KEYDOWN: case WM_KEYUP: case WM_SYSKEYDOWN: case WM_SYSKEYUP:
             if (Keyboard::onKeyEvent(uMsg, wParam, lParam))
                 return 0;
             break;
+
+        case WM_CLOSE:
+            copilot::onWindowClose();
+            break;
+
         default:
             break;
     }

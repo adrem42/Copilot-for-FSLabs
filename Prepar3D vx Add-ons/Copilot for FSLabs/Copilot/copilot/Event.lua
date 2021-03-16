@@ -4,7 +4,13 @@ local Ouroboros = require "Copilot.libs.ouroboros"
 local copilot = copilot
 local util = require "FSL2Lua.FSL2Lua.util"
 
-Event = {events = {}, voiceCommands = {}, runningThreads = {}}
+Event = {
+  events = {},
+  voiceCommands = {}, 
+  dispatchQueue = {},
+  queueMin = 1,
+  queueMax = 0
+}
 Action = Action or require "copilot.Action"
 
 --- @type Event
@@ -108,7 +114,7 @@ function Event:addOneOffAction(...)
 end
 
 function Event:sortActions()
-  if self.runningActions then
+  if self.inDispatch then
     error("Can't sort actions while actions are running", 2)
   end
   self.sortedActions = self.actions:sort()
@@ -125,7 +131,7 @@ end
 -- myEvent:removeAction(myAction)
 ---@return self
 function Event:removeAction(action)
-  if self.runningActions then
+  if self.inDispatch then
     self.actionsToRemove[#self.actionsToRemove+1] = action
     return self
   end
@@ -164,26 +170,55 @@ function Event:_runAction(action, ...)
   return false
 end
 
---- Triggers the event which in turn executes all actions (if they are enabled). 
---- @param ... Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
-function Event:trigger(...)
+function Event.processEventQueue()
+  local oldMax = Event.queueMax
+  for i = Event.queueMin, Event.queueMax do
+    local e = Event.dispatchQueue[i]
+    e.event:dispatch(unpack(e.payload))
+    Event.dispatchQueue[i] = nil
+  end
+  Event.queueMin = Event.queueMax
+  if oldMax == Event.queueMax then
+    copilot.removeCallback(Event.processEventQueue)
+  end
+end
+
+function Event:enqueue(...)
+  local queueIdx = Event.queueMax + 1
+  Event.queueMax = queueIdx
+  Event.dispatchQueue[queueIdx] = {event = self, payload = {...}}
+  if Event.queueMin == Event.queueMax then
+    copilot.addCallback(Event.processEventQueue)
+  end
+end
+
+function Event:dispatch(...)
+  self.inDispatch = true
   copilot.logger:debug("Event: " .. self:toString())
   if not self.areActionsSorted then self:sortActions() end
   self.actionsToRemove = {}
-  self.runningActions = true
-  for _, action in ipairs(self.sortedActions) do 
+  for _, action in ipairs(self.sortedActions) do
     if self:_runAction(action, ...) and self.runOnce[action] then
       self.actionsToRemove[#self.actionsToRemove+1] = action
     end
   end
-  self.runningActions = false
-  for _, action in ipairs(self.actionsToRemove) do self:removeAction(action)  end
+  self.inDispatch = false
+  for _, action in ipairs(self.actionsToRemove) do 
+    self:removeAction(action)  
+  end
   self.actionsToRemove = nil
 end
 
--- Copilot receives SAPI recognition event notifications on a background
--- thread, which then tells FSUIPC to notify this lua thread through the
--- LuaToggle command and in turn trigger this callback.
+--- Triggers the event which in turn executes all actions (if they are enabled). 
+--- @param ... Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
+function Event:trigger(...)
+  if self.inDispatch then
+    self:enqueue(...)
+  else
+    self:dispatch(...)
+  end
+end
+
 function Event.fetchRecoResults()
   for _, ruleID in ipairs(copilot.recoResultFetcher:getResults()) do
     Event.voiceCommands[ruleID]:trigger()
@@ -248,22 +283,21 @@ function Event.waitForEventWithTimeout(timeout, event)
 
   local thisThread = checkCallingThread "waitForEventWithTimeout"
   local getPayload
-  local action
-
-  copilot.callOnce(function()
-    action = event:addOneOffAction(function(_, ...) 
-      local payload = {...}
-      getPayload = function() return unpack(payload) end
-      copilot.cancelCallbackTimeout(thisThread)
-    end)
+  local action = event:addOneOffAction(function(_, ...) 
+    local payload = {...}
+    getPayload = function() return unpack(payload) end
+    copilot.cancelCallbackTimeout(thisThread)
   end)
-  
-  copilot.setCallbackTimeout(
-    thisThread,
-    timeout == Event.INFINITE and copilot.INDEFINITE or timeout
-  )
+
+  if not getPayload then 
+    copilot.setCallbackTimeout(
+      thisThread,
+      timeout == Event.INFINITE and copilot.INFINITE or timeout
+    )
+  end
 
   if getPayload then return true, getPayload end
+  
   event:removeAction(action)
   return Event.TIMEOUT
 end
@@ -334,8 +368,7 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
     end
   end
 
-  if returnFunction then return checkEvents end
-  return checkEvents(true)
+  return checkEvents
 end
 
 --- Waits for multiple events or until the timeout is elapsed.
@@ -355,31 +388,34 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
 
   local callingThread = checkCallingThread "waitForEventsWithTimeout"
 
-  copilot.callOnce(function() 
+  for _, event in ipairs(events) do
 
-    for _, event in ipairs(events) do
+    numEvents = numEvents + 1
+    payloadGetters[event] = NO_PAYLOAD
 
-      numEvents = numEvents + 1
-      payloadGetters[event] = NO_PAYLOAD
-  
-      actions[event] = event:addOneOffAction(function(_, ...)
-        local payload = {...}
-        payloadGetters[event] = function() return unpack(payload) end
-        numSignaled = numSignaled + 1
-        if not waitForAll or numSignaled == numEvents then
-          copilot.cancelCallbackTimeout(callingThread)
-        end
-        if not waitForAll then singleEvent = singleEvent or event end
-      end)
-  
-      actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
-    end
-  end)
+    actions[event] = event:addOneOffAction(function(_, ...)
+      local payload = {...}
+      payloadGetters[event] = function() return unpack(payload) end
+      numSignaled = numSignaled + 1
+      if not waitForAll or numSignaled == numEvents then
+        copilot.cancelCallbackTimeout(callingThread)
+      end
+      if not waitForAll then singleEvent = singleEvent or event end
+    end)
 
-  copilot.setCallbackTimeout(
-    callingThread,
-    timeout == Event.INFINITE and copilot.INDEFINITE or timeout
-  )
+    actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+  end
+
+  local alreadySignaled =
+    (not waitForAll and numSignaled > 0)
+    or (waitForAll and numSignaled == numEvents)
+
+  if not alreadySignaled then
+    copilot.setCallbackTimeout(
+      callingThread,
+      timeout == Event.INFINITE and copilot.INFINITE or timeout
+    )
+  end
 
   for e, a in pairs(actions) do e:removeAction(a) end
   
@@ -395,43 +431,44 @@ end
 ---Constructs an event from a key press.
 ---@static
 ---@param key See `FSL2Lua.Bind`
----@param[opt] ... Arguments to forward to the `Event` constructor.
 ---@return <a href="#Class_Event">Event</a>
-function Event.fromKeyPress(key, ...)
-
-  local e = Event:new(...)
-  e.logMsg = e.logMsg or ("Key press: " .. key)
-
+function Event.fromKeyPress(key)
+  local e = Event:new()
   local weakRef = setmetatable({e = e}, {__mode = "v"})
-  copilot.callOnce(function() -- event.key and other event library functions don't work when called from coroutines
-    e._keyBind = Bind {
-      key = key, 
-      dispose = true,
-      onPress = function(...) if weakRef.e then weakRef.e:trigger(...) end end,
-    }
-  end)
+  e._keyBind = Bind {
+    key = key, 
+    dispose = true,
+    onPress = function(...) if weakRef.e then weakRef.e:trigger(...) end end,
+  }
   return e
 end
 
 require "copilot.SingleEvent"
 
---- Constructs an event from ipc.SetMenu and event.MenuSelect (FSUIPC library functions)
+--- Constructs an event from a TextMenu. The menu is shown immediately.
+--- @static
 --- @string title The title of the menu
---- @string prompt The message that is displayed between the title and the items. Set to nil, "", or whitespace if you don't want a prompt.
---- @table items Array of strings representing the menu items
---- @return <a href="#Class_Event">Event</a>. Consumers of the event will receive the following payload values:
---- 1. The index of the item in the array or Event.MENU_GONE
---- 2. The item that was selected: string.
---- 3. A table with the fields 'title', 'prompt', and 'items'.
---- @usage 
-function Event.fromTextMenu(title, prompt, items, timeout, show)
-  show = show or true
+--- @string prompt The message that is displayed between the title and the items. Empty string is allowed.
+--- @tparam table items Array of strings representing the menu items
+--- @int[opt=0] timeout The menu's timeout. 0 means infinite timeout.
+--- @return An <a href="#Class_SingleEvent">SingleEvent</a>. The event will produce the following payload values:  
+---
+--- 1. The result. One of these:<br>
+---    * TextMenuResult.OK
+---    * TextMenuResult.Replaced
+---    * TextMenuResult.Removed
+---    * TextMenuResult.Timeout
+--- 2. The index of the selected item.
+--- 3. The selected item as a string.
+function Event.fromTextMenu(title, prompt, items, timeout)
+  timeout = timeout or 0
   local e = SingleEvent:new()
-  local menu = TextMenu.new(title, prompt, items, timeout, function(res, itemIdx, item)
+  local function callback(res, itemIdx, item)
     e:trigger(res, itemIdx, item)
-  end)
-  if show then menu:show() end
-  return e, function() menu:show() end
+  end
+  local menu = TextMenu.new(title, prompt, items, timeout, callback)
+  menu:show()
+  return e
 end
 
 require "copilot.ActionOrderSetter"

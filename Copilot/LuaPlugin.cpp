@@ -13,10 +13,10 @@
 #include <optional>
 #include <string_view>
 
-const char* YEET_THIS_THREAD = "\xF0\x9F\x92\xA9";
 
-std::unordered_map<lua_State*, std::atomic_bool> runningFlags;
-std::mutex runningFlagsMutex;
+
+const char* REG_KEY_JMP_BUFF = "JMPBUFF";
+const char* REG_KEY_IS_RUNNING = "IS_RUNNING";
 
 std::vector<LuaPlugin::ScriptInst> LuaPlugin::scripts;
 std::mutex LuaPlugin::globalMutex;
@@ -60,17 +60,6 @@ void LuaPlugin::setSessionVariable(const std::string& name, SessionVariable valu
 	sessionVariables[name] = value;
 }
 
-bool LuaPlugin::callLuaFunction(sol::protected_function func)
-{
-	sol::protected_function_result res = func();
-	if (!res.valid()) {
-		sol::error err = res;
-		onError(err);
-		return false;
-	}
-	return true;
-}
-
 int readSTR(lua_State* L)
 {
 	std::lock_guard<std::mutex> lock(FSUIPC::mutex);
@@ -87,14 +76,11 @@ int readSTR(lua_State* L)
 
 void LuaPlugin::hookFunc(lua_State* L, lua_Debug*)
 {
-	lua_pushstring(L, "isRunning");
+	lua_pushstring(L, REG_KEY_IS_RUNNING);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	auto& isRunning = *reinterpret_cast<std::atomic_bool*>(lua_touserdata(L, -1));
-#ifdef DEBUG
-	//copilot::logger->trace("hookFunc called, isRunning: {}", isRunning);
-#endif
 	if (!isRunning) {
-		lua_pushstring(L, "jmpBuff");
+		lua_pushstring(L, REG_KEY_JMP_BUFF);
 		lua_gettable(L, LUA_REGISTRYINDEX);
 		auto jumpBuff = reinterpret_cast<jmp_buf*>(lua_touserdata(L, -1));
 		longjmp(*jumpBuff, true);
@@ -104,13 +90,12 @@ void LuaPlugin::hookFunc(lua_State* L, lua_Debug*)
 void LuaPlugin::initLuaState(sol::state_view lua)
 {
 	lua_sethook(lua.lua_state(), &hookFunc, LUA_MASKCOUNT, 1337);
-
-	lua_pushstring(lua.lua_state(), "isRunning");
+	lua_pushstring(lua.lua_state(), REG_KEY_IS_RUNNING);
 	lua_pushlightuserdata(lua.lua_state(), &running);
 
 	lua_settable(lua.lua_state(), LUA_REGISTRYINDEX);
 
-	lua_pushstring(lua.lua_state(), "jmpBuff");
+	lua_pushstring(lua.lua_state(), REG_KEY_JMP_BUFF);
 	lua_pushlightuserdata(lua.lua_state(), &jumpBuff);
 
 	lua_settable(lua.lua_state(), LUA_REGISTRYINDEX);
@@ -180,18 +165,17 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	ipc["get"] = &getSessionVariable;
 	ipc["set"] = &setSessionVariable;
 
-	ipc["sleep"] = [&] (size_t ms) {
+	auto sleep = [&](int32_t ms) {
+		ms = std::max<int32_t>(15, ms);
 		if (WaitForSingleObject(shutdownEvent, ms) == WAIT_OBJECT_0)
 			yeetLuaThread();
 	};
 
+	ipc["sleep"] = sol::overload([=]() {sleep(1); }, sleep);
+
 	ipc["log"] = lua["print"];
 
-	ipc["elapsedtime"] = [this] {
-		return std::chrono::duration_cast<std::chrono::milliseconds>(
-			std::chrono::high_resolution_clock::now() - startTime
-		).count();
-	};
+	ipc["elapsedtime"] = [this] { return elapsedTime(); };
 
 	ipc["control"] = sol::overload(
 		[](size_t id, size_t param) { SimInterface::sendFSControl(id, param); },
@@ -205,6 +189,10 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua["_COPILOT"] = true;
 
 	luaopen_lfs(lua.lua_state());
+
+	lua["socket"] = lua.create_table();
+	lua["mime"] = lua.create_table();
+
 
 	auto HttpSessionType = lua.new_usertype<HttpSession>("HttpSession",
 														 sol::constructors<HttpSession(const std::wstring&, unsigned int)>());
@@ -272,6 +260,7 @@ void LuaPlugin::stopAllScripts()
 	for (auto& s : scripts) {
 		std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 		delete s.script;
+		s.script = nullptr;
 	}
 }
 
@@ -292,6 +281,7 @@ void LuaPlugin::launchThread()
 	thread = std::thread([this] {
 		copilot::logger->info("### '{}': Launching new thread!", logName);
 		try {
+			luaThreadId = GetCurrentThreadId();
 			running = true;
 			if (!setjmp(jumpBuff)) run();
 		}
@@ -299,13 +289,21 @@ void LuaPlugin::launchThread()
 			onError(ex);
 		}
 		catch (std::exception& ex) {
-			copilot::logger->error("Unknown exception occured: '{}'", ex.what());
+			copilot::logger->error("Exception: '{}'", ex.what());
 		}
 		catch (...) {
 			copilot::logger->error("Caught (...) exception");
 		};
+		luaThreadId = 0;
 		copilot::logger->info("### '{}': Thread finished!", logName);
 	});
+}
+
+size_t LuaPlugin::elapsedTime()
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::high_resolution_clock::now() - startTime
+	).count();
 }
 
 LuaPlugin::~LuaPlugin()

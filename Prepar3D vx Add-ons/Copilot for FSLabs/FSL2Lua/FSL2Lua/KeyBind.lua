@@ -95,34 +95,35 @@ function KeyBindWrapper:new(data)
   return bind
 end
 
-local function findKeyCode(str, keys)
-  keys = keys or keyList
-  for k, v in pairs(keys) do
-    if k:lower() == str:lower() then
-      return v
-    end
-  end
-  return (#str == 1 and string.byte(str:upper())) or nil
-end
-
 function KeyBindWrapper:prepareDataNew(data)
-  local key
-  local keys = {}
+  util.assert(type(data.key) == "string", "The key combination must be a string", 4)
+  local mainKeyCode
   local shifts = {}
-  for _key in data.key:gmatch("[^(%+)]+") do
-    keys[#keys+1] = _key
-  end
-  local function onError()
-    error("Invalid key combination: " .. data.key, 5)
-  end
-  for i, _key in ipairs(keys) do
-    if i == #keys then
-      key =_key
-    else
-      shifts[#shifts+1] = findKeyCode(_key, copilotShifts) or onError()
+  local keyCount = 0
+  for key in data.key:gmatch("[^(%+)]+") do
+    keyCount = keyCount + 1
+    local isShift
+    for shift, keyCode in pairs(copilotShifts) do
+      if shift:lower() == key:lower() then
+        shifts[#shifts+1] = keyCode
+        isShift = true
+      end
+    end
+    if not isShift then
+      for _key, keycode in pairs(keyList) do
+        if key:lower() == _key:lower() then
+          mainKeyCode = keycode
+        end
+      end
+      if not mainKeyCode then
+        util.assert(#key == 1, "Invalid key", 4)
+        mainKeyCode = util.assert(string.byte(key:upper()), "Invalid key", 4)
+      end
     end
   end
-  self.keyBind = {key = findKeyCode(key) or onError(), shifts = shifts}
+  util.assert(keyCount ~= #shifts, "Can't have only modifier keys", 4)
+  util.assert(keyCount - #shifts == 1, "Can't have more than one non-modifier key", 4)
+  self.keyBind = {key = mainKeyCode, shifts = shifts}
   return data
 end
 
@@ -191,45 +192,22 @@ if not _COPILOT then
     end
   end
 
-  local function subsetSums(arr, l, r, sum, sums)
-    sums = sums or {}
-    sum = sum or 0
-    if l > r then
-      sums[#sums+1] = sum
-      return
-    end
-    subsetSums(arr, l + 1, r, sum + arr[l], sums)
-    subsetSums(arr, l + 1, r, sum, sums)
-    return sums
-  end
-
   function KeyBindWrapper:registerOnReleaseEvents()
     local key = self.data.keys.key
     local shifts = self.data.keys.shifts
     if shifts then
-      local funcName = self:addGlobalFunc(function()
-        if self.isPressedWithShifts then
-          self.isPressedWithShifts = false
+      local onRelease = self.data.onRelease
+      self.data.onRelease = function()
+        if self.isPressed then
+          self.isPressed = false
+          onRelease()
+        end
+      end
+      event.key(key, nil, 2, self:addGlobalFuncs(function()
+        if self.isPressed then
           self.data.onRelease()
         end
-      end)
-      local shiftsValArr = {}
-      for _, v in pairs(shifts) do
-        shiftsValArr[#shiftsValArr+1] = v.shift
-      end
-      local shiftCombinations = subsetSums(shiftsValArr, 1, #shiftsValArr)
-      for _, v in pairs(shifts) do
-        for _, _v in pairs(shiftCombinations) do
-          if _v > 0 then
-            event.key(v.key, _v, 2, funcName)
-          end
-        end
-      end
-      for _, v in pairs(shiftCombinations) do
-        if v > 0 then
-          event.key(key, v, 2, funcName)
-        end
-      end
+      end))
     else
       if not self.data.onPress then
         event.key(key, nil, 1, self:addGlobalFunc(function() self.isPressedPlain = true end))

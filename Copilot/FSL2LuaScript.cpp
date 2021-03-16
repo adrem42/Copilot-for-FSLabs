@@ -57,11 +57,11 @@ void FSL2LuaScript::onEvent(Events& events, DWORD eventIdx)
 {
 	if (eventIdx == events.KEYBOARD_EVENT) {
 		while (keyBindManager->hasEvents()) 
-			callLuaFunction(lua.registry()["dispatchKeyboardEvents"]);
+			callProtectedFunction(lua.registry()["dispatchKeyboardEvents"]);
 	} else {
 		joystickManager->onNewDataAvailable(eventIdx);
 		while (joystickManager->hasEvents()) 
-			callLuaFunction(lua.registry()["dispatchJoystickEvents"]);
+			callProtectedFunction(lua.registry()["dispatchJoystickEvents"]);
 	}
 }
 

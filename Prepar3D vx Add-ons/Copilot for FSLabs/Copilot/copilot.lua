@@ -4,6 +4,18 @@ if false then module("copilot") end
 require "copilot.util"
 require "copilot.LoadUserOptions"
 
+copilot.getTimestamp = ipc.elapsedtime
+
+local setCallbackTimeout = copilot.setCallbackTimeout
+function copilot.setCallbackTimeout(...)
+  if setCallbackTimeout(...) then
+    coroutine.yield()
+  end
+end
+function copilot.await(thread) 
+  return Event.waitForEvent(copilot.getThreadEvent(thread)) 
+end
+
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
 FSL:setHttpPort(copilot.UserOptions.general.http_port)
 FSL:enableSequences()
@@ -24,8 +36,8 @@ local debugger = {
   bind = copilot.UserOptions.general.debugger_bind
 }
 if debugger.enable then
-  debugger.debuggee = require 'FSLabs Copilot.libs.vscode-debuggee'
-  debugger.json = require 'FSLabs Copilot.libs.dkjson'
+  debugger.debuggee = require 'Copilot.libs.vscode-debuggee'
+  debugger.json = require 'Copilot.libs.dkjson'
   debugger.debuggee.start(debugger.json)
 end 
 
@@ -61,7 +73,7 @@ Event = require "copilot.Event"
 VoiceCommand = require "copilot.VoiceCommand"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor
-require "copilot.callbacks"
+
 
 if debugger.enable then
   local update = copilot.update

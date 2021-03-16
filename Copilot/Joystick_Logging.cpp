@@ -3,7 +3,6 @@
 #include "JoystickManager.h"
 #include "Copilot.h"
 
-
 void Joystick::setLogName(const std::wstring& logName)
 {
 	this->logName = logName;
@@ -14,7 +13,7 @@ void Joystick::log(const std::wstring& msg)
 	copilot::logger->info(msg);
 }
 
-void Joystick::startLogging()
+void Joystick::startLogging(size_t axisDelta)
 {
 	for (int i = 0; i < numButtonCaps; ++i) {
 		auto cap = buttonCaps[i];
@@ -62,16 +61,19 @@ void Joystick::startLogging()
 			log(ss.str());
 		};
 		if (nameFound) {
-			onAxis(axisName, axisIndex, callback).props();
+			auto props = onAxis(axisName, axisIndex, callback).props();
+			if (axisDelta != -1) props->delta(axisDelta);
 		} else {
-			onAxis(caps.NotRange.Usage, axisIndex, callback).props();
+			auto props = onAxis(caps.NotRange.Usage, axisIndex, callback).props();
+			if (axisDelta != -1) props->delta(axisDelta);
 		}
 	}
 }
 
-void Joystick::logAllJoysticks(std::shared_ptr<JoystickManager> manager)
+void Joystick::logAllJoysticks(std::shared_ptr<JoystickManager> manager, size_t axisDelta)
 {
 	for (auto& joystick : manager->joysticks) {
-		joystick->startLogging();
+		joystick->startLogging(axisDelta);
 	}
 }
+

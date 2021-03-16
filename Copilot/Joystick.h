@@ -383,14 +383,14 @@ public:
 	Start printing into the console whenever a button is pressed or an axis is moved.
 	@function startLogging
 	*/
-	void startLogging();
+	void startLogging(size_t axisDelta = -1);
 
 	/***
 	Calls `startLogging` for all registered Joysticks.
 	@function logAllJoysticks
 	@static
 	*/
-	static void logAllJoysticks(std::shared_ptr<JoystickManager>);
+	static void logAllJoysticks(std::shared_ptr<JoystickManager>, size_t axisDelta = -1);
 
 	static void makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickManager> manager);
 

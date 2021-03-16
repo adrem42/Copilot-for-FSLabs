@@ -73,12 +73,12 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		if (va.leftover_count() == 2
 			&& va[0].get_type() == sol::type::function
 			&& va[1].is<send_event_details_t>()) {
-			sol::protected_function f = va[0];
+			sol::unsafe_function f = va[0];
 			return f;
 		}
 		if (va.leftover_count() == 1 || va[1].get_type() == sol::type::nil) {
 			if (va[0].get_type() == sol::type::function) {
-				sol::protected_function f = va[0];
+				sol::unsafe_function f = va[0];
 				return [f](size_t, size_t, unsigned short) { f(); };
 			}
 			if (va[0].get_type() == sol::type::table) {
@@ -86,7 +86,7 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 				if (obj[sol::metatable_key].get_type() == sol::type::table) {
 					sol::table mt = obj[sol::metatable_key];
 					if (mt["__call"].get_type() == sol::type::function) {
-						sol::protected_function __call = mt["__call"];
+						sol::unsafe_function __call = mt["__call"];
 						return [__call, obj](size_t, size_t, unsigned short) { return __call(obj); };
 					}
 				}
@@ -149,8 +149,12 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 	);
 
 
-	JoystickType["startLogging"] = &Joystick::startLogging;
-	JoystickType["logAllJoysticks"] = [manager] {
-		Joystick::logAllJoysticks(manager);
-	};
+	JoystickType["startLogging"] = sol::overload(
+		[](Joystick& joy, size_t delta) { joy.startLogging(delta); },
+		[](Joystick& joy) { joy.startLogging(); }
+	);
+
+	auto logAll = [manager] (size_t delta = -1) {Joystick::logAllJoysticks(manager, delta); };
+
+	JoystickType["logAllJoysticks"] = sol::overload([=](size_t delta) { logAll(delta); }, [=] { logAll(); });
 }

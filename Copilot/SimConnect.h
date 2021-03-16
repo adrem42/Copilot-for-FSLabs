@@ -12,6 +12,7 @@ namespace SimConnect {
 	class SimConnectEvent : public std::enable_shared_from_this<SimConnectEvent> {
 		static size_t currEventId;
 	public:
+		SimConnectEvent(const SimConnectEvent&) = delete;
 		SimConnectEvent() :eventId(currEventId++) {}
 		const size_t eventId;
 		virtual bool dispatch(DWORD) = 0;
@@ -21,26 +22,38 @@ namespace SimConnect {
 	class TextMenuEvent : public SimConnectEvent {
 
 	public:
+
 		enum class Result { OK, Removed, Replaced, Timeout };
 		using MenuItem = int8_t;
 		using Callback = std::function<void(Result, MenuItem, const std::string&, std::shared_ptr<TextMenuEvent>)>;
 
-	private:
+		char* buff = nullptr;
+		size_t buffSize = 0;
+
+	protected:
 
 		Callback callback;
-		const std::string& title;
-		const std::string& prompt;
-		const std::vector<std::string> items;
+		void buildBuffer();
+		TextMenuEvent() = default;
+
+		std::string title;
+		std::string prompt{" "};
+		std::vector<std::string> items;
 		size_t timeout;
-		char* buff;
-		size_t buffSize;
+
+		void invalidateBuffer();
+
 
 	public:
+
 		TextMenuEvent(const std::string&, const std::string& ,std::vector<std::string>, size_t, Callback);
+		TextMenuEvent(size_t, Callback);
 		virtual bool dispatch(DWORD data) override;
+
+		TextMenuEvent& setMenu(const std::string&, const std::string&, std::vector<std::string>);
+		TextMenuEvent& setTimeout(size_t);
 		void show();
 		void cancel();
-		void makeLuaBindings(sol::state_view& lua);
 		virtual ~TextMenuEvent();
 	};
 

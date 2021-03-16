@@ -9,14 +9,30 @@
 #include <functional>
 #include <queue>
 #include "SimConnect.h"
+#include <stdint.h>
+#include "CallbackRunner.h"
 
-class TextMenuWrapper;
+class LuaTextMenu;
 
 class CopilotScript : public FSL2LuaScript {
 
+public:
+
+	using RegisterID = uint16_t;
+
+private:
+
+	std::unique_ptr<CallbackRunner> callbackRunner = nullptr;
+
+	size_t nextUpdate;
+
+	static constexpr const char* KEY_OBJECT_REGISTRY = "OBJECT_REGISTRY";
+
+	std::atomic<RegisterID> currRegisterID = 0;
+
 	virtual void initLuaState(sol::state_view) override;
 
-	friend class TextMenuWrapper;
+	friend class LuaTextMenu;
 
 	std::thread backgroundThread;
 
@@ -41,7 +57,6 @@ class CopilotScript : public FSL2LuaScript {
 	static std::unordered_map<SimConnect::TextMenuEvent*, sol::function> textMenuEventCallbacks;
 	std::unordered_set<std::shared_ptr<SimConnect::TextMenuEvent>> pendingTextMenuEvents;
 	
-	UINT_PTR mainThreadTimerId;
 	UINT_PTR backgroundThreadTimerId;
 
 	static constexpr UINT WM_STARTTIMER = WM_APP, WM_STOPTIMER = WM_APP + 1;
@@ -67,8 +82,6 @@ class CopilotScript : public FSL2LuaScript {
 		size_t EVENT_LUA_CALLBACK;
 	};
 
-	bool updateScript(MSG* pMsg, Events& events);
-
 	Events createEvents();
 
 public:
@@ -83,7 +96,22 @@ public:
 
 	void onMuteKey(bool);
 
+	template <typename T>
+	RegisterID registerLuaObject(T obj)
+	{
+		RegisterID id = currRegisterID++;
+		lua.registry()[KEY_OBJECT_REGISTRY][id] = obj;
+		return id;
+	}
+
+	void unregisterLuaObject(RegisterID id);
+
+	template <typename T>
+	T getRegisteredObject(RegisterID id)
+	{
+		return lua.registry()[KEY_OBJECT_REGISTRY][id];
+	}
+
 	virtual ~CopilotScript();
 
 };
-

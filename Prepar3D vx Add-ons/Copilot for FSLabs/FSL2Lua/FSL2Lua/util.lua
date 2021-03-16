@@ -60,7 +60,6 @@ local util = {
   FSL2LuaDir = debug.getinfo(1, "S").source:gsub(".(.*\\).*\\.*", "%1")
 }
 
-local copilot = type(copilot) == "table" and copilot.logger and copilot
 local logFilePath = util.FSL2LuaDir .. "\\FSL2Lua.log"
 
 function util.isFuncTable(obj)

@@ -26,11 +26,9 @@ file = {
 
   'Prepar3D vx Add-ons/Copilot for FSLabs/FSL2lua/FSL2Lua/MCDU.lua',
 
-
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/Copilot.lua',
-  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/callbacks.lua',
+  'Copilot/CallbackRunner.cpp',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/util.lua',
-
 
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Action.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Event.lua',
@@ -38,6 +36,7 @@ file = {
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/SingleEvent.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/VoiceCommand.lua',
   'Copilot/Joystick.h',
+  'Copilot/CopilotScript.cpp'
 }
 
 format = 'markdown'

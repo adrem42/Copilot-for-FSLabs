@@ -30,9 +30,7 @@ copilot.events.aboveTenThousand:addAction(function()
   if shouldConnect() then
     copilot.events.chocksSet:addOneOffAction(function()
       copilot.suspend(5000, 30000)
-      copilot.logger:info(
-        connect() and "AC connected" or "Failed to connect AC"
-      )
+      print(connect() and "AC connected" or "Failed to connect AC")
     end, Action.COROUTINE)
   end
 

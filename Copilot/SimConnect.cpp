@@ -9,15 +9,17 @@
 using namespace SimConnect;
 
 std::string aircraftName;
-namespace { std::mutex mutex; }
 
 size_t SimConnectEvent::currEventId = EVENT_CUSTOM_EVENT_MIN;
 
+std::mutex eventsMutex;
 std::unordered_map<size_t, std::weak_ptr<SimConnectEvent>> events;
 
 SimConnectEvent::~SimConnectEvent()
 {
-	//copilot::logger->trace("SimConnectEvent destroyed");
+#ifdef DEBUG
+	copilot::logger->trace("SimConnectEvent destroyed");
+#endif
 }
 
 TextMenuEvent::TextMenuEvent(
@@ -27,32 +29,59 @@ TextMenuEvent::TextMenuEvent(
 	size_t timeout,
 	TextMenuEvent::Callback callback
 ) : callback(callback), title(title), prompt(prompt), items(items), timeout(timeout)
+{}
+
+void SimConnect::TextMenuEvent::invalidateBuffer()
 {
-	std::lock_guard<std::mutex> lock(mutex);
-
-	items.insert(items.begin(), title);
-	items.insert(items.begin(), prompt);
-
-	buffSize = std::accumulate(
-		items.begin(), items.end(), 0, [](size_t acc, std::string s) {
-		return acc + s.length() + 1;
-	}
-	);
-
-	buff = new char[buffSize]();
-
-	{
-		char* currPos = buff;
-
-		for (const auto& s : items) {
-			memcpy(currPos, s.c_str(), s.length());
-			currPos += s.length() + 1;
-		}
-	}
-
+	buff = nullptr;
+	buffSize = 0;
 }
 
-bool TextMenuEvent::dispatch(DWORD data) 
+TextMenuEvent::TextMenuEvent(size_t timeout, Callback callback)
+	:timeout(timeout), callback(callback)
+{
+}
+
+void SimConnect::TextMenuEvent::buildBuffer()
+{
+
+	if (title.empty())
+		throw std::runtime_error("The title must not be empty");
+
+	if (items.empty())
+		throw std::runtime_error("The menu must have items");
+
+	if (items.size() > 10)
+		throw std::runtime_error("A menu can only display 10 items");
+
+	if (prompt.empty())
+		prompt = " ";
+
+	buffSize = std::accumulate(
+		items.begin(), items.end(), 0, 
+		[](size_t acc, std::string s) { return acc + s.length() + 1; });
+
+	buffSize += prompt.length() + title.length() + 2;
+	buff = new char[buffSize]();
+	char* currPos = buff;
+
+	auto insert = [&] (const std::string& s) {
+		memcpy(currPos, s.c_str(), s.length());
+		currPos += s.length() + 1;
+	};
+
+	insert(title);
+	insert(prompt);
+
+	std::for_each(items.begin(), items.end(), [&](const std::string& s) {
+		if (s.empty()) 
+			throw std::runtime_error("The menu must not contain empty items");
+		insert(s);
+	});
+		
+}
+
+bool TextMenuEvent::dispatch(DWORD data)
 {
 	MenuItem selectedItem = -1;
 	Result outResult = Result::OK;
@@ -81,20 +110,45 @@ bool TextMenuEvent::dispatch(DWORD data)
 
 	}
 
+
+	std::string str;
+
+	if (selectedItem != -1)
+		str = items[selectedItem];
+
 	callback(
-		outResult, selectedItem, items[selectedItem],
-		std::dynamic_pointer_cast<TextMenuEvent>(shared_from_this())
+		outResult, selectedItem, str,
+		std::static_pointer_cast<TextMenuEvent>(shared_from_this())
 	);
 	return true;
 }
 
+TextMenuEvent& TextMenuEvent::setMenu(const std::string& title, const std::string& prompt, std::vector<std::string> items)
+{
+	this->title = title;
+	this->prompt = prompt;
+	this->items = items;
+	invalidateBuffer();
+	return *this;
+}
+
 void TextMenuEvent::show()
 {
+	if (!buff)
+		buildBuffer();
+
 	HRESULT hr = SimConnect_Text(
 		hSimConnect, SIMCONNECT_TEXT_TYPE_MENU, timeout, eventId, buffSize, buff
 	);
-
+	
+	std::lock_guard<std::mutex> lock(eventsMutex);
 	events.emplace(eventId, shared_from_this());
+}
+
+TextMenuEvent& TextMenuEvent::setTimeout(size_t timeout)
+{
+	this->timeout = timeout;
+	return *this;
 }
 
 void TextMenuEvent::cancel()
@@ -135,7 +189,9 @@ void onMuteControlEvent(DWORD param)
 
 void onCustomEvent(EVENT_ID id, DWORD param)
 {
+	std::unique_lock<std::mutex> lock(eventsMutex);
 	if (auto event = events[id].lock()) {
+		lock.unlock();
 		if (event->dispatch(param))
 			events.erase(id);
 	}
