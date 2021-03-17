@@ -6,6 +6,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FSLSerialize", "FSLSerialize\FSLSerialize.vcxproj", "{D4EFDC7F-A03A-4FD2-AA85-A50DBD05C9AD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Copilot", "Copilot\Copilot.vcxproj", "{52F5E5ED-8CCB-4073-8D51-EBCE019BA951}"
+	ProjectSection(ProjectDependencies) = postProject
+		{66DC46AF-0FCD-4531-B419-930232108FB7} = {66DC46AF-0FCD-4531-B419-930232108FB7}
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F} = {83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "socket", "socket\socket.vcxproj", "{66DC46AF-0FCD-4531-B419-930232108FB7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mime", "mime\mime.vcxproj", "{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +37,22 @@ Global
 		{52F5E5ED-8CCB-4073-8D51-EBCE019BA951}.Release|x64.Build.0 = Release|x64
 		{52F5E5ED-8CCB-4073-8D51-EBCE019BA951}.Release|x86.ActiveCfg = Release|Win32
 		{52F5E5ED-8CCB-4073-8D51-EBCE019BA951}.Release|x86.Build.0 = Release|Win32
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Debug|x64.ActiveCfg = Debug|x64
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Debug|x64.Build.0 = Debug|x64
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Debug|x86.ActiveCfg = Debug|Win32
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Debug|x86.Build.0 = Debug|Win32
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Release|x64.ActiveCfg = Release|x64
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Release|x64.Build.0 = Release|x64
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Release|x86.ActiveCfg = Release|Win32
+		{66DC46AF-0FCD-4531-B419-930232108FB7}.Release|x86.Build.0 = Release|Win32
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Debug|x64.ActiveCfg = Debug|x64
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Debug|x64.Build.0 = Debug|x64
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Debug|x86.ActiveCfg = Debug|Win32
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Debug|x86.Build.0 = Debug|Win32
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Release|x64.ActiveCfg = Release|x64
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Release|x64.Build.0 = Release|x64
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Release|x86.ActiveCfg = Release|Win32
+		{83E54AC0-4BF7-4A32-90DA-9C0D37A50D6F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

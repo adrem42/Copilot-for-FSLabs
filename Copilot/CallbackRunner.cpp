@@ -68,7 +68,7 @@ CallbackRunner::CallbackRunner(
 	std::function<void(sol::error&)> onError)
 	: onCallbackAwake(onCallbackAwake), elapsedTime(elapsedTime), onError(onError)
 {
-	createCoroutine = lua["coroutine"]["create"];
+	//createCoroutine = lua["coroutine"]["create"];
 	lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE] = lua.create_table();
 }
 
@@ -150,8 +150,10 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 
 CallbackRunner::CallbackReturn CallbackRunner::addCoroutine(sol::object callable, std::optional<std::string> name, std::optional<Interval> delay)
 {
-	if (callable.get_type() == sol::type::function)
-		return addCallback(createCoroutine(callable), name, {}, delay);
+	if (callable.get_type() == sol::type::function) {
+		sol::state_view lua(callable.lua_state());
+		return addCallback(lua["coroutine"]["create"](callable), name, {}, delay);
+	}
 	return addCallback(callable, name, {}, delay);
 }
 

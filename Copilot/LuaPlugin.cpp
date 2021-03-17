@@ -183,8 +183,8 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	); 
 
 	lua["ipc"] = ipc;
-	lua["package"]["path"] = copilot::appDir + "?.lua";
-	lua["package"]["cpath"] = copilot::appDir + "?.dll";
+	lua["package"]["path"] = copilot::appDir + "?.lua;" + copilot::appDir + "\\lua\\?.lua";
+	lua["package"]["cpath"] = copilot::appDir + "?.dll;" + copilot::appDir + "\\lua\\?.dll";
 
 	lua["_COPILOT"] = true;
 

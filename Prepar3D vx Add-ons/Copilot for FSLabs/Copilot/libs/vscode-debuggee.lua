@@ -512,7 +512,6 @@ function debuggee.start(jsonLib, config)
 	sockArray = { sock }
 	if sock.settimeout then sock:settimeout(connectTimeout) end
 	local res, err = sock:connect(controllerHost, tostring(controllerPort))
-	print(err)
 	if not res then
 		sock:close()
 		sock = nil

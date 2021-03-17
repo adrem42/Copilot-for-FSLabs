@@ -35,10 +35,21 @@ local debugger = {
   enable = copilot.UserOptions.general.debugger == copilot.UserOptions.TRUE,
   bind = copilot.UserOptions.general.debugger_bind
 }
+
 if debugger.enable then
   debugger.debuggee = require 'Copilot.libs.vscode-debuggee'
   debugger.json = require 'Copilot.libs.dkjson'
   debugger.debuggee.start(debugger.json)
+  debugger.debuggee.poll()
+  copilot.addCallback(debugger.debuggee.poll)
+  if debugger.bind then
+    Bind {
+      key = debugger.bind,
+      onPress = function()
+        debugger.debuggee.start(debugger.json)
+      end
+    }
+  end
 end 
 
 do
@@ -73,23 +84,6 @@ Event = require "copilot.Event"
 VoiceCommand = require "copilot.VoiceCommand"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor
-
-
-if debugger.enable then
-  local update = copilot.update
-  function copilot.update(...)
-    update(...)
-    debugger.debuggee.poll()
-  end
-  if debugger.bind then
-    Bind {
-      key = debugger.bind,
-      onPress = function()
-        debugger.debuggee.start(debugger.json)
-      end
-    }
-  end
-end
 
 local function wrapSequencesWithLogging()
 
