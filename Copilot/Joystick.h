@@ -70,7 +70,7 @@ class Joystick {
 		double nullzoneLower = 0.5;
 		double nullzoneUpper = 0.5;
 		double boundLower = 0;
-		double boundUpper = 100;
+		double boundUpper = 1;
 
 		static constexpr double AXIS_MAX_VALUE = 100.0;
 
@@ -108,8 +108,6 @@ class Joystick {
 		AxisProperties& nullzone(double lower, double upper);
 
 		bool valueChanged(double value);
-
-		bool isInNullzone(double value);
 
 		double transformValue(double value);
 	};

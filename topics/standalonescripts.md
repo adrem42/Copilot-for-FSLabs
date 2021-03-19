@@ -10,4 +10,8 @@ You don't need any coding experience - the syntax is very straightforward.
 
 2. Write the code using the @{autorun.lua|example} and the video below as reference.
 
-The script will auto-run when you load a flight. You can restart it manually via the FSL2Lua Add-ons submenu. 
+The script will auto-run when you load a flight. You can restart it manually via the FSL2Lua Add-ons submenu.
+
+<br>
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/QZCkArjsOAs" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>

@@ -527,4 +527,5 @@ void CopilotScript::unregisterLuaObject(RegisterID id)
 CopilotScript::~CopilotScript()
 {
 	stopBackgroundThread();
+	stopThread();
 }

@@ -18,8 +18,9 @@ end
 -- because otherwise the recognizer grammar would need
 -- to be recompiled after each dynamically added VoiceCommand
 
-local abortWithVoice = VoiceCommand:new "Abort the launch"
 local launchCommand = VoiceCommand:new "Launch it"
+local abortWithVoice = VoiceCommand:new "Abort the launch"
+local abortWithKey = Event.fromKeyPress "A"
 
 local function rocketLaunch()
 
@@ -39,15 +40,14 @@ local function rocketLaunch()
   if Event.waitForEventWithTimeout(
     30000, launchCommand:activate()
   ) == Event.TIMEOUT then
-    copilot.logger:warn "The launch procedure has timed out"
+    print "The launch procedure has timed out"
     return
   end
 
   local countdownCoro, countdownEvent = copilot.addCallback(makeCountdown(10))
-  local abortWithKey = Event.fromKeyPress "A"
   abortWithVoice:activate()
   
-  local event, getPayload = Event.waitForEvents {
+  local event, payload = Event.waitForEvents {
     countdownEvent, abortWithKey, abortWithVoice
   }
 
@@ -56,7 +56,7 @@ local function rocketLaunch()
 
   if event == countdownEvent then
     print("The rocket has successfully been launched to " .. destination .. "!")
-    local countStart, countEnd = getPayload()
+    local countStart, countEnd = payload()
     print(
       os.date("Countdown start: %X, ", countStart) .. 
       os.date("countdown end: %X.", countEnd)

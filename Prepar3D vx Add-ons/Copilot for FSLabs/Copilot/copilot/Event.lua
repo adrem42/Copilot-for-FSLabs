@@ -281,17 +281,17 @@ end
 ---@return Function that returns the event's payload.
 function Event.waitForEventWithTimeout(timeout, event)
 
-  local thisThread = checkCallingThread "waitForEventWithTimeout"
+  local calingThread = checkCallingThread "waitForEventWithTimeout"
   local getPayload
   local action = event:addOneOffAction(function(_, ...) 
     local payload = {...}
     getPayload = function() return unpack(payload) end
-    copilot.cancelCallbackTimeout(thisThread)
+    copilot.cancelCallbackTimeout(calingThread)
   end)
 
   if not getPayload then 
     copilot.setCallbackTimeout(
-      thisThread,
+      calingThread,
       timeout == Event.INFINITE and copilot.INFINITE or timeout
     )
   end

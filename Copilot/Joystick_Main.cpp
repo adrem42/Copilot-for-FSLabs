@@ -64,23 +64,21 @@ void Joystick::processAxisData(ULONG listSize)
 		if (!isButtonDataIndex(dataIndex)) {
 			auto& axis = axes.at(dataIndex);
 			auto& info = axis.caps;
-			double value = static_cast<double>(data.RawValue - static_cast<int64_t>(info.LogicalMin)) / (info.LogicalMax - static_cast<int64_t>(info.LogicalMin))* AxisProperties::AXIS_MAX_VALUE;
+			double value = static_cast<double>(data.RawValue - static_cast<int64_t>(info.LogicalMin)) / (info.LogicalMax - static_cast<int64_t>(info.LogicalMin));
 			auto& callbacks = axis.callbacks;
-			const bool isInNullzone = axis.props.isInNullzone(value);
-			const double transformedValue = isInNullzone ? 0.0 : axis.props.transformValue(value);
+			const double transformedValue = axis.props.transformValue(value);
 			const bool valueChanged = axis.props.valueChanged(transformedValue);
 			for (auto& callback : callbacks) {
 				if (callback.axisProps == nullptr) {
-					if (valueChanged && !isInNullzone) {
+					if (valueChanged) {
 						manager->enqueueAxisEvent(
 							JoystickManager::AxisEvent{ callback.callback, transformedValue }
 						);
 					}
 				} else {
-					const bool isInNullzone = callback.axisProps->isInNullzone(value);
-					const double transformedValue = isInNullzone ? 0.0 : callback.axisProps->transformValue(value);
+					const double transformedValue = callback.axisProps->transformValue(value);
 					const bool valueChanged = callback.axisProps->valueChanged(transformedValue);
-					if (valueChanged && !isInNullzone) {
+					if (valueChanged) {
 						manager->enqueueAxisEvent(
 							JoystickManager::AxisEvent{ callback.callback, transformedValue }
 						);

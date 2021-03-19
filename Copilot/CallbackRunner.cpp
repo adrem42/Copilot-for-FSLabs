@@ -6,6 +6,18 @@
 #include <Windows.h>
 #include "Copilot.h"
 
+CallbackRunner::Interval CallbackRunner::validateInputInterval(std::optional<Interval>& input)
+{
+	return input ? std::max<Interval>(*input, MIN_INTERVAL) : MIN_INTERVAL;
+}
+
+void CallbackRunner::maybeAwaken(Timestamp deadline)
+{
+	if (activeCallbacks.empty()
+		|| activeCallbacks.begin()->second->deadline > deadline)
+		onCallbackAwake();
+}
+
 std::shared_ptr<CallbackRunner::Callback> CallbackRunner::checkAlreadyAdded(sol::object& o, std::optional<std::string>& name)
 {
 	sol::state_view lua(o.lua_state());
@@ -68,16 +80,18 @@ CallbackRunner::CallbackRunner(
 	std::function<void(sol::error&)> onError)
 	: onCallbackAwake(onCallbackAwake), elapsedTime(elapsedTime), onError(onError)
 {
-	//createCoroutine = lua["coroutine"]["create"];
 	lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE] = lua.create_table();
 }
 
 /***
 * 
 * Adds a callback to the callback queue.
-* Dead coroutines are removed automatically.
 * @function copilot.addCallback
-* @param callback A function, callable table or thread.It will be called with a timestamp(milliseconds) taken from copilot.getTimestamp() as the first and itself as the seconds parameters.
+* @param callback A function, callable table or thread. It will be called the following arguments:
+*
+* 1. A timestamp (same as copilot.getTimestamp())
+*
+* 2. itself
 * @string[opt] name Can be used later to remove the callback with `removeCallback`.
 * @int[opt] interval Interval in milliseconds
 * @int[opt] delay Initial delay in milliseconds
@@ -87,8 +101,6 @@ CallbackRunner::CallbackRunner(
 * 1. Finishes its execution normally.In this case, the event's payload will be the values returned by the coroutine.
 *
 * 2. Is removed with `removeCallback`. The payload will be copilot.THREAD_REMOVED
-*
-* See `copilot_events_example.lua`.
 * 
 */
 CallbackRunner::CallbackReturn CallbackRunner::addCallback(
@@ -111,6 +123,10 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 				deadline += *delay;
 			alreadyAdded->deadline = deadline;
 		}
+		if (interval) {
+			alreadyAdded->interval = validateInputInterval(interval);
+		}
+		maybeAwaken(alreadyAdded->deadline);
 		return std::make_tuple(callable, alreadyAdded->threadEvent);
 	}
 
@@ -119,7 +135,7 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 	if (delay && *delay > 0)
 		deadline += *delay;
 	
-	Interval _interval = interval ? std::max<Interval>(*interval, MIN_INTERVAL) : MIN_INTERVAL;
+	auto _interval = validateInputInterval(interval);
 
 	std::shared_ptr<Callback> callback;
 
@@ -131,15 +147,19 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 		sol::coroutine co(th.thread_state());
 		if (!makeThreadEvent) {
 			sol::state_view lua(callable.lua_state());
-			sol::table SingleEvent = lua["SingleEvent"];
-			makeThreadEvent = [SingleEvent] {return SingleEvent["new"](SingleEvent); };
+			sol::object maybeSingleEvent = lua["SingleEvent"];
+			if (maybeSingleEvent.get_type() == sol::type::table) {
+				sol::table SingleEvent = lua["SingleEvent"];
+				makeThreadEvent = [SingleEvent] {return SingleEvent["new"](SingleEvent); };
+			} else {
+				makeThreadEvent = [] () -> std::optional<sol::table> {return {}; };
+			}
 		}
 		callback = std::shared_ptr<Callback>(new Callback{ name, _interval, th, co, deadline, makeThreadEvent(), th.thread_state() });
 	} 
 
 	debug("Adding new callback...");
-	if (activeCallbacks.empty())
-		onCallbackAwake();
+	maybeAwaken(deadline);
 	activeCallbacks.emplace(deadline, callback);
 	sol::state_view lua(callable.lua_state());
 	lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE][callable] = callback;

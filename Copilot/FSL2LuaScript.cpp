@@ -1,6 +1,7 @@
 #include "FSL2LuaScript.h"
 #include "JoystickManager.h"
 #include "Copilot.h"
+#include "CallbackRunner.h"
 
 void FSL2LuaScript::initLuaState(sol::state_view lua)
 {
@@ -22,7 +23,6 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	lua.registry()["dispatchJoystickEvents"] = [this] {
 		joystickManager->dispatchEvents();
 	};
-
 
 	LuaPlugin::initLuaState(lua);
 }
@@ -67,29 +67,57 @@ void FSL2LuaScript::onEvent(Events& events, DWORD eventIdx)
 
 void FSL2LuaScript::run() 
 {
+
+	size_t nextUpdate = elapsedTime();
+
+	auto callbackRunner = std::make_unique<CallbackRunner>(
+		lua,
+		[&] { nextUpdate = elapsedTime(); },
+		[&] { return elapsedTime(); },
+		[&](sol::error& err) { LuaPlugin::onError(err); }
+	);
+
+	callbackRunner->makeLuaBindings(lua, "copilot");
+
 	LuaPlugin::run();
 
 	auto events = createEvents();
-	
+
 	while (true) {
-		DWORD res = WaitForMultipleObjects(events.numEvents, events.events, false, INFINITE);
-		if (res == events.SHUTDOWN_EVENT) break;
-		else onEvent(events, res);
+
+		size_t timeout = 0;
+
+		if (nextUpdate == INFINITE) {
+			timeout = INFINITE;
+		} else {
+			size_t elapsed = elapsedTime();
+			if (nextUpdate > elapsed)
+				timeout = nextUpdate - elapsed;
+		}
+
+		DWORD res = WaitForMultipleObjects(events.numEvents, events.events, false, timeout);
+		if (res == events.SHUTDOWN_EVENT) {
+			break;
+		} else if (res == WAIT_TIMEOUT) {
+			nextUpdate = callbackRunner->update();
+		} else {
+			onEvent(events, res);
+		}
 	}
 	
 	delete events.events;
-}
-
-FSL2LuaScript::~FSL2LuaScript()
-{
-	Joystick::removeJoystickManager(joystickManager);
-	Keyboard::removeKeyBindManager(keyBindManager);
 }
 
 void FSL2LuaScript::stopThread()
 {
 	Joystick::removeJoystickManager(joystickManager);
 	Keyboard::removeKeyBindManager(keyBindManager);
-
 	LuaPlugin::stopThread();
+}
+
+FSL2LuaScript::~FSL2LuaScript()
+{
+	Joystick::removeJoystickManager(joystickManager);
+	Keyboard::removeKeyBindManager(keyBindManager);
+	stopThread();
 }

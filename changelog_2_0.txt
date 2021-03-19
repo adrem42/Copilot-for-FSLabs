@@ -1,13 +1,10 @@
-Starting with this version, Copilot isn't running inside FSUIPC anymore. The reason for that is that the FSUIPC Lua environment
-doesn't allow proper importing of dll Lua modules. The way I was integrating my dll isn't how it should be done and I've recently learned that it may, very rarely, cause the sim to crash (I apologize if it ever happened to you).
+Starting with this version, Copilot isn't running inside FSUIPC anymore. The FSUIPC Lua environment doesn't allow to import dll modules the proper wayand the way I was integrating my dll isn't how it should be done and may cause the sim to crash (I only learned this recently and I apologize if it ever happened to you).
 Please read the supplied README.txt for instructions on how to migrate from a previous version.
 
 CHANGELOG:
 
-Copilot:
-
  * Added PM_clears_scratchpad ini option
 
-FSL2Lua:
+ * The interface can be used to make voice commands for non-FSL aircraft
 
  * You can create a script for keyboard and joystick bindings that will run in a separate thread from Copilot (see the manual).

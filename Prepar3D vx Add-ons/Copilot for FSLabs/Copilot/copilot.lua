@@ -4,6 +4,9 @@ if false then module("copilot") end
 require "copilot.util"
 require "copilot.LoadUserOptions"
 
+local title = ipc.readSTR(0x3D00,256)
+copilot.aircraftTitle = title:sub(1, title:find("\0") - 1)
+
 copilot.getTimestamp = ipc.elapsedtime
 
 local setCallbackTimeout = copilot.setCallbackTimeout
@@ -12,8 +15,9 @@ function copilot.setCallbackTimeout(...)
     coroutine.yield()
   end
 end
-function copilot.await(thread) 
-  return Event.waitForEvent(copilot.getThreadEvent(thread)) 
+
+function copilot.await(thread, event) 
+  return Event.waitForEvent(event or copilot.getThreadEvent(thread)) 
 end
 
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
@@ -31,25 +35,13 @@ local util = require "FSL2Lua.FSL2Lua.util"
 copilot.soundDir = APPDIR .. "Copilot\\Sounds\\"
 copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == copilot.UserOptions.TRUE
 
-local debugger = {
-  enable = copilot.UserOptions.general.debugger == copilot.UserOptions.TRUE,
-  bind = copilot.UserOptions.general.debugger_bind
-}
-
-if debugger.enable then
-  debugger.debuggee = require 'Copilot.libs.vscode-debuggee'
-  debugger.json = require 'Copilot.libs.dkjson'
-  debugger.debuggee.start(debugger.json)
-  debugger.debuggee.poll()
-  copilot.addCallback(debugger.debuggee.poll)
-  if debugger.bind then
-    Bind {
-      key = debugger.bind,
-      onPress = function()
-        debugger.debuggee.start(debugger.json)
-      end
-    }
-  end
+if copilot.UserOptions.general.debugger == copilot.UserOptions.ENABLED then
+  local debuggee = require 'Copilot.libs.vscode-debuggee'
+  local json = require 'Copilot.libs.dkjson'
+  debuggee.start(json)
+  copilot.addCallback(debuggee.poll)
+  local bind = copilot.UserOptions.general.debugger_bind
+  if bind then Bind { key = bind, onPress = function() debuggee.start(json) end } end
 end 
 
 do

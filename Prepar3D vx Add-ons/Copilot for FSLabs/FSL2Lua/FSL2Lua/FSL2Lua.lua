@@ -253,6 +253,20 @@ if getmetatable(Joystick) then
     end
   end
 
+  getmetatable(Joystick).simAxis = function(controlNum)
+    local mult = 1 / 50 * 0x4000
+    return function(value)
+      ipc.control(controlNum, (value - 50) * mult)
+    end
+  end 
+
+  getmetatable(Joystick).unsignedSimAxis = function(controlNum)
+    local mult = 0x4000 / 100
+    return function(value)
+      ipc.control(controlNum, value * mult)
+    end
+  end 
+
 end
 
 --------------------------------------------------------------------------------------

@@ -5,6 +5,8 @@ if false then module("copilot") end
 local ipc = ipc
 local coroutine = coroutine
 
+copilot.exit = ipc.exit
+
 --- If both parameters omitted: `ipc.sleep`(100)<br><br>
 --- If time1 specified: `ipc.sleep(time1)`<br><br>
 --- If both are specified: `ipc.sleep(math.random(time1, time2))`

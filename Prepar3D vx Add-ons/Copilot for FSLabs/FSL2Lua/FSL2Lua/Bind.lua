@@ -313,12 +313,12 @@ function Bind._bindButton(butt, pressMacro, releaseMacro)
 end
 
 function Bind._bindPush(switch)
-  util.checkType(switch, PushPullSwitch, "FCU switch", 4)
+  util.checkType(switch, PushPullSwitch, "push-pull switch", 4)
   return Bind._bindButton(switch._button)
 end
 
 function Bind._bindPull(switch)
-  util.checkType(switch, PushPullSwitch, "FCU switch", 4)
+  util.checkType(switch, PushPullSwitch, "push-pull switch", 4)
   return Bind._bindButton(switch._button, "rightPress", "rightRelease")
 end
 

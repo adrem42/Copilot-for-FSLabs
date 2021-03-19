@@ -10,12 +10,12 @@ To migrate from a previous version to 2.0, follow these steps:
 
 4) Inside the FSUIPC folder, delete FSLabs Copilot.lua and the 'FSL2Lua' and 'Copilot for FSLabs' folders.
 
-**IMPORTANT**: If you have written your own code, make sure that it doesn't call any functions
+**IMPORTANT**: If you have written any lua code yourself, make sure that it doesn't call any functions
 from the FSUIPC library except the ones that are listed below.
 
 The following functions from the FSUIPC library are implemented:
 
-All offset read/write functions except readStruct writeStruct and the ones that manipulate bits.
+All offset read/write functions except readStruct, writeStruct and the ones that manipulate bits.
 ipc.exit
 ipc.sleep
 ipc.control (only FS controls)
@@ -28,4 +28,4 @@ ipc.mousemacro
 ipc.get
 ipc.set
 
-LuaFileSystem is also included.
+LuaFileSystem and LuaSocket are also included.

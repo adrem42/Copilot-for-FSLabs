@@ -42,6 +42,8 @@ LuaPlugin::LuaPlugin(const std::string& path, std::shared_ptr<std::recursive_mut
 		logName = path.substr(path.find("Copilot for FSLabs"));
 	else 
 		logName = path;
+	lua = sol::state();
+	lua.open_libraries();
 }
 
 LuaPlugin::SessionVariable LuaPlugin::getSessionVariable(const std::string& name)
@@ -82,13 +84,16 @@ void LuaPlugin::hookFunc(lua_State* L, lua_Debug*)
 	if (!isRunning) {
 		lua_pushstring(L, REG_KEY_JMP_BUFF);
 		lua_gettable(L, LUA_REGISTRYINDEX);
-		auto jumpBuff = reinterpret_cast<jmp_buf*>(lua_touserdata(L, -1));
-		longjmp(*jumpBuff, true);
+		jmp_buf& jumpBuff = *reinterpret_cast<jmp_buf*>(lua_touserdata(L, -1));
+		copilot::logger->info("Calling longjmp from hookFunc");
+
+		longjmp(jumpBuff, true);
 	}
 }
 
 void LuaPlugin::initLuaState(sol::state_view lua)
 {
+
 	lua_sethook(lua.lua_state(), &hookFunc, LUA_MASKCOUNT, 1337);
 	lua_pushstring(lua.lua_state(), REG_KEY_IS_RUNNING);
 	lua_pushlightuserdata(lua.lua_state(), &running);
@@ -193,7 +198,6 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua["socket"] = lua.create_table();
 	lua["mime"] = lua.create_table();
 
-
 	auto HttpSessionType = lua.new_usertype<HttpSession>("HttpSession",
 														 sol::constructors<HttpSession(const std::wstring&, unsigned int)>());
 	HttpSessionType["get"] = &HttpSession::makeRequest;
@@ -228,8 +232,6 @@ void LuaPlugin::onError(const ScriptStartupError& err)
 
 void LuaPlugin::run()
 {
-	lua = sol::state();
-	lua.open_libraries();
 	try {
 		initLuaState(lua);
 	}
@@ -308,6 +310,5 @@ size_t LuaPlugin::elapsedTime()
 
 LuaPlugin::~LuaPlugin()
 {
-	if (thread.joinable())
-		stopThread();
+	stopThread();
 }

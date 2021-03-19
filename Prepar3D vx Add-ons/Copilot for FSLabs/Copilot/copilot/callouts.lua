@@ -24,12 +24,10 @@ function copilot.callouts:resetFlags()
 end
 
 local aicraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
-local aircraftTitle = ipc.readSTR(0x3D00,256)
-aircraftTitle = aircraftTitle:sub(1, aircraftTitle:find("\0") - 1)
 
 local function getFslV1Option()
   local aircraftCfg = file.read(aicraftDir .. "aircraft.cfg")
-  local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(aircraftTitle, nil, true))
+  local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(copilot.aircraftTitle, nil, true))
   local fltsimCfg = file.read(string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir))
   return tonumber(fltsimCfg:match("sdac_v1_call=(%d)"))
 end

@@ -1,8 +1,11 @@
+-- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
+-- any lua files in that directory
+
 copilot.events.aboveTenThousand:addAction(function()
 
   local function shouldConnect()
     local menuEvent = Event.fromTextMenu(
-      "Hey boss, would you like to connect the air conditioning upon arrival?",
+      "Would you like to connect the air conditioning upon arrival?",
       "", {"Yes", "No", "Ask me again in ten minutes"}
     )
     local _, res = Event.waitForEvent(menuEvent)

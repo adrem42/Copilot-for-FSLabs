@@ -79,8 +79,11 @@ namespace copilot {
 	void launchFSL2LuaScript()
 	{
 		auto path = appDir + (isFslAircraft ? "scripts\\autorun.lua" : "scripts_non_fsl\\autorun.lua");
-		if (std::filesystem::exists(path)) 
-			LuaPlugin::launchScript<FSL2LuaScript>(path);
+		if (std::filesystem::exists(path)) {
+			std::thread([=] {
+				LuaPlugin::launchScript<FSL2LuaScript>(path);
+			}).detach();
+		}
 	}
 
 	bool isCopilotEnabled()
@@ -96,12 +99,16 @@ namespace copilot {
 
 	void startCopilotScript()
 	{
-		LuaPlugin::launchScript<CopilotScript>(copilotScriptPath());
+		std::thread([] {
+			LuaPlugin::launchScript<CopilotScript>(copilotScriptPath());
+		}).detach();
 	}
 
 	void stopCopilotScript()
 	{
-		LuaPlugin::stopScript(appDir + "Copilot\\copilot.lua");
+		std::thread([]{
+			LuaPlugin::stopScript(appDir + "Copilot\\copilot.lua");
+		}).detach();
 	}
 
 	void onMuteKey(bool state)

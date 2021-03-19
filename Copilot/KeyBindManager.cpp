@@ -114,9 +114,11 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, EventType event, Timestamp time
     auto it = keys.find(keyCode);
 
     std::vector<Callback>* callbacks = nullptr;
+    bool retVal = false;
 
     if (it != keys.end()) {
         auto& key = it->second;
+        retVal = !key.onPressRepeat.empty() || !key.onPress.empty() || !key.onRelease.empty();
         switch (event) {
 
             case EventType::Press:
@@ -151,10 +153,9 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, EventType event, Timestamp time
             eventQueue.emplace(Event{timestamp, callback});
         }
         SetEvent(queueEvent);
-        return true;
     }
 
-    return false;
+    return retVal;
 }
 
 void KeyBindManager::dispatchEvents()

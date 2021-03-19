@@ -20,7 +20,7 @@ public:
 	std::function<void()> onCallbackAwake;
 	std::function<Timestamp()> elapsedTime;
 	std::function<void(sol::error&)> onError;
-	std::function<sol::table()> makeThreadEvent;
+	std::function<std::optional<sol::table>()> makeThreadEvent;
 
 private:
 
@@ -36,6 +36,9 @@ private:
 
 	const Interval MIN_INTERVAL = 30;
 	static constexpr const char* REGISTRY_KEY_CALLBACKS_TABLE = "__CALLBACKS";
+
+	Interval validateInputInterval(std::optional<Interval>&);
+	void maybeAwaken(Timestamp deadline);
 	
 	struct indefinite_t {};
 	const indefinite_t lua_indefinite;
@@ -86,7 +89,7 @@ private:
 		if (co.status() != sol::call_status::yielded) {
 			sol::state_view lua(co.lua_state());
 			actuallyRemoveCallback(lua, callback, it);
-			if (pfr.valid()) {
+			if (pfr.valid() && callback->threadEvent) {
 				auto& threadEvent = *callback->threadEvent;
 				std::vector<sol::object> args(pfr.begin() + 1, pfr.end());
 				threadEvent["trigger"](threadEvent, sol::as_args(args));

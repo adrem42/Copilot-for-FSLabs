@@ -164,6 +164,6 @@ public:
 
 	static void stopAllScripts();
 
-	virtual ~LuaPlugin();
+	virtual ~LuaPlugin() = 0;
 };
 
