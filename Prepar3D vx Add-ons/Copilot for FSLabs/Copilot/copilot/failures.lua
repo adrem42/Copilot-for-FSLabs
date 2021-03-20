@@ -3,7 +3,7 @@ local mt = require "Copilot.libs.mt19937ar"
 local serpent = require "FSL2Lua.libs.serpent"
 local file = require "FSL2Lua.FSL2Lua.file"
 local minutesLoggedAtStart, scriptStartTime, coldAndDark
-local debugging = false
+local debugging = copilot.UserOptions.failures.debug == copilot.UserOptions.ENABLED
 local failureStates
 local failures = {}
 local function sleep(time) ipc.sleep(time or 100) end

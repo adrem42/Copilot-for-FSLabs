@@ -9,6 +9,19 @@ using namespace Keyboard;
 
 std::vector<std::shared_ptr<KeyBindManager>> bindManagers;
 
+Keyboard::ShiftMapping Keyboard::shiftMapping{
+    {VK_TAB,           1 << 1},
+    {VK_LSHIFT,        1 << 2},
+    {VK_RSHIFT,        1 << 3},
+    {VK_LCONTROL,      1 << 4},
+    {VK_RCONTROL,      1 << 5},
+    {VK_LMENU,         1 << 6},
+    {VK_RMENU,         1 << 7},
+    {VK_LWIN,          1 << 8},
+    {VK_RWIN,          1 << 9},
+    {VK_APPS,          1 << 10}
+};
+
 std::mutex mutex;
 
 void Keyboard::addKeyBindManager(std::shared_ptr<KeyBindManager> manager)
@@ -23,6 +36,17 @@ void Keyboard::removeKeyBindManager(std::shared_ptr<KeyBindManager> manager)
     bindManagers.erase(
         std::remove(bindManagers.begin(), bindManagers.end(), manager),
         bindManagers.end());
+}
+
+Keyboard::ShiftValue calculateShiftValue()
+{
+    Keyboard::ShiftValue shiftVal = 0;
+    for (auto& [keyCode, mask] : shiftMapping) {
+        bool isPressed = GetAsyncKeyState(keyCode) & 0x40000;
+        if (isPressed)
+            shiftVal |= mask;
+    }
+    return shiftVal;
 }
 
 bool Keyboard::onKeyEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -51,15 +75,16 @@ bool Keyboard::onKeyEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     if (event != EventType::None) {
+        ShiftValue shiftVal = calculateShiftValue();
         std::lock_guard<std::mutex> lock(mutex);
         for (auto& manager : bindManagers) {
-            if (manager->onKeyEvent(keyCode, event, timestamp)) {
+            if (manager->onKeyEvent(keyCode, shiftVal, event, timestamp)) {
                 consumed = true;
             }
         }
     }
 
-    //copilot::logger->debug("Keycode: {}, wParam: {}, Event: {}", keyCode, wParam, event);
+    //copilot::logger->debug("uMsg: {}, wParam: {}, extended: {}", uMsg, wParam, extended);
 
     return consumed;
 }

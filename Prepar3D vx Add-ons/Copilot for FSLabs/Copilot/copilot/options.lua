@@ -23,6 +23,12 @@ return {
         type = "string"
       },
       {
+        name = "con_log_level",
+        type = "enum",
+        values = {"0", "1", "2", "3", "4", "5", "6"},
+        hidden = true
+      },
+      {
         name = "PM_seat", 
         default = "right", 
         comment = "Where the Pilot Monitoring sits in the cockpit - left or right", 
@@ -192,6 +198,12 @@ return {
       {
         name = "enable", 
         default = UserOptions.FALSE, 
+        type = "bool"
+      },
+      {
+        name = "debug",
+        default = UserOptions.DISABLED,
+        hidden = true, 
         type = "bool"
       },
       {

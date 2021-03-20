@@ -56,7 +56,6 @@ end
 ------------------------------------------------------------------
 
 local util = {
-  FSUIPCversion = not FSL2LUA_STANDALONE and ipc.readUW(0x3306),
   FSL2LuaDir = debug.getinfo(1, "S").source:gsub(".(.*\\).*\\.*", "%1")
 }
 

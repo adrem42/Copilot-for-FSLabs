@@ -334,7 +334,7 @@ function copilot.sequences:afterStart()
   local flapsSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
   local flapsMessage
   if flapsSetting then
-    flapsMessage = "Setting the takeoff flaps using the setting found in the MCDU: %s"
+    flapsMessage = "Setting the takeoff flaps using the setting from the MCDU: %s"
   else
     flapsSetting = FSL.atsuLog:getTakeoffFlaps()
     if flapsSetting then

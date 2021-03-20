@@ -45,6 +45,8 @@ private:
 	struct thread_removed_t {};
 	const thread_removed_t lua_thread_removed;
 
+	using coroutine_t = sol::main_coroutine;
+
 	struct Callback {
 		enum class Status {
 			Idle, Active, Suspended, Removed

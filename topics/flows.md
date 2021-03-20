@@ -2,7 +2,7 @@
 ___
 ### Preflight
 
-* Check FMGC data insertion (or rather, pretend to be checking something while just staring at the pages :)
+* Check FMGC data insertion (the script doesn't actually check anything, it just cycles through the MCDU pages)
 * Set up the EFIS
 
 #### Trigger:
@@ -43,7 +43,7 @@ Say 'Brake check' during taxi with the ground speed  below 3 knots<br><br>
 ##### voice_control = 0:
 The first brake application during taxi with the ground speed below 3 knots
 ___
-Note: you can do the checks above in any order.
+**Note: you can do the brake and flight control checks in any order.**
 ___
 ### During taxi
 

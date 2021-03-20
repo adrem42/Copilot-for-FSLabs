@@ -34,7 +34,9 @@ function copilot.suspend(time1, time2)
   repeat coroutine.yield() until copilot.getTimestamp() > timeoutEnd
 end
 
-function copilot.GSX_pushback() return ipc.readLvar("FSLA320_NWS_Pin") == 1 and not ipc.readLvar("FSDT_GSX_DEPARTURE_STATE") == 6 end
+function copilot.GSX_pushback() 
+  return ipc.readLvar("FSLA320_NWS_Pin") == 1 and ipc.readLvar("FSDT_GSX_DEPARTURE_STATE") ~= 6 
+end
 
 --- Returns true if you're on the ground.
 function copilot.onGround() return ipc.readUB(0x0366) == 1 end

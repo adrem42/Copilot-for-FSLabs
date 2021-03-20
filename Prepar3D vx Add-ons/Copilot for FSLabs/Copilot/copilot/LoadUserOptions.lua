@@ -12,7 +12,13 @@ do
     end
   end
   for _, failure in ipairs(require "Copilot.copilot.failurelist") do
-    table.insert(failureOptions, {name = failure[1]})
+    table.insert(
+      failureOptions, 
+      {
+        name = failure[1],
+        type = "double"
+      }
+    )
   end
 end
 
@@ -41,7 +47,9 @@ local function checkOption(option, iniValue)
         option.name, iniValue, table.concat(option.values, ", ")
       ))
     end
-  else error "wtf" end
+  else 
+    error(string.format("wtf: %s, %s, %s", option.name or "nil", option.type or "nil", iniValue or "nil"))
+  end
   return val
 end
 

@@ -4,6 +4,10 @@ if false then module("copilot") end
 require "copilot.util"
 require "copilot.LoadUserOptions"
 
+if copilot.UserOptions.general.con_log_level then
+  copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
+end
+
 local title = ipc.readSTR(0x3D00,256)
 copilot.aircraftTitle = title:sub(1, title:find("\0") - 1)
 
@@ -35,7 +39,9 @@ local util = require "FSL2Lua.FSL2Lua.util"
 copilot.soundDir = APPDIR .. "Copilot\\Sounds\\"
 copilot.isVoiceControlEnabled = copilot.UserOptions.voice_control.enable == copilot.UserOptions.TRUE
 
-if copilot.UserOptions.general.debugger == copilot.UserOptions.ENABLED then
+local debugging = copilot.UserOptions.general.debugger == copilot.UserOptions.ENABLED
+
+if debugging then
   local debuggee = require 'Copilot.libs.vscode-debuggee'
   local json = require 'Copilot.libs.dkjson'
   debuggee.start(json)
@@ -173,9 +179,7 @@ local function setup()
     end
   end
 
-  if copilot.IS_FSL_AIRCRAFT 
-    and options.failures.enable == options.TRUE 
-    and not debugger.enable then 
+  if copilot.IS_FSL_AIRCRAFT and options.failures.enable == options.TRUE and not debugging then 
     require "copilot.failures"
   end
 

@@ -3,21 +3,9 @@
 
 using namespace Keyboard;
 
-KeyBindManager::ShiftMapping KeyBindManager::shiftMapping{
-    {TAB,           1 << 1},
-    {SHIFT,         1 << 2},
-    {CTRL,          1 << 3},
-    {RIGHT_CTRL,    1 << 4},
-    {ALT,           1 << 5},
-    {RIGHT_ALT,     1 << 6},
-    {WINDOWS,       1 << 7},
-    {RIGHT_WINDOWS, 1 << 8},
-    {APPS,          1 << 9},
-    {RIGHT_APPS,    1 << 10},
-};
-
-void KeyBindManager::addBind(Keyboard::KeyCode keyCode, Keyboard::EventType event, Callback callback, ShiftValue shiftValue)
+void KeyBindManager::addBind(KeyCode keyCode, EventType event, Callback callback, ShiftValue shiftValue)
 {
+    std::lock_guard<std::mutex> lock(bindMapMutex);
     auto& key = bindMap[shiftValue][keyCode];
 
     switch (event) {
@@ -33,28 +21,32 @@ void KeyBindManager::addBind(Keyboard::KeyCode keyCode, Keyboard::EventType even
     }
 }
 
-KeyBindManager::ShiftValue KeyBindManager::calculateShiftValue(std::vector<Keyboard::KeyCode> keyCodes)
+Keyboard::ShiftValue KeyBindManager::calculateShiftValue(std::vector<KeyCode> keyCodes)
 {
-    auto shiftValue = KeyBindManager::NO_SHIFTS;
+    auto shiftValue = NO_SHIFTS;
     for (auto keyCode : keyCodes) {
-        shiftValue |= KeyBindManager::shiftMapping[keyCode];
+        shiftValue |= shiftMapping[keyCode];
     }
     return shiftValue;
 }
 
-void KeyBindManager::addBind(Keyboard::KeyCode keyCode, Keyboard::EventType event, Callback callback)
+void KeyBindManager::addBind(Keyboard::KeyCode keyCode, EventType event, Callback callback)
 {
     addBind(keyCode, event, callback, NO_SHIFTS);
 }
 
 void KeyBindManager::removeBind(
-    Keyboard::KeyCode keyCode, Keyboard::EventType event,
-    Callback callbackToRemove, std::vector<Keyboard::KeyCode> shifts
+    KeyCode keyCode, EventType event,
+    Callback callbackToRemove, std::vector<KeyCode> shifts
 )
 {
+    std::lock_guard<std::mutex> lock(bindMapMutex);
     auto it = bindMap.find(calculateShiftValue(shifts));
+
     if (it != bindMap.end()) {
+
         auto keyIt = it->second.find(keyCode);
+
         if (keyIt != it->second.end()) {
             auto& key = keyIt->second;
             std::vector<Callback>* callbacks = nullptr;
@@ -81,73 +73,76 @@ void KeyBindManager::removeBind(
 }
 
 void KeyBindManager::addBind(
-    Keyboard::KeyCode keyCode, Keyboard::EventType event,
-    Callback callback, std::vector<Keyboard::KeyCode> shifts
+    KeyCode keyCode, EventType event,
+    Callback callback, std::vector<KeyCode> shifts
 )
 {
     addBind(keyCode, event, callback, calculateShiftValue(shifts));
 }
 
-bool KeyBindManager::onKeyEvent(KeyCode keyCode, EventType event, Timestamp timestamp)
+bool KeyBindManager::onKeyEvent(KeyCode keyCode, ShiftValue shiftVal, EventType event, Timestamp timestamp)
 {
-    {
-        auto it = shiftMapping.find(keyCode);
+    
+    std::lock_guard<std::mutex> lock(bindMapMutex);
 
-        if (it != shiftMapping.end()) {
-            switch (event) {
-                case EventType::Press:
-                    currShifts |= it->second;
-                    break;
-                case EventType::Release:
-                    for (auto& [_, key] : bindMap[currShifts]) {
-                        key.state = KeyState::Released;
-                    }
-                    currShifts &= ~it->second;
-                    break;
-            }
-            return false;
+    auto& keys = bindMap[shiftVal];
+
+    bool retVal = false;
+
+    auto currKeyState = keyStates[keyCode];
+
+    Callbacks* keyCallbacks = nullptr;
+    std::vector<Callback>* callbacks = nullptr;
+
+    {
+        auto it = keys.find(keyCode);
+        if (it != keys.end()) {
+            keyCallbacks = &it->second;
+            retVal = !keyCallbacks->onPressRepeat.empty()
+                || !keyCallbacks->onPress.empty()
+                || !keyCallbacks->onRelease.empty();
         }
     }
     
-    auto& keys = bindMap[currShifts];
+    switch (event) {
 
-    auto it = keys.find(keyCode);
+        case EventType::Press: {
 
-    std::vector<Callback>* callbacks = nullptr;
-    bool retVal = false;
+            if (keyCallbacks) {
 
-    if (it != keys.end()) {
-        auto& key = it->second;
-        retVal = !key.onPressRepeat.empty() || !key.onPress.empty() || !key.onRelease.empty();
-        switch (event) {
-
-            case EventType::Press:
-
-                switch (key.state) {
+                switch (currKeyState) {
 
                     case KeyState::Depressed:
-                        if (!key.onPressRepeat.empty())
-                            callbacks = &key.onPressRepeat;
+
+                        if (!keyCallbacks->onPressRepeat.empty())
+                            callbacks = &keyCallbacks->onPressRepeat;
                         break;
 
                     case KeyState::Released:
-                        if (!key.onPress.empty())
-                            callbacks = &key.onPress;
+
+                        if (!keyCallbacks->onPress.empty())
+                            callbacks = &keyCallbacks->onPress;
                         break;
                 }
+            }
 
-                key.state = KeyState::Depressed;
-                break;
-
-            case EventType::Release:
-                if (!key.onRelease.empty())
-                    callbacks = &key.onRelease;
-                key.state = KeyState::Released;
-                break;
+            keyStates[keyCode] = KeyState::Depressed;
+            break;
         }
+
+        case EventType::Release: {
+
+            if (keyCallbacks && !keyCallbacks->onRelease.empty())
+                callbacks = &keyCallbacks->onRelease;
+
+            keyStates[keyCode] = KeyState::Released;
+            break;
+        }
+
     }
 
     if (callbacks) {
+
         std::lock_guard<std::mutex> lock(queueMutex);
         for (auto& callback : *callbacks) {
             eventQueue.emplace(Event{timestamp, callback});
@@ -177,7 +172,6 @@ bool KeyBindManager::hasEvents()
 
 void KeyBindManager::makeLuaBindings(sol::state_view lua, std::shared_ptr<KeyBindManager> manager)
 {
-    using namespace Keyboard;
     lua["__addKeyBind"] = [manager](
         KeyCode keyCode, EventType event,
         Callback callback, std::vector<KeyCode> shifts

@@ -142,7 +142,7 @@ namespace copilot {
 	void initConsoleSink()
 	{
 		consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-		consoleSink->set_pattern("[%T] %^[Copilot]%$ %v");
+		consoleSink->set_pattern("[%T] [Copilot] [%l] %v");
 		logger->sinks().push_back(consoleSink);
 		consoleSink->set_level(spdlog::level::info);
 #ifdef _DEBUG

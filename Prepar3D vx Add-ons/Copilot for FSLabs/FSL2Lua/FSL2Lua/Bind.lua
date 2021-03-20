@@ -4,7 +4,6 @@ if false then module "FSL2Lua" end
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 local util = require "FSL2Lua.FSL2Lua.util"
 local KeyBind = require "FSL2Lua.FSL2Lua.KeyBind"
-local JoyBind = require "FSL2Lua.FSL2Lua.JoyBind"
 
 local Positionable = require "FSL2Lua.FSL2Lua.Positionable"
 local RotaryKnob = require "FSL2Lua.FSL2Lua.RotaryKnob"
@@ -16,7 +15,7 @@ local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 local Bind = setmetatable({funcCount = 0}, {})
 Bind.__index = Bind
 
---- Function for making key bindings.
+--- Function for making key bindings. The key events for the bindings you define are trapped and not passed on to the sim.
 --
 --- Accepted values for onPress, onRelease, and onPressRepeat are:
 --
@@ -33,99 +32,31 @@ Bind.__index = Bind
 --- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
 --- @param data.bindPush <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pushing the switch.
 --- @param data.bindPull <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pulling the switch.
+--- @bool data.extended True if the key is an extended key. For example, both the regular and the numpad Enter keys share the same keycode, but only the latter has the extended flag set.
 --- @string data.key The keyboard key. The following values for are accepted (case-insensitive):<br><br>
 --
 -- * Alphanumeric character keys
--- * Keycodes: `key = "\222"`. 
--- * Backspace
--- * Enter 
--- * Pause 
--- * CapsLock 
--- * Esc
--- * Escape
--- * Space
--- * PageUp
--- * PageDown 
--- * End
--- * Home 
--- * LeftArrow
--- * UpArrow
--- * RightArrow 
--- * DownArrow
--- * PrintScreen
--- * Ins 
--- * Insert 
--- * Del 
--- * Delete
--- * NumpadEnter 
--- * NumpadPlus
--- * NumpadMinus
--- * NumpadDot 
--- * NumpadDel
--- * NumpadDiv 
--- * NumpadMult
--- * NumpadIns
--- * NumpadHome 
--- * NumpadEnd
--- * NumpadPageUp 
--- * NumpadPageDown
--- * NumpadLeftArrow 
--- * NumpadRightArrow 
--- * NumpadUpArrow
--- * NumpadDownArrow
--- * Clear
--- * Numpad1
--- * Numpad2
--- * Numpad3
--- * Numpad4
--- * Numpad5
--- * Numpad6
--- * Numpad7
--- * Numpad8
--- * Numpad9
+-- * Virtual key codes: `key = "\222"`. 
+-- * Named keys defined in `Copilot for FSLabs\lua\key_list.lua`
 --
--- You can combine one key with one or more of the following modifier keys using + as the delimiter:<br><br>
---
--- * Tab
--- * Shift
--- * Ctrl 
--- * RightCtrl 
--- * Alt
--- * RightAlt 
--- * Windows
--- * RightWindows 
--- * Apps
--- * RightApps
+-- You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in `Copilot for FSLabs\lua\key_list.lua`
+-- @usage Bind {key = "LSHIFT+LALT+PageUp", extended = true, onPress = function() print "hi" end}
 
 local bindMt = getmetatable(Bind)
 
 function bindMt:__call(data)
-
-  util.assert(data.key or data.btn, "You need to specify a key and/or button", 2)
+  util.assert(data.key, "You need to specify a key and/or button", 2)
   local bind = self:prepareBind(data)
-  bind._keyBind = data.key and KeyBind:new(data)
-  if not _COPILOT then
-    bind._joyBind = data.btn and JoyBind:new(data)
-  end
-
+  bind._keyBind = KeyBind:new(data)
   if data.dispose == true then
     util.setOnGCcallback(bind, function() bind:_destroy() end)
   end
-
   return setmetatable(bind, Bind)
 end
 
-function Bind:_destroy()
-  if self._keyBind then self._keyBind:destroy() end
-  if self._joyBind then self._joyBind:destroy() end
-end
-
+function Bind:_destroy() self._keyBind:destroy() end
 Bind.unbind = Bind._destroy
-
-function Bind:rebind()
-  if self._keyBind then self._keyBind:rebind() end
-  if self._joyBind then self._joyBind:rebind() end
-end
+function Bind:rebind() self._keyBind:rebind() end
 
 local function makeTable(data)
   return type(data) == "table" and data or {data}
@@ -139,10 +70,6 @@ local function specialButtonBinding(data, onPress, onRelease)
 end
 
 function Bind:prepareBind(data)
-
-  if not _COPILOT and data.onPress ~= nil and data.onPressRepeat ~= nil then
-    error("You can't have both onPress and onPressRepeat in the same bind.", 3)
-  end
 
   if data.bindPush then
     specialButtonBinding(data, Bind._bindPush(data.bindPush))
@@ -160,11 +87,6 @@ function Bind:prepareBind(data)
     specialButtonBinding(data, Bind._bindToggleButton(data.bindToggleButton))
   end
   
-  if data.onPressRepeat and not _COPILOT then
-    data.onPress = data.onPressRepeat
-    data.Repeat = true
-  end
-  
   if data.onPress then
     data.onPress = Bind.makeSingleFunc(data.onPress)
     if data.cond then
@@ -172,6 +94,15 @@ function Bind:prepareBind(data)
       data.onPress = function() if data.cond() then onPress() end end
     end
   end
+
+  if data.onPressRepeat then
+    data.onPressRepeat = Bind.makeSingleFunc(data.onPress)
+    if data.cond then
+      local onPressRepeat = data.onPressRepeat
+      data.onPressRepeat = function() if data.cond() then onPressRepeat() end end
+    end
+  end
+
   data.onRelease = data.onRelease and Bind.makeSingleFunc(data.onRelease)
   return data
 end

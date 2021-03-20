@@ -48,10 +48,13 @@ void CallbackRunner::actuallyRemoveCallback(sol::state_view& lua, std::shared_pt
 	if (callback->name.has_value()) 
 		callbackNames.erase(*callback->name);
 	if (callback->deadline != INDEFINITE) {
-		if (iter != activeCallbacks.end())
+		if (iter != activeCallbacks.end()) {
 			activeCallbacks.erase(iter);
-		else
-			activeCallbacks.erase(findActiveCallback(callback));
+		} else {
+			auto it = findActiveCallback(callback);
+			if (it != activeCallbacks.end())
+				activeCallbacks.erase(it);
+		}
 	}
 	callback->status = Callback::Status::Removed;
 	debug("Removed callback");
@@ -214,15 +217,16 @@ bool CallbackRunner::setCallbackTimeout(sol::object key, Timestamp timeout)
 {
 	return setCallbackTimeout(key, [this, timeout](std::shared_ptr<Callback>& callback) {
 		auto now = elapsedTime();
+		auto newDeadline = now + timeout;
 		if (currentCallback != callback.get()) {
 			auto it = findActiveCallback(callback);
 			if (it != activeCallbacks.end()) {
 				auto nh = activeCallbacks.extract(it);
-				nh.key() = callback->deadline;
+				nh.key() = newDeadline;
 				activeCallbacks.insert(std::move(nh));
 			}
 		}
-		callback->deadline = now + timeout;
+		callback->deadline = newDeadline;
 		return true;
 	});
 }
@@ -232,7 +236,9 @@ bool CallbackRunner::setCallbackTimeout(sol::object key, indefinite_t indefinite
 	return setCallbackTimeout(key, [this](std::shared_ptr<Callback>& callback) {
 		if (callback->deadline == INDEFINITE)
 			return false;
-		activeCallbacks.erase(findActiveCallback(callback));
+		auto it = findActiveCallback(callback);
+		if (it != activeCallbacks.end())
+			activeCallbacks.erase(it);
 		callback->deadline = INDEFINITE;
 		return true;
 	});

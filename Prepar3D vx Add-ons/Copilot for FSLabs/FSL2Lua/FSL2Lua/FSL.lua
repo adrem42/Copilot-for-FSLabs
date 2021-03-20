@@ -10170,7 +10170,7 @@ return {
       inc = 65758
     },
     LVar = "VC_PED_FLAP_LEVER",
-    interactionLength = 300,
+    interactionLength = 500,
     name = "FSL.PED_FLAP_LEVER",
     pos = {
       x = "279",

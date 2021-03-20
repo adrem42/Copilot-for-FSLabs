@@ -15,49 +15,29 @@ class KeyBindManager {
 
 	using Callback = std::function<void(Keyboard::Timestamp)>;
 
-	using ShiftValue = uint16_t;
-
-	static constexpr ShiftValue NO_SHIFTS = 0;
-
-	using ShiftMapping = std::unordered_map<Keyboard::KeyCode, ShiftValue>;
-	static  ShiftMapping shiftMapping;
-	ShiftValue currShifts = NO_SHIFTS;
-
-	static constexpr Keyboard::KeyCode TAB = 9;
-	static constexpr Keyboard::KeyCode SHIFT = 16;
-	static constexpr Keyboard::KeyCode CTRL = 17;
-	static constexpr Keyboard::KeyCode RIGHT_CTRL = 17 + 0xFF;
-	static constexpr Keyboard::KeyCode ALT = 18;
-	static constexpr Keyboard::KeyCode RIGHT_ALT = 18 + 0xFF;
-	static constexpr Keyboard::KeyCode WINDOWS = 92;
-	static constexpr Keyboard::KeyCode RIGHT_WINDOWS = 92 + 0xFF;
-	static constexpr Keyboard::KeyCode APPS = 93;
-	static constexpr Keyboard::KeyCode RIGHT_APPS = 93 + 0xFF;
-
 	struct Event {
 		Keyboard::Timestamp timestamp;
 		Callback callback;
 	};
+	
+	enum class KeyState { Released, Depressed };
 
-	enum class KeyState {
-		Depressed, Released
-	};
-
-	struct Key {
-		KeyState state = KeyState::Released;
+	struct Callbacks {
 		std::vector<Callback> onPress;
 		std::vector<Callback> onPressRepeat;
 		std::vector<Callback> onRelease;
 	};
 
-	std::unordered_map<ShiftValue, std::unordered_map<Keyboard::KeyCode, Key>> bindMap;
+	std::unordered_map<Keyboard::KeyCode, KeyState> keyStates;
+
+	std::mutex bindMapMutex;
+	std::unordered_map<Keyboard::ShiftValue, std::unordered_map<Keyboard::KeyCode, Callbacks>> bindMap;
 
 	std::mutex queueMutex;
 	std::queue<Event> eventQueue;
 
-	void addBind(Keyboard::KeyCode, Keyboard::EventType, Callback, ShiftValue);
-
-	ShiftValue calculateShiftValue(std::vector<Keyboard::KeyCode> keyCodes);
+	void addBind(Keyboard::KeyCode, Keyboard::EventType, Callback, Keyboard::ShiftValue);
+	Keyboard::ShiftValue calculateShiftValue(std::vector<Keyboard::KeyCode> keyCodes);
 
 public:
 
@@ -68,7 +48,7 @@ public:
 
 	void removeBind(Keyboard::KeyCode, Keyboard::EventType, Callback, std::vector<Keyboard::KeyCode>);
 
-	bool onKeyEvent(Keyboard::KeyCode, Keyboard::EventType, Keyboard::Timestamp);
+	bool onKeyEvent(Keyboard::KeyCode, Keyboard::ShiftValue shiftVal, Keyboard::EventType, Keyboard::Timestamp);
 
 	void dispatchEvents();
 

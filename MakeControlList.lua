@@ -1,5 +1,6 @@
 
-package.path = "Prepar3D vx Add-ons\\Copilot for FSLabs\\?.lua;Prepar3D vx Add-ons\\Copilot for FSLabs\\?\\init.lua"
+local root = "Prepar3D vx Add-ons\\Copilot for FSLabs\\"
+package.path = root .. "?.lua;" .. root .. "\\lua\\?.lua;" .. root .. "\\?\\init.lua"
 FSL2LUA_MAKE_CONTROL_LIST = true
 local FSL = require "FSL2Lua"
 local checkControl = require "FSL2Lua.FSL2Lua.FSLinternal"._checkControl
