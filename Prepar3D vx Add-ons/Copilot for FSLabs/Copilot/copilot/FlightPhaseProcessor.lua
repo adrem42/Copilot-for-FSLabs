@@ -209,7 +209,6 @@ function flightPhases.takeoff:nextFlightPhase()
     copilot.suspend(1000)
   until not copilot.onGround()
   local flyingCircuits = FlightPhaseProcessor.flyingCircuits()
-  copilot.mcduWatcher:resetVars()
   events.airborne:trigger()
   copilot.airborneTime = copilot.getTimestamp()
   flightPhases.airborne.takeoffCompleted = false
@@ -236,6 +235,7 @@ function flightPhases.airborne:nextFlightPhase()
         elseif not touchdownTime then
           touchdownTime = copilot.getTimestamp()
         elseif copilot.getTimestamp() - touchdownTime > 500 and not landed then
+          copilot.mcduWatcher:resetVars()
           events.landing:trigger()
           landed = true
         elseif copilot.GS() < 40 then

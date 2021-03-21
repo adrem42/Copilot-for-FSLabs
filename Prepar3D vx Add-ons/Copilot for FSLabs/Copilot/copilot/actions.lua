@@ -467,7 +467,12 @@ function copilot.sequences.tenThousandDep()
       FSL.PED_MCDU_KEY_CLR()
       copilot.sleep(100)
     end
+    local display = FSL.MCDU:getString()
     FSL["PED_MCDU_LSK_" .. lsk]()
+    checkWithTimeout(5000, function() 
+      ipc.sleep(100)
+      return FSL.MCDU:getString() ~= display
+    end)
   end
 
   clear(VOR1, "L1")
@@ -560,7 +565,9 @@ function copilot.sequences.afterLanding:__call()
 
   copilot.suspend()
 
-  copilot.voiceCommands.noApu:deactivate()
+  if copilot.isVoiceControlEnabled then
+    copilot.voiceCommands.noApu:deactivate()
+  end
   self.isRunning = false
 
   if not self.noApu then
