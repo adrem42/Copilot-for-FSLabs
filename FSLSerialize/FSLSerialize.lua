@@ -18,7 +18,7 @@ local serpent = require "libs.serpent"
 local file = require "FSL2Lua.file"
 
 local FSL_path = FSL2LuaDir .. "\\FSL2Lua\\FSL.lua"
-local FSL_repo_path = repoDir .. "\\FSUIPC folder\\FSL2Lua\\FSL2Lua\\FSL.lua"
+local FSL_repo_path = repoDir .. "\\Prepar3D vx Add-ons\\Copilot for FSLabs\\FSL2Lua\\FSL2Lua\\FSL.lua"
 local FSL_file = file.read(FSL_path)
 
 local FSL = loadstring(FSL_file)()

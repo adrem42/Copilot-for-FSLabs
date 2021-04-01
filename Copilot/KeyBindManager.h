@@ -17,7 +17,7 @@ class KeyBindManager {
 
 	struct Event {
 		Keyboard::Timestamp timestamp;
-		Callback callback;
+		std::vector<Callback>* callbacks;
 	};
 	
 	enum class KeyState { Released, Depressed };

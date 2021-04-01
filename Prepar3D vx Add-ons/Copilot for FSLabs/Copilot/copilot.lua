@@ -2,7 +2,9 @@
 if false then module("copilot") end
 
 require "copilot.util"
-require "copilot.LoadUserOptions"
+require "copilot.copilot.IniUtils"
+
+file = require "FSL2Lua.FSL2Lua.file"
 
 if copilot.UserOptions.general.con_log_level then
   copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
@@ -103,9 +105,9 @@ local function wrapSequencesWithLogging()
       local isFuncTable = util.isFuncTable(seq)
       local _f = isFuncTable and seq.__call or seq
       local function f(...)
-        copilot.logger:info("#### Start of action sequence: " .. seqNames[name])
+        print("#### Start of action sequence: " .. seqNames[name])
         _f(...)
-        copilot.logger:info("#### End of action sequence: " .. seqNames[name])
+        print("#### End of action sequence: " .. seqNames[name])
       end
       if isFuncTable then
         copilot.sequences[name].__call = f
@@ -152,9 +154,9 @@ local function setup()
       if _file:find("%.lua$") then
         if not hasUserFiles then
           hasUserFiles = true
-          copilot.logger:info "Loading user lua files:"
+          print "Loading user lua files:"
         end
-        copilot.logger:info(dir .. _file)
+        print(dir .. _file)
         dofile(customDir .. _file)
       end
     end
@@ -188,6 +190,6 @@ local function setup()
 end
 
 if setup() then 
-  copilot.logger:info ">>>>>> Setup finished <<<<<<"
+  print ">>>>>> Setup finished <<<<<<"
   startUpdating()
 end

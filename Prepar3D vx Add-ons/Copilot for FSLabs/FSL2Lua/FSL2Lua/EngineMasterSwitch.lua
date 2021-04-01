@@ -1,13 +1,9 @@
-if false then module "FSL2Lua" end
 
 local Switch = require "FSL2Lua.FSL2Lua.Switch"
-local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
---- @type EngineMasterSwitch
 local EngineMasterSwitch = setmetatable({}, Switch)
 EngineMasterSwitch.__index = EngineMasterSwitch
 EngineMasterSwitch.__call = Switch.__call
-EngineMasterSwitch.__class = "EngineMasterSwitch"
 
 function EngineMasterSwitch:increase()
   self:macro "rightPress"

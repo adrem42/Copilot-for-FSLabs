@@ -12,7 +12,7 @@ local PushPullSwitch = require "FSL2Lua.FSL2Lua.PushPullSwitch"
 local Button = require "FSL2Lua.FSL2Lua.Button"
 local ToggleButton = require "FSL2Lua.FSL2Lua.ToggleButton"
 
-local Bind = setmetatable({funcCount = 0}, {})
+local Bind = setmetatable(Bind or {}, {})
 Bind.__index = Bind
 
 --- Function for making key bindings. The key events for the bindings you define are trapped and not passed on to the sim.

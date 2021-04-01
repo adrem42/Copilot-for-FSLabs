@@ -350,10 +350,10 @@ return {
       rectangle = "0x40000121"
     },
     A320 = {
-      rectangle = "0x40000108"
+      rectangle = "0x40000109"
     },
     A321 = {
-      rectangle = "0x4000011d"
+      rectangle = "0x4000011e"
     },
     LVar = "VC_GSLD_CP_EFIS_Baro_Knob",
     name = "FSL.CPT.GSLD_EFIS_Baro_Knob",
@@ -373,7 +373,7 @@ return {
       rectangle = "0x40000108"
     },
     A321 = {
-      rectangle = "0x4000011d"
+      rectangle = "0x4000011e"
     },
     LVar = "VC_GSLD_CP_EFIS_Baro_Switch",
     name = "FSL.CPT.GSLD_EFIS_Baro_Switch",
@@ -414,7 +414,7 @@ return {
       rectangle = "0x40000004"
     },
     A320 = {
-      rectangle = "0x40000006"
+      rectangle = "0x40000004"
     },
     A321 = {
       rectangle = "0x40000004"
@@ -489,7 +489,7 @@ return {
       rectangle = "0x40000050"
     },
     A321 = {
-      rectangle = "0x40000053"
+      rectangle = "0x40000052"
     },
     LVar = "VC_GSLD_CP_EFIS_ND_Mode_Knob",
     name = "FSL.CPT.GSLD_EFIS_ND_Mode_Knob",
@@ -539,10 +539,10 @@ return {
       rectangle = "0x40000272"
     },
     A320 = {
-      rectangle = "0x400001f5"
+      rectangle = "0x400001f7"
     },
     A321 = {
-      rectangle = "0x4000025d"
+      rectangle = "0x40000209"
     },
     LVar = "VC_GSLD_CP_EFIS_VORADF_1_Switch",
     name = "FSL.CPT.GSLD_EFIS_VORADF_1_Switch",
@@ -587,7 +587,7 @@ return {
       rectangle = "0x4000000e"
     },
     A320 = {
-      rectangle = "0x4000000f"
+      rectangle = "0x4000000e"
     },
     A321 = {
       rectangle = "0x4000000e"
@@ -611,10 +611,10 @@ return {
       rectangle = "0x40000273"
     },
     A320 = {
-      rectangle = "0x400001f6"
+      rectangle = "0x400001f8"
     },
     A321 = {
-      rectangle = "0x4000025e"
+      rectangle = "0x4000020a"
     },
     LVar = "VC_GSLD_CP_VORADF_2_Switch",
     name = "FSL.CPT.GSLD_VORADF_2_Switch",
@@ -679,10 +679,10 @@ return {
       rectangle = "0x40000124"
     },
     A320 = {
-      rectangle = "0x40000109"
+      rectangle = "0x4000010b"
     },
     A321 = {
-      rectangle = "0x4000011f"
+      rectangle = "0x40000120"
     },
     LVar = "VC_GSLD_FCU_ALT_Knob",
     name = "FSL.GSLD_FCU_ALT_Knob",
@@ -699,10 +699,10 @@ return {
       rectangle = "0x40000124"
     },
     A320 = {
-      rectangle = "0x4000010a"
+      rectangle = "0x4000010b"
     },
     A321 = {
-      rectangle = "0x4000011f"
+      rectangle = "0x40000120"
     },
     LVar = "VC_GSLD_FCU_ALT_Switch",
     name = "FSL.GSLD_FCU_ALT_Switch",
@@ -815,10 +815,10 @@ return {
       rectangle = "0x4000012a"
     },
     A320 = {
-      rectangle = "0x40000110"
+      rectangle = "0x40000111"
     },
     A321 = {
-      rectangle = "0x40000123"
+      rectangle = "0x40000124"
     },
     LVar = "VC_GSLD_FCU_DimLt_Knob",
     name = "FSL.GSLD_FCU_DimLt_Knob",
@@ -835,10 +835,10 @@ return {
       rectangle = "0x40000129"
     },
     A320 = {
-      rectangle = "0x4000010f"
+      rectangle = "0x40000110"
     },
     A321 = {
-      rectangle = "0x40000122"
+      rectangle = "0x40000123"
     },
     LVar = "VC_GSLD_FCU_DspLt_Knob",
     name = "FSL.GSLD_FCU_DspLt_Knob",
@@ -902,7 +902,7 @@ return {
       rectangle = "0x4000002c"
     },
     A321 = {
-      rectangle = "0x4000002c"
+      rectangle = "0x4000002d"
     },
     LVar = "VC_GSLD_FCU_HDG_Knob",
     name = "FSL.GSLD_FCU_HDG_Knob",
@@ -919,7 +919,7 @@ return {
       rectangle = "0x4000002c"
     },
     A320 = {
-      rectangle = "0x4000002d"
+      rectangle = "0x4000002c"
     },
     A321 = {
       rectangle = "0x4000002c"
@@ -983,10 +983,10 @@ return {
       rectangle = "0x4000002b"
     },
     A320 = {
-      rectangle = "0x4000002b"
+      rectangle = "0x4000002a"
     },
     A321 = {
-      rectangle = "0x4000002a"
+      rectangle = "0x4000002b"
     },
     LVar = "VC_GSLD_FCU_SPD_Knob",
     name = "FSL.GSLD_FCU_SPD_Knob",
@@ -1043,10 +1043,10 @@ return {
       rectangle = "0x40000031"
     },
     A320 = {
-      rectangle = "0x40000030"
+      rectangle = "0x40000031"
     },
     A321 = {
-      rectangle = "0x40000031"
+      rectangle = "0x40000030"
     },
     LVar = "VC_GSLD_FCU_VS_Knob",
     name = "FSL.GSLD_FCU_VS_Knob",
@@ -1210,7 +1210,7 @@ return {
       rectangle = "0x40000126"
     },
     A320 = {
-      rectangle = "0x4000010c"
+      rectangle = "0x4000010d"
     },
     A321 = {
       rectangle = "0x40000121"
@@ -1230,7 +1230,7 @@ return {
       rectangle = "0x40000126"
     },
     A320 = {
-      rectangle = "0x4000010c"
+      rectangle = "0x4000010d"
     },
     A321 = {
       rectangle = "0x40000121"
@@ -1372,7 +1372,7 @@ return {
       rectangle = "0x4000004e"
     },
     A320 = {
-      rectangle = "0x4000004d"
+      rectangle = "0x4000004c"
     },
     A321 = {
       rectangle = "0x4000004e"
@@ -1399,10 +1399,10 @@ return {
       rectangle = "0x40000271"
     },
     A320 = {
-      rectangle = "0x400001f4"
+      rectangle = "0x400001f6"
     },
     A321 = {
-      rectangle = "0x4000025c"
+      rectangle = "0x40000208"
     },
     LVar = "VC_GSLD_FO_EFIS_VORADF_1_Switch",
     name = "FSL.FO.GSLD_EFIS_VORADF_1_Switch",
@@ -1515,10 +1515,10 @@ return {
       rectangle = "0x40000135"
     },
     A320 = {
-      rectangle = "0x4000011b"
+      rectangle = "0x4000011c"
     },
     A321 = {
-      rectangle = "0x4000012e"
+      rectangle = "0x4000012f"
     },
     LVar = "VC_GSLD_MapLt_CP_Knob",
     name = "FSL.CPT.GSLD_MapLt_Knob",
@@ -1535,10 +1535,10 @@ return {
       rectangle = "0x40000136"
     },
     A320 = {
-      rectangle = "0x4000011c"
+      rectangle = "0x4000011d"
     },
     A321 = {
-      rectangle = "0x4000012f"
+      rectangle = "0x40000130"
     },
     LVar = "VC_GSLD_MapLt_FO_Knob",
     name = "FSL.FO.GSLD_MapLt_Knob",
@@ -1659,10 +1659,10 @@ return {
       rectangle = "0x40000239"
     },
     A320 = {
-      rectangle = "0x400001be"
+      rectangle = "0x400001bf"
     },
     A321 = {
-      rectangle = "0x4000022d"
+      rectangle = "0x400001d8"
     },
     LVar = "VC_MIP_CHRONO_DATE_SET_Button",
     name = "FSL.MIP_CHRONO_DATE_SET_Button",
@@ -1679,10 +1679,10 @@ return {
       rectangle = "0x4000023b"
     },
     A320 = {
-      rectangle = "0x400001c0"
+      rectangle = "0x400001c1"
     },
     A321 = {
-      rectangle = "0x4000022f"
+      rectangle = "0x400001da"
     },
     LVar = "VC_MIP_CHRONO_ELAPS_SEL_Switch",
     name = "FSL.MIP_CHRONO_ELAPS_SEL_Switch",
@@ -1704,10 +1704,10 @@ return {
       rectangle = "0x4000023a"
     },
     A320 = {
-      rectangle = "0x400001bf"
+      rectangle = "0x400001c0"
     },
     A321 = {
-      rectangle = "0x4000022e"
+      rectangle = "0x400001d9"
     },
     LVar = "VC_MIP_CHRONO_GMT_SEL_Switch",
     name = "FSL.MIP_CHRONO_GMT_SEL_Switch",
@@ -1729,10 +1729,10 @@ return {
       rectangle = "0x4000023c"
     },
     A320 = {
-      rectangle = "0x400001c1"
+      rectangle = "0x400001c2"
     },
     A321 = {
-      rectangle = "0x40000230"
+      rectangle = "0x400001db"
     },
     LVar = "VC_MIP_CHRONO_RST_Button",
     name = "FSL.MIP_CHRONO_RST_Button",
@@ -1749,10 +1749,10 @@ return {
       rectangle = "0x4000023d"
     },
     A320 = {
-      rectangle = "0x400001c2"
+      rectangle = "0x400001c3"
     },
     A321 = {
-      rectangle = "0x40000231"
+      rectangle = "0x400001dc"
     },
     LVar = "VC_MIP_CHRONO_START_STOP_Button",
     name = "FSL.MIP_CHRONO_START_STOP_Button",
@@ -1769,10 +1769,10 @@ return {
       rectangle = "0x4000022d"
     },
     A320 = {
-      rectangle = "0x400001b0"
+      rectangle = "0x400001b1"
     },
     A321 = {
-      rectangle = "0x40000221"
+      rectangle = "0x400001cc"
     },
     LVar = "VC_MIP_CPT_CONS_Switch",
     name = "FSL.CPT.MIP_CONS_Switch",
@@ -1793,10 +1793,10 @@ return {
       rectangle = "0x4000022a"
     },
     A320 = {
-      rectangle = "0x400001b6"
+      rectangle = "0x400001b7"
     },
     A321 = {
-      rectangle = "0x4000021e"
+      rectangle = "0x400001c9"
     },
     LVar = "VC_MIP_CPT_DU_PNL_LOUD_Knob",
     name = "FSL.CPT.MIP_DU_PNL_LOUD_Knob",
@@ -1813,10 +1813,10 @@ return {
       rectangle = "0x40000231"
     },
     A320 = {
-      rectangle = "0x400001b4"
+      rectangle = "0x400001b5"
     },
     A321 = {
-      rectangle = "0x40000225"
+      rectangle = "0x400001d0"
     },
     LVar = "VC_MIP_CPT_DU_PNL_ND_BRT_Knob",
     name = "FSL.CPT.MIP_DU_PNL_ND_BRT_Knob",
@@ -1833,10 +1833,10 @@ return {
       rectangle = "0x40000229"
     },
     A320 = {
-      rectangle = "0x400001b5"
+      rectangle = "0x400001b6"
     },
     A321 = {
-      rectangle = "0x4000021d"
+      rectangle = "0x400001c8"
     },
     LVar = "VC_MIP_CPT_DU_PNL_PFD_BRT_Knob",
     name = "FSL.CPT.MIP_DU_PNL_PFD_BRT_Knob",
@@ -1853,10 +1853,10 @@ return {
       rectangle = "0x4000022b"
     },
     A320 = {
-      rectangle = "0x400001ae"
+      rectangle = "0x400001af"
     },
     A321 = {
-      rectangle = "0x4000021f"
+      rectangle = "0x400001ca"
     },
     LVar = "VC_MIP_CPT_DU_PNL_WX_BRT_Knob",
     name = "FSL.CPT.MIP_DU_PNL_WX_BRT_Knob",
@@ -1907,10 +1907,10 @@ return {
       rectangle = "0x4000022c"
     },
     A320 = {
-      rectangle = "0x400001af"
+      rectangle = "0x400001b0"
     },
     A321 = {
-      rectangle = "0x40000220"
+      rectangle = "0x400001cb"
     },
     LVar = "VC_MIP_CPT_PFDND_XFR_Button",
     name = "FSL.CPT.MIP_PFDND_XFR_Button",
@@ -1945,10 +1945,10 @@ return {
   MIP_DCDU_L_BRT = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000208"
+      rectangle = "0x40000281"
     },
     A321 = {
-      rectangle = "0x4000026f"
+      rectangle = "0x4000021b"
     },
     LVar = "VC_MIP_DCDU_L_BRT",
     name = "FSL.CPT.MIP_DCDU_BRT",
@@ -1962,10 +1962,10 @@ return {
   MIP_DCDU_L_DIM = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000207"
+      rectangle = "0x40000280"
     },
     A321 = {
-      rectangle = "0x4000026f"
+      rectangle = "0x4000021b"
     },
     LVar = "VC_MIP_DCDU_L_DIM",
     name = "FSL.CPT.MIP_DCDU_DIM",
@@ -1979,10 +1979,10 @@ return {
   MIP_DCDU_L_LSK_L1 = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000204"
+      rectangle = "0x4000027d"
     },
     A321 = {
-      rectangle = "0x4000026c"
+      rectangle = "0x40000218"
     },
     LVar = "VC_MIP_DCDU_L_LSK_L1",
     name = "FSL.CPT.MIP_DCDU_LSK_L1",
@@ -1997,10 +1997,10 @@ return {
   MIP_DCDU_L_LSK_L2 = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000203"
+      rectangle = "0x4000027c"
     },
     A321 = {
-      rectangle = "0x4000026b"
+      rectangle = "0x40000217"
     },
     LVar = "VC_MIP_DCDU_L_LSK_L2",
     name = "FSL.CPT.MIP_DCDU_LSK_L2",
@@ -2015,10 +2015,10 @@ return {
   MIP_DCDU_L_LSK_R1 = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000020c"
+      rectangle = "0x40000285"
     },
     A321 = {
-      rectangle = "0x40000274"
+      rectangle = "0x40000220"
     },
     LVar = "VC_MIP_DCDU_L_LSK_R1",
     name = "FSL.CPT.MIP_DCDU_LSK_R1",
@@ -2033,10 +2033,10 @@ return {
   MIP_DCDU_L_LSK_R2 = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000020d"
+      rectangle = "0x40000286"
     },
     A321 = {
-      rectangle = "0x40000275"
+      rectangle = "0x40000221"
     },
     LVar = "VC_MIP_DCDU_L_LSK_R2",
     name = "FSL.CPT.MIP_DCDU_LSK_R2",
@@ -2051,10 +2051,10 @@ return {
   MIP_DCDU_L_MSG_MINUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000206"
+      rectangle = "0x4000027f"
     },
     A321 = {
-      rectangle = "0x4000026e"
+      rectangle = "0x4000021a"
     },
     LVar = "VC_MIP_DCDU_L_MSG_MINUS",
     name = "FSL.CPT.MIP_DCDU_MSG_MINUS",
@@ -2068,10 +2068,10 @@ return {
   MIP_DCDU_L_MSG_PLUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000205"
+      rectangle = "0x4000027e"
     },
     A321 = {
-      rectangle = "0x4000026d"
+      rectangle = "0x40000219"
     },
     LVar = "VC_MIP_DCDU_L_MSG_PLUS",
     name = "FSL.CPT.MIP_DCDU_MSG_PLUS",
@@ -2085,10 +2085,10 @@ return {
   MIP_DCDU_L_PGE_MINUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000020a"
+      rectangle = "0x40000283"
     },
     A321 = {
-      rectangle = "0x40000272"
+      rectangle = "0x4000021e"
     },
     LVar = "VC_MIP_DCDU_L_PGE_MINUS",
     name = "FSL.CPT.MIP_DCDU_PGE_MINUS",
@@ -2102,10 +2102,10 @@ return {
   MIP_DCDU_L_PGE_PLUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000020b"
+      rectangle = "0x40000284"
     },
     A321 = {
-      rectangle = "0x40000273"
+      rectangle = "0x4000021f"
     },
     LVar = "VC_MIP_DCDU_L_PGE_PLUS",
     name = "FSL.CPT.MIP_DCDU_PGE_PLUS",
@@ -2119,10 +2119,10 @@ return {
   MIP_DCDU_L_PRINT = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000209"
+      rectangle = "0x40000282"
     },
     A321 = {
-      rectangle = "0x40000271"
+      rectangle = "0x4000021d"
     },
     LVar = "VC_MIP_DCDU_L_PRINT",
     name = "FSL.CPT.MIP_DCDU_PRINT",
@@ -2136,10 +2136,10 @@ return {
   MIP_DCDU_R_BRT = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001f9"
+      rectangle = "0x4000028a"
     },
     A321 = {
-      rectangle = "0x40000261"
+      rectangle = "0x4000020d"
     },
     LVar = "VC_MIP_DCDU_R_BRT",
     name = "FSL.FO.MIP_DCDU_BRT",
@@ -2153,10 +2153,10 @@ return {
   MIP_DCDU_R_DIM = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001fa"
+      rectangle = "0x4000028a"
     },
     A321 = {
-      rectangle = "0x40000262"
+      rectangle = "0x4000020d"
     },
     LVar = "VC_MIP_DCDU_R_DIM",
     name = "FSL.FO.MIP_DCDU_DIM",
@@ -2170,10 +2170,10 @@ return {
   MIP_DCDU_R_LSK_L1 = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001fc"
+      rectangle = "0x4000028c"
     },
     A321 = {
-      rectangle = "0x40000264"
+      rectangle = "0x40000210"
     },
     LVar = "VC_MIP_DCDU_R_LSK_L1",
     name = "FSL.FO.MIP_DCDU_LSK_L1",
@@ -2188,10 +2188,10 @@ return {
   MIP_DCDU_R_LSK_L2 = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001fd"
+      rectangle = "0x4000028d"
     },
     A321 = {
-      rectangle = "0x40000265"
+      rectangle = "0x40000211"
     },
     LVar = "VC_MIP_DCDU_R_LSK_L2",
     name = "FSL.FO.MIP_DCDU_LSK_L2",
@@ -2206,10 +2206,10 @@ return {
   MIP_DCDU_R_LSK_R1 = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001ff"
+      rectangle = "0x4000028f"
     },
     A321 = {
-      rectangle = "0x40000267"
+      rectangle = "0x40000213"
     },
     LVar = "VC_MIP_DCDU_R_LSK_R1",
     name = "FSL.FO.MIP_DCDU_LSK_R1",
@@ -2224,10 +2224,10 @@ return {
   MIP_DCDU_R_LSK_R2 = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001fe"
+      rectangle = "0x4000028e"
     },
     A321 = {
-      rectangle = "0x40000266"
+      rectangle = "0x40000212"
     },
     LVar = "VC_MIP_DCDU_R_LSK_R2",
     name = "FSL.FO.MIP_DCDU_LSK_R2",
@@ -2242,10 +2242,10 @@ return {
   MIP_DCDU_R_MSG_MINUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001fb"
+      rectangle = "0x4000028b"
     },
     A321 = {
-      rectangle = "0x40000263"
+      rectangle = "0x4000020f"
     },
     LVar = "VC_MIP_DCDU_R_MSG_MINUS",
     name = "FSL.FO.MIP_DCDU_MSG_MINUS",
@@ -2259,10 +2259,10 @@ return {
   MIP_DCDU_R_MSG_PLUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001f8"
+      rectangle = "0x40000288"
     },
     A321 = {
-      rectangle = "0x40000260"
+      rectangle = "0x4000020c"
     },
     LVar = "VC_MIP_DCDU_R_MSG_PLUS",
     name = "FSL.FO.MIP_DCDU_MSG_PLUS",
@@ -2276,10 +2276,10 @@ return {
   MIP_DCDU_R_PGE_MINUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000200"
+      rectangle = "0x40000290"
     },
     A321 = {
-      rectangle = "0x40000268"
+      rectangle = "0x40000214"
     },
     LVar = "VC_MIP_DCDU_R_PGE_MINUS",
     name = "FSL.FO.MIP_DCDU_PGE_MINUS",
@@ -2293,10 +2293,10 @@ return {
   MIP_DCDU_R_PGE_PLUS = {
     A319 = {},
     A320 = {
-      rectangle = "0x400001f7"
+      rectangle = "0x400001f9"
     },
     A321 = {
-      rectangle = "0x4000025f"
+      rectangle = "0x4000020b"
     },
     LVar = "VC_MIP_DCDU_R_PGE_PLUS",
     name = "FSL.FO.MIP_DCDU_PGE_PLUS",
@@ -2310,10 +2310,10 @@ return {
   MIP_DCDU_R_PRINT = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000201"
+      rectangle = "0x40000291"
     },
     A321 = {
-      rectangle = "0x40000269"
+      rectangle = "0x40000215"
     },
     LVar = "VC_MIP_DCDU_R_PRINT",
     name = "FSL.FO.MIP_DCDU_PRINT",
@@ -2359,7 +2359,6 @@ return {
     },
     LVar = "VC_MIP_DDRMI_VORADF_R_Switch",
     name = "FSL.MIP_DDRMI_VORADF_R_Switch",
-    reversedOrientation = true,
     pos = {
       x = "156",
       y = "98",
@@ -2369,6 +2368,7 @@ return {
       adf = 10,
       vor = 0
     },
+    reversedOrientation = true,
     type = ""
   },
   MIP_FO_CONS_Switch = {
@@ -2376,10 +2376,10 @@ return {
       rectangle = "0x40000228"
     },
     A320 = {
-      rectangle = "0x400001ad"
+      rectangle = "0x400001ae"
     },
     A321 = {
-      rectangle = "0x4000021c"
+      rectangle = "0x400001c7"
     },
     LVar = "VC_MIP_FO_CONS_Switch",
     name = "FSL.FO.MIP_CONS_Switch",
@@ -2400,10 +2400,10 @@ return {
       rectangle = "0x40000233"
     },
     A320 = {
-      rectangle = "0x400001bc"
+      rectangle = "0x400001bd"
     },
     A321 = {
-      rectangle = "0x40000227"
+      rectangle = "0x400001d2"
     },
     LVar = "VC_MIP_FO_DU_PNL_LOUD_Knob",
     name = "FSL.FO.MIP_DU_PNL_LOUD_Knob",
@@ -2420,10 +2420,10 @@ return {
       rectangle = "0x40000236"
     },
     A320 = {
-      rectangle = "0x400001b9"
+      rectangle = "0x400001ba"
     },
     A321 = {
-      rectangle = "0x4000022a"
+      rectangle = "0x400001d5"
     },
     LVar = "VC_MIP_FO_DU_PNL_ND_BRT_Knob",
     name = "FSL.FO.MIP_DU_PNL_ND_BRT_Knob",
@@ -2440,10 +2440,10 @@ return {
       rectangle = "0x40000234"
     },
     A320 = {
-      rectangle = "0x400001bd"
+      rectangle = "0x400001be"
     },
     A321 = {
-      rectangle = "0x40000228"
+      rectangle = "0x400001d3"
     },
     LVar = "VC_MIP_FO_DU_PNL_PFD_BRT_Knob",
     name = "FSL.FO.MIP_DU_PNL_PFD_BRT_Knob",
@@ -2460,10 +2460,10 @@ return {
       rectangle = "0x40000232"
     },
     A320 = {
-      rectangle = "0x400001b7"
+      rectangle = "0x400001b8"
     },
     A321 = {
-      rectangle = "0x40000226"
+      rectangle = "0x400001d1"
     },
     LVar = "VC_MIP_FO_DU_PNL_WX_BRT_Knob",
     name = "FSL.FO.MIP_DU_PNL_WX_BRT_Knob",
@@ -2514,10 +2514,10 @@ return {
       rectangle = "0x40000227"
     },
     A320 = {
-      rectangle = "0x400001ac"
+      rectangle = "0x400001ad"
     },
     A321 = {
-      rectangle = "0x4000021b"
+      rectangle = "0x400001c6"
     },
     LVar = "VC_MIP_FO_PFDND_XFR_Button",
     name = "FSL.FO.MIP_PFDND_XFR_Button",
@@ -2554,7 +2554,7 @@ return {
       rectangle = "0x40000037"
     },
     A320 = {
-      rectangle = "0x4000020f"
+      rectangle = "0x4000027a"
     },
     A321 = {
       rectangle = "0x40000037"
@@ -2573,7 +2573,7 @@ return {
     A319 = {},
     A320 = {
       manual = true,
-      rectangle = "0x40000210"
+      rectangle = "0x4000027B"
     },
     A321 = {
       manual = true,
@@ -2634,10 +2634,10 @@ return {
       rectangle = "0x40000042"
     },
     A320 = {
-      rectangle = "0x40000040"
+      rectangle = "0x40000042"
     },
     A321 = {
-      rectangle = "0x40000044"
+      rectangle = "0x40000042"
     },
     LVar = "VC_MIP_ISIS_MINUS_Button",
     name = "FSL.MIP_ISIS_MINUS_Button",
@@ -2965,7 +2965,7 @@ return {
       rectangle = "0x400000fa"
     },
     A320 = {
-      rectangle = "0x4000028e"
+      rectangle = "0x40000277"
     },
     A321 = {
       rectangle = "0x400000a3"
@@ -2989,7 +2989,7 @@ return {
       rectangle = "0x400000f8"
     },
     A320 = {
-      rectangle = "0x4000028a"
+      rectangle = "0x40000273"
     },
     A321 = {
       rectangle = "0x4000009f"
@@ -3013,7 +3013,7 @@ return {
       rectangle = "0x400000f6"
     },
     A320 = {
-      rectangle = "0x4000028c"
+      rectangle = "0x40000275"
     },
     A321 = {
       rectangle = "0x400000a1"
@@ -3100,7 +3100,7 @@ return {
       rectangle = "0x400000b7"
     },
     A321 = {
-      rectangle = "0x4000028c"
+      rectangle = "0x40000238"
     },
     LVar = "VC_OVHD_AFT_DISCH_Button",
     name = "FSL.OVHD_AFT_DISCH_Button",
@@ -3120,7 +3120,7 @@ return {
       rectangle = "0x400000b8"
     },
     A321 = {
-      rectangle = "0x4000028b"
+      rectangle = "0x40000237"
     },
     LVar = "VC_OVHD_AFT_DISCH_Guard",
     name = "FSL.OVHD_AFT_DISCH_Guard",
@@ -3327,10 +3327,10 @@ return {
   OVHD_BL_PMP_OVRD_Guard = {
     A319 = {},
     A320 = {
-      rectangle = "0x24405003"
+      rectangle = "0x40000105"
     },
     A321 = {
-      rectangle = "0x4000011a"
+      rectangle = "0x24405003"
     },
     LVar = "VC_OVHD_BL_PMP_OVRD_Guard",
     name = "FSL.OVHD_BL_PMP_OVRD_Guard",
@@ -3350,7 +3350,7 @@ return {
       rectangle = "0x40000083"
     },
     A321 = {
-      rectangle = "0x40000083"
+      rectangle = "0x40000084"
     },
     LVar = "VC_OVHD_CABPRESS_Ldg_Elev_Knob",
     name = "FSL.OVHD_CABPRESS_Ldg_Elev_Knob",
@@ -3370,7 +3370,7 @@ return {
       rectangle = "0x400000ee"
     },
     A321 = {
-      rectangle = "0x400000af"
+      rectangle = "0x400000b0"
     },
     LVar = "VC_OVHD_CABPRESS_Man_VS_Ctl_Switch",
     name = "FSL.OVHD_CABPRESS_Man_VS_Ctl_Switch",
@@ -3415,7 +3415,7 @@ return {
       rectangle = "0x400000ef"
     },
     A320 = {
-      rectangle = "0x4000027e"
+      rectangle = "0x40000267"
     },
     A321 = {
       rectangle = "0x40000094"
@@ -3479,7 +3479,7 @@ return {
       rectangle = "0x2440100a"
     },
     A321 = {
-      rectangle = "0x40000097"
+      rectangle = "0x2440100a"
     },
     LVar = "VC_OVHD_CALLS_EMER_Guard",
     name = "FSL.OVHD_CALLS_EMER_Guard",
@@ -3517,7 +3517,7 @@ return {
       rectangle = "0x400000f0"
     },
     A320 = {
-      rectangle = "0x4000027d"
+      rectangle = "0x40000266"
     },
     A321 = {
       rectangle = "0x4000009d"
@@ -3537,7 +3537,7 @@ return {
       rectangle = "0x400000f1"
     },
     A320 = {
-      rectangle = "0x4000027c"
+      rectangle = "0x40000265"
     },
     A321 = {
       rectangle = "0x40000096"
@@ -3578,7 +3578,7 @@ return {
       rectangle = "0x400000e7"
     },
     A320 = {
-      rectangle = "0x40000286"
+      rectangle = "0x4000026f"
     },
     A321 = {
       rectangle = "0x4000008c"
@@ -3604,7 +3604,7 @@ return {
       rectangle = "0x400000dd"
     },
     A321 = {
-      rectangle = "0x40000286"
+      rectangle = "0x40000232"
     },
     LVar = "VC_OVHD_CARGO_SMOKE_TEST_Button",
     name = "FSL.OVHD_CARGO_SMOKE_TEST_Button",
@@ -3645,7 +3645,7 @@ return {
       rectangle = "0x2580100c"
     },
     A321 = {
-      rectangle = "0x400000ef"
+      rectangle = "0x2580100c"
     },
     LVar = "VC_OVHD_COMM_3_ADF1_Switch",
     Lt = "VC_OVHD_COMM_3_ADF1_Lt",
@@ -3687,7 +3687,7 @@ return {
       rectangle = "0x2580100d"
     },
     A321 = {
-      rectangle = "0x400000f2"
+      rectangle = "0x2580100d"
     },
     LVar = "VC_OVHD_COMM_3_ADF2_Switch",
     Lt = "VC_OVHD_COMM_3_ADF2_Lt",
@@ -3748,7 +3748,7 @@ return {
       rectangle = "0x25801006"
     },
     A321 = {
-      rectangle = "0x400000dd"
+      rectangle = "0x25801006"
     },
     LVar = "VC_OVHD_COMM_3_CAB_Switch",
     Lt = "VC_OVHD_COMM_3_CAB_Lt",
@@ -3809,7 +3809,7 @@ return {
       rectangle = "0x25801003"
     },
     A321 = {
-      rectangle = "0x400000d4"
+      rectangle = "0x25801003"
     },
     LVar = "VC_OVHD_COMM_3_HF1_Switch",
     Lt = "VC_OVHD_COMM_3_HF1_Lt",
@@ -3870,7 +3870,7 @@ return {
       rectangle = "0x25801004"
     },
     A321 = {
-      rectangle = "0x400000d7"
+      rectangle = "0x25801004"
     },
     LVar = "VC_OVHD_COMM_3_HF2_Switch",
     Lt = "VC_OVHD_COMM_3_HF2_Lt",
@@ -3988,7 +3988,7 @@ return {
       rectangle = "0x25801005"
     },
     A321 = {
-      rectangle = "0x400000da"
+      rectangle = "0x25801005"
     },
     LVar = "VC_OVHD_COMM_3_INT_Switch",
     Lt = "VC_OVHD_COMM_3_INT_Lt",
@@ -4030,7 +4030,7 @@ return {
       rectangle = "0x2580100b"
     },
     A321 = {
-      rectangle = "0x400000ec"
+      rectangle = "0x2580100b"
     },
     LVar = "VC_OVHD_COMM_3_LS_Switch",
     Lt = "VC_OVHD_COMM_3_LS_Lt",
@@ -4069,10 +4069,10 @@ return {
       rectangle = "0x2580100a"
     },
     A320 = {
-      rectangle = "0x400000a8"
+      rectangle = "0x2580100a"
     },
     A321 = {
-      rectangle = "0x400000e9"
+      rectangle = "0x2580100a"
     },
     LVar = "VC_OVHD_COMM_3_MKR_Switch",
     Lt = "VC_OVHD_COMM_3_MKR_Lt",
@@ -4255,7 +4255,7 @@ return {
       rectangle = "0x25801001"
     },
     A321 = {
-      rectangle = "0x400000ce"
+      rectangle = "0x25801001"
     },
     LVar = "VC_OVHD_COMM_3_VHF2_Switch",
     Lt = "VC_OVHD_COMM_3_VHF2_Lt",
@@ -4316,7 +4316,7 @@ return {
       rectangle = "0x25801002"
     },
     A321 = {
-      rectangle = "0x400000d1"
+      rectangle = "0x25801002"
     },
     LVar = "VC_OVHD_COMM_3_VHF3_Switch",
     Lt = "VC_OVHD_COMM_3_VHF3_Lt",
@@ -4374,10 +4374,10 @@ return {
       rectangle = "0x25801008"
     },
     A320 = {
-      rectangle = "0x400000a2"
+      rectangle = "0x25801008"
     },
     A321 = {
-      rectangle = "0x400000e3"
+      rectangle = "0x25801008"
     },
     LVar = "VC_OVHD_COMM_3_VOR1_Switch",
     Lt = "VC_OVHD_COMM_3_VOR1_Lt",
@@ -4419,7 +4419,7 @@ return {
       rectangle = "0x25801009"
     },
     A321 = {
-      rectangle = "0x400000e6"
+      rectangle = "0x25801009"
     },
     LVar = "VC_OVHD_COMM_3_VOR2_Switch",
     Lt = "VC_OVHD_COMM_3_VOR2_Lt",
@@ -4480,7 +4480,7 @@ return {
       rectangle = "0x24403805"
     },
     A321 = {
-      rectangle = "0x24403805"
+      rectangle = "0x40000087"
     },
     LVar = "VC_OVHD_Ditching_Guard",
     name = "FSL.OVHD_Ditching_Guard",
@@ -4757,10 +4757,10 @@ return {
       rectangle = "0x24403006"
     },
     A320 = {
-      rectangle = "0x24403006"
+      rectangle = "0x4000007f"
     },
     A321 = {
-      rectangle = "0x24403006"
+      rectangle = "0x40000080"
     },
     LVar = "VC_OVHD_ELEC_IDG_1_Guard",
     name = "FSL.OVHD_ELEC_IDG_1_Guard",
@@ -4837,7 +4837,7 @@ return {
       rectangle = "0x400000f4"
     },
     A320 = {
-      rectangle = "0x40000279"
+      rectangle = "0x40000262"
     },
     A321 = {
       rectangle = "0x40000099"
@@ -4945,10 +4945,10 @@ return {
       rectangle = "0x24404006"
     },
     A320 = {
-      rectangle = "0x24404006"
+      rectangle = "0x400000da"
     },
     A321 = {
-      rectangle = "0x24404006"
+      rectangle = "0x40000233"
     },
     LVar = "VC_OVHD_ENG_2_MAN_START_Guard",
     name = "FSL.OVHD_ENG_2_MAN_START_Guard",
@@ -5013,7 +5013,7 @@ return {
       rectangle = "0x400000e5"
     },
     A320 = {
-      rectangle = "0x24401000"
+      rectangle = "0x40000271"
     },
     A321 = {
       rectangle = "0x24401000"
@@ -5278,10 +5278,10 @@ return {
   OVHD_FDC_1_GND_PWR_Guard = {
     A319 = {},
     A320 = {
-      rectangle = "0x24405008"
+      rectangle = "0x40000101"
     },
     A321 = {
-      rectangle = "0x24405008"
+      rectangle = "0x40000116"
     },
     LVar = "VC_OVHD_FDC_1_GND_PWR_Guard",
     name = "FSL.OVHD_FDC_1_GND_PWR_Guard",
@@ -5317,7 +5317,7 @@ return {
       rectangle = "0x24405009"
     },
     A321 = {
-      rectangle = "0x24405009"
+      rectangle = "0x40000115"
     },
     LVar = "VC_OVHD_FDC_2_GND_PWR_Guard",
     name = "FSL.OVHD_FDC_2_GND_PWR_Guard",
@@ -5474,7 +5474,7 @@ return {
       rectangle = "0x4000007b"
     },
     A320 = {
-      rectangle = "0x24404800"
+      rectangle = "0x40000079"
     },
     A321 = {
       rectangle = "0x4000007a"
@@ -5843,7 +5843,7 @@ return {
       rectangle = "0x400000b9"
     },
     A321 = {
-      rectangle = "0x4000028a"
+      rectangle = "0x40000236"
     },
     LVar = "VC_OVHD_FWD_DISCH_Button",
     name = "FSL.OVHD_FWD_DISCH_Button",
@@ -5863,7 +5863,7 @@ return {
       rectangle = "0x400000ba"
     },
     A321 = {
-      rectangle = "0x40000289"
+      rectangle = "0x40000235"
     },
     LVar = "VC_OVHD_FWD_DISCH_Guard",
     name = "FSL.OVHD_FWD_DISCH_Guard",
@@ -6000,7 +6000,7 @@ return {
       rectangle = "0x400000e6"
     },
     A320 = {
-      rectangle = "0x40000287"
+      rectangle = "0x40000270"
     },
     A321 = {
       rectangle = "0x4000008b"
@@ -6040,10 +6040,10 @@ return {
       rectangle = "0x24401801"
     },
     A320 = {
-      rectangle = "0x40000213"
+      rectangle = "0x24401801"
     },
     A321 = {
-      rectangle = "0x24401801"
+      rectangle = "0x400000c1"
     },
     LVar = "VC_OVHD_HYD_BLUE_ELEC_PUMP_Guard",
     name = "FSL.OVHD_HYD_BLUE_ELEC_PUMP_Guard",
@@ -6116,7 +6116,7 @@ return {
   OVHD_HYD_LK_B_Guard = {
     A319 = {},
     A320 = {
-      rectangle = "0x24405005"
+      rectangle = "0x40000103"
     },
     A321 = {
       rectangle = "0x24405005"
@@ -6152,10 +6152,10 @@ return {
   OVHD_HYD_LK_G_Guard = {
     A319 = {},
     A320 = {
-      rectangle = "0x24405004"
+      rectangle = "0x40000104"
     },
     A321 = {
-      rectangle = "0x40000119"
+      rectangle = "0x24405004"
     },
     LVar = "VC_OVHD_HYD_LK_G_Guard",
     name = "FSL.OVHD_HYD_LK_G_Guard",
@@ -6191,7 +6191,7 @@ return {
       rectangle = "0x24405006"
     },
     A321 = {
-      rectangle = "0x24405006"
+      rectangle = "0x40000117"
     },
     LVar = "VC_OVHD_HYD_LK_Y_Guard",
     name = "FSL.OVHD_HYD_LK_Y_Guard",
@@ -6228,10 +6228,10 @@ return {
       rectangle = "0x4000028d"
     },
     A320 = {
-      rectangle = "0x40000211"
+      rectangle = "0x400001fa"
     },
     A321 = {
-      rectangle = "0x40000278"
+      rectangle = "0x40000224"
     },
     LVar = "VC_OVHD_HYD_RAT_MAN_ON_Button",
     name = "FSL.OVHD_HYD_RAT_MAN_ON_Button",
@@ -6248,10 +6248,10 @@ return {
       rectangle = "0x4000028e"
     },
     A320 = {
-      rectangle = "0x40000212"
+      rectangle = "0x400001fb"
     },
     A321 = {
-      rectangle = "0x40000279"
+      rectangle = "0x40000225"
     },
     LVar = "VC_OVHD_HYD_RAT_MAN_ON_Guard",
     name = "FSL.OVHD_HYD_RAT_MAN_ON_Guard",
@@ -6439,7 +6439,7 @@ return {
       rectangle = "0x400000e8"
     },
     A320 = {
-      rectangle = "0x40000285"
+      rectangle = "0x4000026e"
     },
     A321 = {
       rectangle = "0x4000008d"
@@ -6459,7 +6459,7 @@ return {
       rectangle = "0x400000e9"
     },
     A320 = {
-      rectangle = "0x40000284"
+      rectangle = "0x4000026d"
     },
     A321 = {
       rectangle = "0x4000008e"
@@ -6522,7 +6522,7 @@ return {
       rectangle = "0x24401008"
     },
     A321 = {
-      rectangle = "0x40000091"
+      rectangle = "0x24401008"
     },
     LVar = "VC_OVHD_OXY_HIGH_ALT_LDG_Guard",
     name = "FSL.OVHD_OXY_HIGH_ALT_LDG_Guard",
@@ -6539,7 +6539,7 @@ return {
       rectangle = "0x400000ee"
     },
     A320 = {
-      rectangle = "0x4000027f"
+      rectangle = "0x40000268"
     },
     A321 = {
       rectangle = "0x40000093"
@@ -6559,7 +6559,7 @@ return {
       rectangle = "0x400000ed"
     },
     A320 = {
-      rectangle = "0x40000280"
+      rectangle = "0x40000269"
     },
     A321 = {
       rectangle = "0x40000092"
@@ -6814,7 +6814,7 @@ return {
       rectangle = "0x400000b4"
     },
     A321 = {
-      rectangle = "0x4000028d"
+      rectangle = "0x40000239"
     },
     LVar = "VC_OVHD_RADIO_3_ON_OFF_Switch",
     name = "FSL.OVHD_RADIO_3_ON_OFF_Switch",
@@ -6974,7 +6974,7 @@ return {
       rectangle = "0x400000eb"
     },
     A320 = {
-      rectangle = "0x40000282"
+      rectangle = "0x4000026b"
     },
     A321 = {
       rectangle = "0x40000090"
@@ -6994,7 +6994,7 @@ return {
       rectangle = "0x400000ea"
     },
     A320 = {
-      rectangle = "0x40000283"
+      rectangle = "0x4000026c"
     },
     A321 = {
       rectangle = "0x4000008f"
@@ -7283,7 +7283,7 @@ return {
       rectangle = "0x400000e4"
     },
     A320 = {
-      rectangle = "0x40000290"
+      rectangle = "0x40000279"
     },
     A321 = {
       rectangle = "0x40000089"
@@ -7333,7 +7333,7 @@ return {
       rectangle = "0x400000f3"
     },
     A320 = {
-      rectangle = "0x4000027a"
+      rectangle = "0x40000263"
     },
     A321 = {
       rectangle = "0x40000098"
@@ -7356,7 +7356,7 @@ return {
       rectangle = "0x400000de"
     },
     A321 = {
-      rectangle = "0x40000285"
+      rectangle = "0x40000231"
     },
     LVar = "VC_OVHD_WIPER_RPLNT_RIGHT_Button",
     name = "FSL.FO.OVHD_WIPER_RPLNT_Button",
@@ -7507,10 +7507,10 @@ return {
       rectangle = "0x4000014b"
     },
     A320 = {
-      rectangle = "0x40000130"
+      rectangle = "0x40000131"
     },
     A321 = {
-      rectangle = "0x40000144"
+      rectangle = "0x40000145"
     },
     LVar = "VC_PED_ATCXPDR_1_2_Switch",
     name = "FSL.PED_ATCXPDR_1_2_Switch",
@@ -7530,10 +7530,10 @@ return {
       rectangle = "0x4000014a"
     },
     A320 = {
-      rectangle = "0x4000012f"
+      rectangle = "0x40000130"
     },
     A321 = {
-      rectangle = "0x40000143"
+      rectangle = "0x40000144"
     },
     LVar = "VC_PED_ATCXPDR_ALT_RPTG_Switch",
     name = "FSL.PED_ATCXPDR_ALT_RPTG_Switch",
@@ -7553,10 +7553,10 @@ return {
       rectangle = "0x40000189"
     },
     A320 = {
-      rectangle = "0x40000161"
+      rectangle = "0x40000162"
     },
     A321 = {
-      rectangle = "0x40000180"
+      rectangle = "0x40000181"
     },
     LVar = "VC_PED_ATCXPDR_KEY_0",
     name = "FSL.PED_ATCXPDR_KEY_0",
@@ -7573,10 +7573,10 @@ return {
       rectangle = "0x4000017b"
     },
     A320 = {
-      rectangle = "0x40000153"
+      rectangle = "0x40000154"
     },
     A321 = {
-      rectangle = "0x40000172"
+      rectangle = "0x40000173"
     },
     LVar = "VC_PED_ATCXPDR_KEY_1",
     name = "FSL.PED_ATCXPDR_KEY_1",
@@ -7593,10 +7593,10 @@ return {
       rectangle = "0x4000017d"
     },
     A320 = {
-      rectangle = "0x40000155"
+      rectangle = "0x40000156"
     },
     A321 = {
-      rectangle = "0x40000174"
+      rectangle = "0x40000175"
     },
     LVar = "VC_PED_ATCXPDR_KEY_2",
     name = "FSL.PED_ATCXPDR_KEY_2",
@@ -7613,10 +7613,10 @@ return {
       rectangle = "0x4000017f"
     },
     A320 = {
-      rectangle = "0x40000157"
+      rectangle = "0x40000158"
     },
     A321 = {
-      rectangle = "0x40000176"
+      rectangle = "0x40000177"
     },
     LVar = "VC_PED_ATCXPDR_KEY_3",
     name = "FSL.PED_ATCXPDR_KEY_3",
@@ -7633,10 +7633,10 @@ return {
       rectangle = "0x40000181"
     },
     A320 = {
-      rectangle = "0x40000159"
+      rectangle = "0x4000015a"
     },
     A321 = {
-      rectangle = "0x40000178"
+      rectangle = "0x40000179"
     },
     LVar = "VC_PED_ATCXPDR_KEY_4",
     name = "FSL.PED_ATCXPDR_KEY_4",
@@ -7653,10 +7653,10 @@ return {
       rectangle = "0x40000183"
     },
     A320 = {
-      rectangle = "0x4000015b"
+      rectangle = "0x4000015c"
     },
     A321 = {
-      rectangle = "0x4000017a"
+      rectangle = "0x4000017b"
     },
     LVar = "VC_PED_ATCXPDR_KEY_5",
     name = "FSL.PED_ATCXPDR_KEY_5",
@@ -7673,10 +7673,10 @@ return {
       rectangle = "0x40000185"
     },
     A320 = {
-      rectangle = "0x4000015d"
+      rectangle = "0x4000015e"
     },
     A321 = {
-      rectangle = "0x4000017c"
+      rectangle = "0x4000017d"
     },
     LVar = "VC_PED_ATCXPDR_KEY_6",
     name = "FSL.PED_ATCXPDR_KEY_6",
@@ -7693,10 +7693,10 @@ return {
       rectangle = "0x4000018b"
     },
     A320 = {
-      rectangle = "0x40000163"
+      rectangle = "0x40000164"
     },
     A321 = {
-      rectangle = "0x40000182"
+      rectangle = "0x40000183"
     },
     LVar = "VC_PED_ATCXPDR_KEY_7",
     name = "FSL.PED_ATCXPDR_KEY_7",
@@ -7713,10 +7713,10 @@ return {
       rectangle = "0x40000187"
     },
     A320 = {
-      rectangle = "0x4000015f"
+      rectangle = "0x40000160"
     },
     A321 = {
-      rectangle = "0x4000017e"
+      rectangle = "0x4000017f"
     },
     LVar = "VC_PED_ATCXPDR_KEY_CLR",
     name = "FSL.PED_ATCXPDR_KEY_CLR",
@@ -7733,10 +7733,10 @@ return {
       rectangle = "0x4000014e"
     },
     A320 = {
-      rectangle = "0x40000133"
+      rectangle = "0x40000134"
     },
     A321 = {
-      rectangle = "0x40000147"
+      rectangle = "0x40000148"
     },
     LVar = "VC_PED_ATCXPDR_KEY_IDENT",
     name = "FSL.PED_ATCXPDR_KEY_IDENT",
@@ -7753,10 +7753,10 @@ return {
       rectangle = "0x4000014d"
     },
     A320 = {
-      rectangle = "0x40000132"
+      rectangle = "0x40000133"
     },
     A321 = {
-      rectangle = "0x40000146"
+      rectangle = "0x40000147"
     },
     LVar = "VC_PED_ATCXPDR_MODE_Switch",
     name = "FSL.PED_ATCXPDR_MODE_Switch",
@@ -7778,10 +7778,10 @@ return {
       rectangle = "0x4000014c"
     },
     A320 = {
-      rectangle = "0x40000131"
+      rectangle = "0x40000132"
     },
     A321 = {
-      rectangle = "0x40000145"
+      rectangle = "0x40000146"
     },
     LVar = "VC_PED_ATCXPDR_ON_OFF_Switch",
     name = "FSL.PED_ATCXPDR_ON_OFF_Switch",
@@ -7803,10 +7803,10 @@ return {
       rectangle = "0x40000149"
     },
     A320 = {
-      rectangle = "0x4000012e"
+      rectangle = "0x4000012f"
     },
     A321 = {
-      rectangle = "0x40000142"
+      rectangle = "0x40000143"
     },
     LVar = "VC_PED_ATCXPDR_THRT_Switch",
     name = "FSL.PED_ATCXPDR_THRT_Switch",
@@ -7829,10 +7829,10 @@ return {
       rectangle = "0x400001c6"
     },
     A320 = {
-      rectangle = "0x40000276"
+      rectangle = "0x40000260"
     },
     A321 = {
-      rectangle = "0x4000027e"
+      rectangle = "0x4000022a"
     },
     LVar = "VC_PED_COCKPIT_DOOR_Switch",
     name = "FSL.PED_COCKPIT_DOOR_Switch",
@@ -7855,10 +7855,10 @@ return {
   PED_COCKPIT_DOOR_VIDEO_Button = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000278"
+      rectangle = "0x40000261"
     },
     A321 = {
-      rectangle = "0x4000027d"
+      rectangle = "0x40000229"
     },
     LVar = "VC_PED_COCKPIT_DOOR_VIDEO_Button",
     name = "FSL.PED_COCKPIT_DOOR_VIDEO_Button",
@@ -7873,10 +7873,10 @@ return {
   PED_COCKPIT_DOOR_VIDEO_Switch = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000026a"
+      rectangle = "0x40000253"
     },
     A321 = {
-      rectangle = "0x40000281"
+      rectangle = "0x4000022d"
     },
     LVar = "VC_PED_COCKPIT_DOOR_VIDEO_Switch",
     name = "FSL.PED_COCKPIT_DOOR_VIDEO_Switch",
@@ -7917,10 +7917,10 @@ return {
       rectangle = "0x2580000c"
     },
     A320 = {
-      rectangle = "0x4000024d"
+      rectangle = "0x2580000c"
     },
     A321 = {
-      rectangle = "0x400001c4"
+      rectangle = "0x2580000c"
     },
     LVar = "VC_PED_COMM_1_ADF1_Switch",
     Lt = "VC_PED_COMM_1_ADF1_Lt",
@@ -7959,10 +7959,10 @@ return {
       rectangle = "0x2580000d"
     },
     A320 = {
-      rectangle = "0x40000250"
+      rectangle = "0x2580000d"
     },
     A321 = {
-      rectangle = "0x400001c7"
+      rectangle = "0x2580000d"
     },
     LVar = "VC_PED_COMM_1_ADF2_Switch",
     Lt = "VC_PED_COMM_1_ADF2_Lt",
@@ -8022,10 +8022,10 @@ return {
       rectangle = "0x25800006"
     },
     A320 = {
-      rectangle = "0x40000256"
+      rectangle = "0x25800006"
     },
     A321 = {
-      rectangle = "0x400001ca"
+      rectangle = "0x25800006"
     },
     LVar = "VC_PED_COMM_1_CAB_Switch",
     Lt = "VC_PED_COMM_1_CAB_Lt",
@@ -8085,10 +8085,10 @@ return {
       rectangle = "0x25800003"
     },
     A320 = {
-      rectangle = "0x4000025f"
+      rectangle = "0x25800003"
     },
     A321 = {
-      rectangle = "0x400001cd"
+      rectangle = "0x25800003"
     },
     LVar = "VC_PED_COMM_1_HF1_Switch",
     Lt = "VC_PED_COMM_1_HF1_Lt",
@@ -8148,10 +8148,10 @@ return {
       rectangle = "0x25800004"
     },
     A320 = {
-      rectangle = "0x4000025c"
+      rectangle = "0x25800004"
     },
     A321 = {
-      rectangle = "0x400001d0"
+      rectangle = "0x25800004"
     },
     LVar = "VC_PED_COMM_1_HF2_Switch",
     Lt = "VC_PED_COMM_1_HF2_Lt",
@@ -8241,10 +8241,10 @@ return {
       rectangle = "0x400001cd"
     },
     A320 = {
-      rectangle = "0x40000269"
+      rectangle = "0x40000252"
     },
     A321 = {
-      rectangle = "0x400001c1"
+      rectangle = "0x4000028f"
     },
     LVar = "VC_PED_COMM_1_INT_RAD_Switch",
     Lt = "VC_PED_COMM_1_INT_Lt",
@@ -8268,10 +8268,10 @@ return {
       rectangle = "0x25800005"
     },
     A320 = {
-      rectangle = "0x40000259"
+      rectangle = "0x25800005"
     },
     A321 = {
-      rectangle = "0x400001d3"
+      rectangle = "0x25800005"
     },
     LVar = "VC_PED_COMM_1_INT_Switch",
     Lt = "VC_PED_COMM_1_INT_Lt",
@@ -8310,10 +8310,10 @@ return {
       rectangle = "0x2580000b"
     },
     A320 = {
-      rectangle = "0x4000024a"
+      rectangle = "0x40000233"
     },
     A321 = {
-      rectangle = "0x400001d6"
+      rectangle = "0x2580000b"
     },
     LVar = "VC_PED_COMM_1_LS_Switch",
     Lt = "VC_PED_COMM_1_LS_Lt",
@@ -8352,10 +8352,10 @@ return {
       rectangle = "0x2580000a"
     },
     A320 = {
-      rectangle = "0x40000247"
+      rectangle = "0x2580000a"
     },
     A321 = {
-      rectangle = "0x400001d9"
+      rectangle = "0x2580000a"
     },
     LVar = "VC_PED_COMM_1_MKR_Switch",
     Lt = "VC_PED_COMM_1_MKR_Lt",
@@ -8415,10 +8415,10 @@ return {
       rectangle = "0x25800007"
     },
     A320 = {
-      rectangle = "0x40000253"
+      rectangle = "0x25800007"
     },
     A321 = {
-      rectangle = "0x400001dc"
+      rectangle = "0x25800007"
     },
     LVar = "VC_PED_COMM_1_PA_Switch",
     Lt = "VC_PED_COMM_1_PA_Lt",
@@ -8562,10 +8562,10 @@ return {
       rectangle = "0x25800001"
     },
     A320 = {
-      rectangle = "0x40000265"
+      rectangle = "0x25800000"
     },
     A321 = {
-      rectangle = "0x400001e2"
+      rectangle = "0x25c01802"
     },
     LVar = "VC_PED_COMM_1_VHF2_Switch",
     Lt = "VC_PED_COMM_1_VHF2_Lt",
@@ -8625,10 +8625,10 @@ return {
       rectangle = "0x25800002"
     },
     A320 = {
-      rectangle = "0x40000262"
+      rectangle = "0x25800002"
     },
     A321 = {
-      rectangle = "0x400001e5"
+      rectangle = "0x25800002"
     },
     LVar = "VC_PED_COMM_1_VHF3_Switch",
     Lt = "VC_PED_COMM_1_VHF3_Lt",
@@ -8688,10 +8688,10 @@ return {
       rectangle = "0x25800008"
     },
     A320 = {
-      rectangle = "0x40000241"
+      rectangle = "0x25800008"
     },
     A321 = {
-      rectangle = "0x400001e8"
+      rectangle = "0x25800008"
     },
     LVar = "VC_PED_COMM_1_VOR1_Switch",
     Lt = "VC_PED_COMM_1_VOR1_Lt",
@@ -8730,10 +8730,10 @@ return {
       rectangle = "0x25800009"
     },
     A320 = {
-      rectangle = "0x40000244"
+      rectangle = "0x25800009"
     },
     A321 = {
-      rectangle = "0x400001eb"
+      rectangle = "0x25800009"
     },
     LVar = "VC_PED_COMM_1_VOR2_Switch",
     Lt = "VC_PED_COMM_1_VOR2_Lt",
@@ -8772,10 +8772,10 @@ return {
       rectangle = "0x2580080c"
     },
     A320 = {
-      rectangle = "0x40000219"
+      rectangle = "0x2580080c"
     },
     A321 = {
-      rectangle = "0x40000201"
+      rectangle = "0x2580080c"
     },
     LVar = "VC_PED_COMM_2_ADF1_Switch",
     Lt = "VC_PED_COMM_2_ADF1_Lt",
@@ -8814,10 +8814,10 @@ return {
       rectangle = "0x2580080d"
     },
     A320 = {
-      rectangle = "0x40000216"
+      rectangle = "0x2580080d"
     },
     A321 = {
-      rectangle = "0x400001f2"
+      rectangle = "0x2580080d"
     },
     LVar = "VC_PED_COMM_2_ADF2_Switch",
     Lt = "VC_PED_COMM_2_ADF2_Lt",
@@ -8877,10 +8877,10 @@ return {
       rectangle = "0x25800806"
     },
     A320 = {
-      rectangle = "0x4000022e"
+      rectangle = "0x25800806"
     },
     A321 = {
-      rectangle = "0x40000207"
+      rectangle = "0x25800806"
     },
     LVar = "VC_PED_COMM_2_CAB_Switch",
     Lt = "VC_PED_COMM_2_CAB_Lt",
@@ -8922,7 +8922,7 @@ return {
       rectangle = "0x25800803"
     },
     A321 = {
-      rectangle = "0x25800803"
+      rectangle = "0x25800804"
     },
     LVar = "VC_PED_COMM_2_HF1_Knob",
     Lt = "VC_PED_COMM_2_HF1_Lt",
@@ -8940,10 +8940,10 @@ return {
       rectangle = "0x25800803"
     },
     A320 = {
-      rectangle = "0x40000234"
+      rectangle = "0x25800803"
     },
     A321 = {
-      rectangle = "0x40000210"
+      rectangle = "0x25800803"
     },
     LVar = "VC_PED_COMM_2_HF1_Switch",
     Lt = "VC_PED_COMM_2_HF1_Lt",
@@ -8985,7 +8985,7 @@ return {
       rectangle = "0x25800804"
     },
     A321 = {
-      rectangle = "0x25800804"
+      rectangle = "0x25800805"
     },
     LVar = "VC_PED_COMM_2_HF2_Knob",
     Lt = "VC_PED_COMM_2_HF2_Lt",
@@ -9003,10 +9003,10 @@ return {
       rectangle = "0x25800804"
     },
     A320 = {
-      rectangle = "0x40000231"
+      rectangle = "0x25800804"
     },
     A321 = {
-      rectangle = "0x4000020d"
+      rectangle = "0x25800804"
     },
     LVar = "VC_PED_COMM_2_HF2_Switch",
     Lt = "VC_PED_COMM_2_HF2_Lt",
@@ -9096,10 +9096,10 @@ return {
       rectangle = "0x400001f8"
     },
     A320 = {
-      rectangle = "0x4000023e"
+      rectangle = "0x40000227"
     },
     A321 = {
-      rectangle = "0x400001ec"
+      rectangle = "0x40000264"
     },
     LVar = "VC_PED_COMM_2_INT_RAD_Switch",
     Lt = "VC_PED_COMM_2_INT_Lt",
@@ -9123,10 +9123,10 @@ return {
       rectangle = "0x25800805"
     },
     A320 = {
-      rectangle = "0x4000022b"
+      rectangle = "0x25800805"
     },
     A321 = {
-      rectangle = "0x4000020a"
+      rectangle = "0x25800805"
     },
     LVar = "VC_PED_COMM_2_INT_Switch",
     Lt = "VC_PED_COMM_2_INT_Lt",
@@ -9165,10 +9165,10 @@ return {
       rectangle = "0x2580080b"
     },
     A320 = {
-      rectangle = "0x4000021a"
+      rectangle = "0x2580080b"
     },
     A321 = {
-      rectangle = "0x400001fe"
+      rectangle = "0x2580080b"
     },
     LVar = "VC_PED_COMM_2_LS_Switch",
     Lt = "VC_PED_COMM_2_LS_Lt",
@@ -9207,10 +9207,10 @@ return {
       rectangle = "0x2580080a"
     },
     A320 = {
-      rectangle = "0x4000021f"
+      rectangle = "0x2580080a"
     },
     A321 = {
-      rectangle = "0x400001fb"
+      rectangle = "0x2580080a"
     },
     LVar = "VC_PED_COMM_2_MKR_Switch",
     Lt = "VC_PED_COMM_2_MKR_Lt",
@@ -9270,10 +9270,10 @@ return {
       rectangle = "0x25800807"
     },
     A320 = {
-      rectangle = "0x40000228"
+      rectangle = "0x25800807"
     },
     A321 = {
-      rectangle = "0x400001f5"
+      rectangle = "0x25800807"
     },
     LVar = "VC_PED_COMM_2_PA_Switch",
     Lt = "VC_PED_COMM_2_PA_Lt",
@@ -9399,7 +9399,7 @@ return {
       rectangle = "0x25800801"
     },
     A321 = {
-      rectangle = "0x25800801"
+      rectangle = "0x25800802"
     },
     LVar = "VC_PED_COMM_2_VHF2_Knob",
     Lt = "VC_PED_COMM_2_VHF2_Lt",
@@ -9417,10 +9417,10 @@ return {
       rectangle = "0x25800801"
     },
     A320 = {
-      rectangle = "0x4000023a"
+      rectangle = "0x25800801"
     },
     A321 = {
-      rectangle = "0x40000216"
+      rectangle = "0x25800801"
     },
     LVar = "VC_PED_COMM_2_VHF2_Switch",
     Lt = "VC_PED_COMM_2_VHF2_Lt",
@@ -9480,10 +9480,10 @@ return {
       rectangle = "0x25800802"
     },
     A320 = {
-      rectangle = "0x40000237"
+      rectangle = "0x25800802"
     },
     A321 = {
-      rectangle = "0x40000213"
+      rectangle = "0x25800802"
     },
     LVar = "VC_PED_COMM_2_VHF3_Switch",
     Lt = "VC_PED_COMM_2_VHF3_Lt",
@@ -9543,10 +9543,10 @@ return {
       rectangle = "0x25800808"
     },
     A320 = {
-      rectangle = "0x40000225"
+      rectangle = "0x25800808"
     },
     A321 = {
-      rectangle = "0x400001ef"
+      rectangle = "0x25800808"
     },
     LVar = "VC_PED_COMM_2_VOR1_Switch",
     Lt = "VC_PED_COMM_2_VOR1_Lt",
@@ -9585,10 +9585,10 @@ return {
       rectangle = "0x25800809"
     },
     A320 = {
-      rectangle = "0x40000222"
+      rectangle = "0x25800809"
     },
     A321 = {
-      rectangle = "0x400001f8"
+      rectangle = "0x25800809"
     },
     LVar = "VC_PED_COMM_2_VOR2_Switch",
     Lt = "VC_PED_COMM_2_VOR2_Lt",
@@ -9606,10 +9606,10 @@ return {
       rectangle = "0x40000173"
     },
     A320 = {
-      rectangle = "0x40000147"
+      rectangle = "0x40000148"
     },
     A321 = {
-      rectangle = "0x40000166"
+      rectangle = "0x40000167"
     },
     LVar = "VC_PED_ECP_ALL_Button",
     Lt = {
@@ -9630,10 +9630,10 @@ return {
       rectangle = "0x4000016d"
     },
     A320 = {
-      rectangle = "0x40000141"
+      rectangle = "0x40000142"
     },
     A321 = {
-      rectangle = "0x40000160"
+      rectangle = "0x40000161"
     },
     LVar = "VC_PED_ECP_APU_Button",
     Lt = {
@@ -9654,10 +9654,10 @@ return {
       rectangle = "0x4000016a"
     },
     A320 = {
-      rectangle = "0x4000013e"
+      rectangle = "0x4000013f"
     },
     A321 = {
-      rectangle = "0x4000015d"
+      rectangle = "0x4000015e"
     },
     LVar = "VC_PED_ECP_BLEED_Button",
     Lt = {
@@ -9678,10 +9678,10 @@ return {
       rectangle = "0x4000017a"
     },
     A320 = {
-      rectangle = "0x4000014e"
+      rectangle = "0x4000014f"
     },
     A321 = {
-      rectangle = "0x4000016d"
+      rectangle = "0x4000016e"
     },
     LVar = "VC_PED_ECP_CLR_L_Button",
     Lt = {
@@ -9702,10 +9702,10 @@ return {
       rectangle = "0x40000177"
     },
     A320 = {
-      rectangle = "0x4000014b"
+      rectangle = "0x4000014c"
     },
     A321 = {
-      rectangle = "0x4000016a"
+      rectangle = "0x4000016b"
     },
     LVar = "VC_PED_ECP_CLR_R_Button",
     Lt = {
@@ -9726,10 +9726,10 @@ return {
       rectangle = "0x4000016c"
     },
     A320 = {
-      rectangle = "0x40000140"
+      rectangle = "0x40000141"
     },
     A321 = {
-      rectangle = "0x4000015f"
+      rectangle = "0x40000160"
     },
     LVar = "VC_PED_ECP_COND_Button",
     Lt = {
@@ -9750,10 +9750,10 @@ return {
       rectangle = "0x4000016e"
     },
     A320 = {
-      rectangle = "0x40000142"
+      rectangle = "0x40000143"
     },
     A321 = {
-      rectangle = "0x40000161"
+      rectangle = "0x40000162"
     },
     LVar = "VC_PED_ECP_DOOR_Button",
     Lt = {
@@ -9774,10 +9774,10 @@ return {
       rectangle = "0x40000172"
     },
     A320 = {
-      rectangle = "0x40000146"
+      rectangle = "0x40000147"
     },
     A321 = {
-      rectangle = "0x40000165"
+      rectangle = "0x40000166"
     },
     LVar = "VC_PED_ECP_ELEC_Button",
     Lt = {
@@ -9798,10 +9798,10 @@ return {
       rectangle = "0x40000176"
     },
     A320 = {
-      rectangle = "0x4000014a"
+      rectangle = "0x4000014b"
     },
     A321 = {
-      rectangle = "0x40000169"
+      rectangle = "0x4000016a"
     },
     LVar = "VC_PED_ECP_EMER_CANC_Button",
     guardLvar = "VC_PED_EMER_CANC_Guard",
@@ -9819,10 +9819,10 @@ return {
       rectangle = "0x40000169"
     },
     A320 = {
-      rectangle = "0x4000013d"
+      rectangle = "0x4000013e"
     },
     A321 = {
-      rectangle = "0x4000015c"
+      rectangle = "0x4000015d"
     },
     LVar = "VC_PED_ECP_ENG_Button",
     Lt = {
@@ -9843,10 +9843,10 @@ return {
       rectangle = "0x40000174"
     },
     A320 = {
-      rectangle = "0x40000148"
+      rectangle = "0x40000149"
     },
     A321 = {
-      rectangle = "0x40000167"
+      rectangle = "0x40000168"
     },
     LVar = "VC_PED_ECP_FCTL_Button",
     Lt = {
@@ -9867,10 +9867,10 @@ return {
       rectangle = "0x40000170"
     },
     A320 = {
-      rectangle = "0x40000144"
+      rectangle = "0x40000145"
     },
     A321 = {
-      rectangle = "0x40000163"
+      rectangle = "0x40000164"
     },
     LVar = "VC_PED_ECP_FUEL_Button",
     Lt = {
@@ -9891,10 +9891,10 @@ return {
       rectangle = "0x40000171"
     },
     A320 = {
-      rectangle = "0x40000145"
+      rectangle = "0x40000146"
     },
     A321 = {
-      rectangle = "0x40000164"
+      rectangle = "0x40000165"
     },
     LVar = "VC_PED_ECP_HYD_Button",
     Lt = {
@@ -9915,10 +9915,10 @@ return {
       rectangle = "0x40000191"
     },
     A320 = {
-      rectangle = "0x40000171"
+      rectangle = "0x40000172"
     },
     A321 = {
-      rectangle = "0x40000188"
+      rectangle = "0x40000189"
     },
     LVar = "VC_PED_ECP_LR_DSP_LT_Knob",
     name = "FSL.PED_ECP_LR_DSP_LT_Knob",
@@ -9935,10 +9935,10 @@ return {
       rectangle = "0x4000016f"
     },
     A320 = {
-      rectangle = "0x40000143"
+      rectangle = "0x40000144"
     },
     A321 = {
-      rectangle = "0x40000162"
+      rectangle = "0x40000163"
     },
     LVar = "VC_PED_ECP_PRESS_Button",
     Lt = {
@@ -9959,10 +9959,10 @@ return {
       rectangle = "0x40000178"
     },
     A320 = {
-      rectangle = "0x4000014c"
+      rectangle = "0x4000014d"
     },
     A321 = {
-      rectangle = "0x4000016b"
+      rectangle = "0x4000016c"
     },
     LVar = "VC_PED_ECP_RCL_Button",
     name = "FSL.PED_ECP_RCL_Button",
@@ -9979,10 +9979,10 @@ return {
       rectangle = "0x40000179"
     },
     A320 = {
-      rectangle = "0x4000014d"
+      rectangle = "0x4000014e"
     },
     A321 = {
-      rectangle = "0x4000016c"
+      rectangle = "0x4000016d"
     },
     LVar = "VC_PED_ECP_STS_Button",
     Lt = {
@@ -10003,10 +10003,10 @@ return {
       rectangle = "0x4000016b"
     },
     A320 = {
-      rectangle = "0x4000013f"
+      rectangle = "0x40000140"
     },
     A321 = {
-      rectangle = "0x4000015e"
+      rectangle = "0x4000015f"
     },
     LVar = "VC_PED_ECP_TO_CONFIG_Button",
     name = "FSL.PED_ECP_TO_CONFIG_Button",
@@ -10023,10 +10023,10 @@ return {
       rectangle = "0x40000193"
     },
     A320 = {
-      rectangle = "0x40000173"
+      rectangle = "0x40000174"
     },
     A321 = {
-      rectangle = "0x4000018a"
+      rectangle = "0x4000018b"
     },
     LVar = "VC_PED_ECP_UP_DSP_LT_Knob",
     name = "FSL.PED_ECP_UP_DSP_LT_Knob",
@@ -10043,10 +10043,10 @@ return {
       rectangle = "0x40000175"
     },
     A320 = {
-      rectangle = "0x40000149"
+      rectangle = "0x4000014a"
     },
     A321 = {
-      rectangle = "0x40000168"
+      rectangle = "0x40000169"
     },
     LVar = "VC_PED_ECP_WHEEL_Button",
     Lt = {
@@ -10067,10 +10067,10 @@ return {
       rectangle = "0x400001c9"
     },
     A320 = {
-      rectangle = "0x40000274"
+      rectangle = "0x4000025d"
     },
     A321 = {
-      rectangle = "0x40000283"
+      rectangle = "0x4000022f"
     },
     LVar = "VC_PED_EMER_CANC_Guard",
     name = "FSL.PED_EMER_CANC_Guard",
@@ -10087,10 +10087,10 @@ return {
       rectangle = "0x40000151"
     },
     A320 = {
-      rectangle = "0x40000136"
+      rectangle = "0x40000137"
     },
     A321 = {
-      rectangle = "0x4000014a"
+      rectangle = "0x4000014b"
     },
     LVar = "VC_PED_ENG_1_MSTR_Switch",
     name = "FSL.PED_ENG_1_MSTR_Switch",
@@ -10111,10 +10111,10 @@ return {
       rectangle = "0x40000150"
     },
     A320 = {
-      rectangle = "0x40000135"
+      rectangle = "0x40000136"
     },
     A321 = {
-      rectangle = "0x40000149"
+      rectangle = "0x4000014a"
     },
     LVar = "VC_PED_ENG_2_MSTR_Switch",
     name = "FSL.PED_ENG_2_MSTR_Switch",
@@ -10135,10 +10135,10 @@ return {
       rectangle = "0x40000166"
     },
     A320 = {
-      rectangle = "0x40000138"
+      rectangle = "0x40000139"
     },
     A321 = {
-      rectangle = "0x40000157"
+      rectangle = "0x40000158"
     },
     LVar = "VC_PED_ENG_MODE_Switch",
     name = "FSL.PED_ENG_MODE_Switch",
@@ -10191,10 +10191,10 @@ return {
       rectangle = "0x40000158"
     },
     A320 = {
-      rectangle = "0x400001a1"
+      rectangle = "0x400001a2"
     },
     A321 = {
-      rectangle = "0x400001bc"
+      rectangle = "0x400001bd"
     },
     LVar = "VC_PED_FLD_LT_MainPnl_Knob",
     name = "FSL.PED_FLD_LT_MainPnl_Knob",
@@ -10211,10 +10211,10 @@ return {
       rectangle = "0x40000154"
     },
     A320 = {
-      rectangle = "0x4000013c"
+      rectangle = "0x4000013d"
     },
     A321 = {
-      rectangle = "0x4000015b"
+      rectangle = "0x4000015c"
     },
     LVar = "VC_PED_FLD_LT_Ped_Knob",
     name = "FSL.PED_FLD_LT_Ped_Knob",
@@ -10231,10 +10231,10 @@ return {
       rectangle = "0x40000156"
     },
     A320 = {
-      rectangle = "0x400001a3"
+      rectangle = "0x400001a4"
     },
     A321 = {
-      rectangle = "0x400001ba"
+      rectangle = "0x400001bb"
     },
     LVar = "VC_PED_INTEG_LT_MainPnl_Knob",
     name = "FSL.PED_INTEG_LT_MainPnl_Knob",
@@ -10254,7 +10254,7 @@ return {
       rectangle = "0x40000137"
     },
     A321 = {
-      rectangle = "0x4000014b"
+      rectangle = "0x4000014c"
     },
     LVar = "VC_PED_LDG_GEAR_GRV_EXT_Switch",
     pos = {
@@ -10583,10 +10583,10 @@ return {
       rectangle = "0x4000013b"
     },
     A320 = {
-      rectangle = "0x40000121"
+      rectangle = "0x40000122"
     },
     A321 = {
-      rectangle = "0x40000134"
+      rectangle = "0x40000135"
     },
     LVar = "VC_PED_MCDU_L_KEY_BRT",
     name = "FSL.CPT.PED_MCDU_KEY_BRT",
@@ -10683,10 +10683,10 @@ return {
       rectangle = "0x4000013c"
     },
     A320 = {
-      rectangle = "0x40000122"
+      rectangle = "0x40000123"
     },
     A321 = {
-      rectangle = "0x40000135"
+      rectangle = "0x40000138"
     },
     LVar = "VC_PED_MCDU_L_KEY_DIM",
     name = "FSL.CPT.PED_MCDU_KEY_DIM",
@@ -12073,10 +12073,10 @@ return {
       rectangle = "0x40000137"
     },
     A320 = {
-      rectangle = "0x4000011d"
+      rectangle = "0x4000011e"
     },
     A321 = {
-      rectangle = "0x40000130"
+      rectangle = "0x40000131"
     },
     LVar = "VC_PED_MCDU_R_KEY_BRT",
     name = "FSL.FO.PED_MCDU_KEY_BRT",
@@ -12173,10 +12173,10 @@ return {
       rectangle = "0x40000139"
     },
     A320 = {
-      rectangle = "0x4000011f"
+      rectangle = "0x40000120"
     },
     A321 = {
-      rectangle = "0x40000132"
+      rectangle = "0x40000134"
     },
     LVar = "VC_PED_MCDU_R_KEY_DIM",
     name = "FSL.FO.PED_MCDU_KEY_DIM",
@@ -13249,10 +13249,10 @@ return {
       rectangle = "0x40000145"
     },
     A320 = {
-      rectangle = "0x4000012b"
+      rectangle = "0x4000012c"
     },
     A321 = {
-      rectangle = "0x4000013e"
+      rectangle = "0x4000013f"
     },
     LVar = "VC_PED_PARK_BRAKE_Switch",
     name = "FSL.PED_PARK_BRAKE_Switch",
@@ -13375,10 +13375,10 @@ return {
   PED_RADIO_1_Inner_Knob = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000273"
+      rectangle = "0x4000025c"
     },
     A321 = {
-      rectangle = "0x4000018c"
+      rectangle = "0x4000018d"
     },
     LVar = "VC_PED_RADIO_1_Inner_Knob",
     name = "FSL.CPT.PED_RADIO_Inner_Knob",
@@ -13456,10 +13456,10 @@ return {
       rectangle = "0x40000199"
     },
     A320 = {
-      rectangle = "0x40000175"
+      rectangle = "0x40000176"
     },
     A321 = {
-      rectangle = "0x4000027f"
+      rectangle = "0x4000022b"
     },
     LVar = "VC_PED_RADIO_1_NAV_Guard",
     Lt = "VC_PED_RADIO_1_NAV_Lamp",
@@ -13477,10 +13477,10 @@ return {
       rectangle = "0x40000148"
     },
     A320 = {
-      rectangle = "0x40000271"
+      rectangle = "0x4000025a"
     },
     A321 = {
-      rectangle = "0x40000141"
+      rectangle = "0x40000142"
     },
     LVar = "VC_PED_RADIO_1_ON_OFF_Switch",
     name = "FSL.CPT.PED_RADIO_ON_OFF_Switch",
@@ -13498,10 +13498,10 @@ return {
   PED_RADIO_1_Outer_Knob = {
     A319 = {},
     A320 = {
-      rectangle = "0x40000272"
+      rectangle = "0x4000025b"
     },
     A321 = {
-      rectangle = "0x4000018b"
+      rectangle = "0x4000018c"
     },
     LVar = "VC_PED_RADIO_1_Outer_Knob",
     name = "FSL.CPT.PED_RADIO_Outer_Knob",
@@ -13703,10 +13703,10 @@ return {
   PED_RADIO_2_Inner_Knob = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000026d"
+      rectangle = "0x40000256"
     },
     A321 = {
-      rectangle = "0x40000155"
+      rectangle = "0x40000156"
     },
     LVar = "VC_PED_RADIO_2_Inner_Knob",
     name = "FSL.FO.PED_RADIO_Inner_Knob",
@@ -13784,10 +13784,10 @@ return {
       rectangle = "0x400001c5"
     },
     A320 = {
-      rectangle = "0x4000026f"
+      rectangle = "0x40000258"
     },
     A321 = {
-      rectangle = "0x400001b7"
+      rectangle = "0x400001b8"
     },
     LVar = "VC_PED_RADIO_2_NAV_Guard",
     Lt = "VC_PED_RADIO_2_NAV_Lamp",
@@ -13805,10 +13805,10 @@ return {
       rectangle = "0x40000165"
     },
     A320 = {
-      rectangle = "0x4000026e"
+      rectangle = "0x40000257"
     },
     A321 = {
-      rectangle = "0x40000156"
+      rectangle = "0x40000157"
     },
     LVar = "VC_PED_RADIO_2_ON_OFF_Switch",
     name = "FSL.FO.PED_RADIO_ON_OFF_Switch",
@@ -13826,10 +13826,10 @@ return {
   PED_RADIO_2_Outer_Knob = {
     A319 = {},
     A320 = {
-      rectangle = "0x4000026c"
+      rectangle = "0x40000255"
     },
     A321 = {
-      rectangle = "0x40000154"
+      rectangle = "0x40000155"
     },
     LVar = "VC_PED_RADIO_2_Outer_Knob",
     name = "FSL.FO.PED_RADIO_Outer_Knob",
@@ -13930,10 +13930,10 @@ return {
       rectangle = "0x40000144"
     },
     A320 = {
-      rectangle = "0x4000012a"
+      rectangle = "0x4000012b"
     },
     A321 = {
-      rectangle = "0x4000013d"
+      rectangle = "0x4000013e"
     },
     LVar = "VC_PED_RUD_TRIM_RST_Button",
     name = "FSL.PED_RUD_TRIM_RST_Button",
@@ -13950,10 +13950,10 @@ return {
       rectangle = "0x40000143"
     },
     A320 = {
-      rectangle = "0x40000129"
+      rectangle = "0x4000012a"
     },
     A321 = {
-      rectangle = "0x4000013c"
+      rectangle = "0x4000013d"
     },
     LVar = "VC_PED_RUD_TRIM_Switch",
     name = "FSL.PED_RUD_TRIM_Switch",
@@ -14006,10 +14006,10 @@ return {
       rectangle = "0x4000015f"
     },
     A320 = {
-      rectangle = "0x40000168"
+      rectangle = "0x40000169"
     },
     A321 = {
-      rectangle = "0x4000014c"
+      rectangle = "0x4000014d"
     },
     LVar = "VC_PED_SWITCH_AIR_DATA_Knob",
     name = "FSL.PED_SWITCH_AIR_DATA_Knob",
@@ -14030,10 +14030,10 @@ return {
       rectangle = "0x4000015d"
     },
     A320 = {
-      rectangle = "0x4000016e"
+      rectangle = "0x4000016f"
     },
     A321 = {
-      rectangle = "0x40000152"
+      rectangle = "0x40000153"
     },
     LVar = "VC_PED_SWITCH_ATT_HDG_Knob",
     name = "FSL.PED_SWITCH_ATT_HDG_Knob",
@@ -14054,10 +14054,10 @@ return {
       rectangle = "0x40000163"
     },
     A320 = {
-      rectangle = "0x4000016c"
+      rectangle = "0x4000016d"
     },
     A321 = {
-      rectangle = "0x40000150"
+      rectangle = "0x40000151"
     },
     LVar = "VC_PED_SWITCH_ECAM_ND_Knob",
     name = "FSL.PED_SWITCH_ECAM_ND_Knob",
@@ -14078,10 +14078,10 @@ return {
       rectangle = "0x40000161"
     },
     A320 = {
-      rectangle = "0x4000016a"
+      rectangle = "0x4000016b"
     },
     A321 = {
-      rectangle = "0x4000014e"
+      rectangle = "0x4000014f"
     },
     LVar = "VC_PED_SWITCH_EIS_DMC_Knob",
     name = "FSL.PED_SWITCH_EIS_DMC_Knob",
@@ -14102,10 +14102,10 @@ return {
       rectangle = "0x4000018e"
     },
     A320 = {
-      rectangle = "0x40000166"
+      rectangle = "0x40000167"
     },
     A321 = {
-      rectangle = "0x40000185"
+      rectangle = "0x40000186"
     },
     LVar = "VC_PED_WXRadar_GCS_Switch",
     name = "FSL.PED_WXRadar_GCS_Switch",
@@ -14125,10 +14125,10 @@ return {
       rectangle = "0x40000159"
     },
     A320 = {
-      rectangle = "0x40000151"
+      rectangle = "0x40000152"
     },
     A321 = {
-      rectangle = "0x4000016e"
+      rectangle = "0x4000016f"
     },
     LVar = "VC_PED_WXRadar_Gain_Knob",
     name = "FSL.PED_WXRadar_Gain_Knob",
@@ -14148,7 +14148,7 @@ return {
       rectangle = "0x40000150"
     },
     A321 = {
-      rectangle = "0x4000016f"
+      rectangle = "0x40000170"
     },
     LVar = "VC_PED_WXRadar_Mode_Switch",
     name = "FSL.PED_WXRadar_Mode_Switch",
@@ -14170,10 +14170,10 @@ return {
       rectangle = "0x4000018f"
     },
     A320 = {
-      rectangle = "0x40000167"
+      rectangle = "0x40000168"
     },
     A321 = {
-      rectangle = "0x40000186"
+      rectangle = "0x40000187"
     },
     LVar = "VC_PED_WXRadar_Multiscan_Switch",
     name = "FSL.PED_WXRadar_Multiscan_Switch",
@@ -14193,10 +14193,10 @@ return {
       rectangle = "0x4000014f"
     },
     A320 = {
-      rectangle = "0x40000134"
+      rectangle = "0x40000135"
     },
     A321 = {
-      rectangle = "0x40000148"
+      rectangle = "0x40000149"
     },
     LVar = "VC_PED_WXRadar_PWS_Switch",
     name = "FSL.PED_WXRadar_PWS_Switch",
@@ -14216,10 +14216,10 @@ return {
       rectangle = "0x4000018d"
     },
     A320 = {
-      rectangle = "0x40000165"
+      rectangle = "0x40000166"
     },
     A321 = {
-      rectangle = "0x40000184"
+      rectangle = "0x40000185"
     },
     LVar = "VC_PED_WXRadar_SYS_Switch",
     name = "FSL.PED_WXRadar_SYS_Switch",
@@ -14240,10 +14240,10 @@ return {
       rectangle = "0x4000015c"
     },
     A320 = {
-      rectangle = "0x40000152"
+      rectangle = "0x40000153"
     },
     A321 = {
-      rectangle = "0x40000171"
+      rectangle = "0x40000172"
     },
     LVar = "VC_PED_WXRadar_Tilt_Knob",
     name = "FSL.PED_WXRadar_Tilt_Knob",
@@ -14536,10 +14536,10 @@ return {
       rectangle = "0x40000255"
     },
     A320 = {
-      rectangle = "0x400001da"
+      rectangle = "0x400001db"
     },
     A321 = {
-      rectangle = "0x40000249"
+      rectangle = "0x400001f4"
     },
     LVar = "VC_WINDOW_ChartLt_CP_Button",
     name = "FSL.CPT.WINDOW_ChartLt_Button",
@@ -14556,10 +14556,10 @@ return {
       rectangle = "0x40000258"
     },
     A320 = {
-      rectangle = "0x400001dd"
+      rectangle = "0x400001de"
     },
     A321 = {
-      rectangle = "0x4000024c"
+      rectangle = "0x400001f7"
     },
     LVar = "VC_WINDOW_ChartLt_CP_Knob",
     name = "FSL.CPT.WINDOW_ChartLt_Knob",
@@ -14576,10 +14576,10 @@ return {
       rectangle = "0x40000267"
     },
     A320 = {
-      rectangle = "0x400001eb"
+      rectangle = "0x400001ec"
     },
     A321 = {
-      rectangle = "0x40000256"
+      rectangle = "0x40000201"
     },
     LVar = "VC_WINDOW_ChartLt_FO_Button",
     name = "FSL.FO.WINDOW_ChartLt_Button",
@@ -14596,10 +14596,10 @@ return {
       rectangle = "0x40000268"
     },
     A320 = {
-      rectangle = "0x400001ec"
+      rectangle = "0x400001ed"
     },
     A321 = {
-      rectangle = "0x40000257"
+      rectangle = "0x40000202"
     },
     LVar = "VC_WINDOW_ChartLt_FO_Knob",
     name = "FSL.FO.WINDOW_ChartLt_Knob",

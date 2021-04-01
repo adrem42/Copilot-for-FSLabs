@@ -1,10 +1,8 @@
-
+local UserOptions = copilot.UserOptions
 copilot.AFTER_LANDING_TRIGGER_VOICE = 1
 copilot.AFTER_LANDING_TRIGGER_DISARM_SPOILERS = 2
 copilot.TAKEOFF_PACKS_TURN_OFF = 0
 copilot.TAKEOFF_PACKS_LEAVE_ALONE = 1
-local UserOptions = {TRUE = 1, FALSE = 0, ENABLED = 1, DISABLED = 0}
-copilot.UserOptions = UserOptions
 
 return {
   {
@@ -49,8 +47,8 @@ return {
       {
         name = "button_sleep_mult",
         default = 1,
-        comment = "Multiplier for how long to hold buttons depressed. Try increasing this value in steps of 1 if you notice button clicks not registering.",
-        type = "number"
+        type = "number",
+        hidden = true
       }
     }
   },

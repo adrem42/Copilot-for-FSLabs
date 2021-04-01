@@ -112,7 +112,7 @@ end
 
 function Control:_waitForLvarChange(timeout, initPos)
   initPos = initPos or self:getLvarValue()
-  return checkWithTimeout(timeout or 5000, function() 
+  return checkWithTimeout(timeout or 5000, function()
     return self:getLvarValue() ~= initPos 
   end)
 end

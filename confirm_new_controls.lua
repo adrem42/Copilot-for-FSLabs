@@ -1,4 +1,4 @@
-package.path = package.path .. ";FSUIPC folder\\?.lua;FSUIPC folder\\?\\init.lua"
+package.path = package.path .. ";Prepar3D vx Add-ons\\Copilot for FSLabs\\?.lua;Prepar3D vx Add-ons\\Copilot for FSLabs\\?\\init.lua"
 FSL2LUA_STANDALONE = true
 local old = require "verify_controls_integrity"
 _FSL = require "FSL2Lua"
@@ -25,7 +25,7 @@ for k, v in pairs(FSL) do
   end
 end
 
-FSL = dofile"FSUIPC folder\\FSL2Lua\\FSL2Lua\\FSL.lua"
+FSL = dofile"Prepar3D vx Add-ons\\Copilot for FSLabs\\FSL2Lua\\FSL2Lua\\FSL.lua"
 
 for k, v in pairs(varnames) do
   FSL[k].name = v
@@ -59,7 +59,7 @@ if answer:lower() == "yes" then
       end
     end
   end
-  file.write("FSUIPC folder\\FSL2Lua\\FSL2Lua\\FSL.lua", "return " .. serpent.block(FSL, {comment = false, sparse = false}),"w")
+  file.write("Prepar3D vx Add-ons\\Copilot for FSLabs\\FSL2Lua\\FSL2Lua\\FSL.lua", "return " .. serpent.block(FSL, {comment = false, sparse = false}),"w")
   require "verify_controls_integrity"
   print "New controls saved successfully!"
 else

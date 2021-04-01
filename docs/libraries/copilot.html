@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 2.0.0</title>
+    <title>Copilot for FSLabs 2.0.3</title>
     <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 2.0.0</h1>
+<h1>Copilot for FSLabs 2.0.3</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -75,6 +75,10 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#loadIniFile">loadIniFile(path, cfg[, init])</a></td>
+	<td class="summary">Loads (also creates, if it doesn't exist) an ini file into a lua table</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#addCallback">addCallback(callback[, name[, interval[, delay]]])</a></td>
 	<td class="summary">Adds a callback to the callback queue.</td>
 	</tr>
@@ -85,6 +89,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#removeCallback">removeCallback(key)</a></td>
 	<td class="summary">Removes a previously added callback.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#keypress">keypress(input)</a></td>
+	<td class="summary">Send a key press event to the FS window</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#sleep">sleep(time1, time2)</a></td>
@@ -159,6 +167,78 @@
     <h2 class="section-header "><a name="Functions"></a>Functions</h2>
 
     <dl class="function">
+    <dt>
+    <a name = "loadIniFile"></a>
+    <strong>loadIniFile(path, cfg[, init])</strong>
+    </dt>
+    <dd>
+    Loads (also creates, if it doesn't exist) an ini file into a lua table
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">cfg</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         The format of the ini file (see usage below)
+        </li>
+        <li><span class="parameter">init</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         If specified, loadIniFile will not create a new table, but will populate this table instead.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        The table with the options (see usage below). If init was specified, it will be the same table.
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> optionsCfg = {
+  {
+    title = <span class="string">"Section1"</span>,
+    keys = {
+      {
+        name = <span class="string">"enable"</span>,
+        default = copilot.UserOptions.TRUE,
+        comment = <span class="string">"a comment"</span>,
+        <span class="global">type</span> = <span class="string">"bool"</span> <span class="comment">-- other types: "int", "double" or "number", "enum", "string"
+</span>      }
+    }
+  },
+  {
+    title = <span class="string">"SeCtiOn2"</span>,
+    keys = {
+      {
+        name = <span class="string">"fruit"</span>,
+        <span class="global">type</span> = <span class="string">"enum"</span>,
+        default = <span class="string">"apple"</span>,
+        required = <span class="keyword">true</span>,
+        values = {<span class="string">"apple"</span>, <span class="string">"orange"</span>, <span class="string">"banana"</span>}
+      }
+    }
+  }
+}
+
+<span class="keyword">local</span> options = copilot.loadIniFile(APPDIR .. <span class="string">"my_ini_file.ini"</span>, optionsCfg)
+<span class="global">print</span>(
+  (<span class="string">"section1.enable: %s, section2.fruit: %s"</span>)
+    :format(options.section1.enable, options.section2.fruit)
+)</pre>
+    </ul>
+
+</dd>
     <dt>
     <a name = "addCallback"></a>
     <strong>addCallback(callback[, name[, interval[, delay]]])</strong>
@@ -259,6 +339,35 @@
     <ul>
         <li><span class="parameter">key</span>
          Either the callable itself or the name passed to <a href="../libraries/copilot.html#addCallback">addCallback</a>
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "keypress"></a>
+    <strong>keypress(input)</strong>
+    </dt>
+    <dd>
+    Send a key press event to the FS window
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">input</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The following values for are accepted (case-insensitive):<br><br></p>
+
+<ul>
+    <li>Alphanumeric character keys</li>
+    <li>Virtual key codes: <code>key = &quot;\222&quot;</code>. </li>
+    <li>Named keys defined in <code>Copilot for FSLabs\lua\key_list.lua</code></li>
+</ul>
+
+<p> You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in <code>Copilot for FSLabs\lua\key_list.lua</code>
         </li>
     </ul>
 
@@ -512,7 +621,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-03-21 02:02:02 </i>
+<i style="float:right;">Last updated 2021-04-02 00:05:33 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

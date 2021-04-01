@@ -144,10 +144,9 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, ShiftValue shiftVal, EventType 
     if (callbacks) {
 
         std::lock_guard<std::mutex> lock(queueMutex);
-        for (auto& callback : *callbacks) {
-            eventQueue.emplace(Event{timestamp, callback});
-        }
+        eventQueue.emplace(Event{ timestamp, callbacks });
         SetEvent(queueEvent);
+
     }
 
     return retVal;
@@ -161,12 +160,14 @@ void KeyBindManager::dispatchEvents()
         Event event = eventQueue.front();
         eventQueue.pop();
         lock.unlock();
-        event.callback(event.timestamp);
+        for (auto& callback : *event.callbacks)
+            callback(event.timestamp);
     }
 }
 
 bool KeyBindManager::hasEvents()
 {
+    std::lock_guard<std::mutex> lock(queueMutex);
     return !eventQueue.empty();
 }
 

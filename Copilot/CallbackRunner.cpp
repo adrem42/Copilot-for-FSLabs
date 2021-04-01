@@ -188,9 +188,9 @@ CallbackRunner::CallbackReturn CallbackRunner::addCoroutine(sol::object callable
 * @int[opt] delay Same as `addCallback`
 * @return The same values as `addCallback`
 */
-CallbackRunner::CallbackReturn CallbackRunner::callOnce(sol::object callable, std::optional<Interval> interval, std::optional<Interval> delay)
+CallbackRunner::CallbackReturn CallbackRunner::callOnce(sol::object callable, std::optional<Interval> delay)
 {
-	auto callback = addCallback(callable, {}, interval, delay);
+	auto callback = addCallback(callable, {}, {}, delay);
 	if (callable.get_type() == sol::type::function)
 		lastAdded->runOnce = true;
 	return callback;
@@ -292,9 +292,8 @@ void CallbackRunner::makeLuaBindings(sol::state_view& lua, const std::string& ta
 	};
 	t["callOnce"] = [&](
 		sol::object callable,
-		std::optional<CallbackRunner::Interval> interval,
 		std::optional<CallbackRunner::Interval> delay) {
-		return callOnce(callable, interval, delay);
+		return callOnce(callable, delay);
 	};
 	t["addCoroutine"] = [&](sol::object callable, std::optional<std::string> name, std::optional<Interval> delay) {
 		return addCoroutine(callable, name, delay);

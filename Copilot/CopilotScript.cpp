@@ -182,7 +182,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	lua["APPDIR"] = copilot::appDir;
 	lua.registry()["asyncCallbacks"] = lua.create_table();
 
-	sol::protected_function_result res = lua.script(R"(require "copilot.LoadUserOptions")");
+	sol::protected_function_result res = lua.script(R"(require "copilot.LoadCopilotOptions")");
 
 	if (!res.valid())
 		throw ScriptStartupError(res);

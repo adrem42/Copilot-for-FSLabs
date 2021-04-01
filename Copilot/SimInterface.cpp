@@ -10,7 +10,7 @@
 #include <memory>
 
 HHOOK mouseHook = 0;
-HWND p3dWnd;
+HWND SimInterface::p3dWnd;
 HWND copilotWnd;
 using namespace P3D;
 
@@ -71,7 +71,7 @@ void createWindow()
 
     copilotWnd = CreateWindowEx(
         0, wcex.lpszClassName, TEXT("Copilot"), WS_CHILD,
-        0, 0, 0, 0, p3dWnd, NULL, hInst, NULL
+        0, 0, 0, 0, SimInterface::p3dWnd, NULL, hInst, NULL
     );
 }
 
@@ -146,4 +146,11 @@ namespace SimInterface {
     {
         SendMessage(p3dWnd, WM_COMMAND, id, param);
     }
+
+    void sendKeyToSimWindow(SHORT keyCode, KeyEvent e)
+    {
+        uint16_t winEvent = e == KeyEvent::Press ? WM_KEYDOWN : WM_KEYUP;
+        SendMessage(p3dWnd, winEvent, keyCode, 0);
+    }
+
 }

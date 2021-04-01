@@ -5,12 +5,15 @@
 #include <memory>
 #include <string>
 #include <optional>
+#include "Keyboard.h"
 
 namespace SimInterface {
 
     bool init();
 
     void close();
+
+    extern HWND p3dWnd;
 
     void fireMouseMacro(size_t rectId, unsigned short clickType);
 
@@ -23,4 +26,11 @@ namespace SimInterface {
     void createLvar(const std::string&, double = 0);
 
     void sendFSControl(size_t, size_t = 0);
+
+    enum class KeyEvent {
+        Press, Release
+    };
+
+    void sendKeyToSimWindow(SHORT keyCode, KeyEvent e);
+
 }

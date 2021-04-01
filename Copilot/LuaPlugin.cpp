@@ -13,8 +13,6 @@
 #include <optional>
 #include <string_view>
 
-
-
 const char* REG_KEY_JMP_BUFF = "JMPBUFF";
 const char* REG_KEY_IS_RUNNING = "IS_RUNNING";
 
@@ -34,6 +32,35 @@ LuaPlugin::ScriptStartupError::ScriptStartupError(const sol::protected_function_
 }
 
 const char* LuaPlugin::ScriptStartupError::what() const { return _what.c_str(); }
+
+void keypress(SHORT keyCode, std::vector<SHORT>& modifiers)
+{
+	SetFocus(SimInterface::p3dWnd);
+
+	size_t numInputs = modifiers.size() + 1;
+	INPUT* inputs = new INPUT[numInputs]();
+
+	for (size_t i = 0; i < modifiers.size(); ++i) {
+		auto& ip = inputs[i];
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.wVk = modifiers[i];
+	}
+
+	auto& i = inputs[numInputs - 1];
+
+	i.ki.wVk = keyCode;
+	i.type = INPUT_KEYBOARD;
+
+	SendInput(numInputs, inputs, sizeof(INPUT));
+
+	for (size_t i = 0; i < numInputs; ++i) {
+		inputs[i].ki.dwFlags = KEYEVENTF_KEYUP;
+	}
+
+	SendInput(1, inputs + numInputs - 1, sizeof(INPUT));
+	SendInput(numInputs - 1, inputs, sizeof(INPUT));
+
+}
 
 LuaPlugin::LuaPlugin(const std::string& path, std::shared_ptr<std::recursive_mutex> mutex)
 	: path(path), scriptMutex(mutex)
@@ -85,15 +112,13 @@ void LuaPlugin::hookFunc(lua_State* L, lua_Debug*)
 		lua_pushstring(L, REG_KEY_JMP_BUFF);
 		lua_gettable(L, LUA_REGISTRYINDEX);
 		jmp_buf& jumpBuff = *reinterpret_cast<jmp_buf*>(lua_touserdata(L, -1));
-		copilot::logger->info("Calling longjmp from hookFunc");
-
 		longjmp(jumpBuff, true);
 	}
 }
 
 void LuaPlugin::initLuaState(sol::state_view lua)
 {
-
+	AttachThreadInput(GetCurrentThreadId(), GetWindowThreadProcessId(SimInterface::p3dWnd, NULL), TRUE);
 	lua_sethook(lua.lua_state(), &hookFunc, LUA_MASKCOUNT, 1337);
 	lua_pushstring(lua.lua_state(), REG_KEY_IS_RUNNING);
 	lua_pushlightuserdata(lua.lua_state(), &running);
@@ -104,6 +129,15 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua_pushlightuserdata(lua.lua_state(), &jumpBuff);
 
 	lua_settable(lua.lua_state(), LUA_REGISTRYINDEX);
+
+	lua["copilot"].get_or_create<sol::table>();
+	lua["copilot"]["keypress"] = [&](const std::string& s) {
+		sol::unsafe_function f = this->lua["Bind"]["parseKeys"];
+		sol::table keyCodes = f(s, true);
+		auto keyCode = keyCodes.get<SHORT>("keyCode");
+		auto shifts = keyCodes.get<std::vector<SHORT>>("shifts");
+		keypress(keyCode, shifts);
+	};
 
 	lua["print"] = [this](sol::variadic_args va) {
 		std::string str;
@@ -120,7 +154,20 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua["hideCursor"] = SimInterface::hideCursor;
 	auto ipc = lua.create_table();
 
+
 	ipc["mousemacro"] = SimInterface::fireMouseMacro;
+
+	ipc["display"] = [](const std::string& s, std::optional<size_t> delay) {
+
+		SimConnect_Text(
+			SimConnect::hSimConnect,
+			SIMCONNECT_TEXT_TYPE_MESSAGE_WINDOW,
+			delay.value_or(0),
+			-1,
+			s.length() + 1,
+			const_cast<char*>(s.c_str())
+		);
+	};
 
 	using namespace FSUIPC;
 

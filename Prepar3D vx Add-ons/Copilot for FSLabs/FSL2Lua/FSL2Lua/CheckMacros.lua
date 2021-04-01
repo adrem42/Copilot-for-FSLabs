@@ -12,7 +12,6 @@ local file = require "FSL2Lua.FSL2Lua.file"
 local Control = require "FSL2Lua.FSL2Lua.Control"
 
 function Button:_checkMacro()
-
   local guard = self.guard
 
   if guard and not guard:isOpen() then
@@ -130,18 +129,13 @@ local manual = {}
 local manualCheckCoroutine
 local invalid = {}
 local invalidManual = {}
-local checkFile = {version = _FSL2LUA_VERSION}
 
 local acType = FSL.acType
 
 local checkFilePath = util.FSL2LuaDir .. "\\checked_macros.lua"
 
-if file.exists(checkFilePath) then
-  checkFile = dofile(checkFilePath)
-  -- if checkFile.version ~= _FSL2LUA_VERSION then
-  --   checkFile = {}
-  -- end
-end
+local checkFile = {}
+if file.exists(checkFilePath) then checkFile = dofile(checkFilePath) end
 
 local function collectkMissingMacros()
   local missing = {}
@@ -203,57 +197,49 @@ local function manualCheck()
   local Apressed = false
   local Dpressed = false
 
-  if not manualCheckCoroutine then
-    Bind {
-      key = "A",
-      onPress = function()
-        if Dpressed then return end
-        Apressed = true
-        timerStart = ipc.elapsedtime()
-      end,
-      onRelease = function() Apressed = false end
-    }
-    Bind {
-      key = "D",
-      onPress = function()
-        if Apressed then return end
-        Dpressed = true
-        timerStart = ipc.elapsedtime()
-      end,
-      onRelease = function() Dpressed = false end
-    }
-  end
+  Bind {
+    key = "A",
+    onPress = function()
+      if Dpressed then return end
+      Apressed = true
+      timerStart = ipc.elapsedtime()
+    end,
+    onRelease = function() Apressed = false end
+  }
+  Bind {
+    key = "D",
+    onPress = function()
+      if Apressed then return end
+      Dpressed = true
+      timerStart = ipc.elapsedtime()
+    end,
+    onRelease = function() Dpressed = false end
+  }
 
-  manualCheckCoroutine = manualCheckCoroutine or coroutine.create(function()
-    print("Starting manual check for " .. #manual .. " controls.")
-    print "Hold 'A' for success or 'D' for failure."
-    for _, control in ipairs(manual) do
-      print(string.format("Checking control %s, rectangle = 0x%x", control.name, control.rectangle))
-      local check = coroutine.wrap(function() control:_checkMacroManual() end)
-      while true do 
-        check()
-        coroutine.yield()
-        if (Apressed or Dpressed) and timerStart and ipc.elapsedtime() - timerStart > 1000 then
-          if Apressed then
-            print "Success!"
-            confirmControlIsValid(control)
-          else 
-            print "Failure :("
-            table.insert(invalidManual, control)
-           end
-          timerStart = nil
-          break
-        end
+  print("Starting manual check for " .. #manual .. " controls.")
+  print "Hold 'A' for success or 'D' for failure."
+  for _, control in ipairs(manual) do
+    print(string.format("Checking control %s, rectangle = 0x%x", control.name, control.rectangle))
+    local check = coroutine.wrap(function() control:_checkMacroManual() end)
+    while true do 
+      check()
+      coroutine.yield()
+      if (Apressed or Dpressed) and timerStart and ipc.elapsedtime() - timerStart > 1000 then
+        if Apressed then
+          print "Success!"
+          confirmControlIsValid(control)
+        else 
+          print "Failure :("
+          table.insert(invalidManual, control)
+          end
+        timerStart = nil
+        break
       end
     end
-  end)
-  if coroutine.status(manualCheckCoroutine) ~= "dead" then
-    local ok, err = coroutine.resume(manualCheckCoroutine)
-    if not ok then error(err) end
-  else
-    printSummary()
-    event.cancel "ManualMacroCheck"
   end
+
+  printSummary()
+
 end
 
 local function CheckMacros()
@@ -307,7 +293,6 @@ local function CheckMacros()
   print"\n"
   print "-----------------------------------------------------------"
   print "--- Checking macros! --------------------------------------"
-  print ("--- FSL2Lua version: " .. _FSL2LUA_VERSION .. " --------------------------------")
   print ("--- A/C type: " .. acType .. " ----------------------------------------")
   print "--- Delete FSL2Lua\\checked_macros.lua to reset the check --"
   print "-----------------------------------------------------------"
@@ -332,8 +317,7 @@ local function CheckMacros()
   if #manual == 0 then
     printSummary()
   else
-    ManualMacroCheck = manualCheck
-    event.timer(1, "ManualMacroCheck")
+    copilot.addCoroutine(manualCheck)
   end
 
 end

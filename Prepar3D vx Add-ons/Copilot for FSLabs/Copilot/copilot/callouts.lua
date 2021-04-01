@@ -28,7 +28,7 @@ local aicraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
 local function getFslV1Option()
   local aircraftCfg = file.read(aicraftDir .. "aircraft.cfg")
   local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(copilot.aircraftTitle, nil, true))
-  local fltsimCfg = file.read(string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir))
+  local fltsimCfg = file.read(string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir)) or ""
   return tonumber(fltsimCfg:match("sdac_v1_call=(%d)"))
 end
 

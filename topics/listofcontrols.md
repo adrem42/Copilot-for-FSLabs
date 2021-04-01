@@ -2126,12 +2126,12 @@ FSL.PED\_EMER\_CANC\_Guard
 > Class: <a href='../libraries/FSL2Lua.html#Class_Guard'>Guard</a>
 
 FSL.PED\_ENG\_1\_MSTR\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_EngineMasterSwitch'>EngineMasterSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
 > Positions: "OFF", "ON"
 
 FSL.PED\_ENG\_2\_MSTR\_Switch
-> Class: <a href='../libraries/FSL2Lua.html#Class_EngineMasterSwitch'>EngineMasterSwitch</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
 
 > Positions: "OFF", "ON"
 

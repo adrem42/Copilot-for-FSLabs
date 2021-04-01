@@ -1,6 +1,17 @@
 
 
-if false then module("copilot") end
+if false then 
+  module("copilot")
+  --- Send a key press event to the FS window
+  ---@string input The following values for are accepted (case-insensitive):<br><br>
+--
+-- * Alphanumeric character keys
+-- * Virtual key codes: `key = "\222"`. 
+-- * Named keys defined in `Copilot for FSLabs\lua\key_list.lua`
+--
+-- You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in `Copilot for FSLabs\lua\key_list.lua`
+  function copilot.keypress(input) end
+end
 
 local ipc = ipc
 local coroutine = coroutine

@@ -38,8 +38,8 @@ local keys = {
 
 }
 
-for i = 1, 22 do keys["F" .. i] = i +  11 end
-for i = 0, 9  do keys["Numpad" .. i] = i +  9 end
+for i = 1, 22 do keys["F" .. i] = i +  111 end
+for i = 0, 9  do keys["Numpad" .. i] = i + 96 end
 
 local modifiers = {
 
@@ -52,8 +52,31 @@ local modifiers = {
   RAlt      = 0xA5, -- VK_RMENU
   LWin      = 0x5B, -- VK_LWIN
   RWin      = 0x5C, -- VK_RWIN
-  Apps      = 0x5D  -- VK_APPS
+  Apps      = 0x5D, -- VK_APPS
 
 }
 
-return { keyList = keys, shiftList = modifiers }
+local sendModifiers = {
+
+  Shift     = 0x10, -- VK_SHIFT
+  Control   = 0x11, -- VK_CONTROL
+  Alt       = 0x12  -- VK_MENU
+
+}
+
+local function makeLower(t)
+  local _keys = {}
+  for k in pairs(t) do
+    _keys[#_keys+1] = k
+  end
+  for _, key in ipairs(_keys) do
+    t[key:lower()] = t[key]
+    t[key] = nil
+  end
+end
+
+makeLower(keys)
+makeLower(modifiers)
+makeLower(sendModifiers)
+
+return { keys = keys, modifiers = modifiers, sendModifiers = sendModifiers}

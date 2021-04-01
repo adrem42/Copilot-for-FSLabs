@@ -1,13 +1,6 @@
-local util = require "FSL2Lua.FSL2Lua.util"
+Bind = Bind or {}
 
-local keyList, shiftList
-
-do
-  local lists = require "key_list"
-  keyList = lists.keyList
-  shiftList = lists.shiftList
-end
-
+local keyCodes = require "key_list"
 local KeyBindWrapper = {}
 
 function KeyBindWrapper:new(data)
@@ -18,35 +11,36 @@ function KeyBindWrapper:new(data)
   return bind
 end
 
-function KeyBindWrapper:prepareData(data)
-  util.assert(type(data.key) == "string", "The key combination must be a string", 4)
+function Bind.parseKeys(input, useSendModifiers)
+  assert(type(input) == "string", "The key combination must be a string")
   local mainKeyCode
   local shifts = {}
   local keyCount = 0
-  for key in data.key:gmatch("[^(%+)]+") do
+  for keyString in input:gmatch("[^(%+)]+") do
     keyCount = keyCount + 1
-    local isShift
-    for shift, keyCode in pairs(shiftList) do
-      if shift:lower() == key:lower() then
-        shifts[#shifts+1] = keyCode
-        isShift = true
+    keyString = keyString:lower()
+    local maybeShift = keyCodes.modifiers[keyString]
+      or useSendModifiers and keyCodes.sendModifiers[keyString]
+    if maybeShift then
+      shifts[#shifts+1] = maybeShift
+    else
+      local maybeKey = keyCodes.keys[keyString]
+      if not maybeKey then
+        assert(#keyString == 1, "Invalid key: " .. keyString)
+        maybeKey = assert(string.byte(keyString:upper()), "Invalid key: " .. keyString)
       end
-    end
-    if not isShift then
-      for _key, keycode in pairs(keyList) do
-        if key:lower() == _key:lower() then
-          mainKeyCode = keycode
-        end
-      end
-      if not mainKeyCode then
-        util.assert(#key == 1, "Invalid key", 4)
-        mainKeyCode = util.assert(string.byte(key:upper()), "Invalid key", 4)
-      end
+      assert(mainKeyCode == nil, "Can't have more than one non-modifier key")
+      mainKeyCode = maybeKey
     end
   end
-  util.assert(keyCount ~= #shifts, "Can't have only modifier keys", 4)
-  util.assert(keyCount - #shifts == 1, "Can't have more than one non-modifier key", 4)
-  self.keyBind = {key = (mainKeyCode + (data.extended and 0xFF or 0)), shifts = shifts}
+  assert(keyCount > 0, "No key specified")
+  assert(keyCount ~= #shifts, "Can't have only modifier keys")
+  return {keyCode = mainKeyCode, shifts = shifts}
+end
+
+function KeyBindWrapper:prepareData(data)
+  local _keyCodes = Bind.parseKeys(data.key)
+  self.keyBind = {key = (_keyCodes.keyCode + (data.extended and 0xFF or 0)), shifts = _keyCodes.shifts}
   return data
 end
 

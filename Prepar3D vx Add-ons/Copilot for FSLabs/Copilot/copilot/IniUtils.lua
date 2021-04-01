@@ -1,26 +1,9 @@
+if false then module "copilot" end
+
 copilot = copilot or {}
-file = require "FSL2Lua.FSL2Lua.file"
-
-local options = require "Copilot.copilot.options"
-local UserOptions = copilot.UserOptions
-
-do
-  local failureOptions
-  for _, section in ipairs(options) do
-    if section.title == "Failures" then
-      failureOptions = section.keys
-    end
-  end
-  for _, failure in ipairs(require "Copilot.copilot.failurelist") do
-    table.insert(
-      failureOptions, 
-      {
-        name = failure[1],
-        type = "double"
-      }
-    )
-  end
-end
+local UserOptions = {TRUE = 1, FALSE = 0, ENABLED = 1, DISABLED = 0}
+copilot.UserOptions = UserOptions
+local file = require "FSL2Lua.FSL2Lua.file"
 
 local function checkOption(option, iniValue)
   local val
@@ -53,7 +36,7 @@ local function checkOption(option, iniValue)
   return val
 end
 
-local function loadUserOptions(path)
+local function load(options, path, optionsTable)
   local iniFile = file.read(path)
   if iniFile then
     for sectionTitle, iniSection in iniFile:gmatch("%[(.-)%]([^%[%]]+)") do
@@ -74,16 +57,18 @@ local function loadUserOptions(path)
   end
   for _, section in ipairs(options) do
     local sectionTitle = section.title:lower()
-    UserOptions[sectionTitle] = {}
+    optionsTable[sectionTitle] = optionsTable[sectionTitle] or {}
     for _, option in ipairs(section.keys) do
       option.value = option.value ~= nil and option.value or option.default
       local key, value = option.name, option.value
-      UserOptions[sectionTitle][key] = value
+      assert(optionsTable[sectionTitle][key] == nil, "The key has already been set")
+      optionsTable[sectionTitle][key] = value
     end
   end
+  return optionsTable
 end
 
-local function saveUserOptions(path)
+local function save(options, path)
   local f = {}
   for _, section in ipairs(options) do
     table.insert(f, ("[%s]"):format(section.title))
@@ -108,11 +93,45 @@ local function saveUserOptions(path)
   file.write(path, table.concat(f,"\n"), "w")
 end
 
-local optionFilePath = APPDIR .. "\\options.ini"
-loadUserOptions(optionFilePath)
-saveUserOptions(optionFilePath)
-
-if not ipc then return UserOptions end
-
-local seat = UserOptions.general.PM_seat
-UserOptions.general.PM_seat = seat == "left" and 1 or seat == "right" and 2
+--- Loads (also creates, if it doesn't exist) an ini file into a lua table
+---@string path
+---@tparam table cfg The format of the ini file (see usage below)
+---@tparam[opt] table init If specified, loadIniFile will not create a new table, but will populate this table instead.
+---@treturn table The table with the options (see usage below). If init was specified, it will be the same table.
+---@usage
+---local optionsCfg = {
+---  {
+---    title = "Section1",
+---    keys = {
+---      {
+---        name = "enable",
+---        default = copilot.UserOptions.TRUE,
+---        comment = "a comment",
+---        type = "bool" -- other types: "int", "double" or "number", "enum", "string"
+---      }
+---    }
+---  },
+---  {
+---    title = "SeCtiOn2",
+---    keys = {
+---      {
+---        name = "fruit",
+---        type = "enum",
+---        default = "apple",
+---        required = true,
+---        values = {"apple", "orange", "banana"}
+---      } 
+---    }
+---  }
+---}
+---
+---local options = copilot.loadIniFile(APPDIR .. "my_ini_file.ini", optionsCfg)
+---print(
+---  ("section1.enable: %s, section2.fruit: %s")
+---    :format(options.section1.enable, options.section2.fruit)
+---)
+function copilot.loadIniFile(path, cfg, init)
+  local optionsTable = load(cfg, path, init or {})
+  save(cfg, path)
+  return optionsTable
+end

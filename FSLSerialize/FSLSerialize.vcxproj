@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VcpkgTriplet Condition="'$(Platform)'=='x64'">x64-windows-static-md</VcpkgTriplet>
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{D4EFDC7F-A03A-4FD2-AA85-A50DBD05C9AD}</ProjectGuid>
     <RootNamespace>FSLSerialize</RootNamespace>
@@ -57,7 +56,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Users\Peter\source\repos\FSLabs Copilot\lua515\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Users\Peter\source\repos\FSLabs Copilot\lua515\include;$(solutiondir)lua51\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -66,7 +65,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;$(solutiondir)lua515;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;$(solutiondir)lua51;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.1.lib;SimConnect.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>FSLSerialize.def</ModuleDefinitionFile>
     </Link>
@@ -85,13 +84,13 @@ copy "$(projectdir)*.lua" "%targetDir%"</Command>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Users\Peter\source\repos\FSLabs Copilot\lua515\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Users\Peter\source\repos\FSLabs Copilot\lua515\include;$(solutiondir)lua51\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;$(solutiondir)lua515;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\lib\SimConnect;$(solutiondir)lua51;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>lua5.1.lib;SimConnectDebug.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>FSLSerialize.def</ModuleDefinitionFile>
     </Link>

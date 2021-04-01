@@ -66,7 +66,7 @@ namespace copilot {
 		lua["APPDIR"] = appDir;
 		lua.do_string(R"(package.path = APPDIR .. '\\?.lua')");
 
-		sol::protected_function_result res = lua.do_file(appDir + "copilot\\copilot\\LoadUserOptions.lua");
+		sol::protected_function_result res = lua.do_file(appDir + "copilot\\copilot\\LoadCopilotOptions.lua");
 
 		if (!res.valid()) {
 			sol::error err = res;

@@ -91,10 +91,15 @@ private:
 		if (co.status() != sol::call_status::yielded) {
 			sol::state_view lua(co.lua_state());
 			actuallyRemoveCallback(lua, callback, it);
-			if (pfr.valid() && callback->threadEvent) {
+			if (callback->threadEvent) {
 				auto& threadEvent = *callback->threadEvent;
-				std::vector<sol::object> args(pfr.begin() + 1, pfr.end());
-				threadEvent["trigger"](threadEvent, sol::as_args(args));
+				if (pfr.valid()) {
+					std::vector<sol::object> args(pfr.begin() + 1, pfr.end());
+					threadEvent["trigger"](threadEvent, sol::as_args(args));
+				} else {
+					threadEvent["trigger"](threadEvent, lua_thread_removed);
+				}
+				
 			}
 		}
 	}
@@ -153,7 +158,7 @@ public:
 	CallbackRunner(sol::state_view&, std::function<void()>, std::function<Timestamp()>, std::function<void(sol::error&)>);
 	CallbackReturn addCallback(sol::object callable, std::optional<std::string> name, std::optional<Interval> interval, std::optional<Interval> delay);
 	CallbackReturn addCoroutine(sol::object callable, std::optional<std::string> name, std::optional<Interval> delay);
-	CallbackReturn callOnce(sol::object callable, std::optional<Interval> interval, std::optional<Interval> delay);
+	CallbackReturn callOnce(sol::object callable, std::optional<Interval> delay);
 	void removeCallback(sol::object callable);
 	bool setCallbackTimeout(sol::object, Timestamp);
 	bool setCallbackTimeout(sol::object, indefinite_t);

@@ -59,15 +59,18 @@ local function run(timestamp)
 end
 
 local function refresh()
-  if getTop() == copilot.scratchpadClearer.NONE then copilot.removeCallback(run)
-  else copilot.addCallback(run, nil, 1000) end
+  if getTop() == copilot.scratchpadClearer.NONE then 
+    copilot.removeCallback(run)
+  else 
+    copilot.addCallback(run, nil, 1000) 
+  end
 end
 
 local function removeThread(thread)
   for i, v in ipairs(messageSets) do
     if v.thread == thread then 
       table.remove(messageSets, i)
-      return
+      break
     end
   end
   refresh()
