@@ -53,12 +53,22 @@ if debugging then
 end 
 
 do
+  
   local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
   local callouts = {}
   copilot.sounds = {callouts = callouts}
-  function copilot.addCallout(fileName, length, volume)
-    callouts[fileName] = Sound:new(string.format("%s\\%s.wav", calloutDir, fileName), length or 0, volume or 1)
+
+  function copilot.addCallout(fileName, ...)
+    local args = {...}
+    local ext, length, volume
+    if type(args[1]) == "string" then
+      ext, length, volume = args[1], args[2], args[3]
+    else
+      ext, length, volume = "wav", args[1], args[2]
+    end
+    callouts[fileName] = Sound:new(string.format("%s\\%s.%s", calloutDir, fileName, ext), length or 0, volume or 1)
   end
+
   function copilot.playCallout(fileName, delay)
     if callouts[fileName] then
       callouts[fileName]:play(delay or 0)
@@ -66,6 +76,7 @@ do
       copilot.logger:warn("Callout " .. fileName .. " not found")
     end
   end
+
   dofile(calloutDir .. "\\sounds.lua")
 end
 
