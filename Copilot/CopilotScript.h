@@ -11,6 +11,7 @@
 #include "SimConnect.h"
 #include <stdint.h>
 #include "CallbackRunner.h"
+#include <queue>
 
 class LuaTextMenu;
 
@@ -21,6 +22,8 @@ public:
 	using RegisterID = uint16_t;
 
 private:
+
+	ISpVoice* voice = nullptr;
 
 	std::unique_ptr<CallbackRunner> callbackRunner = nullptr;
 
@@ -83,6 +86,9 @@ private:
 	};
 
 	Events createEvents();
+
+	std::mutex ttsQueueMutex;
+	std::queue<std::pair<size_t, std::wstring>> ttsQueue;
 
 public:
 

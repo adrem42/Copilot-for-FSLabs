@@ -28,7 +28,7 @@ private:
 	template <typename... Args>
 	static void debug(Args&&... args)
 	{
-		copilot::logger->trace(std::forward<Args>(args)...);
+		//copilot::logger->trace(std::forward<Args>(args)...);
 	}
 #else
 	static void debug(...) {}

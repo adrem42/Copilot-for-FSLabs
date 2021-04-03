@@ -38,9 +38,9 @@ void RecoResultFetcher::fetchResults()
 		if (!muteKeyDepressed && muted && std::chrono::system_clock::now() - muteKeyReleasedTime > delayBeforeUnmute)
 			muted = false;
 		if (!muted) {
-			copilot::logger->info("Recognized phrase '{}', confidence: {:.4f}", recoResult.phrase, recoResult.confidence);
+			copilot::logger->info(L"Recognized phrase '{}', confidence: {:.4f}", recoResult.phrase, recoResult.confidence);
 			recognizer->afterRecoEvent(recoResult.ruleID);
-			recoResults.emplace_back(recoResult.ruleID);
+			recoResults.emplace_back(std::move(recoResult));
 			SetEvent(newResultsEvent);
 		}
 	}
@@ -51,10 +51,10 @@ HANDLE RecoResultFetcher::event()
 	return newResultsEvent;
 }
 
-sol::as_table_t<std::vector<RuleID>> RecoResultFetcher::getResults()
+std::vector<RecoResult> RecoResultFetcher::getResults()
 {
 	std::lock_guard<std::mutex> lock(mutex);
-	std::vector<RuleID> results = recoResults;
+	std::vector<RecoResult> results = recoResults;
 	recoResults.clear();
 	return results;
 }

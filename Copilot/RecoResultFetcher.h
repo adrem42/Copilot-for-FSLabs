@@ -12,7 +12,7 @@ public:
 	using UserNotifyCallback = std::function<void()>;
 private:
 	const std::shared_ptr<Recognizer> recognizer;
-	std::vector<RuleID> recoResults;
+	std::vector<RecoResult> recoResults;
 	bool muted = false, muteKeyDepressed = false;
 	std::atomic_bool luaNotified = false;
 	std::chrono::milliseconds delayBeforeUnmute = std::chrono::milliseconds(1000);
@@ -28,5 +28,5 @@ public:
 	RecoResultFetcher(std::shared_ptr<Recognizer>);
 	void registerCallback();
 	void onMuteKey(bool state);
-	sol::as_table_t<std::vector<RuleID>> getResults();
+	std::vector<RecoResult> getResults();
 };

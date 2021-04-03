@@ -2,6 +2,95 @@
 #include "Copilot.h"
 #include <sstream>
 #include <map>
+#include <vector>
+
+Recognizer::Phrase::PhraseElement::PhraseElement(std::vector<std::wstring>&& variants, std::wstring&& propName, bool optional)
+	:optional(optional), propName(propName)
+{
+	for (const auto& variant : variants) {
+		size_t pos = variant.find('=');
+		if (pos != std::string::npos) {
+			this->variants.emplace_back(Variant{ variant.substr(pos + 1, variant.length()), variant.substr(0, pos) });
+		} else {
+			this->variants.emplace_back(Variant{ variant, {} });
+		}
+	}
+	if (optional)
+		asString += L"[";
+	if (variants.size() == 1) {
+		asString += this->variants[0].value;
+	} else {
+		asString += L"{";
+		for (size_t i = 0; i < this->variants.size(); ++i) {
+			asString += this->variants[i].value;
+			if (i < this->variants.size() - 1) {
+				asString += L", ";
+			}
+		}
+		asString += L"}";
+	}
+	if (optional)
+		asString += L"]";
+}
+
+Recognizer::Phrase& Recognizer::Phrase::setName(const std::string& name)
+{
+	this->name = name;
+	return *this;
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement, std::wstring propName, bool optional)
+{
+	return append(std::vector<std::wstring>{std::move(phraseElement)}, std::move(propName), optional);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement, bool optional)
+{
+	std::wstring propName;
+	return append(phraseElement, propName, optional);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement)
+{
+	return append(phraseElement, false);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> elements, std::wstring propName, bool optional)
+{
+	if (!phraseElements.empty())
+		asString += L", ";
+	auto& el = phraseElements.emplace_back(std::move(elements), std::move(propName), optional);
+	asString += el.asString;
+	return *this;
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> elements, std::wstring propName)
+{
+	return append(std::move(elements), propName, false);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> variants, bool optional)
+{
+	std::wstring propName;
+	return append(std::move(variants), propName, optional);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> variants)
+{
+	return append(std::move(variants), false);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::appendWildcard(bool optional)
+{
+	std::wstring phraseElement = L"...";
+	std::wstring propName;
+	return append(phraseElement, propName, optional);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::appendWildcard()
+{
+	return appendWildcard(false);
+}
 
 bool checkResult(const std::string& msg, HRESULT hr)
 {
@@ -61,11 +150,11 @@ void Recognizer::registerCallback(ISpNotifyCallback* callback)
 	);
 }
 
-RuleID Recognizer::addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode)
+RuleID Recognizer::addRule(std::vector<Phrase> phrases, float confidence, RulePersistenceMode persistenceMode)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
 	CurrRuleId++;
-	rules.emplace(CurrRuleId, Rule{ phrases, confidence, CurrRuleId, persistenceMode});
+	rules.emplace(CurrRuleId, std::move(Rule{ phrases, confidence, CurrRuleId, persistenceMode}));
 	return CurrRuleId;
 }
 
@@ -76,8 +165,8 @@ Recognizer::Rule& Recognizer::getRuleById(RuleID ruleID)
 
 void Recognizer::logRuleStatus(std::string& prefix, const Rule& rule)
 {
-	copilot::logger->debug("{} rule ID {} ({})", prefix, rule.ruleID,
-						   rule.phrases.empty() ? "rule has no phrase variants" : "phrase #1: '" + rule.phrases[0] + "'");
+	copilot::logger->debug(L"{} rule ID {} ({})", std::wstring(prefix.begin(), prefix.end()), rule.ruleID,
+						   rule.phrases.empty() ? L"rule has no phrase variants" : L"phrase #1: '" + rule.phrases[0].asString + L"'");
 }
 
 void Recognizer::changeRuleState(Rule& rule, RuleState newRuleState, SPRULESTATE spRuleState, std::string&& logMsg, std::string&& dummyLogMsg)
@@ -152,17 +241,22 @@ void Recognizer::disableRule(RuleID ruleID)
 		changeRuleState(rule, RuleState::Disabled, SPRS_INACTIVE, "Disabling", "Disabling dummy");
 }
 
-sol::as_table_t<std::vector<std::string>> Recognizer::getPhrases(RuleID ruleID, bool dummy = false)
+Recognizer::RuleState Recognizer::getRuleState(RuleID ruleID)
 {
-	Rule& rule = getRuleById(ruleID);
-	if (dummy) {
-		if (rule.dummyRuleID) return getRuleById(rule.dummyRuleID).phrases;
-		return {};
-	}
-	return getRuleById(ruleID).phrases;
+	return getRuleById(ruleID).state;
 }
 
-void Recognizer::addPhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy = false)
+//sol::as_table_t<std::vector<std::string>> Recognizer::getPhrases(RuleID ruleID, bool dummy = false)
+//{
+//	Rule& rule = getRuleById(ruleID);
+//	if (dummy) {
+//		if (rule.dummyRuleID) return getRuleById(rule.dummyRuleID).phrases;
+//		return {};
+//	}
+//	return getRuleById(ruleID).phrases;
+//}
+
+void Recognizer::addPhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy = false)
 {
 	Rule& rule = getRuleById(ruleID);
 	if (dummy) {
@@ -178,21 +272,21 @@ void Recognizer::addPhrases(std::vector<std::string> phrases, RuleID ruleID, boo
 	}
 }
 
-void Recognizer::removePhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy = false)
-{
-	Rule& rule = getRuleById(ruleID);
-	std::vector<std::string>* _phrases;
-	if (dummy) {
-		if (!rule.dummyRuleID) return;
-		_phrases = &getRuleById(rule.dummyRuleID).phrases;
-	} else {
-		_phrases = &rule.phrases;
-	}
-	for (auto&& phrase : phrases) {
-		auto it = std::find(_phrases->begin(), _phrases->end(), phrase);
-		if (it != _phrases->end()) _phrases->erase(it);
-	}
-}
+//void Recognizer::removePhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy = false)
+//{
+//	Rule& rule = getRuleById(ruleID);
+//	std::vector<std::string>* _phrases;
+//	if (dummy) {
+//		if (!rule.dummyRuleID) return;
+//		_phrases = &getRuleById(rule.dummyRuleID).phrases;
+//	} else {
+//		_phrases = &rule.phrases;
+//	}
+//	for (auto&& phrase : phrases) {
+//		auto it = std::find(_phrases->begin(), _phrases->end(), phrase);
+//		if (it != _phrases->end()) _phrases->erase(it);
+//	}
+//}
 
 void Recognizer::removeAllPhrases(RuleID ruleID, bool dummy = false)
 {
@@ -241,7 +335,7 @@ void Recognizer::resetGrammar()
 
 	if (SUCCEEDED(hr)) {
 		std::lock_guard<std::recursive_mutex> lock(mtx);
-		for (auto& [_, rule] : rules) {
+		/*for (auto& [_, rule] : rules) {
 			statesBefore[&rule] = rule.state;
 			if (rule.state != RuleState::Disabled)
 				rule.state = RuleState::Inactive;
@@ -253,6 +347,53 @@ void Recognizer::resetGrammar()
 					std::wstring phraseWstr = std::wstring(phrase.begin(), phrase.end());
 					hr = recoGrammar->AddWordTransition(initialState, NULL, phraseWstr.c_str(), L" ", SPWT_LEXICAL, 1, NULL);
 					checkResult("Error in AddWordTransition", hr);
+				}
+			}
+		}*/
+
+		for (auto& [_, rule] : rules) {
+
+			statesBefore[&rule] = rule.state;
+
+			if (rule.state != RuleState::Disabled)
+				rule.state = RuleState::Inactive;
+
+			for (Phrase& phrase : rule.phrases) {
+
+				auto& phraseElements = phrase.phraseElements;
+				size_t numElements = phraseElements.size();
+
+				if (numElements > 0) {
+
+					hr = recoGrammar->GetRule(NULL, rule.ruleID, SPRAF_TopLevel | SPRAF_Active | SPRAF_Dynamic, TRUE, &phraseElements[0].state);
+					checkResult("Error creating rule", hr);
+					if (SUCCEEDED(hr)) {
+						for (size_t i = 0; i < numElements;) {
+							auto& phraseElement = phraseElements[i];
+							SPSTATEHANDLE currState = phraseElement.state;
+							SPSTATEHANDLE nextState = NULL;
+							if (++i < numElements) {
+								recoGrammar->CreateNewState(currState, &phraseElements[i].state);
+								nextState = phraseElements[i].state;
+							}
+							SPPROPERTYINFO prop{};
+							SPPROPERTYINFO* pProp = NULL;
+							if (phraseElement.propName != L"") {
+								pProp = &prop;
+								prop.pszName = phraseElement.propName.c_str();
+							}
+							for (auto& variant : phraseElement.variants) {
+								if (prop.pszName) {
+									prop.pszValue = variant.name ? variant.name.value().c_str() : variant.value.c_str();
+								}
+								hr = recoGrammar->AddWordTransition(currState, nextState, variant.value.c_str(), L" ", SPWT_LEXICAL, 1.0f, pProp);
+								checkResult("Error in AddWordTransition", hr);
+							}
+							if (phraseElement.optional) {
+								hr = recoGrammar->AddWordTransition(currState, nextState, NULL, L" ", SPWT_LEXICAL, 1.0f, pProp);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -288,6 +429,58 @@ void Recognizer::afterRecoEvent(RuleID ruleID)
 	}
 }
 
+void Recognizer::makeLuaBindings(sol::state_view& lua)
+{
+	auto RecognizerType = lua.new_usertype<Recognizer>("Recognizer");
+	RecognizerType["addRule"] = &Recognizer::addRule;
+	RecognizerType["activateRule"] = &Recognizer::activateRule;
+	RecognizerType["deactivateRule"] = &Recognizer::deactivateRule;
+	RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;
+	RecognizerType["disableRule"] = &Recognizer::disableRule;
+	RecognizerType["resetGrammar"] = &Recognizer::resetGrammar;
+	RecognizerType["addPhrases"] = &Recognizer::addPhrases;
+	//RecognizerType["removePhrases"] = &Recognizer::removePhrases;
+	RecognizerType["removeAllPhrases"] = &Recognizer::removeAllPhrases;
+	RecognizerType["setConfidence"] = &Recognizer::setConfidence;
+	//RecognizerType["getPhrases"] = &Recognizer::getPhrases;
+	RecognizerType["setRulePersistence"] = &Recognizer::setRulePersistence;
+	RecognizerType["getRuleState"] = &Recognizer::getRuleState;
+	lua.new_enum("RulePersistenceMode",
+				 "Ignore", Recognizer::RulePersistenceMode::Ignore,
+				 "Persistent", Recognizer::RulePersistenceMode::Persistent,
+				 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
+
+	auto PhraseType = lua.new_usertype<Phrase>("Phrase");
+	PhraseType["append"] = sol::overload(
+		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements, std::wstring propName, bool optional)>(&Phrase::append),
+		static_cast<Phrase & (Phrase::*)(std::vector<std::wstring> elements, std::wstring propName)>(&Phrase::append),
+		static_cast<Phrase&(Phrase::*)(std::wstring, std::wstring propName, bool optional)>(&Phrase::append),
+		static_cast<Phrase&(Phrase::*)(std::wstring phraseElement, bool optional)>(&Phrase::append),
+		static_cast<Phrase&(Phrase::*)(std::wstring phraseElement)>(&Phrase::append),
+		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements, bool optional)>(&Phrase::append),
+		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements)>(&Phrase::append)
+	);
+	PhraseType["appendWildcard"] = sol::overload(
+		static_cast<Phrase&(Phrase::*)(bool)>(&Phrase::appendWildcard),
+		static_cast<Phrase&(Phrase::*)()>(&Phrase::appendWildcard)
+	);
+	PhraseType["asString"] = sol::readonly_property([](const Phrase& phrase) {return phrase.asString; });
+	auto ResultType = lua.new_usertype<RecoResult>("RecoResult");
+	ResultType["props"] = sol::readonly_property([](RecoResult& res) {return res.props; });
+	ResultType["confidence"] = sol::readonly_property([](RecoResult& res) {return res.confidence; });
+	ResultType["phrase"] = sol::readonly_property([](RecoResult& res) {return res.phrase; });
+	
+	lua.new_enum<RuleState>(
+		"RuleState",
+		{
+			{"Active", RuleState::Active},
+			{"Inactive", RuleState::Inactive},
+			{"Ignore", RuleState::Ignore},
+			{"Disabled", RuleState::Disabled}
+		}
+	);
+}
+
 RecoResult Recognizer::getResult()
 {
 	CSpEvent event;
@@ -302,11 +495,18 @@ RecoResult Recognizer::getResult()
 		if (SUCCEEDED(hr)) {
 			RuleID ruleID = spphrase->Rule.ulId;
 			float confidence = spphrase->Rule.SREngineConfidence;
-			std::string phrase = dstrText.CopyToChar();
+			std::wstring phrase = dstrText.Copy();
 			std::lock_guard<std::recursive_mutex> lock(mtx);
 			const Rule& rule = getRuleById(ruleID);
 			if (rule.state != RuleState::Ignore && confidence >= rule.confidence) {
-				return RecoResult{ phrase, confidence, ruleID };
+				std::unordered_map<std::wstring, std::wstring> props;
+				const SPPHRASEPROPERTY* prop = spphrase->pProperties;
+				if (prop != nullptr) {
+					do {
+						props[prop->pszName] = prop->pszValue;
+					} while (prop = prop->pNextSibling);
+				}
+				return RecoResult{ std::move(phrase), confidence, std::move(props), ruleID };
 			}
 		}
 	}

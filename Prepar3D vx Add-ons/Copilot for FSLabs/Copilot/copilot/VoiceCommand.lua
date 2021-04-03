@@ -38,6 +38,16 @@ local function _persistenceMode(persistence)
   end
 end
 
+local function parsePhrases(input)
+  input = type(input) == "table" and input or {input}
+  for i, v in ipairs(input) do
+    if type(v) == "string" then
+      input[i] = Phrase.new():append(v)
+    end
+  end
+  return input
+end
+
 --- Constructor
 --- @param data A table containing the following fields (also the fields taken by @{Event:new|the parent constructor}):
 --  @param data.phrase string or array of strings. @{addPhrase|You can modify the required confidence of each word in the phrase}
@@ -64,22 +74,22 @@ function VoiceCommand:new(data, confidence)
     or error("Bad argument", 2)
   local voiceCommand = data
   voiceCommand.confidence = data.confidence or VoiceCommand.DefaultConfidence
-  voiceCommand.phrase = type(data.phrase) == "table" and data.phrase or {data.phrase}
+  local phrase = parsePhrases(data.phrase)
+  data.phrase = nil
   if copilot.isVoiceControlEnabled then
     voiceCommand.ruleID = recognizer:addRule(
-      voiceCommand.phrase, voiceCommand.confidence, _persistenceMode(data.persistent)
+      phrase, voiceCommand.confidence, _persistenceMode(data.persistent)
     )
     voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
   end
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
-  voiceCommand.logMsg = voiceCommand.logMsg or ("VoiceCommand: " .. (voiceCommand.phrase[1] or "?"))
-  voiceCommand.phrase = nil
+  voiceCommand.logMsg = voiceCommand.logMsg or phrase[1].asString
   voiceCommand = setmetatable(Event:new(voiceCommand), self)
   if data.dummy then
-    voiceCommand:addPhrase(data.dummy, true)
-    voiceCommand.dummy = nil
+    voiceCommand:addPhrase(parsePhrases(data.dummy), true)
+    data.dummy = nil
   end
   return voiceCommand
 end
@@ -97,7 +107,8 @@ end
 ---@bool dummy True to return dummy phrase variants, omitted or false to return actual phrase variants.
 ---@return Array of strings.
 function VoiceCommand:getPhrases(dummy)
-  return recognizer:getPhrases(self.ruleID, dummy == true and true or false)
+  --return recognizer:getPhrases(self.ruleID, dummy == true and true or false)
+  return {}
 end
 
 --- Sets persistence mode of a voice command.
@@ -119,8 +130,7 @@ end
 ---@bool dummy True to add dummy phrase variants, omitted or false to add actual phrase variants.
 ---@return self
 function VoiceCommand:addPhrase(phrase, dummy)
-  phrase = type(phrase) == "table" and phrase or {phrase}
-  recognizer:addPhrases(phrase, self.ruleID, dummy == true and true or false)
+  recognizer:addPhrases(parsePhrases(phrase), self.ruleID, dummy == true and true or false)
   return self
 end
 
@@ -131,17 +141,17 @@ local function trimPhrase(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
 ---@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
 ---@return self
 function VoiceCommand:removePhrase(phrase, dummy)
-  local phrasesToRemove = type(phrase) == "table" and phrase or {phrase}
-  local deletthis = {}
-  for _, phraseToRemove in ipairs(phrasesToRemove) do
-   phraseToRemove = trimPhrase(phraseToRemove)
-    for _, _phrase in ipairs(self:getPhrases(dummy == true and true or false)) do
-      if phraseToRemove == _phrase then
-        deletthis[#deletthis+1] = _phrase
-      end
-    end
-  end
-  recognizer:removePhrases(deletthis, self.ruleID, dummy == true and true or false)
+  -- local phrasesToRemove = type(phrase) == "table" and phrase or {phrase}
+  -- local deletthis = {}
+  -- for _, phraseToRemove in ipairs(phrasesToRemove) do
+  --  phraseToRemove = trimPhrase(phraseToRemove)
+  --   for _, _phrase in ipairs(self:getPhrases(dummy == true and true or false)) do
+  --     if phraseToRemove == _phrase then
+  --       deletthis[#deletthis+1] = _phrase
+  --     end
+  --   end
+  -- end
+  -- recognizer:removePhrases(deletthis, self.ruleID, dummy == true and true or false)
   return self
 end
 
@@ -188,10 +198,14 @@ function VoiceCommand:disable()
   return self
 end
 
+function VoiceCommand:getState()
+  return recognizer:getRuleState(self.ruleID)
+end
+
 ---If the voice command has only one action, returns that action. All default voice commands have only one action.
 function VoiceCommand:getAction()
   if self:getActionCount() ~= 1 then
-    error(string.format("Cannot get action of voice command %s - action count isn't 1", self:getPhrases()[1]), 2)
+    error(string.format("Cannot get action of voice command %s - action count isn't 1", self.logMsg), 2)
   end
   for action in pairs(self.actions.nodes) do return action end
 end

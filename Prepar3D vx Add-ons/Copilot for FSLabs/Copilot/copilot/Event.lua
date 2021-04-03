@@ -219,12 +219,6 @@ function Event:trigger(...)
   end
 end
 
-function Event.fetchRecoResults()
-  for _, ruleID in ipairs(copilot.recoResultFetcher:getResults()) do
-    Event.voiceCommands[ruleID]:trigger()
-  end
-end
-
 Event.TIMEOUT = setmetatable({}, {__tostring = function() return "Event.TIMEOUT" end})
 Event.INFINITE = {}
 local NO_PAYLOAD = {}
@@ -328,7 +322,7 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
       local _, payloadGetters = Event.waitForEventsWithTimeout(Event.INFINITE, events, true) 
       return payloadGetters
     else
-      return Event.waitForEventsWithTimeout(Event.INFINITE, events) 
+      return Event.waitForEventsWithTimeout(Event.INFINITE, events, false) 
     end
   end
 
@@ -384,11 +378,11 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
   local payloadGetters = {}
   local actions = {}
   local numEvents, numSignaled = 0, 0
-  local singleEvent
+  local singleEvent, singleEventIdx
 
   local callingThread = checkCallingThread "waitForEventsWithTimeout"
 
-  for _, event in ipairs(events) do
+  for i, event in ipairs(events) do
 
     numEvents = numEvents + 1
     payloadGetters[event] = NO_PAYLOAD
@@ -400,7 +394,10 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
       if not waitForAll or numSignaled == numEvents then
         copilot.cancelCallbackTimeout(callingThread)
       end
-      if not waitForAll then singleEvent = singleEvent or event end
+      if not waitForAll and not singleEvent then 
+        singleEvent = event
+        singleEventIdx = i
+      end
     end)
 
     actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
@@ -422,7 +419,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
   if waitForAll and numSignaled == numEvents then
     return true, payloadGetters 
   elseif not waitForAll and singleEvent then 
-    return singleEvent, payloadGetters[singleEvent] 
+    return singleEvent, payloadGetters[singleEvent], singleEventIdx
   end
 
   return Event.TIMEOUT

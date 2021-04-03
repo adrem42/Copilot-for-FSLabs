@@ -6,6 +6,7 @@
 TimePoint Sound::nextFreeSlot = std::chrono::system_clock::now();
 std::queue<std::pair<Sound*, TimePoint>> Sound::soundQueue;
 Sound* Sound::prevSound;
+ISpVoice* Sound::voice = nullptr;
 std::mutex Sound::mtx;
 double Sound::userVolume = 1, Sound::globalVolume = 0, Sound::volKnobPos = -1;
 
@@ -16,6 +17,9 @@ Sound::Sound(const std::string& path, int length, double fileRelVolume)
 	:length(length), fileRelVolume(fileRelVolume)
 {
 	stream = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, 0);
+	auto err = BASS_ErrorGetCode();
+	if (err != BASS_OK)
+		copilot::logger->error("Error {} initializing sound file {}", err, path.c_str());
 	adjustVolumeFromGlobal();
 }
 
@@ -29,7 +33,7 @@ Sound::Sound(const std::string& path)
 {
 }
 
-void Sound::play(int delay)
+void Sound::enqueue(int delay)
 {
 	std::lock_guard<std::mutex> lock(mtx);
 	auto now = std::chrono::system_clock::now();
@@ -46,9 +50,9 @@ void Sound::play(int delay)
 	}
 }
 
-void Sound::play()
+void Sound::enqueue()
 {
-	play(0);
+	enqueue(0);
 }
 
 void Sound::playNow()
@@ -58,7 +62,7 @@ void Sound::playNow()
 	prevSound = this;
 }
 
-void Sound::init(int devNum, int pmSide, double userVolume)
+void Sound::init(int devNum, int pmSide, double userVolume, ISpVoice* voice)
 {
 	if (pmSide == 1) {
 		knobLvar = "VC_PED_COMM_2_INT_Knob";
@@ -68,20 +72,22 @@ void Sound::init(int devNum, int pmSide, double userVolume)
 		switchLvar = "VC_PED_COMM_1_INT_Switch";
 	}
 
+	Sound::voice = voice;
+
 	nextFreeSlot = std::chrono::system_clock::now();
 	Sound::userVolume = userVolume;
 	volKnobPos = -1; // to force a volume update
 	BASS_Init(devNum, 44100, BASS_DEVICE_STEREO, 0, NULL);
 }
 
-void Sound::processQueue()
+void Sound::update(bool isFslAircraft)
 {
-	double newVolKnobPos = getVolumeKnobPos() / 270;
+	double newVolKnobPos = isFslAircraft ? getVolumeKnobPos() / 270 : volKnobPos;
 	bool volumeChanged = volKnobPos != newVolKnobPos;
 	if (!soundQueue.empty() || volumeChanged) {
 		std::lock_guard<std::mutex> lock(mtx);
 		if (!soundQueue.empty()) {
-			auto currSound = soundQueue.front();
+			auto& currSound = soundQueue.front();
 			if (std::chrono::system_clock::now() > currSound.second) {
 				currSound.first->playNow();
 				prevSound = currSound.first;
@@ -90,14 +96,21 @@ void Sound::processQueue()
 		}
 		if (volumeChanged) {
 			volKnobPos = newVolKnobPos;
-			globalVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * volKnobPos + zeroVolumeThreshold) * 5.757) * userVolume;
-			if (!soundQueue.empty())
-				soundQueue.front().first->adjustVolumeFromGlobal();
-			if (prevSound != nullptr) {
-				prevSound->adjustVolumeFromGlobal();
-			}
+			onVolumeChanged(volKnobPos);
 		}
 	}
+}
+
+void Sound::onVolumeChanged(double volKnobPos)
+{
+	globalVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * volKnobPos + zeroVolumeThreshold) * 5.757) * userVolume;
+	if (!soundQueue.empty())
+		soundQueue.front().first->adjustVolumeFromGlobal();
+	if (prevSound != nullptr) {
+		prevSound->adjustVolumeFromGlobal();
+	}
+	if (voice)
+		voice->SetVolume(globalVolume * 100);
 }
 
 void Sound::adjustVolumeFromGlobal()

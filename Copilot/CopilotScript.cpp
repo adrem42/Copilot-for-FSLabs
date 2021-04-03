@@ -192,7 +192,21 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	int devNum = options["callouts"]["device_id"];
 	int pmSide = options["general"]["PM_seat"];
 	double volume = options["callouts"]["volume"];
-	Sound::init(devNum, pmSide, volume * 0.01);
+
+	if (SUCCEEDED(CoInitialize(NULL))) {
+		HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, reinterpret_cast<void**>(&voice));
+	}
+
+	Sound::init(devNum, pmSide, volume * 0.01, voice);
+
+	auto copilot = lua["copilot"];
+
+	copilot["onVolKnobPosChanged"] = Sound::onVolumeChanged;
+
+	copilot["speak"] = [&](const std::wstring& phrase, size_t delay) {
+		std::lock_guard<std::mutex> lock(ttsQueueMutex);
+		ttsQueue.push(std::make_pair(elapsedTime() + delay, phrase));
+	};
 
 	auto RecoResultFetcherType = lua.new_usertype<RecoResultFetcher>("RecoResultFetcher");
 	RecoResultFetcherType["getResults"] = &RecoResultFetcher::getResults;
@@ -201,26 +215,10 @@ void CopilotScript::initLuaState(sol::state_view lua)
 											 sol::constructors<Sound(const std::string&, int, double),
 											 Sound(const std::string&, int),
 											 Sound(const std::string&)>());
-	SoundType["play"] = sol::overload(static_cast<void (Sound::*)(int)>(&Sound::play),
-									  static_cast<void (Sound::*)()>(&Sound::play));
+	SoundType["play"] = sol::overload(static_cast<void (Sound::*)(int)>(&Sound::enqueue),
+									  static_cast<void (Sound::*)()>(&Sound::enqueue));
 
-	auto RecognizerType = lua.new_usertype<Recognizer>("Recognizer");
-	RecognizerType["addRule"] = &Recognizer::addRule;
-	RecognizerType["activateRule"] = &Recognizer::activateRule;
-	RecognizerType["deactivateRule"] = &Recognizer::deactivateRule;
-	RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;
-	RecognizerType["disableRule"] = &Recognizer::disableRule;
-	RecognizerType["resetGrammar"] = &Recognizer::resetGrammar;
-	RecognizerType["addPhrases"] = &Recognizer::addPhrases;
-	RecognizerType["removePhrases"] = &Recognizer::removePhrases;
-	RecognizerType["removeAllPhrases"] = &Recognizer::removeAllPhrases;
-	RecognizerType["setConfidence"] = &Recognizer::setConfidence;
-	RecognizerType["getPhrases"] = &Recognizer::getPhrases;
-	RecognizerType["setRulePersistence"] = &Recognizer::setRulePersistence;
-	lua.new_enum("RulePersistenceMode",
-				 "Ignore", Recognizer::RulePersistenceMode::Ignore,
-				 "Persistent", Recognizer::RulePersistenceMode::Persistent,
-				 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
+	Recognizer::makeLuaBindings(lua);
 
 	auto McduWatcherType = lua.new_usertype<McduWatcher>("McduWatcher");
 	McduWatcherType["getVar"] = &McduWatcher::getVar;
@@ -238,7 +236,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	std::string port = options["general"]["http_port"];
 	mcduWatcher = std::make_unique<McduWatcher>(pmSide, std::stoi(port));
-	auto copilot = lua["copilot"];
+	
 	copilot["recognizer"] = recognizer;
 	copilot["recoResultFetcher"] = recoResultFetcher;
 	copilot["mcduWatcher"] = mcduWatcher;
@@ -383,7 +381,13 @@ void CopilotScript::run()
 
 			if (res == WAIT_OBJECT_0 + events.EVENT_RECO_EVENT) {
 
-				callProtectedFunction(lua["Event"]["fetchRecoResults"]);
+				sol::protected_function trigger = lua["Event"]["trigger"];
+				sol::table voiceCommands = lua["Event"]["voiceCommands"];
+
+				for (const auto& result : recoResultFetcher->getResults()) {
+					sol::table voiceCommand = voiceCommands[result.ruleID];
+					callProtectedFunction(trigger, voiceCommand, std::move(result));
+				}
 
 			} else if (res == WAIT_OBJECT_0 + events.EVENT_LUA_CALLBACK) {
 
@@ -438,7 +442,12 @@ void CopilotScript::onMessageLoopTimer()
 {
 	if (copilot::isFslAircraft)
 		mcduWatcher->update();
-	Sound::processQueue();
+	Sound::update(copilot::isFslAircraft);
+	std::lock_guard<std::mutex> lock(ttsQueueMutex);
+	if (ttsQueue.size() && elapsedTime() >= ttsQueue.front().first) {
+		HRESULT hr = voice->Speak(ttsQueue.front().second.c_str(), SPF_ASYNC, NULL);
+		ttsQueue.pop();
+	}
 }
 
 void CopilotScript::actuallyStartBackgroundThreadTimer()
@@ -462,6 +471,7 @@ void CopilotScript::runMessageLoop()
 			return;
 		}
 	}
+	//CoInitialize(NULL);
 	actuallyStartBackgroundThreadTimer();
 	MSG msg = {};
 	while (GetMessage(&msg, NULL, 0, 0)) {
@@ -526,6 +536,8 @@ void CopilotScript::unregisterLuaObject(RegisterID id)
 
 CopilotScript::~CopilotScript()
 {
+	voice->Release();
+	CoUninitialize();
 	stopBackgroundThread();
 	stopThread();
 }

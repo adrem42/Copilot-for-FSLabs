@@ -38,10 +38,9 @@ local getMetar = VoiceCommand:new {
 
 }
 
-getMetar:activate()
-
 --- It's necessary to call this before activating any voice commands here
 VoiceCommand.resetGrammar()
+getMetar:activate()
 
 ------------------------------------------------------------------------------
 -- Changing a default sequence
@@ -80,12 +79,6 @@ end
 ------------------------------------------------------------------------------
 
 local startApu = copilot.voiceCommands.startApu
-
-print "Replacing these phrase variants with just 'start apu':"
-for _, phrase in ipairs(startApu:getPhrases()) do 
-  print("'" .. phrase .. "'") 
-end
-
 startApu:removeAllPhrases():addPhrase("start apu"):setConfidence(0.90)
 
 ------------------------------------------------------------------------------

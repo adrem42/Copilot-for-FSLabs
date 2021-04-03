@@ -12,18 +12,43 @@
 using RuleID = DWORD;
 
 struct RecoResult {
-	std::string phrase;
+	std::wstring phrase;
 	float confidence;
+	std::unordered_map<std::wstring, std::wstring> props;
 	RuleID ruleID;
 };
 
 class Recognizer {
 public:
 	enum class RulePersistenceMode { NonPersistent, Persistent, Ignore };
+	struct Phrase {
+		struct PhraseElement {
+			struct Variant { std::wstring value; std::optional<std::wstring> name; };
+			std::vector<Variant> variants;
+			std::wstring propName;
+			bool optional;
+			SPSTATEHANDLE state = 0;
+			std::wstring asString;
+			PhraseElement(std::vector<std::wstring>&& variants, std::wstring&& propName, bool optional);
+		};
+		std::vector<PhraseElement> phraseElements;
+		std::wstring asString;
+		std::string name;
+		Phrase& setName(const std::string&);
+		Phrase& append(std::wstring, std::wstring propName, bool optional);
+		Phrase& append(std::wstring phraseElement, bool optional);
+		Phrase& append(std::wstring phraseElement);
+		Phrase& append(std::vector<std::wstring> elements, std::wstring propName, bool optional);
+		Recognizer::Phrase& append(std::vector<std::wstring> elements, std::wstring propName);
+		Phrase& append(std::vector<std::wstring> elements, bool optional);
+		Phrase& append(std::vector<std::wstring> elements);
+		Phrase& appendWildcard(bool optional);
+		Phrase& appendWildcard();
+	};
 private:
 	enum class RuleState { Active, Inactive, Ignore, Disabled };
 	struct Rule {
-		std::vector<std::string> phrases;
+		std::vector<Phrase> phrases;
 		float confidence;
 		RuleID ruleID;
 		RulePersistenceMode persistenceMode;
@@ -46,18 +71,20 @@ public:
 	Recognizer();
 	~Recognizer();
 	void registerCallback(ISpNotifyCallback* callback);
-	RuleID addRule(std::vector<std::string> phrases, float confidence, RulePersistenceMode persistenceMode);
+	RuleID addRule(std::vector<Phrase> phrases, float confidence, RulePersistenceMode persistenceMode);
 	void ignoreRule(RuleID ruleID);
 	void activateRule(RuleID ruleID);
 	void deactivateRule(RuleID ruleID);
 	void disableRule(RuleID ruleID);
-	sol::as_table_t<std::vector<std::string>> getPhrases(RuleID ruleID, bool dummy);
-	void addPhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy);
-	void removePhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy);
+	RuleState getRuleState(RuleID ruleID);
+	//sol::as_table_t<std::vector<std::string>> getPhrases(RuleID ruleID, bool dummy);
+	void addPhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy);
+	//void removePhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy);
 	void removeAllPhrases(RuleID ruleID, bool dummy);
 	void setConfidence(float confidence, RuleID ruleID);
 	void setRulePersistence(RulePersistenceMode persistenceMode, RuleID ruleID);
 	void resetGrammar();
 	void afterRecoEvent(RuleID ruleID);
+	static void makeLuaBindings(sol::state_view&);
 	RecoResult getResult();
 };

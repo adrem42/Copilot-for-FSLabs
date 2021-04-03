@@ -4,11 +4,13 @@
 #include <chrono>
 #include <mutex>
 #include <memory>
+#include <sapi.h>
 #include "bass/bass.h"
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
 class Sound {
+
 	HSTREAM stream;
 	int length;
 	float fileRelVolume;
@@ -25,12 +27,16 @@ class Sound {
 	static std::string switchLvar;
 
 	void playNow();
+
+	static ISpVoice* voice;
+
 public:
 	Sound(const std::string& path, int length, double fileRelVolume);
 	Sound(const std::string& path, int length);
 	Sound(const std::string& path);
-	void play(int delay);
-	void play();
-	static void init(int devNum, int side, double userVolume);
-	static void processQueue();
+	void enqueue(int delay);
+	void enqueue();
+	static void init(int devNum, int side, double userVolume, ISpVoice* voice);
+	static void update(bool);
+	static void onVolumeChanged(double newVolume);
 };

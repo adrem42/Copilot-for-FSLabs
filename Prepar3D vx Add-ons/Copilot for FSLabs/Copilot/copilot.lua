@@ -53,31 +53,89 @@ if debugging then
 end 
 
 do
-  
-  local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
-  local callouts = {}
-  copilot.sounds = {callouts = callouts}
 
-  function copilot.addCallout(fileName, ...)
-    local args = {...}
-    local ext, length, volume
-    if type(args[1]) == "string" then
-      ext, length, volume = args[1], args[2], args[3]
-    else
-      ext, length, volume = "wav", args[1], args[2]
+  local tts = copilot.UserOptions.callouts.sound_set:lower() == "tts"
+
+  if not tts then
+
+    local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
+    local callouts = {}
+    copilot.sounds = {callouts = callouts}
+
+    function copilot.addCallout(fileName, length, volume)
+      callouts[fileName] = Sound:new(string.format("%s\\%s.wav", calloutDir, fileName), length or 0, volume or 1)
     end
-    callouts[fileName] = Sound:new(string.format("%s\\%s.%s", calloutDir, fileName, ext), length or 0, volume or 1)
+
+    local function visit(dir, prefix)
+      if prefix ~= "" then prefix = prefix .. "." end
+      local cfg = loadfile(dir .. "\\config.lua") or loadfile(dir .. "\\sounds.lua")
+      local ext = {}
+      for _file in lfs.dir(dir) do
+        if _file:find "[^%.]" then
+          local maybeSubdir = dir .. "\\" .. _file
+          if lfs.attributes(maybeSubdir, "mode") == "directory" then
+            visit(maybeSubdir, prefix .. _file)
+          else
+            local name, _ext = _file:match "(.*)%.(.*)$"
+            ext[name:lower()] = _ext
+          end
+        end
+      end
+      if cfg then
+        cfg = cfg()
+        if type(cfg) == "table" then
+          for _, entry in ipairs(cfg) do
+            if type(entry) == "string" then
+              entry = {entry}
+            end
+            local name = entry[1] or entry.name
+            callouts[prefix .. name] = Sound:new(
+              string.format("%s\\%s", dir, name .. "." .. ext[name:lower()]), entry.length or 0, entry.volume or 1
+            )
+          end
+        end
+      end
+    end
+
+    visit(calloutDir, "")
+
+    function copilot.playCallout(fileName, delay)
+    
+      if callouts[fileName] then
+        callouts[fileName]:play(delay or 0)
+      else
+        copilot.logger:warn("Callout " .. fileName .. " not found")
+      end
+    end
+    dofile(calloutDir .. "\\sounds.lua")
+
+  else
+
+    local ttsPhrases = {}
+
+    local function visit(t, prefix)
+      if prefix ~= "" then prefix = prefix .. "." end
+      for k, v in pairs(t) do
+        if type(v) == "table" then
+          visit(v, prefix .. k)
+        else
+          ttsPhrases[prefix .. k] = v
+        end
+      end
+    end
+
+    visit(dofile(copilot.soundDir .. "\\callouts\\tts.lua"), "")
+
+    function copilot.playCallout(fileName, delay)
+      if ttsPhrases[fileName] then
+        copilot.speak(ttsPhrases[fileName], delay or 0)
+      else
+        copilot.logger:warn("Callout " .. fileName .. " not found")
+      end
+    end
+
   end
 
-  function copilot.playCallout(fileName, delay)
-    if callouts[fileName] then
-      callouts[fileName]:play(delay or 0)
-    else
-      copilot.logger:warn("Callout " .. fileName .. " not found")
-    end
-  end
-
-  dofile(calloutDir .. "\\sounds.lua")
 end
 
 --- Predefined events
@@ -93,6 +151,7 @@ copilot.sequences = {}
 
 Event = require "copilot.Event"
 VoiceCommand = require "copilot.VoiceCommand"
+require "copilot.Checklist"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor
 
