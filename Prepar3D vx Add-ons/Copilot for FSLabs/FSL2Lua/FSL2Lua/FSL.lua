@@ -9694,7 +9694,7 @@ return {
       y = "655",
       z = ""
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   PED_ECP_CLR_R_Button = {
@@ -9718,7 +9718,7 @@ return {
       y = "654",
       z = ""
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   PED_ECP_COND_Button = {

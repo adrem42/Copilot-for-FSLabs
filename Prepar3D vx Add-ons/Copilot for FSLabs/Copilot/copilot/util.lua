@@ -13,6 +13,22 @@ if false then
   function copilot.keypress(input) end
 end
 
+local flapsLimits = {}
+
+copilot.flapsLimits = flapsLimits
+
+if FSL:getAcType() == "A321" then
+  flapsLimits.flapsOne = 235
+  flapsLimits.flapsTwo = 215
+  flapsLimits.flapsThree = 195
+  flapsLimits.flapsFull = 190
+else
+  flapsLimits.flapsOne = 230
+  flapsLimits.flapsTwo = 200
+  flapsLimits.flapsThree = 185
+  flapsLimits.flapsFull = 177
+end
+
 local ipc = ipc
 local coroutine = coroutine
 

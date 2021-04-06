@@ -71,7 +71,7 @@ function VoiceCommand:new(data, confidence)
   data = type(data) == "string"
     and {phrase = data, confidence = confidence}
     or type(data) == "table" and data
-    or error("Bad argument", 2)
+    or {}
   local voiceCommand = data
   voiceCommand.confidence = data.confidence or VoiceCommand.DefaultConfidence
   local phrase = parsePhrases(data.phrase)
@@ -85,7 +85,7 @@ function VoiceCommand:new(data, confidence)
   end
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
-  voiceCommand.logMsg = voiceCommand.logMsg or phrase[1].asString
+  voiceCommand.logMsg = voiceCommand.logMsg or phrase[1] and phrase[1].asString
   voiceCommand = setmetatable(Event:new(voiceCommand), self)
   if data.dummy then
     voiceCommand:addPhrase(parsePhrases(data.dummy), true)
@@ -171,9 +171,19 @@ function VoiceCommand:setConfidence(confidence)
   return self
 end
 
+function VoiceCommand:_checkActiveChecklistOnStateChange(state)
+  if Checklist.voiceCommands[self] then return false end
+  local checklist = Checklist.currChecklist()
+  if not checklist then return false end
+  return checklist:onVcStateChange(self, state)
+end
+
 ---<span>
 ---@return self
 function VoiceCommand:activate()
+  if self:_checkActiveChecklistOnStateChange(RuleState.Active) then
+    return self
+  end
   if copilot.isVoiceControlEnabled then recognizer:activateRule(self.ruleID) end
   return self
 end
@@ -181,6 +191,9 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:ignore()
+  if self:_checkActiveChecklistOnStateChange(RuleState.Ignore) then
+    return self
+  end
   if copilot.isVoiceControlEnabled then recognizer:ignoreRule(self.ruleID) end
   return self
 end
@@ -188,12 +201,18 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:deactivate()
+  if self:_checkActiveChecklistOnStateChange(RuleState.Inactive) then
+    return self
+  end
   if copilot.isVoiceControlEnabled then recognizer:deactivateRule(self.ruleID) end
   return self
 end
 
 ---Deactivates the voice command and makes successive calls to @{activate} and @{ignore} have no effect.
 function VoiceCommand:disable()
+  if self:_checkActiveChecklistOnStateChange(RuleState.Disabled) then
+    return self
+  end
   recognizer:disableRule(self.ruleID)
   return self
 end

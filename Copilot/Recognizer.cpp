@@ -58,7 +58,7 @@ Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement)
 Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> elements, std::wstring propName, bool optional)
 {
 	if (!phraseElements.empty())
-		asString += L", ";
+		asString += L" ";
 	auto& el = phraseElements.emplace_back(std::move(elements), std::move(propName), optional);
 	asString += el.asString;
 	return *this;
@@ -355,8 +355,10 @@ void Recognizer::resetGrammar()
 
 			statesBefore[&rule] = rule.state;
 
-			if (rule.state != RuleState::Disabled)
+			if (rule.state != RuleState::Disabled) {
 				rule.state = RuleState::Inactive;
+				rule.sapiRuleState = SPRS_INACTIVE;
+			}
 
 			for (Phrase& phrase : rule.phrases) {
 

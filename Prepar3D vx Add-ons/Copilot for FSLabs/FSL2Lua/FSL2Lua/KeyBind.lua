@@ -16,31 +16,37 @@ function Bind.parseKeys(input, useSendModifiers)
   local mainKeyCode
   local shifts = {}
   local keyCount = 0
+  local extended = false
   for keyString in input:gmatch("[^(%+)]+") do
     keyCount = keyCount + 1
     keyString = keyString:lower()
-    local maybeShift = keyCodes.modifiers[keyString]
-      or useSendModifiers and keyCodes.sendModifiers[keyString]
-    if maybeShift then
-      shifts[#shifts+1] = maybeShift
+    if keyString == "extended" then
+      extended = true
     else
-      local maybeKey = keyCodes.keys[keyString]
-      if not maybeKey then
-        assert(#keyString == 1, "Invalid key: " .. keyString)
-        maybeKey = assert(string.byte(keyString:upper()), "Invalid key: " .. keyString)
+      local maybeShift = keyCodes.modifiers[keyString]
+        or useSendModifiers and keyCodes.sendModifiers[keyString]
+      if maybeShift then
+        shifts[#shifts+1] = maybeShift
+      else
+        local maybeKey = keyCodes.keys[keyString]
+        if not maybeKey then
+          assert(#keyString == 1, "Invalid key: " .. keyString)
+          maybeKey = assert(string.byte(keyString:upper()), "Invalid key: " .. keyString)
+        end
+        assert(mainKeyCode == nil, "Can't have more than one non-modifier key")
+        mainKeyCode = maybeKey
       end
-      assert(mainKeyCode == nil, "Can't have more than one non-modifier key")
-      mainKeyCode = maybeKey
     end
   end
   assert(keyCount > 0, "No key specified")
   assert(keyCount ~= #shifts, "Can't have only modifier keys")
-  return {keyCode = mainKeyCode, shifts = shifts}
+  return mainKeyCode, shifts, extended
 end
 
 function KeyBindWrapper:prepareData(data)
-  local _keyCodes = Bind.parseKeys(data.key)
-  self.keyBind = {key = (_keyCodes.keyCode + (data.extended and 0xFF or 0)), shifts = _keyCodes.shifts}
+  local keyCode, shifts, extended = Bind.parseKeys(data.key)
+  extended = extended or data.extended
+  self.keyBind = {key = (keyCode + (extended and 0xFF or 0)), shifts = shifts}
   return data
 end
 

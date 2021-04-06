@@ -63,6 +63,26 @@ return {
     }
   },
   {
+    title = "Checklists",
+    keys = {
+      {
+        name = "enable",
+        default = UserOptions.TRUE,
+        type = "bool"
+      },
+      {
+        name = "display_fail",
+        default = UserOptions.FALSE,
+        type = "bool"
+      },
+      {
+        name = "menu_keybind",
+        default = nil,
+        type = "string",
+      }
+    }
+  },
+  {
     title = "Callouts",
     keys = {
       {

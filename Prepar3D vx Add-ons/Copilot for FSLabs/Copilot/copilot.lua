@@ -14,6 +14,7 @@ local title = ipc.readSTR(0x3D00,256)
 copilot.aircraftTitle = title:sub(1, title:find("\0") - 1)
 
 copilot.getTimestamp = ipc.elapsedtime
+copilot.__dummy = function() end
 
 local setCallbackTimeout = copilot.setCallbackTimeout
 function copilot.setCallbackTimeout(...)
@@ -52,91 +53,7 @@ if debugging then
   if bind then Bind { key = bind, onPress = function() debuggee.start(json) end } end
 end 
 
-do
-
-  local tts = copilot.UserOptions.callouts.sound_set:lower() == "tts"
-
-  if not tts then
-
-    local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
-    local callouts = {}
-    copilot.sounds = {callouts = callouts}
-
-    function copilot.addCallout(fileName, length, volume)
-      callouts[fileName] = Sound:new(string.format("%s\\%s.wav", calloutDir, fileName), length or 0, volume or 1)
-    end
-
-    local function visit(dir, prefix)
-      if prefix ~= "" then prefix = prefix .. "." end
-      local cfg = loadfile(dir .. "\\config.lua") or loadfile(dir .. "\\sounds.lua")
-      local ext = {}
-      for _file in lfs.dir(dir) do
-        if _file:find "[^%.]" then
-          local maybeSubdir = dir .. "\\" .. _file
-          if lfs.attributes(maybeSubdir, "mode") == "directory" then
-            visit(maybeSubdir, prefix .. _file)
-          else
-            local name, _ext = _file:match "(.*)%.(.*)$"
-            ext[name:lower()] = _ext
-          end
-        end
-      end
-      if cfg then
-        cfg = cfg()
-        if type(cfg) == "table" then
-          for _, entry in ipairs(cfg) do
-            if type(entry) == "string" then
-              entry = {entry}
-            end
-            local name = entry[1] or entry.name
-            callouts[prefix .. name] = Sound:new(
-              string.format("%s\\%s", dir, name .. "." .. ext[name:lower()]), entry.length or 0, entry.volume or 1
-            )
-          end
-        end
-      end
-    end
-
-    visit(calloutDir, "")
-
-    function copilot.playCallout(fileName, delay)
-    
-      if callouts[fileName] then
-        callouts[fileName]:play(delay or 0)
-      else
-        copilot.logger:warn("Callout " .. fileName .. " not found")
-      end
-    end
-    dofile(calloutDir .. "\\sounds.lua")
-
-  else
-
-    local ttsPhrases = {}
-
-    local function visit(t, prefix)
-      if prefix ~= "" then prefix = prefix .. "." end
-      for k, v in pairs(t) do
-        if type(v) == "table" then
-          visit(v, prefix .. k)
-        else
-          ttsPhrases[prefix .. k] = v
-        end
-      end
-    end
-
-    visit(dofile(copilot.soundDir .. "\\callouts\\tts.lua"), "")
-
-    function copilot.playCallout(fileName, delay)
-      if ttsPhrases[fileName] then
-        copilot.speak(ttsPhrases[fileName], delay or 0)
-      else
-        copilot.logger:warn("Callout " .. fileName .. " not found")
-      end
-    end
-
-  end
-
-end
+require "copilot.initSounds"
 
 --- Predefined events
 copilot.events = {}
@@ -148,6 +65,8 @@ copilot.flightPhases = {}
 copilot.actions = {}
 --- Predefined sequences
 copilot.sequences = {}
+--- Predefined checklists
+copilot.checklists = {}
 
 Event = require "copilot.Event"
 VoiceCommand = require "copilot.VoiceCommand"
@@ -202,6 +121,9 @@ local function setup()
     FlightPhaseProcessor.start()
   end
 
+  require "copilot.sequences"
+  require "copilot.voiceCommands"
+
   if copilot.IS_FSL_AIRCRAFT and options.callouts.enable == options.TRUE  then
     require "copilot.callouts"
     copilot.callouts:setup()
@@ -210,6 +132,10 @@ local function setup()
 
   if copilot.IS_FSL_AIRCRAFT and options.actions.enable == options.TRUE then
     require "copilot.actions"
+  end
+
+  if copilot.IS_FSL_AIRCRAFT and options.checklists.enable == options.TRUE then
+    require "copilot.initChecklists"
   end
 
   if copilot.IS_FSL_AIRCRAFT then

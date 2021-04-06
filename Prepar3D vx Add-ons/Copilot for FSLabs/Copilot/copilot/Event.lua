@@ -43,6 +43,7 @@ function Event:new(data)
   event.coroDepends = {}
   event.areActionsSorted = true
   event.runOnce = {}
+  event.children = setmetatable({}, {__mode = "k"})
   if event.action then
     if type(event.action) == "function" then
       event:addAction(event.action)
@@ -217,6 +218,9 @@ function Event:trigger(...)
   else
     self:dispatch(...)
   end
+  for child in pairs(self.children) do
+    child:trigger()
+  end
 end
 
 Event.TIMEOUT = setmetatable({}, {__tostring = function() return "Event.TIMEOUT" end})
@@ -283,7 +287,7 @@ function Event.waitForEventWithTimeout(timeout, event)
     copilot.cancelCallbackTimeout(calingThread)
   end)
 
-  if not getPayload then 
+  if not getPayload and (type(timeout) ~= "number" or timeout > 0)  then
     copilot.setCallbackTimeout(
       calingThread,
       timeout == Event.INFINITE and copilot.INFINITE or timeout
@@ -407,7 +411,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
     (not waitForAll and numSignaled > 0)
     or (waitForAll and numSignaled == numEvents)
 
-  if not alreadySignaled then
+  if not alreadySignaled and (type(timeout) ~= "number" or timeout > 0)  then
     copilot.setCallbackTimeout(
       callingThread,
       timeout == Event.INFINITE and copilot.INFINITE or timeout

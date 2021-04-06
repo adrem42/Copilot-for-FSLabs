@@ -21,6 +21,7 @@ class LuaTextMenu : public SimConnect::TextMenuEvent {
 
 	CopilotScript* pScript;
 	const CopilotScript::RegisterID callbackID;
+	CopilotScript::RegisterID eventID;
 
 public:
 
@@ -76,21 +77,32 @@ public:
 	LuaTextMenu(size_t timeout, sol::function callback, CopilotScript& script)
 		: pScript(&script), callbackID(script.registerLuaObject(callback))
 	{
+	
 		this->timeout = timeout;
+		auto& lua = script.lua;
+		sol::table event = lua["Event"]["new"](lua["Event"]);
+		eventID = script.registerLuaObject(event);
 		using namespace SimConnect;
 		this->callback = [=, &script](Result res, MenuItem item, const std::string& str, std::shared_ptr<TextMenuEvent> e)
 		{
 			LuaPlugin::withScript<CopilotScript>(&script, [=](CopilotScript& s) {
 				s.enqueueCallback([=, &s](sol::state_view& lua) {
 					auto f = s.getRegisteredObject<sol::protected_function>(callbackID);
+					auto event = s.getRegisteredObject<sol::table>(eventID);
 					sol::object luaItem(sol::nil);
 					if (item != -1)
 						luaItem = sol::make_object(lua.lua_state(), item + 1);
 					lua.registry()[sol::light(this)] = sol::nil;
 					s.callProtectedFunction(f, res, luaItem, str, std::static_pointer_cast<LuaTextMenu>(shared_from_this()));
+					event["trigger"](event, res, luaItem, str, std::static_pointer_cast<LuaTextMenu>(shared_from_this()));
 				});
 			});
 		};
+	}
+
+	sol::table getEvent()
+	{
+		return pScript->getRegisteredObject<sol::table>(eventID);
 	}
 
 	/***
@@ -122,6 +134,7 @@ public:
 		return *this;
 	}
 
+
 	/***
 	* @function setItems
 	* @tparam table items Array of strings
@@ -131,6 +144,12 @@ public:
 	{
 		this->items = items;
 		invalidateBuffer();
+		return *this;
+	}
+
+	LuaTextMenu& setTimeout(size_t timeout)
+	{
+		this->timeout = timeout;
 		return *this;
 	}
 
@@ -167,6 +186,7 @@ public:
 	~LuaTextMenu()
 	{
 		pScript->unregisterLuaObject(callbackID);
+		pScript->unregisterLuaObject(eventID);
 	}
 
 };
@@ -281,7 +301,13 @@ void CopilotScript::initLuaState(sol::state_view lua)
 		return std::make_shared<LuaTextMenu>(0, callback, *this);
 	};
 
-	auto TextMenuType = lua.new_usertype<LuaTextMenu>("TextMenu", sol::factories(factory1, factory2, factory3, factory4));
+	auto factory5 = [this](sol::this_state ts) {
+		auto lua = sol::state_view(ts);
+		sol::function f = lua["copilot"]["__dummy"];
+		return std::make_shared<LuaTextMenu>(0, f, *this);
+	};
+
+	auto TextMenuType = lua.new_usertype<LuaTextMenu>("TextMenu", sol::factories(factory1, factory2, factory3, factory4, factory5));
 	TextMenuType["show"] = &LuaTextMenu::show;
 	TextMenuType["cancel"] = &LuaTextMenu::cancel;
 	TextMenuType["setMenu"] = &LuaTextMenu::setMenu;
@@ -292,6 +318,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	TextMenuType["setTitle"] = &LuaTextMenu::setTitle;
 	TextMenuType["setPrompt"] = &LuaTextMenu::setPrompt;
 	TextMenuType["setTimeout"] = &LuaTextMenu::setTimeout;
+	TextMenuType["getEvent"] = &LuaTextMenu::getEvent;
 
 	lua.new_enum<LuaTextMenu::Result>(
 		"TextMenuResult",

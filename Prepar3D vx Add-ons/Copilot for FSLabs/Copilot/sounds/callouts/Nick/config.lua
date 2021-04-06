@@ -29,7 +29,6 @@ return {
   {"flapsOne", length = 1500},
   {"flapsTwo", length = 1600},
   {"flapsThree", length = 1800},
-  {"flapsTree", length = 1600},
   {"flapsFull", length = 1600},
   {"flapsZero", length = 1400}
 }

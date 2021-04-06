@@ -2072,10 +2072,10 @@ FSL.PED\_ECP\_BLEED\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.PED\_ECP\_CLR\_L\_Button
-> Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.PED\_ECP\_CLR\_R\_Button
-> Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.PED\_ECP\_COND\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>

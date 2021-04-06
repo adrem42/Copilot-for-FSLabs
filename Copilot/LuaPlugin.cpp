@@ -139,6 +139,37 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 		keypress(keyCode, shifts);
 	};
 
+	std::unordered_map<std::string, SIMCONNECT_TEXT_TYPE>  textColors = {
+		{"black", SIMCONNECT_TEXT_TYPE_PRINT_BLACK },
+		{"white", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"red", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"green", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"blue", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"yellow", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"magenta", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"cyan", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+	};
+
+	lua["copilot"]["displayText"] = [textColors](const std::string& s, std::optional<size_t> delay, std::optional<std::string> color) {
+
+		SIMCONNECT_TEXT_TYPE type;
+
+		if (color) {
+			type = textColors.at(*color);
+		} else {
+			type = SIMCONNECT_TEXT_TYPE_PRINT_WHITE;
+		}
+
+		SimConnect_Text(
+			SimConnect::hSimConnect,
+			SIMCONNECT_TEXT_TYPE_PRINT_WHITE,
+			delay.value_or(0),
+			-1,
+			s.length() + 1,
+			const_cast<char*>(s.c_str())
+		);
+	};
+
 	lua["print"] = [this](sol::variadic_args va) {
 		std::string str;
 		for (size_t i = 0; i < va.size(); i++) {
@@ -168,6 +199,8 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 			const_cast<char*>(s.c_str())
 		);
 	};
+
+
 
 	using namespace FSUIPC;
 

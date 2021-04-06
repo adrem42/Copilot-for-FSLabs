@@ -40,10 +40,9 @@ void McduWatcher::update()
 			vars["Vs"] = toNumber(pfDisp.substr(105, 3));
 			vars["Vf"] = toNumber(pfDisp.substr(57, 3));
 			vars["takeoffFlaps"] = toNumber(pfDisp.substr(161, 1));
-
-			if (vars["V1"] && vars["V2"] && vars["Vr"]) {
+			vars["takeoffRwy"] = pfDisp.substr(17, std::isalpha(pfDisp[19]) ? 3 : 2);
+			if (vars["V1"] && vars["V2"] && vars["Vr"]) 
 				isFmgcSetup.takeoff = true;
-			}
 		} else if (pfDisp.substr(39, 7) == "FROM/TO") {
 			vars["flyingCircuits"] = isalpha(pfDisp[63]) && pfDisp.substr(63, 4) == pfDisp.substr(68, 4);
 		} else if (!isFmgcSetup.initB && pfDisp.substr(39, 9) == "ZFW/ZFWCG") {

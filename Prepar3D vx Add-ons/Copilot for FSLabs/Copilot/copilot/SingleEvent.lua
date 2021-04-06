@@ -22,4 +22,14 @@ function SingleEvent:trigger(...)
   return Event.trigger(self, ...)
 end
 
+function SingleEvent:reset()
+  self.payload = nil
+end
+
+function Event:toSingleEvent(...)
+  local e = SingleEvent:new(...)
+  self.children[e] = true
+  return e
+end
+
 return SingleEvent
