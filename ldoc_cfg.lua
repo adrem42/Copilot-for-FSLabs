@@ -1,6 +1,8 @@
 
 local content = [[
 
+convert_opt = true
+
 title = '%s'
 
 project = '%s'
@@ -36,6 +38,7 @@ file = {
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/ActionOrderSetter.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/SingleEvent.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/VoiceCommand.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Checklist.lua',
   'Copilot/Joystick.h',
   'Copilot/CopilotScript.cpp'
 }
@@ -57,8 +60,6 @@ kind_names={topic='Manual',module='Libraries'}
 use_markdown_titles = true
 
 no_space_before_args = true
-
-convert_opt = false
 
 pretty='lxsh'
 

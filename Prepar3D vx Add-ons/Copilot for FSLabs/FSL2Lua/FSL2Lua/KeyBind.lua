@@ -11,7 +11,7 @@ function KeyBindWrapper:new(data)
   return bind
 end
 
-function Bind.parseKeys(input, useSendModifiers)
+function Bind.parseKeys(input)
   assert(type(input) == "string", "The key combination must be a string")
   local mainKeyCode
   local shifts = {}
@@ -24,7 +24,6 @@ function Bind.parseKeys(input, useSendModifiers)
       extended = true
     else
       local maybeShift = keyCodes.modifiers[keyString]
-        or useSendModifiers and keyCodes.sendModifiers[keyString]
       if maybeShift then
         shifts[#shifts+1] = maybeShift
       else

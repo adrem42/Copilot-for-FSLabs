@@ -2,6 +2,7 @@
 local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
 local callouts = {}
 copilot.sounds = {callouts = callouts}
+copilot.PLAY_BLOCKING = -1
 
 local visit
 
@@ -70,7 +71,8 @@ visit = function(dir, prefix)
         error "You can't mix TTS and non-TTS configs"
       end
       isTTS = cfg.isTTS and true or false
-      if cfg.isTTS then
+      cfg.isTTS = nil
+      if isTTS then
         loadTtsConfig(cfg)
       else
         loadNormalConfig(dir, prefix, cfg)

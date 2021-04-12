@@ -9,11 +9,12 @@
 
 namespace SimConnect {
 
+	size_t getUniqueEventID();
+
 	class SimConnectEvent : public std::enable_shared_from_this<SimConnectEvent> {
-		static size_t currEventId;
 	public:
 		SimConnectEvent(const SimConnectEvent&) = delete;
-		SimConnectEvent() :eventId(currEventId++) {}
+		SimConnectEvent() :eventId(getUniqueEventID()) {}
 		const size_t eventId;
 		virtual bool dispatch(DWORD) = 0;
 		virtual ~SimConnectEvent();

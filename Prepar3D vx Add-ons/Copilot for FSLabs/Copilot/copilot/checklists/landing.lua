@@ -1,3 +1,4 @@
+
 local landing = Checklist:new(
   "landing",
   "Landing",
@@ -11,19 +12,11 @@ landing:appendItem {
   displayLabel = "ECAM Memo",
   acknowledge = "landingNoBlue",
   response = VoiceCommand:new "Landing no blue",
-  onResponse = function(_, _, _, onFailed)
-    if FSL.OVHD_SIGNS_NoSmoking_Switch:getPosn() == "OFF" then
-      onFailed "No smoking switch must be ON or AUTO"
-    end
-    if FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() ~= "ON" then
-      onFailed "Seat belts switch must be ON"
-    end
-    if FSL.PED_SPD_BRK_LEVER:getPosn() ~= "ARM" then
-      onFailed "Spoilers not armed"
-    end
-    if FSL.PED_FLAP_LEVER:getPosn() ~= "FULL" then
-      onFailed "Flaps not set"
-    end
+  onResponse = function(check)
+    check(FSL.OVHD_SIGNS_NoSmoking_Switch:getPosn() ~= "OFF", "No smoking switch must be ON or AUTO")
+    check(FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() == "ON",  "Seat belts switch must be ON")
+    check(FSL.PED_SPD_BRK_LEVER:getPosn() == "ARM",           "Spoilers not armed")
+    check(FSL.PED_FLAP_LEVER:getPosn() == "FULL",             "Flaps not set")
   end
 }
 
@@ -31,12 +24,12 @@ landing:appendItem {
   label = "autoThrust",
   displayLabel = "A/THR",
   response = {SPEED = VoiceCommand:new "speed", OFF = VoiceCommand:new "off"},
-  onResponse = function(label, _, _, onFailed)
+  onResponse = function(check, label)
     local athrOn = FSL.GSLD_FCU_ATHR_Switch:isLit()
-    if label == "SPEED" and not athrOn then
-      onFailed "Auto-thrust is off"
-    elseif label == "OFF" and athrOn then
-      onFailed "Auto-thrust is on"
+    if label == "SPEED" then
+      check(athrOn, "Auto-thrust is off")
+    elseif label == "OFF" then
+      check(not athrOn, "Auto-thrust is on")
     end
   end
 }

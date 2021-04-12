@@ -30,13 +30,13 @@ return {
   flapsOne = "flaps one",
   flapsTwo = "flaps two",
   flapsThree = "flaps three",
-  flapsTree = "flaps three",
   flapsFull = "flaps full",
   flapsZero = "flaps zero",
 
   checklists = {
 
     doubleCheck = "double check that please",
+    checked = "checked",
     
     beforeStart = {
       announce = "before start to the line",
@@ -71,9 +71,9 @@ return {
     beforeTakeoff = {
       announce = "before takeoff to the line",
       completed = "before takeoff to the line completed",
-      conf1 = "conf 1",
-      conf2 = "conf 2",
-      conf3 = "conf 3",
+      conf1 = "config 1",
+      conf2 = "config 2",
+      conf3 = "config 3",
       takeoffNoBlue = "takeoff no blue",
       flightControls = "flight controls",
       flapSetting = "flap setting",
@@ -92,7 +92,8 @@ return {
       announce = "landing checklist",
       completed = "landing checklist completed",
       ecamMemo = "ecam memo",
-      autoThrust = "auto thrust"
+      autoThrust = "auto thrust",
+      landingNoBlue = "landing no blue"
     },
 
     parking = {
@@ -104,20 +105,19 @@ return {
       brakeTemp = "brake temperature",
       externalLights = "external lights",
       fuelPumps = "fuel pumps",
-      adirs = "adirs",
+      adirs = "aydirs",
       park = "parking brake, chocks"
     },
 
     securingTheAircraft = {
       announce = "securing the aircraft checklist",
       completed = "securing the aircraft checklist completed",
-      adirs = "adirs",
+      adirs = "aydirs",
       oxygen = "oxygen",
       apuBleed = "apu bleed",
       emerExitLights = "emergency exit lights",
       signs = "signs",
       apuAndBat = "apu and battery"
     }
-
   }
 }

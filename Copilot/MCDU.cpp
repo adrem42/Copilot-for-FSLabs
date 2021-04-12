@@ -7,12 +7,8 @@ MCDU::MCDU(unsigned int side, unsigned int timeout, unsigned int port)
     session = std::make_unique<HttpSession>(url, timeout);
 }
 
-std::optional<std::string> MCDU::getString()
+std::string MCDU::getStringFromRaw(const std::string& response)
 {
-    auto response = session->makeRequest();
-
-    if (response == "") return {};
-
     const char* jsonChar = response.c_str() + response.length() - 2;
     char curr;
     char prev = 0;
@@ -48,6 +44,13 @@ std::optional<std::string> MCDU::getString()
     } while (pos > 0);
 
     return buff;
+}
+
+std::optional<std::string> MCDU::getString()
+{
+    auto response = session->makeRequest();
+    if (response == "") return {};
+    return getStringFromRaw(response);
 }
 
 std::string MCDU::getRaw()

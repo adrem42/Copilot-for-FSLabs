@@ -36,6 +36,12 @@ namespace copilot {
 
 	std::string appDir;
 	bool isFslAircraft = false;
+	bool _simRunning = true;
+
+	bool simRunning()
+	{
+		return _simRunning;
+	}
 
 	std::string copilotScriptPath()
 	{
@@ -106,7 +112,7 @@ namespace copilot {
 
 	void stopCopilotScript()
 	{
-		std::thread([]{
+		std::thread([] {
 			LuaPlugin::stopScript(appDir + "Copilot\\copilot.lua");
 		}).detach();
 	}
@@ -219,7 +225,7 @@ namespace copilot {
 		}
 		initConsoleSink();
 		SimInterface::init();
-		launchThread = std::thread([]{
+		launchThread = std::thread([] {
 			Sleep(10000);
 			launchFSL2LuaScript();
 			SimConnect::setupFSL2LuaMenu();
@@ -228,11 +234,13 @@ namespace copilot {
 				SimConnect::setupMuteControls();
 				startCopilotScript();
 			}
-		});	
+		});
 	}
 
 	void onWindowClose()
 	{
+		FSUIPC_OnSimExit();
+		_simRunning = false;
 		LuaPlugin::stopAllScripts();
 	}
 

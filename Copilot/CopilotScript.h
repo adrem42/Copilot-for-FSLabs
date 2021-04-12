@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include "CallbackRunner.h"
 #include <queue>
+#include <Pdk.h>
+#include <IUnknownHelper.h>
 
 class LuaTextMenu;
 
@@ -22,6 +24,22 @@ public:
 	using RegisterID = uint16_t;
 
 private:
+
+	class MouseRectListenerCallback : public P3D::IMouseRectListenerCallback {
+		DEFAULT_REFCOUNT_INLINE_IMPL()
+		DEFAULT_IUNKNOWN_QI_INLINE_IMPL(MouseRectListenerCallback, IID_IUnknown)
+		CopilotScript* pScript;
+
+	public:
+
+		MouseRectListenerCallback(CopilotScript* pScript) :pScript(pScript), m_RefCount(1) {}
+
+		virtual void MouseRectListenerProc(UINT, P3D::MOUSE_CLICK_TYPE) override;
+	
+	};
+
+	std::unique_ptr<MouseRectListenerCallback> mouseMacroCallback = nullptr;
+	sol::table mouseMacroEvent;
 
 	ISpVoice* voice = nullptr;
 
@@ -61,6 +79,10 @@ private:
 	std::unordered_set<std::shared_ptr<SimConnect::TextMenuEvent>> pendingTextMenuEvents;
 	
 	UINT_PTR backgroundThreadTimerId;
+
+	sol::state mcduWatcherLua;
+	std::vector<sol::protected_function> mcduWatcherLuaCallbacks;
+	sol::protected_function mcduWatcherToArray;
 
 	static constexpr UINT WM_STARTTIMER = WM_APP, WM_STOPTIMER = WM_APP + 1;
 

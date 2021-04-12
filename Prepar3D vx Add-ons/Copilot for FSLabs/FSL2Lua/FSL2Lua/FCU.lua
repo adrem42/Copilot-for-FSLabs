@@ -15,8 +15,14 @@ function FCU:get()
   local json
   while true do
     json = self.request:get()
-    if json ~= "" then break
-    else util.handleError(string.format("FCU HTTP request error %s, retrying...", self.request.lastError), 2) end
+    if json ~= "" then 
+      break
+    else 
+      if not copilot.isSimRuning() then
+        ipc.exit()
+      end
+      util.handleError(string.format("FCU HTTP request error %s, retrying...", self.request.lastError), 2) 
+    end
   end
   local SPD = self:getField(json, "SPD")
   local HDG = self:getField(json, "HDG")

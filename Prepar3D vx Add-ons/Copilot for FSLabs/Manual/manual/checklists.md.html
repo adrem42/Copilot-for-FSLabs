@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Checklists_are_text_to_speech_only_for_now">Checklists are text-to-speech only for now </a></li>
+<li><a href="#The_checklist_flow">The checklist flow </a></li>
+<li><a href="#_Checklists__section_in_options_ini">[Checklists] section in options.ini </a></li>
+<li><a href="#List_of_checklists">List of checklists </a></li>
+<li><a href="#Modifying_and_creating_checklists">Modifying and creating checklists </a></li>
+</ul>
+
+
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><strong>Checklists</strong></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
+</ul>
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Checklists</h1>
+
+<p><a name="Checklists_are_text_to_speech_only_for_now"></a></p>
+<h2>Checklists are text-to-speech only for now</h2>
+
+<p>The voice sets haven't been updated with checklist callouts yet. You'll have to enable text-to-speech by setting sound_set=TTS in options.ini. </p>
+
+<p>The volume is controlled with the ACP INT knob, like the regular callouts. The maximum volume is a bit low — I had to reduce my FSLabs volume sliders to 50% for an optimal balance. </p>
+
+<p><a name="The_checklist_flow"></a></p>
+<h2>The checklist flow</h2>
+
+<p>The trigger phrases for the checklists are listed <a href="#List_of_checklists">below</a>.
+When you start a checklist, all voice commands that aren't associated with it are suspended (their states are restored when the checklist completes).</p>
+
+<p>In addition to the normal response to a challenge, you may say "restart checklist", "say again" or "standby checklist".
+"standby checklist" resumes the suspended voice commands and awaits "resume checklist" or "continue checklist".</p>
+
+<p><a name="_Checklists__section_in_options_ini"></a></p>
+<h2>[Checklists] section in options.ini</h2>
+
+<h3>display_info:</h3>
+
+<p>Display possible responses to a checklist item challenge in a message window.
+A phrase may contain optional elements or elements with multiple variants, for example:</p>
+
+<pre><code>{Airbus, Boeing, ...} is the best [aircraft manufacturer]
+</code></pre>
+
+
+<p>"..." means "match anything"</p>
+
+<h3>display_fail</h3>
+
+<p>If the copilot didn't like how you responded to a challenge (he will say "double check that"), display the reason in a message window.</p>
+
+<h3>menu_keybind</h3>
+
+<p>A key or key combination (for example, <em>A</em> or <em>SHIFT+F3</em>) that will trigger the checklist menu.
+The menu lets you skip the current checklist item as well as cancel or skip the whole checklist.
+Both cancelling and skipping stop the execution of the current checklist.
+The difference is that cancelling will also reactivate the checklist's trigger voice command.</p>
+
+<p><a name="List_of_checklists"></a></p>
+<h2>List of checklists</h2>
+
+<h5>"trigger phrase"</h5>
+<p>When the copilot starts listening for the trigger phrase<br><br></p>
+
+<h5>"before start to the line"</h5>
+<p>If preflight action enabled: when preflight action is finished, otherwise: when the chocks are set.<br><br></p>
+
+<h5>"before start below the line"</h5>
+<p>When before start to the line is finished.<br><br></p>
+
+<h5>"after start checklist"</h5>
+<p>If after_start action enabled: when after_start action is finished, otherwise: when the engines are started.<br><br></p>
+
+<h5>"before takeoff to the line"</h5>
+<p>When after start checklist is finished.<br><br></p>
+
+<h5>"before takeoff below the line"</h5>
+<p>If lineup action enabled: when lineup action is finished and before takeoff to the line is finished, otherwise: when before takeoff to the line is finished.<br><br></p>
+
+<h5>"landing checklist"</h5>
+<p>After you descend below 10000 and IAS is below 200 kts.<br><br></p>
+
+<h5>"parking checklist"</h5>
+<p>On engine shutdown<br><br></p>
+
+<h5>"securing the aircraft checklist"</h5>
+<p>When the parking checklist is finished<br><br></p>
+
+<p><a name="Modifying_and_creating_checklists"></a></p>
+<h2>Modifying and creating checklists</h2>
+
+<p><a href="../classes/Checklist.html#">Checklist class</a></p>
+
+<p><a href="../manual/plugins.md.html#">How to make a plugin</a><br><br></p>
+
+<h5>Modifying items in default checklists</h5>
+
+
+<pre>
+copilot.checklists.beforeStart:replaceItem {
+    label = <span class="string">"toData"</span>,
+    response = VoiceCommand:new <span class="string">"checked"</span>
+}
+
+copilot.checklists.landing:getItem<span class="string">"autoThrust"</span>.response.SPEED:setConfidence(<span class="number">0.8</span>)
+</pre>
+
+<h5>Creating checklists</h5>
+
+<p>Browse the lua files at <em>copilot\copilot\checklists</em> and <em>copilot\copilot\initChecklists.lua</em> for examples.</p>
+
+<p>The simplest checklist with no validation looks like this:</p>
+
+
+<pre>
+approachChecklist = Checklist:new(
+    <span class="string">"approach"</span>,
+    <span class="string">"Approach checklist"</span>,
+    VoiceCommand:new <span class="string">"approach checklist"</span>
+)
+approachChecklist:appendItem {
+    label = <span class="string">"briefing"</span>,
+    displayLabel = <span class="string">"Briefing"</span>,
+    response = VoiceCommand:new <span class="string">"confirmed"</span>
+}
+approachChecklist.trigger:activateOn(copilot.events.aboveTenThousand)
+</pre>
+
+<p>The above checklist will require the following callout file structure:</p>
+
+<pre><code>copilot\sounds\callouts\soundSetName\checklists\approach\
+    config.lua
+    announce.wav
+    briefing.wav
+</code></pre>
+
+
+<p>with config.lua that looks like this:</p>
+
+
+<pre>
+<span class="keyword">return</span> {
+    <span class="string">"announce"</span>,
+    <span class="string">"briefing"</span>
+}
+</pre>
+
+<p>Alternatively, you can create a text-to-speech set by creating the file <em>copilot\sounds\callouts\soundSetName\config.lua</em> with the following content:</p>
+
+
+<pre>
+<span class="keyword">return</span> {
+    isTTS = <span class="keyword">true</span>,
+    checklists = {
+        doubleCheck = <span class="string">"double check that please"</span>
+        approach = {
+            announce = <span class="string">"approach checklist"</span>,
+            briefing = <span class="string">"briefing"</span>
+        }
+    }
+}
+</pre>
+
+<p>The default checklists can be disabled by setting enable=0 in options.ini or programmatically:</p>
+
+
+<pre>
+<span class="keyword">for</span> _, checklist <span class="keyword">in</span> <span class="global">ipairs</span>(copilot.checklists) <span class="keyword">do</span>
+    checklist.trigger:disable()
+<span class="keyword">end</span>
+</pre>
+
+<p>You can still re-use checklists disabled with enable=0 by loading their files yourself:</p>
+
+
+<pre>
+<span class="global">require</span> <span class="string">"copilot.checklists.beforeStart"</span>
+copilot.checklists.beforeStart.trigger:activate()
+</pre>
+
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-04-12 22:10:40 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

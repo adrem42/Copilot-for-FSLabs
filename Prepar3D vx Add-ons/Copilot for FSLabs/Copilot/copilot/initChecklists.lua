@@ -8,35 +8,37 @@ require "copilot.checklists.parking"
 require "copilot.checklists.securingTheAircraft"
 
 local checklists = copilot.checklists
+local events = copilot.events
+local actions = copilot.actions
 
 local function bindToAction(args)
   if copilot.UserOptions.actions.enable == copilot.UserOptions.TRUE
     and copilot.UserOptions.actions[args[1]] == copilot.UserOptions.ENABLED then
-    args.onEnabled() 
+    args.ifEnabled() 
   else
-    args.onDisabled()
+    args.ifDisabled()
   end
 end
 
 bindToAction {
   "preflight",
-  onEnabled = function()
-    checklists.beforeStart.trigger:activateOn(copilot.actions.preflight.threadFinishedEvent)
+  ifEnabled = function()
+    checklists.beforeStart.trigger:activateOn(actions.preflight.threadFinishedEvent)
   end,
-  onDisabled = function()
-    checklists.beforeStart.trigger:activateOn(copilot.events.chocksSet)
+  ifDisabled = function()
+    checklists.beforeStart.trigger:activateOn(events.chocksSet)
   end
 }
 
 checklists.beforeStartBelow.trigger:activateOn(checklists.beforeStart.doneEvent)
 
 bindToAction {
-  "afterStart",
-  onEnabled = function()
-    checklists.afterStart.trigger:activateOn(copilot.actions.afterStart.threadFinishedEvent)
+  "after_start",
+  ifEnabled = function()
+    checklists.afterStart.trigger:activateOn(actions.afterStart.threadFinishedEvent)
   end,
-  onDisabled = function()
-    checklists.afterStart.trigger:activateOn(copilot.events.enginesStarted)
+  ifDisabled = function()
+    checklists.afterStart.trigger:activateOn(events.enginesStarted)
   end
 }
 
@@ -44,15 +46,24 @@ checklists.beforeTakeoff.trigger:activateOn(checklists.afterStart.doneEvent)
 
 bindToAction {
   "lineup",
-  onEnabled = function()
-    checklists.beforeTakeoffBelow.trigger:activateOn(copilot.events.lineUpSequenceCompleted)
+  ifEnabled = function()
+    events.enginesStarted:addAction(function()
+      Event.waitForEvents({events.lineUpSequenceCompleted, checklists.beforeTakeoff.doneEvent}, true)
+      checklists.beforeTakeoffBelow.trigger:activate()
+    end, Action.COROUTINE):stopOn(events.engineShutdown, events.airborne)
   end,
-  onDisabled = function()
+  ifDisabled = function()
     checklists.beforeTakeoffBelow.trigger:activateOn(checklists.beforeTakeoff.doneEvent)
   end
 }
 
-copilot.events.airborne:addAction(function()
+events.engineShutdown:addAction(function()
+  checklists.afterStart.trigger:deactivate()
+  checklists.beforeTakeoff.trigger:deactivate()
+  checklists.beforeTakeoffBelow.trigger:deactivate()
+end)
+
+events.airborne:addAction(function()
   checklists.beforeStart.trigger:deactivate()
   checklists.beforeStartBelow.trigger:deactivate()
   checklists.afterStart.trigger:deactivate()
@@ -60,22 +71,22 @@ copilot.events.airborne:addAction(function()
   checklists.beforeTakeoffBelow.trigger:deactivate()
 end)
 
-copilot.events.belowTenThousand:addAction(function()
+events.belowTenThousand:addAction(function()
   repeat copilot.suspend(5000) until copilot.IAS() < 200
-  copilot.checklists.landing.trigger:activate()
+  checklists.landing.trigger:activate()
   repeat copilot.suspend(5000) until copilot.radALT() < 500
-  copilot.checklists.landing.trigger:deactivate()
+  checklists.landing.trigger:deactivate()
 end, Action.COROUTINE)
 
-copilot.events.landing:addAction(function()
-  copilot.events.engineShutdown:addOneOffAction(function()
+events.landing:addAction(function()
+  events.engineShutdown:addOneOffAction(function()
     checklists.parking.trigger:activate()
   end)
 end)
 
 checklists.securingTheAircraft.trigger:activateOn(checklists.parking.doneEvent)
 
-copilot.events.enginesStarted:addAction(function()
+events.enginesStarted:addAction(function()
   checklists.parking.trigger:deactivate()
   checklists.securingTheAircraft.trigger:deactivate()
 end)

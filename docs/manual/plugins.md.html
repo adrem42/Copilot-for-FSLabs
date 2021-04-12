@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Examples">Examples </a></li>
+<li><a href="#Monitoring_the_MCDUs">Monitoring the MCDUs </a></li>
+</ul>
+
+
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><strong>Making a plugin</strong></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
+</ul>
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>Making a plugin</h1>
+
+<p>To make Copilot load your lua code, simply create a lua file with the name of your choice inside <em>Copilot for FSLabs\copilot\custom</em>. Copilot will load all lua files in that folder at startup.</p>
+
+<p>If you have multiple files that you want to be loaded in a particular order, use the standard library <em>require</em> function. Since the <em>custom</em> folder isn't scanned recursively, you can have one main lua file at the top level and have the rest in subfolders. For example, given the following structure:</p>
+
+<pre><code>Copilot for FSLabs\copilot\custom\
+    init.lua
+    myplugin\
+        file1.lua
+        file2.lua
+</code></pre>
+
+
+<p>you can load file1.lua and file2.lua from init.lua (which will be loaded by Copilot) like this:</p>
+
+
+<pre>
+<span class="global">require</span> <span class="string">"copilot.custom.myplugin.file1"</span>
+<span class="global">require</span> <span class="string">"copilot.custom.myplugin.file2"</span>
+</pre>
+
+<p>If you want to use Copilot with other aircraft, use the <em>custom_non_fsl</em> folder instead of <em>custom</em> (you'll need to create it yourself). If you have multiple add-ons, you'll need to write code that tells which aircraft was loaded. One way to do that is matching a substring in <em>copilot.aircraftTitle</em>.</p>
+
+<p><a name="Examples"></a></p>
+<h2>Examples</h2>
+
+<p>See the examples in the sidebar that are prefixed with <em>copilot_</em>.</p>
+
+<p><a name="Monitoring_the_MCDUs"></a></p>
+<h2>Monitoring the MCDUs</h2>
+
+<p>Copilot constantly monitors the PF's MCDU for certain variables (for example, the takeoff speeds). This is done on a background thread because the main thread may be blocked at any time by other code. </p>
+
+<p>You can have the background thread additionally run your own code. To do that, create a lua file at a location of your choice and call <em>copilot.addMcduCallback(filePath)</em> from your plugin code. The file should return a callback that will receive the MCDU display data and store variables using the <em>setVar</em> function (it can also call <em>getVar</em> and <em>clearVar</em>). These variables can be retrieved from the main thread using <em>copilot.mcduWatcher:getVar(varname)</em>.</p>
+
+<p>The parameter passed to your callback is a table containing the fields <em>PF</em>, <em>PM</em>, <em>CPT</em> and <em>FO</em>. Each one is an array of tables representing MCDU display cells. A cell table contains the fields <em>char</em>, <em>color</em> and <em>isBold</em>. Each MCDU table additionaly has an <em>str</em> field which represents the display as a string.</p>
+
+
+<pre>
+<span class="comment">-- Copilot for FSLabs\copilot\custom\myplugin\mcdu.lua
+</span>
+<span class="keyword">return</span> <span class="keyword">function</span>(data)
+    <span class="keyword">local</span> PF = data.PF.str
+    <span class="keyword">if</span> PF:sub(<span class="number">40</span>, <span class="number">46</span>) == <span class="string">"FROM/TO"</span> <span class="keyword">and</span> data.PF[<span class="number">64</span>].color == <span class="string">"cyan"</span> <span class="keyword">then</span>
+        setVar(<span class="string">"FROM"</span>,  PF:sub(<span class="number">64</span>, <span class="number">67</span>))
+        setVar(<span class="string">"TO"</span>,    PF:sub(<span class="number">69</span>, <span class="number">72</span>))
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre>
+
+<p><br></p>
+
+
+<pre>
+<span class="comment">-- Copilot for FSLabs\copilot\custom\init.lua
+</span>
+copilot.addMcduCallback(APPDIR .. <span class="string">"copilot\\custom\\myplugin\\mcdu.lua"</span>)
+
+copilot.addCallback(<span class="keyword">function</span>()
+    <span class="global">print</span>((<span class="string">"FROM: %s TO: %s"</span>):format(
+        copilot.mcduWatcher:getVar <span class="string">"FROM"</span> <span class="keyword">or</span> <span class="string">"????"</span>,
+        copilot.mcduWatcher:getVar <span class="string">"TO"</span> <span class="keyword">or</span> <span class="string">"????"</span>))
+<span class="keyword">end</span>, <span class="keyword">nil</span>, <span class="number">1000</span>)
+
+copilot.events.chocksSet:addAction(<span class="keyword">function</span>()
+    copilot.mcduWatcher:clearVar <span class="string">"FROM"</span>
+    copilot.mcduWatcher:clearVar <span class="string">"TO"</span>
+<span class="keyword">end</span>)
+
+Bind {
+    key = <span class="string">"A"</span>,
+    onPress = <span class="keyword">function</span>()
+        <span class="comment">-- use this function to find the display cell indices:
+</span>        FSL.MCDU:printCells() <span class="comment">-- PM MCDU
+</span>        <span class="comment">--FSL.PF.MCDU:printCells()
+</span>        <span class="comment">--FSL.CPT.MCDU:printCells()
+</span>    <span class="keyword">end</span>
+}
+</pre>
+
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-04-12 22:10:40 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

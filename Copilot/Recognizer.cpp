@@ -80,18 +80,6 @@ Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> variant
 	return append(std::move(variants), false);
 }
 
-Recognizer::Phrase& Recognizer::Phrase::appendWildcard(bool optional)
-{
-	std::wstring phraseElement = L"...";
-	std::wstring propName;
-	return append(phraseElement, propName, optional);
-}
-
-Recognizer::Phrase& Recognizer::Phrase::appendWildcard()
-{
-	return appendWildcard(false);
-}
-
 bool checkResult(const std::string& msg, HRESULT hr)
 {
 	if (SUCCEEDED(hr)) return true;
@@ -246,15 +234,15 @@ Recognizer::RuleState Recognizer::getRuleState(RuleID ruleID)
 	return getRuleById(ruleID).state;
 }
 
-//sol::as_table_t<std::vector<std::string>> Recognizer::getPhrases(RuleID ruleID, bool dummy = false)
-//{
-//	Rule& rule = getRuleById(ruleID);
-//	if (dummy) {
-//		if (rule.dummyRuleID) return getRuleById(rule.dummyRuleID).phrases;
-//		return {};
-//	}
-//	return getRuleById(ruleID).phrases;
-//}
+sol::as_table_t<std::vector<Recognizer::Phrase>> Recognizer::getPhrases(RuleID ruleID, bool dummy = false)
+{
+	Rule& rule = getRuleById(ruleID);
+	if (dummy) {
+		if (rule.dummyRuleID) return getRuleById(rule.dummyRuleID).phrases;
+		return {};
+	}
+	return getRuleById(ruleID).phrases;
+}
 
 void Recognizer::addPhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy = false)
 {
@@ -444,7 +432,7 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 	//RecognizerType["removePhrases"] = &Recognizer::removePhrases;
 	RecognizerType["removeAllPhrases"] = &Recognizer::removeAllPhrases;
 	RecognizerType["setConfidence"] = &Recognizer::setConfidence;
-	//RecognizerType["getPhrases"] = &Recognizer::getPhrases;
+	RecognizerType["getPhrases"] = &Recognizer::getPhrases;
 	RecognizerType["setRulePersistence"] = &Recognizer::setRulePersistence;
 	RecognizerType["getRuleState"] = &Recognizer::getRuleState;
 	lua.new_enum("RulePersistenceMode",
@@ -462,11 +450,8 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements, bool optional)>(&Phrase::append),
 		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements)>(&Phrase::append)
 	);
-	PhraseType["appendWildcard"] = sol::overload(
-		static_cast<Phrase&(Phrase::*)(bool)>(&Phrase::appendWildcard),
-		static_cast<Phrase&(Phrase::*)()>(&Phrase::appendWildcard)
-	);
-	PhraseType["asString"] = sol::readonly_property([](const Phrase& phrase) {return phrase.asString; });
+	PhraseType[sol::meta_function::to_string] = [](const Phrase& phrase) {return phrase.asString; };
+
 	auto ResultType = lua.new_usertype<RecoResult>("RecoResult");
 	ResultType["props"] = sol::readonly_property([](RecoResult& res) {return res.props; });
 	ResultType["confidence"] = sol::readonly_property([](RecoResult& res) {return res.confidence; });

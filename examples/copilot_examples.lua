@@ -1,6 +1,7 @@
 -- A few examples of adding @{Event|actions and voice commands} to Copilot.
 -- Drop this file into Copilot for FSLabs/Copilot/custom - Copilot auto-loads
 -- any lua files in that directory
+-- Read more @{plugins.md|here}
 
 ------------------------------------------------------------------------------
 -- Adding a simple voice command
@@ -46,22 +47,19 @@ getMetar:activate()
 -- Changing a default sequence
 ------------------------------------------------------------------------------
 
--- Let's add something to the default lineup sequence:
+-- There's also copilot.prependSequence()
 
-local oldLineupSequence = copilot.sequences.lineUpSequence
-
-function copilot.sequences.lineUpSequence()
-  oldLineupSequence()
+copilot.appendSequence("lineup", function()
   FSL.OVHD_EXTLT_Nose_Switch "TO"
   FSL.OVHD_EXTLT_Strobe_Switch "AUTO"
-end
+end)
 
--- If you want to remove something from a default sequence
--- or add something in the middle of it, you need to reimplement the function.
+-- If you want to remove something from a default sequence, add something in the middle of it,
+-- you need to replace the default implementation
 -- This example shows how to shut off an engine in the middle of the taxi 
 -- sequence:
 
-function copilot.sequences.taxiSequence()
+copilot.replaceSequence("during_taxi", function()
   FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == 1 and "2" or "1")
   FSL.PED_WXRadar_PWS_Switch "AUTO"
   copilot.sleep(100)
@@ -72,7 +70,7 @@ function copilot.sequences.taxiSequence()
     FSL.PED_ECP_TO_CONFIG_Button()
     copilot.sleep(50, 100)
   end
-end
+end)
 
 ------------------------------------------------------------------------------
 -- Changing a default voice command

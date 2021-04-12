@@ -2,15 +2,17 @@
 
 if false then 
   module("copilot")
-  --- Send a key press event to the FS window
-  ---@string input The following values for are accepted (case-insensitive):<br><br>
---
--- * Alphanumeric character keys
--- * Virtual key codes: `key = "\222"`. 
--- * Named keys defined in `Copilot for FSLabs\lua\key_list.lua`
---
--- You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in `Copilot for FSLabs\lua\key_list.lua`
-  function copilot.keypress(input) end
+  ---Simulates a key press
+  ---@string keys @{list_of_keys.md|See the list of keys here}
+  ---@usage copilot.keypress "CONTROL+SHIFT+F12"
+  function copilot.keypress(keys) end
+
+  --- Display a SimConnect text message
+  --- @string text Text to be displayed. May include line breaks.
+  --- @int[opt=0] duration Duration in seconds. 0 means infinite.
+  --- @string[opt="print_white"] type "type\_black", "type\_white", "type\_red", "type\_green", "type\_blue", "type\_yellow", "type\_magenta", "type\_cyan" where *type* is either *print* or *scroll*
+  ---@usage copilot.displayText("hello", 10, "print_cyan")
+  function copilot.displayText(text, duration, color) end
 end
 
 local flapsLimits = {}
@@ -37,6 +39,8 @@ copilot.exit = ipc.exit
 --- If both parameters omitted: `ipc.sleep`(100)<br><br>
 --- If time1 specified: `ipc.sleep(time1)`<br><br>
 --- If both are specified: `ipc.sleep(math.random(time1, time2))`
+---@int[opt] time1
+---@int[optchain] time2
 function copilot.sleep(time1,time2)
   local time
   if time1 and time2 then time = math.random(time1, time2)
@@ -49,6 +53,8 @@ end
 --- Otherwise, suspend the execution of this coroutine for:<br><br>
 --- If time1 specified: time1 milliseconds<br><br>
 --- If time1 and time2 specified: random amount of milliseconds between time1 and time2
+---@int[opt] time1
+---@int[optchain] time2
 function copilot.suspend(time1, time2)
   if not time1 then return coroutine.yield() end
   local timeout = time2 and math.random(time1, time2) or time1
@@ -96,4 +102,74 @@ function copilot.enginesRunning(both)
   local eng2_running = copilot.eng2N1() > 15
   if both then return eng1_running and eng2_running end
   return eng1_running or eng2_running
+end
+
+local optionToSequenceNames = {
+  preflight = "preflight",
+  after_start = "afterStart",
+  during_taxi = "taxiSequence",
+  lineup = "lineUpSequence",
+  takeoff_sequence = "takeoffSequence",
+  after_takeoff = "afterTakeoffSequence",
+  ten_thousand_dep = "tenThousandDep",
+  ten_thousand_arr = "tenThousandArr",
+  after_landing = "afterLanding" 
+}
+
+local function getSequence(name)
+  if not copilot.sequences[name] then
+    if not optionToSequenceNames[name] then
+      error("No such sequence: '" .. name .. "'", 3)
+    end
+    return copilot.sequences[optionToSequenceNames[name]], optionToSequenceNames[name]
+  end
+  return copilot.sequences[name], name
+end
+
+--- Appends a function to a default sequence
+---@string name Name of the sequence in in options.ini or in the code
+---@tparam function func The function to append
+---@usage
+--- copilot.appendSequence("lineup", function()
+---   FSL.OVHD_EXTLT_Nose_Switch "TO"
+---   FSL.OVHD_EXTLT_Strobe_Switch "AUTO"
+--- end)
+function copilot.appendSequence(name, func)
+  local old, _name = getSequence(name)
+  copilot.sequences[_name] = function(...)
+    func(...)
+    old(...)
+  end
+end
+
+--- Prepends a function to a default sequence
+---@string name  Name of the sequence in in options.ini or in the code
+---@tparam function func The function to prepend
+function copilot.prependSequence(name, func)
+  local old = getSequence(name)
+  copilot.sequences[name] = function(...)
+    old(...)
+    func(...)
+  end
+end
+
+--- Replaces a default sequence
+---@string name  Name of the sequence in in options.ini or in the code
+---@tparam function func New sequence
+function copilot.replaceSequence(name, func)
+  copilot.sequences[select(2, getSequence(name))] = func
+end
+
+function pairsByKeys (t, f)
+  local a = {}
+  for n in pairs(t) do table.insert(a, n) end
+  table.sort(a, f)
+  local i = 0      -- iterator variable
+  local iter = function ()   -- iterator function
+    i = i + 1
+    if a[i] == nil then return nil
+    else return a[i], t[a[i]]
+    end
+  end
+  return iter
 end

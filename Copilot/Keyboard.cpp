@@ -9,6 +9,9 @@ using namespace Keyboard;
 
 std::vector<std::shared_ptr<KeyBindManager>> bindManagers;
 
+enum class KeyState { Released, Depressed };
+std::unordered_map<Keyboard::KeyCode, KeyState> keyStates;
+
 Keyboard::ShiftMapping Keyboard::shiftMapping{
     {VK_TAB,           1 << 1},
     {VK_LSHIFT,        1 << 2},
@@ -19,10 +22,19 @@ Keyboard::ShiftMapping Keyboard::shiftMapping{
     {VK_RMENU,         1 << 7},
     {VK_LWIN,          1 << 8},
     {VK_RWIN,          1 << 9},
-    {VK_APPS,          1 << 10}
+    {VK_APPS,          1 << 10},
+
+    {VK_SHIFT,         1 << 11},
+    {VK_MENU,          1 << 12},
+    {VK_CONTROL,       1 << 13},
 };
 
 std::mutex mutex;
+
+struct ShiftValues {
+    Keyboard::ShiftValue withSides;
+    Keyboard::ShiftValue withoutSides;
+};
 
 void Keyboard::addKeyBindManager(std::shared_ptr<KeyBindManager> manager)
 {
@@ -38,15 +50,16 @@ void Keyboard::removeKeyBindManager(std::shared_ptr<KeyBindManager> manager)
         bindManagers.end());
 }
 
-Keyboard::ShiftValue calculateShiftValue()
+ShiftValue calculateShiftValue()
 {
-    Keyboard::ShiftValue shiftVal = 0;
+    ShiftValue value = NO_SHIFTS;
     for (auto& [keyCode, mask] : shiftMapping) {
+
         bool isPressed = GetAsyncKeyState(keyCode) & 0x40000;
-        if (isPressed)
-            shiftVal |= mask;
+        if (isPressed) 
+            value |= mask;
     }
-    return shiftVal;
+    return value;
 }
 
 bool Keyboard::onKeyEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -60,25 +73,36 @@ bool Keyboard::onKeyEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     Timestamp timestamp = GetTickCount64();
     EventType event = EventType::None;
+    auto currKeyState = keyStates[keyCode];
 
     switch (uMsg) {
 
         case WM_KEYDOWN: case WM_SYSKEYDOWN: {
-            event = EventType::Press ;
+            switch (currKeyState) {
+                case KeyState::Depressed:
+                    event = EventType::PressRepeat;
+                    break;
+                case KeyState::Released:
+                    event = EventType::Press;
+                    break;
+            }
+            keyStates[keyCode] = KeyState::Depressed;
             break;
         }
 
         case WM_KEYUP: case WM_SYSKEYUP: {
             event = EventType::Release;
+            keyStates[keyCode] = KeyState::Released;
             break;
         }
     }
 
     if (event != EventType::None) {
-        ShiftValue shiftVal = calculateShiftValue();
+        auto shiftValue = calculateShiftValue();
+
         std::lock_guard<std::mutex> lock(mutex);
         for (auto& manager : bindManagers) {
-            if (manager->onKeyEvent(keyCode, shiftVal, event, timestamp)) {
+            if (manager->onKeyEvent(keyCode, shiftValue, event, timestamp)) {
                 consumed = true;
             }
         }

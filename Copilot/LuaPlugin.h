@@ -163,6 +163,7 @@ public:
 	static void stopScript(const std::string& path);
 
 	static void stopAllScripts();
+	static void sendShutDownEvents();
 
 	virtual ~LuaPlugin() = 0;
 };

@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 2.0.4</title>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
     <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 2.0.4</h1>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -55,13 +55,18 @@
 </ul>
 <h2>Classes</h2>
 <ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
   <li><a href="../classes/TextMenu.html">TextMenu</a></li>
 </ul>
 <h2>Manual</h2>
 <ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
   <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
   <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
 </ul>
 <h2>Examples</h2>
@@ -92,7 +97,7 @@
 	<td class="summary">Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block, ..., block)</a></td>
+	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block, ...)</a></td>
 	<td class="summary">Repeats the callback until the timeout elapses</td>
 	</tr>
 	<tr>
@@ -269,7 +274,7 @@
 	<td class="summary">Rotates the knob by amount of ticks.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#RotaryKnob:random">RotaryKnob:random([lower=0[, upper=100]])</a></td>
+	<td class="name" nowrap><a href="#RotaryKnob:random">RotaryKnob:random([lower=0][, upper=100])</a></td>
 	<td class="summary">Sets the knob to random position between lower and upper.</td>
 	</tr>
 </table>
@@ -280,7 +285,7 @@
 	<td class="summary">Returns the MCDU display as an array of display cells.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#MCDU:getString">MCDU:getString([startpos[, endpos]])</a></td>
+	<td class="name" nowrap><a href="#MCDU:getString">MCDU:getString([startpos][, endpos])</a></td>
 	<td class="summary">Returns the MCDU display as a string.</td>
 	</tr>
 	<tr>
@@ -306,7 +311,7 @@
 
 
     <h2 class="section-header "><a name="Functions"></a>Functions</h2>
-
+    Methods
     <dl class="function">
     <dt>
     <a name = "checkWithTimeout"></a>
@@ -381,7 +386,7 @@
 </dd>
     <dt>
     <a name = "repeatWithTimeout"></a>
-    <strong>repeatWithTimeout([timeout=5000], block, ..., block)</strong>
+    <strong>repeatWithTimeout([timeout=5000], block, ...)</strong>
     </dt>
     <dd>
     Repeats the callback until the timeout elapses
@@ -402,12 +407,6 @@
         </li>
         <li><span class="parameter">...</span>
          Arguments to forward to block.
-        </li>
-        <li><span class="parameter">block</span>
-            <span class="types"><span class="type">function</span></span>
-
-
-
         </li>
     </ul>
 
@@ -465,15 +464,7 @@
         </li>
         <li><span class="parameter">key</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         The keyboard key. The following values for are accepted (case-insensitive):<br><br></p>
-
-<ul>
-    <li>Alphanumeric character keys</li>
-    <li>Virtual key codes: <code>key = &quot;\222&quot;</code>. </li>
-    <li>Named keys defined in <code>Copilot for FSLabs\lua\key_list.lua</code></li>
-</ul>
-
-<p> You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in <code>Copilot for FSLabs\lua\key_list.lua</code>
+         <a href="../manual/list_of_keys.md.html#">See the list of keys here</a>
         </li>
         </li></ul>
     </ul>
@@ -483,7 +474,8 @@
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">Bind {key = <span class="string">"LSHIFT+LALT+PageUp"</span>, extended = <span class="keyword">true</span>, onPress = <span class="keyword">function</span>() <span class="global">print</span> <span class="string">"hi"</span> <span class="keyword">end</span>}</pre>
+        <pre class="example">Bind {key = <span class="string">"SHIFT+ALT+PageUp"</span>, extended = <span class="keyword">true</span>, onPress = <span class="keyword">function</span>() <span class="global">print</span> <span class="string">"hi"</span> <span class="keyword">end</span>}
+Bind {key = <span class="string">"A"</span>, onPress = {FSL.OVHD_EXTLT_Nose_Switch, <span class="string">"TAXI"</span>}}</pre>
     </ul>
 
 </dd>
@@ -1232,7 +1224,7 @@ FSL:setPilot(<span class="number">1</span>)
 </dd>
     <dt>
     <a name = "RotaryKnob:random"></a>
-    <strong>RotaryKnob:random([lower=0[, upper=100]])</strong>
+    <strong>RotaryKnob:random([lower=0][, upper=100])</strong>
     </dt>
     <dd>
     Sets the knob to random position between lower and upper.
@@ -1305,7 +1297,7 @@ FSL:setPilot(<span class="number">1</span>)
 </dd>
     <dt>
     <a name = "MCDU:getString"></a>
-    <strong>MCDU:getString([startpos[, endpos]])</strong>
+    <strong>MCDU:getString([startpos][, endpos])</strong>
     </dt>
     <dd>
     Returns the MCDU display as a string.
@@ -1440,7 +1432,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-06 23:39:14 </i>
+<i style="float:right;">Last updated 2021-04-12 22:10:40 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -33,6 +33,90 @@ LuaPlugin::ScriptStartupError::ScriptStartupError(const sol::protected_function_
 
 const char* LuaPlugin::ScriptStartupError::what() const { return _what.c_str(); }
 
+const std::string TYPE_NONE = "";
+
+template<typename T>
+size_t writeNoProcess(size_t offset, T value)
+{
+	std::lock_guard<std::mutex> lock(FSUIPC::mutex);
+	DWORD result;
+	FSUIPC_Write(offset, sizeof(T), &value, &result);
+	return sizeof(T);
+}
+
+std::unordered_set<std::string> fsuipcTypes {
+	"STR", "UB", "SB", "UW", "SW", "UD", "SD", "DD", "FLT", "DBL"
+};
+
+void parseWriteStructArgs(sol::variadic_args& va, size_t offset, size_t idx, size_t numValues, const std::string& type)
+{
+	if (idx == va.size()) {
+		std::lock_guard<std::mutex> lock(FSUIPC::mutex);
+		DWORD res;
+		FSUIPC_Process(&res);
+		return;
+	}
+
+	if (type == TYPE_NONE) {
+
+		if (va[idx].get_type() == sol::type::number)
+			return parseWriteStructArgs(va, va.get<size_t>(idx), idx + 1, 0, TYPE_NONE);
+		std::string typeOrOffset = va.get<std::string>(idx);
+		if (offset) {
+			std::string::iterator it = std::find_if(typeOrOffset.begin(), typeOrOffset.end(), [](char c) {return std::isalpha(c); });
+			if (it != typeOrOffset.end()) {
+				auto typeIdx = it - typeOrOffset.begin();
+				auto size = std::stoi(typeOrOffset.substr(0, typeIdx));
+				auto type = typeOrOffset.substr(typeIdx, typeOrOffset.size() - typeIdx);
+				if (fsuipcTypes.find(type) != fsuipcTypes.end())
+					return parseWriteStructArgs(va, offset, idx + 1, size, type);
+			}
+		}
+		return parseWriteStructArgs(va, std::stoul(typeOrOffset, nullptr, 16), idx + 1, 0, TYPE_NONE);
+	} else {
+		if (type == "STR") {
+			DWORD result;
+			std::string str = va.get<std::string>(idx);
+			{
+				std::lock_guard<std::mutex> lock(FSUIPC::mutex);
+				FSUIPC_Write(offset, numValues, const_cast<char*>(str.c_str()), &result);
+			}
+			offset += numValues;
+			return parseWriteStructArgs(va, offset, idx + 1, 0, TYPE_NONE);
+		} else if (type == "UB") {
+			offset += writeNoProcess(offset, va.get<uint8_t>(idx));
+		} else if (type == "SB") {
+			offset += writeNoProcess(offset, va.get<int8_t>(idx));
+		} else if (type == "UW") {
+			offset += writeNoProcess(offset, va.get<uint16_t>(idx));
+		} else if (type == "SW") {
+			offset += writeNoProcess(offset, va.get<int16_t>(idx));
+		} else if (type == "UD") {
+			offset += writeNoProcess(offset, va.get<uint32_t>(idx));
+		} else if (type == "SD") {
+			offset += writeNoProcess(offset, va.get<int32_t>(idx));
+		} else if (type == "DD") {
+			offset += writeNoProcess(offset, va.get<int64_t>(idx));
+		} else if (type == "FLT") {
+			offset += writeNoProcess(offset, va.get<float>(idx));
+		} else if (type == "DBL") {
+			offset += writeNoProcess(offset, va.get<double>(idx));
+		} else {
+			throw "Invalid format";
+		}
+		numValues--;
+		if (numValues == 0) {
+			return parseWriteStructArgs(va, offset, idx + 1, 0, TYPE_NONE);
+		}
+		return parseWriteStructArgs(va, offset, idx + 1, numValues, type);
+	}
+}
+
+void writeStruct(sol::variadic_args va)
+{
+	parseWriteStructArgs(va, 0, 0, 0, TYPE_NONE);
+}
+
 void keypress(SHORT keyCode, std::vector<SHORT>& modifiers)
 {
 	SetFocus(SimInterface::p3dWnd);
@@ -133,38 +217,52 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua["copilot"].get_or_create<sol::table>();
 	lua["copilot"]["keypress"] = [&](const std::string& s) {
 		sol::unsafe_function f = this->lua["Bind"]["parseKeys"];
-		sol::table keyCodes = f(s, true);
+		sol::table keyCodes = f(s);
 		auto keyCode = keyCodes.get<SHORT>("keyCode");
 		auto shifts = keyCodes.get<std::vector<SHORT>>("shifts");
 		keypress(keyCode, shifts);
 	};
+	lua["copilot"]["isSimRunning"] = copilot::simRunning();
 
 	std::unordered_map<std::string, SIMCONNECT_TEXT_TYPE>  textColors = {
-		{"black", SIMCONNECT_TEXT_TYPE_PRINT_BLACK },
-		{"white", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
-		{"red", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
-		{"green", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
-		{"blue", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
-		{"yellow", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
-		{"magenta", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
-		{"cyan", SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+
+		{"print_black",		SIMCONNECT_TEXT_TYPE_PRINT_BLACK },
+		{"print_white",		SIMCONNECT_TEXT_TYPE_PRINT_WHITE},
+		{"print_red",		SIMCONNECT_TEXT_TYPE_PRINT_RED},
+		{"print_green",		SIMCONNECT_TEXT_TYPE_PRINT_GREEN},
+		{"print_blue",		SIMCONNECT_TEXT_TYPE_PRINT_BLUE},
+		{"print_yellow",	SIMCONNECT_TEXT_TYPE_PRINT_YELLOW},
+		{"print_magenta",	SIMCONNECT_TEXT_TYPE_PRINT_MAGENTA},
+		{"print_cyan",		SIMCONNECT_TEXT_TYPE_PRINT_CYAN},
+
+		{"scroll_black",	SIMCONNECT_TEXT_TYPE_SCROLL_BLACK },
+		{"scroll_white",	SIMCONNECT_TEXT_TYPE_SCROLL_WHITE},
+		{"scroll_red",		SIMCONNECT_TEXT_TYPE_SCROLL_RED},
+		{"scroll_green",	SIMCONNECT_TEXT_TYPE_SCROLL_GREEN},
+		{"scroll_blue",		SIMCONNECT_TEXT_TYPE_SCROLL_BLUE},
+		{"scroll_yellow",	SIMCONNECT_TEXT_TYPE_SCROLL_YELLOW},
+		{"scroll_magenta",	SIMCONNECT_TEXT_TYPE_SCROLL_MAGENTA},
+		{"scroll_cyan",		SIMCONNECT_TEXT_TYPE_SCROLL_CYAN},
 	};
 
-	lua["copilot"]["displayText"] = [textColors](const std::string& s, std::optional<size_t> delay, std::optional<std::string> color) {
+	lua["copilot"]["displayText"] = [textColors, EVENT_DISPLAY_TEXT = SimConnect::getUniqueEventID()](const std::string& s, std::optional<size_t> length, std::optional<std::string> type) {
 
-		SIMCONNECT_TEXT_TYPE type;
+		SIMCONNECT_TEXT_TYPE simconnectType;
 
-		if (color) {
-			type = textColors.at(*color);
+		if (type) {
+			auto it = textColors.find(*type);
+			if (it == textColors.end())
+				throw("Invalid text type: " + *type);
+			simconnectType = it->second;
 		} else {
-			type = SIMCONNECT_TEXT_TYPE_PRINT_WHITE;
+			simconnectType = SIMCONNECT_TEXT_TYPE_PRINT_WHITE;
 		}
 
 		SimConnect_Text(
 			SimConnect::hSimConnect,
-			SIMCONNECT_TEXT_TYPE_PRINT_WHITE,
-			delay.value_or(0),
-			-1,
+			simconnectType,
+			length.value_or(0),
+			EVENT_DISPLAY_TEXT,
 			s.length() + 1,
 			const_cast<char*>(s.c_str())
 		);
@@ -200,11 +298,11 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 		);
 	};
 
-
-
 	using namespace FSUIPC;
 
 	ipc["exit"] = [&] { yeetLuaThread(); };
+
+	ipc["writeStruct"] = writeStruct;
 
 	ipc["writeUB"] = write<uint8_t>;
 	ipc["readUB"] = read<uint8_t>;
@@ -302,7 +400,8 @@ void LuaPlugin::yeetLuaThread()
 
 void LuaPlugin::onError(sol::error& err)
 {
-	copilot::logger->error(err.what());
+	if (copilot::simRunning())
+		copilot::logger->error(err.what());
 }
 
 void LuaPlugin::onError(const ScriptStartupError& err)
@@ -343,6 +442,16 @@ void LuaPlugin::stopAllScripts()
 		std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 		delete s.script;
 		s.script = nullptr;
+	}
+}
+
+void LuaPlugin::sendShutDownEvents()
+{
+	std::unique_lock<std::mutex> globalLock(globalMutex);
+	for (auto& s : scripts) {
+		std::lock_guard<std::recursive_mutex> lock(*s.mutex);
+		s.script->running = false;
+		SetEvent(s.script->shutdownEvent);
 	}
 }
 

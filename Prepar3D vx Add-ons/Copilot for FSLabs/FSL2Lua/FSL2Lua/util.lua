@@ -36,7 +36,6 @@ end
 --@int[opt=5000] timeout Timeout in milliseconds
 --@tparam function block
 --@param ... Arguments to forward to block.
---@tparam function block
 function repeatWithTimeout(timeout, block, ...)
   timeout = ipc.elapsedtime() + (timeout or 5000)
   repeat block(...) until ipc.elapsedtime() > timeout

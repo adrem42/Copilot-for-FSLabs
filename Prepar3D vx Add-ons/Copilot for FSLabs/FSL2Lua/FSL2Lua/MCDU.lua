@@ -25,6 +25,9 @@ function MCDU:new(side, port)
 end
 
 function MCDU:_onHttpError()
+  if not copilot.isSimRuning() then
+    ipc.exit()
+  end
   util.handleError(string.format("%s MCDU HTTP request error %s, retrying...",
                             self.sideStr, self.request:lastError()), 3)
 end
@@ -47,8 +50,8 @@ function MCDU:getArray()
     local response
     while true do
       response = self.request:getRaw()
-      if response ~= "" then break
-      else self:_onHttpError() end
+      if response ~= "" then break end
+      self:_onHttpError() 
     end
     local display = {}
     for unitArray in response:gmatch("%[(.-)%]") do
@@ -76,14 +79,13 @@ function MCDU:getString(startpos, endpos)
   local display
   while true do
     display = self.request:getString()
-    if display then break
-    else error "wtf" self:_onHttpError() end
+    if display then break end
+    self:_onHttpError() 
   end
   if startpos or endpos then
-    return string.sub(display, startpos, endpos)
-  else
-    return display
+    return string.sub(display, startpos or 1, endpos or #display)
   end
+  return display
 end
 
 --- Returns the scratchpad - the last line on the display.
@@ -124,11 +126,13 @@ end
 
 --- Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.
 function MCDU:printCells()
-  for pos,cell in ipairs(self:getArray()) do
-    print(pos, 
-          cell.char and string.format("%s (%s)", cell.char, string.byte(cell.char)) or "", 
-          cell.color or "", 
-          cell.isBold and "bold" or cell.isBold == false and "not bold" or "")
+  for pos, cell in ipairs(self:getArray()) do
+    print(
+      pos, 
+      cell.char and string.format("%s (%s)", cell.char, string.byte(cell.char)) or "", 
+      cell.color or "", 
+      cell.isBold and "bold" or cell.isBold == false and "not bold" or ""
+    )
   end
 end
 

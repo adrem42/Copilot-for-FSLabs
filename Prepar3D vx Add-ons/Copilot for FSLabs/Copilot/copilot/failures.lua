@@ -68,20 +68,6 @@ local function saveStates()
   file.write(stateFilePath, serpent.dump(failureStates), "w")
 end
 
-local function pairsByKeys (t, f)
-  local a = {}
-  for n in pairs(t) do table.insert(a, n) end
-  table.sort(a, f)
-  local i = 0      -- iterator variable
-  local iter = function ()   -- iterator function
-    i = i + 1
-    if a[i] == nil then return nil
-    else return a[i], t[a[i]]
-    end
-  end
-  return iter
-end
-
 local function setupFailures()
 
   repeat
@@ -243,7 +229,7 @@ local function init()
   lfs.mkdir(APPDIR .. "Copilot\\failures")
   lfs.mkdir(aircraftRegDir)
 
-  local path = ipc.readSTR(0x3C00,256):gsub("SimObjects.+", "A320XGauges.ini")
+  local path = ipc.readSTR(0x3C00, 256):gsub("SimObjects.+", "A320XGauges.ini")
   coldAndDark = file.read(path):find("%[PANEL_STATE%].-Default=1")
 end
 

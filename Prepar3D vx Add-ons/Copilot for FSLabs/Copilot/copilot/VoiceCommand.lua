@@ -21,7 +21,7 @@ local recognizer = copilot.recognizer
 -- will also degrade the quality of recognition.<br>
 --
 --- @type VoiceCommand
-VoiceCommand = {DefaultConfidence = 0.93}
+VoiceCommand = {DefaultConfidence = 0.93, logPrefix = "VoiceCommand"}
 setmetatable(VoiceCommand, {__index = Event})
 
 local PersistenceMode = {
@@ -85,7 +85,7 @@ function VoiceCommand:new(data, confidence)
   end
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
-  voiceCommand.logMsg = voiceCommand.logMsg or phrase[1] and phrase[1].asString
+  voiceCommand.logMsg = voiceCommand.logMsg or tostring(phrase[1])
   voiceCommand = setmetatable(Event:new(voiceCommand), self)
   if data.dummy then
     voiceCommand:addPhrase(parsePhrases(data.dummy), true)
@@ -95,20 +95,17 @@ function VoiceCommand:new(data, confidence)
 end
 
 --- Call this function inside a plugin lua before activating or deactivating voice commands. 
+--- You also need to call this after modifying the existing phrase set in any way for the changes to take place.
 ---@static
 function VoiceCommand.resetGrammar()
-  if not VoiceCommand.isGrammarReset then
-    recognizer:resetGrammar()
-    VoiceCommand.isGrammarReset = true
-  end
+  recognizer:resetGrammar()
 end
 
 --- Returns all phrase variants of a voice command.
 ---@bool dummy True to return dummy phrase variants, omitted or false to return actual phrase variants.
----@return Array of strings.
+---@return Array of Phrase objects
 function VoiceCommand:getPhrases(dummy)
-  --return recognizer:getPhrases(self.ruleID, dummy == true and true or false)
-  return {}
+  return recognizer:getPhrases(self.ruleID, dummy == true and true or false)
 end
 
 --- Sets persistence mode of a voice command.

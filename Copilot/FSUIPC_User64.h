@@ -55,6 +55,8 @@ extern BOOL FSUIPC_ReadSpecial(DWORD dwOffset, DWORD dwSize, void *pDest, DWORD 
 extern BOOL FSUIPC_Write(DWORD dwOffset, DWORD dwSize, void *pSrce, DWORD *pdwResult);
 extern BOOL FSUIPC_Process(DWORD *pdwResult);
 
+extern void FSUIPC_OnSimExit();
+
 #ifdef __cplusplus
 };
 #endif

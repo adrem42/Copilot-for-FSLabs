@@ -14,6 +14,25 @@ With acknowledgements to Adam Szofran (author of original FS6IPC).
 
 #include "IPCuser64.h"
 
+HANDLE exitEvent = 0;
+HANDLE processEvent = 0;
+
+void Sendasyncproc(
+	HWND unnamedParam1,
+	UINT unnamedParam2,
+	ULONG_PTR outResult,
+	LRESULT res
+)
+{
+	*((LRESULT*)outResult) = res;
+	SetEvent(processEvent);
+}
+
+void FSUIPC_OnSimExit()
+{
+	SetEvent(exitEvent);
+}
+
 /******************************************************************************
 			IPC client stuff
 ******************************************************************************/
@@ -45,6 +64,13 @@ void FSUIPC_Close(void)
 // return: TRUE if successful, FALSE otherwise
 BOOL FSUIPC_Open2(DWORD dwFSReq, DWORD *pdwResult, BYTE *pMem, DWORD dwSize)
 {  // abort if already started
+
+	if (!processEvent)
+		processEvent = CreateEvent(0, 0, 0, 0);
+	if (!exitEvent)
+		exitEvent = CreateEvent(0, 0, 0, 0);
+
+
 	if (m_pView)
 	{	*pdwResult = FSUIPC_ERR_OPEN;
 		return FALSE;
@@ -114,6 +140,7 @@ BOOL FSUIPC_Open2(DWORD dwFSReq, DWORD *pdwResult, BYTE *pMem, DWORD dwSize)
 	}
 
 	*pdwResult = FSUIPC_ERR_OK;
+
 	return TRUE;
 }
 
@@ -138,10 +165,35 @@ BOOL FSUIPC_Process(DWORD *pdwResult)
 	}
 
 	ZeroMemory(m_pNext, 4); // Terminator
-	
-	// send the request
-	dwError = SendMessage(m_hWnd, WM_IPCTHREADACCESS, (WPARAM) (m_pNext - m_pView - 4), (LPARAM) m_pView);
 
+	// send the request
+	//dwError = SendMessage(m_hWnd, WM_IPCTHREADACCESS, (WPARAM) (m_pNext - m_pView - 4), (LPARAM) m_pView);
+
+	BOOL sendMessageRes = SendMessageCallback(m_hWnd, WM_IPCTHREADACCESS, (WPARAM)(m_pNext - m_pView - 4), (LPARAM)m_pView, Sendasyncproc, &dwError);
+	if (!sendMessageRes) {
+		DWORD err = GetLastError();
+		int i = 1;
+	}
+
+	HANDLE events[2] = { processEvent, exitEvent };
+
+	DWORD res = WaitForMultipleObjects(2, events, FALSE, 0);
+
+	if (res == WAIT_TIMEOUT) {
+		for (;;) {
+			res = MsgWaitForMultipleObjects(2, events, FALSE, INFINITE, QS_SENDMESSAGE);
+			if (res < WAIT_OBJECT_0 + 2) break;
+			MSG msg = { 0 };
+			PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+		}
+	} 
+
+	if (res == WAIT_OBJECT_0 + 1) {
+		FSUIPC_Close();
+		*pdwResult = FSUIPC_ERR_NOTOPEN;
+		return FALSE;
+	}
+	
 	m_pNext = m_pView + 8;
 	
 	if (dwError != FS6IPC_MESSAGE_SUCCESS)

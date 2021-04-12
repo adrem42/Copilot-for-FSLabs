@@ -37,6 +37,9 @@ void Sound::enqueue(int delay)
 {
 	std::lock_guard<std::mutex> lock(mtx);
 	auto now = std::chrono::system_clock::now();
+	if (delay == -1 && now < nextFreeSlot) {
+		Sleep((nextFreeSlot - now).count());
+	}
 	if (delay > 0 || now < nextFreeSlot) {
 		auto playTime = now + std::chrono::milliseconds(delay);
 		if (playTime < nextFreeSlot) {
@@ -46,6 +49,9 @@ void Sound::enqueue(int delay)
 		nextFreeSlot = playTime + std::chrono::milliseconds(length);
 	} else {
 		playNow();
+		if (delay == -1) {
+			Sleep(length);
+		}
 		nextFreeSlot = now + std::chrono::milliseconds(length);
 	}
 }

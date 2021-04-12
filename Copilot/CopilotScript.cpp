@@ -14,7 +14,30 @@
 #include "McduWatcher.h"
 #include <functional>
 #include <string>
+#include <filesystem>
+#include "SimInterface.h"
 
+std::unordered_map< P3D::MOUSE_CLICK_TYPE, std::string> clickTypes{
+	{P3D::MOUSE_CLICK_LEFT_SINGLE,		"leftPress"},
+	{P3D::MOUSE_CLICK_LEFT_RELEASE,		"leftRelease"},
+	{P3D::MOUSE_CLICK_RIGHT_SINGLE,		"rightPress"},
+	{P3D::MOUSE_CLICK_RIGHT_RELEASE,	"rightRelease"},
+	{P3D::MOUSE_CLICK_WHEEL_UP,			"wheelUp"},
+	{P3D::MOUSE_CLICK_WHEEL_DOWN,		"wheelDown"},
+};
+
+void CopilotScript::MouseRectListenerCallback::MouseRectListenerProc(UINT rect, P3D::MOUSE_CLICK_TYPE clickType)
+{
+	if (!SimInterface::firingMouseMacro()) {
+		withScript<CopilotScript>(pScript, [=](CopilotScript& script) {
+			script.enqueueCallback([=, &script](sol::state_view& lua) {
+				auto it = clickTypes.find(clickType);
+				if (it != clickTypes.end())
+					script.mouseMacroEvent["trigger"](script.mouseMacroEvent, rect, it->second);
+			});
+		});
+	}
+}
 
 /*** @type TextMenu */
 class LuaTextMenu : public SimConnect::TextMenuEvent {
@@ -179,6 +202,12 @@ public:
 		return *this;
 	}
 
+	LuaTextMenu& setMenu(const std::string& title, const std::string& prompt, std::vector<std::string> items)
+	{
+		SimConnect::TextMenuEvent::setMenu(title, prompt, items);
+		return *this;
+	}
+
 	/***
 	* @function cancel
 	*/
@@ -223,9 +252,83 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	copilot["onVolKnobPosChanged"] = Sound::onVolumeChanged;
 
-	copilot["speak"] = [&](const std::wstring& phrase, size_t delay) {
-		std::lock_guard<std::mutex> lock(ttsQueueMutex);
-		ttsQueue.push(std::make_pair(elapsedTime() + delay, phrase));
+	copilot["speak"] = [&](const std::wstring& phrase, std::optional<size_t> delay) {
+		if (delay == -1) {
+			voice->Speak(phrase.c_str(), 0, NULL);
+		} else {
+			std::lock_guard<std::mutex> lock(ttsQueueMutex);
+			ttsQueue.push(std::make_pair(elapsedTime() + delay.value_or(0), phrase));
+		}
+	};
+
+	copilot["mouseMacroEvent"] = [&](sol::this_state ts) {
+		if (!mouseMacroCallback) {
+			mouseMacroCallback = std::make_unique<MouseRectListenerCallback>(this);
+			copilot::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(mouseMacroCallback.get());
+			sol::state_view lua(ts);
+			mouseMacroEvent = lua["Event"]["new"](lua["Event"]);
+		}
+		return mouseMacroEvent;
+	};
+
+	mcduWatcherLua.open_libraries();
+	mcduWatcherLua["print"] = [this](sol::variadic_args va) {
+		std::string str;
+		for (size_t i = 0; i < va.size(); i++) {
+			auto v = va[i];
+			str += this->lua["tostring"](v.get<sol::object>());
+			if (i != va.size() - 1) {
+				str += " ";
+			}
+		}
+		copilot::logger->info(str);
+	};
+
+	mcduWatcherToArray = mcduWatcherLua.script(R"(
+		local colors = {
+			["1"] = "cyan",
+			["2"] = "grey",
+			["4"] = "green",
+			["5"] = "magenta",
+			["6"] = "amber",
+			["7"] = "white",
+		}
+				
+		return function(response)
+			local display = {}
+			for unitArray in response:gmatch("%[(.-)%]") do
+				local unit = {}
+				if unitArray:find(",") then
+					local char, color, isBold = unitArray:match('(%d+),(%d),(%d)')
+					unit.char = string.char(char)
+					unit.color = colors[color] or tonumber(color)
+					unit.isBold = tonumber(isBold) == 0
+				end
+				display[#display + 1] = unit
+			end
+			return display
+		end
+	)");
+
+	mcduWatcherLua["getVar"] = [this](const std::string& name) {
+		return mcduWatcher->getVar(name);
+	};
+	mcduWatcherLua["setVar"] = [this](const std::string& key, LuaVar value) {
+		mcduWatcher->setVar(key, value);
+	};
+	mcduWatcherLua["clearVar"] = [this](const std::string& key) {
+		mcduWatcher->clearVar(key);
+	};
+
+	copilot["addMcduCallback"] = [this](const std::string& path) {
+		sol::protected_function_result pfr = mcduWatcherLua.safe_script_file(path);
+		if (!pfr.valid()) {
+			throw ScriptStartupError(pfr);
+		}
+		if (pfr.get_type() != sol::type::function) {
+			throw ScriptStartupError(path + " needs to return a function");
+		}
+		mcduWatcherLuaCallbacks.push_back(pfr);
 	};
 
 	auto RecoResultFetcherType = lua.new_usertype<RecoResultFetcher>("RecoResultFetcher");
@@ -242,8 +345,8 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	auto McduWatcherType = lua.new_usertype<McduWatcher>("McduWatcher");
 	McduWatcherType["getVar"] = &McduWatcher::getVar;
-	McduWatcherType["resetVars"] = &McduWatcher::resetVars;
-
+	McduWatcherType["clearVar"] = &McduWatcher::clearVar;
+	
 	bool voiceControl = options["voice_control"]["enable"] == 1;
 	if (voiceControl) {
 		try {
@@ -318,7 +421,9 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	TextMenuType["setTitle"] = &LuaTextMenu::setTitle;
 	TextMenuType["setPrompt"] = &LuaTextMenu::setPrompt;
 	TextMenuType["setTimeout"] = &LuaTextMenu::setTimeout;
-	TextMenuType["getEvent"] = &LuaTextMenu::getEvent;
+	TextMenuType["event"] = sol::readonly_property([](LuaTextMenu& m) {
+		return m.getEvent();
+	});
 
 	lua.new_enum<LuaTextMenu::Result>(
 		"TextMenuResult",
@@ -378,6 +483,7 @@ void CopilotScript::run()
 	LuaPlugin::run();
 
 	if (!shouldRun) return;
+	
 
 	auto events = createEvents();
 
@@ -467,8 +573,32 @@ void CopilotScript::enqueueCallback(LuaCallback callback)
 
 void CopilotScript::onMessageLoopTimer()
 {
-	if (copilot::isFslAircraft)
-		mcduWatcher->update();
+	if (copilot::isFslAircraft) {
+		if (mcduWatcherLuaCallbacks.size()) {
+			mcduWatcher->update([this](const std::string& pf, const std::string& pm, int pmSide) {
+				sol::table data = mcduWatcherLua.create_table();
+				sol::table pfDisplay = mcduWatcherToArray(pf);
+				sol::table pmDisplay = mcduWatcherToArray(pm);
+				pfDisplay["str"] = MCDU::getStringFromRaw(pf);
+				pmDisplay["str"] = MCDU::getStringFromRaw(pm);
+				data["PM"] = pmDisplay;
+				data["PF"] = pfDisplay;
+				if (pmSide == 1) {
+					data["pmSide"] = "CPT";
+					data["CPT"] = pmDisplay;
+					data["FO"] = pfDisplay;
+				} else {
+					data["pmSide"] = "FO";
+					data["CPT"] = pfDisplay;
+					data["FO"] = pmDisplay;
+				}
+				for (const auto& callback : mcduWatcherLuaCallbacks)
+					callProtectedFunction(callback, data);
+			});
+		} else {
+			mcduWatcher->update(nullptr);
+		}
+	}
 	Sound::update(copilot::isFslAircraft);
 	std::lock_guard<std::mutex> lock(ttsQueueMutex);
 	if (ttsQueue.size() && elapsedTime() >= ttsQueue.front().first) {
@@ -563,8 +693,12 @@ void CopilotScript::unregisterLuaObject(RegisterID id)
 
 CopilotScript::~CopilotScript()
 {
-	voice->Release();
+	if (mouseMacroCallback)
+		copilot::GetWindowPluginSystem()->UnRegisterMouseRectListenerCallback(mouseMacroCallback.get());
+	if (voice)
+		voice->Release();
 	CoUninitialize();
 	stopBackgroundThread();
 	stopThread();
+	
 }

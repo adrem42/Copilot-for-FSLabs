@@ -36,14 +36,17 @@ void hideCursor()
 const size_t MSG_FIRE_MOUSE_RECTANGLE = WM_APP + 0;
 const size_t MSG_HIDE_CURSOR = WM_APP + 1;
 
+bool _firingMouseMacro = false;
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
-
     switch (uMsg) {
 
-        case MSG_FIRE_MOUSE_RECTANGLE:
+       case MSG_FIRE_MOUSE_RECTANGLE: 
+            _firingMouseMacro = true;
             copilot::GetWindowPluginSystem()->FireMouseRectClick(wParam, (MOUSE_CLICK_TYPE)lParam);
+            _firingMouseMacro = false;
+            
             break;
 
         case MSG_HIDE_CURSOR:
@@ -53,6 +56,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+bool SimInterface::firingMouseMacro()
+{
+    return _firingMouseMacro;
 }
 
 void createWindow()

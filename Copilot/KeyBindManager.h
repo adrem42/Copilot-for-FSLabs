@@ -19,16 +19,13 @@ class KeyBindManager {
 		Keyboard::Timestamp timestamp;
 		std::vector<Callback>* callbacks;
 	};
-	
-	enum class KeyState { Released, Depressed };
+
 
 	struct Callbacks {
 		std::vector<Callback> onPress;
 		std::vector<Callback> onPressRepeat;
 		std::vector<Callback> onRelease;
 	};
-
-	std::unordered_map<Keyboard::KeyCode, KeyState> keyStates;
 
 	std::mutex bindMapMutex;
 	std::unordered_map<Keyboard::ShiftValue, std::unordered_map<Keyboard::KeyCode, Callbacks>> bindMap;

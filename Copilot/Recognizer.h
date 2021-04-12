@@ -77,7 +77,7 @@ public:
 	void deactivateRule(RuleID ruleID);
 	void disableRule(RuleID ruleID);
 	RuleState getRuleState(RuleID ruleID);
-	//sol::as_table_t<std::vector<std::string>> getPhrases(RuleID ruleID, bool dummy);
+	sol::as_table_t<std::vector<Phrase>> getPhrases(RuleID ruleID, bool dummy);
 	void addPhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy);
 	//void removePhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy);
 	void removeAllPhrases(RuleID ruleID, bool dummy);

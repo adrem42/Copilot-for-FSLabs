@@ -8,7 +8,9 @@
 
 CallbackRunner::Interval CallbackRunner::validateInputInterval(std::optional<Interval>& input)
 {
-	return input ? std::max<Interval>(*input, MIN_INTERVAL) : MIN_INTERVAL;
+	if (!input)
+		return DEFAULT_INTERVAL;
+	return std::max<Interval>(*input, MIN_INTERVAL);
 }
 
 void CallbackRunner::maybeAwaken(Timestamp deadline)
@@ -171,6 +173,14 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 	return std::make_tuple(callback->functionOrThread, callback->threadEvent);
 }
 
+/***
+* Adds a coroutine callback
+* @function copilot.addCoroutine
+* @param callback A function or thread. If it's a function, addCoroutine will call coroutine.create itself.
+* @string[opt] name Same as `addCallback`
+* @int[opt] delay Same as `addCallback`
+* @return The same values as `addCallback`
+*/
 CallbackRunner::CallbackReturn CallbackRunner::addCoroutine(sol::object callable, std::optional<std::string> name, std::optional<Interval> delay)
 {
 	if (callable.get_type() == sol::type::function) {
@@ -208,7 +218,7 @@ void CallbackRunner::removeCallback(sol::object key)
 		actuallyRemoveCallback(lua, callback);
 		if (callback->functionOrThread.get_type() == sol::type::thread) {
 			auto& threadEvent = *callback->threadEvent;
-			threadEvent["trigger"](threadEvent, lua_thread_removed);
+			threadEvent["trigger"](threadEvent, LUA_THREAD_REMOVED);
 		}
 	}
 }
@@ -231,7 +241,7 @@ bool CallbackRunner::setCallbackTimeout(sol::object key, Timestamp timeout)
 	});
 }
 
-bool CallbackRunner::setCallbackTimeout(sol::object key, indefinite_t indefinite)
+bool CallbackRunner::setCallbackTimeout(sol::object key)
 {
 	return setCallbackTimeout(key, [this](std::shared_ptr<Callback>& callback) {
 		if (callback->deadline == INDEFINITE)
@@ -277,8 +287,12 @@ std::optional<sol::table> CallbackRunner::getThreadEvent(sol::object key)
 void CallbackRunner::makeLuaBindings(sol::state_view& lua, const std::string& tableName)
 {
 	auto t = lua[tableName].get_or_create<sol::table>();
-	t["INFINITE"] = lua_indefinite;
-	t["THREAD_REMOVED"] = lua_thread_removed;
+
+	LUA_INDEFINITE = lua.create_table();
+	LUA_THREAD_REMOVED = lua.create_table();
+
+	t["INFINITE"] = LUA_INDEFINITE;
+	t["THREAD_REMOVED"] = LUA_THREAD_REMOVED;
 
 	t["addCallback"] = [&](
 		sol::object callable,
@@ -298,10 +312,12 @@ void CallbackRunner::makeLuaBindings(sol::state_view& lua, const std::string& ta
 	t["addCoroutine"] = [&](sol::object callable, std::optional<std::string> name, std::optional<Interval> delay) {
 		return addCoroutine(callable, name, delay);
 	};
-	t["setCallbackTimeout"] = sol::overload(
-		[&](sol::object o, indefinite_t indefinite) { return setCallbackTimeout(o, indefinite); },
-		[&](sol::object o, Timestamp timestamp) { return setCallbackTimeout(o, timestamp); }
-	);
+	t["setCallbackTimeout"] = [=](sol::object callable, sol::main_object arg) {
+		if (arg == LUA_INDEFINITE) {
+			return setCallbackTimeout(callable);
+		}
+		return setCallbackTimeout(callable, arg.as<Timestamp>());
+	};
 	t["cancelCallbackTimeout"] = [&](sol::object callable) {
 		return cancelCallbackTimeout(callable);
 	};

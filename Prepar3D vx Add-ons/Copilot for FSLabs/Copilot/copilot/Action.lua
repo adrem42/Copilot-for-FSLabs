@@ -20,14 +20,32 @@ function Action:new(callback, flags)
     callback = callableType == "function" and callback or function(...) return callback(...) end,
     isEnabled = true,
     runAsCoroutine = flags == Action.COROUTINE,
-    eventRefs = {stop = {}}
+    eventRefs = {stop = {}},
+    events = {}
   }, self)
   if a.runAsCoroutine then
-    a.threadFinishedEvent = Event:new()
-    a.threadFinishedEvent:addAction(function(_, ...) a:_onThreadFinished(...) end)
+    a.threadFinishedEvent = Event:new {action = function(_, ...) a:_onThreadFinished(...) end}
   end
   util.setOnGCcallback(a, function() copilot.logger:trace("Action gc: " .. a:toString()) end)
   return a
+end
+
+function Action:removeFromEvent(event)
+  if event then
+    event:removeAction(self)
+  else
+    for e in pairs(self.events) do
+      e:removeAction(self)
+    end
+  end
+end
+
+function Action:_onAddedToEvent(event)
+  self.events[event] = true
+end
+
+function Action:_onRemovedFromEvent(event)
+  self.events[event] = nil
 end
 
 function Action:toString() return self.logMsg or tostring(self):gsub("table: 0+", "") end

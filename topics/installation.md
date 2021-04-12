@@ -24,7 +24,7 @@ You can restart or stop the script from its Add-ons submenu.
 
 **If anything goes wrong during the script's operation**, examine Copilot.log for errors or anything else that's unusual.
 
-If you want to extend the functionality of the script, see the examples in the sidebar that are prefixed with 'copilot_'.
+Read @{plugins.md|here} if you want to extend the functionality of the script.
 
 ## Setting up speech recognition>
 
@@ -42,7 +42,7 @@ You need to have English as the Windows language in order for the speech recogni
 
 > 1. Create a separate script as described @{standalonescripts.md|here} and bind a key or button to the muteCopilot and unmuteCopilot functions, for example:
 
->> `Bind { key = "A", onPress = muteCopilot, onRelease = unmuteCopilot }`
+	Bind { key = "A", onPress = muteCopilot, onRelease = unmuteCopilot }
 
 > 2. 
 

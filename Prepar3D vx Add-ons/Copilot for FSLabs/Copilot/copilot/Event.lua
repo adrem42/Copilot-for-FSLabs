@@ -5,6 +5,7 @@ local copilot = copilot
 local util = require "FSL2Lua.FSL2Lua.util"
 
 Event = {
+  logPrefix = "Event",
   events = {},
   voiceCommands = {}, 
   dispatchQueue = {},
@@ -104,6 +105,7 @@ function Event:addAction(...)
     self.sortedActions[#self.sortedActions+1] = action
   end
   self.coroDepends[action] = {}
+  action:_onAddedToEvent(self)
   return action
 end
 
@@ -145,6 +147,7 @@ function Event:removeAction(action)
   self.actions.nodes[action] = nil
   self.runOnce[action] = nil
   self.coroDepends[action] = nil
+  action:_onRemovedFromEvent(self)
   return self
 end
 
@@ -195,7 +198,7 @@ end
 
 function Event:dispatch(...)
   self.inDispatch = true
-  copilot.logger:debug("Event: " .. self:toString())
+  copilot.logger:debug(("%s: %s"):format(self.logPrefix, self:toString()))
   if not self.areActionsSorted then self:sortActions() end
   self.actionsToRemove = {}
   for _, action in ipairs(self.sortedActions) do
@@ -279,17 +282,23 @@ end
 ---@return Function that returns the event's payload.
 function Event.waitForEventWithTimeout(timeout, event)
 
-  local calingThread = checkCallingThread "waitForEventWithTimeout"
+  local callingThread = checkCallingThread "waitForEventWithTimeout"
   local getPayload
   local action = event:addOneOffAction(function(_, ...) 
     local payload = {...}
     getPayload = function() return unpack(payload) end
-    copilot.cancelCallbackTimeout(calingThread)
+    copilot.cancelCallbackTimeout(callingThread)
+  end)
+
+  copilot.getThreadEvent(callingThread):addOneOffAction(function(_, res)
+    if res == copilot.THREAD_REMOVED then
+      event:removeAction(action)
+    end
   end)
 
   if not getPayload and (type(timeout) ~= "number" or timeout > 0)  then
     copilot.setCallbackTimeout(
-      calingThread,
+      callingThread,
       timeout == Event.INFINITE and copilot.INFINITE or timeout
     )
   end
@@ -303,8 +312,8 @@ end
 ---Same as `waitForEvent` but for multiple events
 ---@static
 ---@tparam table events Array of <a href="#Class_Event">Event</a>'s.
----@bool[opt=false] returnFunction 
 ---@bool[opt=false] waitForAll
+---@bool[opt=false] returnFunction 
 ---@return If returnFunction is false:
 ---
 --- * If waitForall is true: Table with events as keys and functions that return their payload as values.
@@ -386,6 +395,12 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
 
   local callingThread = checkCallingThread "waitForEventsWithTimeout"
 
+  copilot.getThreadEvent(callingThread):addOneOffAction(function(_, res)
+    if res == copilot.THREAD_REMOVED then
+      for e, a in pairs(actions) do e:removeAction(a) end
+    end
+  end)
+
   for i, event in ipairs(events) do
 
     numEvents = numEvents + 1
@@ -408,8 +423,8 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
   end
 
   local alreadySignaled =
-    (not waitForAll and numSignaled > 0)
-    or (waitForAll and numSignaled == numEvents)
+    (not waitForAll and numSignaled > 0) or
+    (waitForAll and numSignaled == numEvents)
 
   if not alreadySignaled and (type(timeout) ~= "number" or timeout > 0)  then
     copilot.setCallbackTimeout(

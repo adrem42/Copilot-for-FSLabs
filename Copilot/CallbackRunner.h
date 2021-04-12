@@ -34,16 +34,15 @@ private:
 	static void debug(...) {}
 #endif
 
-	const Interval MIN_INTERVAL = 30;
+	static const Interval MIN_INTERVAL			= 10;
+	static const Interval DEFAULT_INTERVAL		= 30;
 	static constexpr const char* REGISTRY_KEY_CALLBACKS_TABLE = "__CALLBACKS";
 
 	Interval validateInputInterval(std::optional<Interval>&);
 	void maybeAwaken(Timestamp deadline);
 	
-	struct indefinite_t {};
-	const indefinite_t lua_indefinite;
-	struct thread_removed_t {};
-	const thread_removed_t lua_thread_removed;
+	sol::table LUA_INDEFINITE;
+	sol::table LUA_THREAD_REMOVED;
 
 	using coroutine_t = sol::main_coroutine;
 
@@ -97,7 +96,7 @@ private:
 					std::vector<sol::object> args(pfr.begin() + 1, pfr.end());
 					threadEvent["trigger"](threadEvent, sol::as_args(args));
 				} else {
-					threadEvent["trigger"](threadEvent, lua_thread_removed);
+					threadEvent["trigger"](threadEvent, LUA_THREAD_REMOVED);
 				}
 				
 			}
@@ -161,7 +160,7 @@ public:
 	CallbackReturn callOnce(sol::object callable, std::optional<Interval> delay);
 	void removeCallback(sol::object callable);
 	bool setCallbackTimeout(sol::object, Timestamp);
-	bool setCallbackTimeout(sol::object, indefinite_t);
+	bool setCallbackTimeout(sol::object);
 	void cancelCallbackTimeout(sol::object);
 	std::optional<sol::table> getThreadEvent(sol::object);
 	void makeLuaBindings(sol::state_view&, const std::string&);

@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 2.0.4</title>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
     <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 2.0.4</h1>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -46,13 +46,18 @@
 </ul>
 <h2>Classes</h2>
 <ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
   <li><a href="../classes/TextMenu.html">TextMenu</a></li>
 </ul>
 <h2>Manual</h2>
 <ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
   <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
   <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
   <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
   <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
 </ul>
 <h2>Examples</h2>
@@ -79,8 +84,12 @@
 	<td class="summary">Loads (also creates, if it doesn't exist) an ini file into a lua table</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#addCallback">addCallback(callback[, name[, interval[, delay]]])</a></td>
+	<td class="name" nowrap><a href="#addCallback">addCallback(callback[, name][, interval][, delay])</a></td>
 	<td class="summary">Adds a callback to the callback queue.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#addCoroutine">addCoroutine(callback[, name][, delay])</a></td>
+	<td class="summary">Adds a coroutine callback</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#callOnce">callOnce(callback[, delay])</a></td>
@@ -91,17 +100,21 @@
 	<td class="summary">Removes a previously added callback.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#keypress">keypress(input)</a></td>
-	<td class="summary">Send a key press event to the FS window</td>
+	<td class="name" nowrap><a href="#keypress">keypress(keys)</a></td>
+	<td class="summary">Simulates a key press</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#sleep">sleep(time1, time2)</a></td>
+	<td class="name" nowrap><a href="#displayText">displayText(text[, duration=0][, type="print_white"])</a></td>
+	<td class="summary">Display a SimConnect text message</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#sleep">sleep([time1[, time2]])</a></td>
 	<td class="summary">If both parameters omitted: <code>ipc.sleep</code>(100)<br><br>
  If time1 specified: <code>ipc.sleep(time1)</code><br><br>
  If both are specified: <code>ipc.sleep(math.random(time1, time2))</code></td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#suspend">suspend(time1, time2)</a></td>
+	<td class="name" nowrap><a href="#suspend">suspend([time1[, time2]])</a></td>
 	<td class="summary">If both parameters omitted: <code>coroutine.yield()</code><br><br>
  Otherwise, suspend the execution of this coroutine for:<br><br>
  If time1 specified: time1 milliseconds<br><br>
@@ -139,6 +152,18 @@
 	<td class="name" nowrap><a href="#enginesRunning">enginesRunning(both)</a></td>
 	<td class="summary">Returns true if the engines are running.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#appendSequence">appendSequence(name, func)</a></td>
+	<td class="summary">Appends a function to a default sequence</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#prependSequence">prependSequence(name, func)</a></td>
+	<td class="summary">Prepends a function to a default sequence</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#replaceSequence">replaceSequence(name, func)</a></td>
+	<td class="summary">Replaces a default sequence</td>
+	</tr>
 </table>
 <h2><a href="#Tables">Tables</a></h2>
 <table class="function_list">
@@ -169,7 +194,7 @@
 
 
     <h2 class="section-header "><a name="Functions"></a>Functions</h2>
-
+    Methods
     <dl class="function">
     <dt>
     <a name = "loadIniFile"></a>
@@ -245,7 +270,7 @@
 </dd>
     <dt>
     <a name = "addCallback"></a>
-    <strong>addCallback(callback[, name[, interval[, delay]]])</strong>
+    <strong>addCallback(callback[, name][, interval][, delay])</strong>
     </dt>
     <dd>
     Adds a callback to the callback queue.
@@ -294,6 +319,41 @@
     </li>
 </ol>
 </li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "addCoroutine"></a>
+    <strong>addCoroutine(callback[, name][, delay])</strong>
+    </dt>
+    <dd>
+    Adds a coroutine callback
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">callback</span>
+         A function or thread. If it's a function, addCoroutine will call coroutine.create itself.
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Same as <a href="../libraries/copilot.html#addCallback">addCallback</a>
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">delay</span>
+            <span class="types"><span class="type">int</span></span>
+         Same as <a href="../libraries/copilot.html#addCallback">addCallback</a>
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The same values as <a href="../libraries/copilot.html#addCallback">addCallback</a>
     </ol>
 
 
@@ -353,36 +413,67 @@
 </dd>
     <dt>
     <a name = "keypress"></a>
-    <strong>keypress(input)</strong>
+    <strong>keypress(keys)</strong>
     </dt>
     <dd>
-    Send a key press event to the FS window
+    Simulates a key press
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">input</span>
+        <li><span class="parameter">keys</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         The following values for are accepted (case-insensitive):<br><br></p>
-
-<ul>
-    <li>Alphanumeric character keys</li>
-    <li>Virtual key codes: <code>key = &quot;\222&quot;</code>. </li>
-    <li>Named keys defined in <code>Copilot for FSLabs\lua\key_list.lua</code></li>
-</ul>
-
-<p> You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in <code>Copilot for FSLabs\lua\key_list.lua</code>
+         <a href="../manual/list_of_keys.md.html#">See the list of keys here</a>
         </li>
     </ul>
 
 
 
 
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">copilot.keypress <span class="string">"CONTROL+SHIFT+F12"</span></pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "displayText"></a>
+    <strong>displayText(text[, duration=0][, type="print_white"])</strong>
+    </dt>
+    <dd>
+    Display a SimConnect text message
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">text</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Text to be displayed. May include line breaks.
+        </li>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">int</span></span>
+         Duration in seconds. 0 means infinite.
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">type</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         "type_black", "type_white", "type_red", "type_green", "type_blue", "type_yellow", "type_magenta", "type_cyan" where <em>type</em> is either <em>print</em> or <em>scroll</em>
+         (<em>default</em> "print_white")
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">copilot.displayText(<span class="string">"hello"</span>, <span class="number">10</span>, <span class="string">"print_cyan"</span>)</pre>
+    </ul>
 
 </dd>
     <dt>
     <a name = "sleep"></a>
-    <strong>sleep(time1, time2)</strong>
+    <strong>sleep([time1[, time2]])</strong>
     </dt>
     <dd>
     If both parameters omitted: <code>ipc.sleep</code>(100)<br><br>
@@ -393,14 +484,18 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">time1</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
+         (<em>optional</em>)
         </li>
         <li><span class="parameter">time2</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -411,7 +506,7 @@
 </dd>
     <dt>
     <a name = "suspend"></a>
-    <strong>suspend(time1, time2)</strong>
+    <strong>suspend([time1[, time2]])</strong>
     </dt>
     <dd>
     If both parameters omitted: <code>coroutine.yield()</code><br><br>
@@ -423,14 +518,18 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">time1</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
+         (<em>optional</em>)
         </li>
         <li><span class="parameter">time2</span>
+            <span class="types"><span class="type">int</span></span>
 
 
 
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -558,6 +657,88 @@
 
 
 </dd>
+    <dt>
+    <a name = "appendSequence"></a>
+    <strong>appendSequence(name, func)</strong>
+    </dt>
+    <dd>
+    Appends a function to a default sequence
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of the sequence in in options.ini or in the code
+        </li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">function</span></span>
+         The function to append
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">copilot.appendSequence(<span class="string">"lineup"</span>, <span class="keyword">function</span>()
+  FSL.OVHD_EXTLT_Nose_Switch <span class="string">"TO"</span>
+  FSL.OVHD_EXTLT_Strobe_Switch <span class="string">"AUTO"</span>
+<span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "prependSequence"></a>
+    <strong>prependSequence(name, func)</strong>
+    </dt>
+    <dd>
+    Prepends a function to a default sequence
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+          Name of the sequence in in options.ini or in the code
+        </li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">function</span></span>
+         The function to prepend
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "replaceSequence"></a>
+    <strong>replaceSequence(name, func)</strong>
+    </dt>
+    <dd>
+    Replaces a default sequence
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+          Name of the sequence in in options.ini or in the code
+        </li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">function</span></span>
+         New sequence
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
 </dl>
     <h2 class="section-header "><a name="Tables"></a>Tables</h2>
 
@@ -639,7 +820,7 @@
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-06 23:39:14 </i>
+<i style="float:right;">Last updated 2021-04-12 22:10:40 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

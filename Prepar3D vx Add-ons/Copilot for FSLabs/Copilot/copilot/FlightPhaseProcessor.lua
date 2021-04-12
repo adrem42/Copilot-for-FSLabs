@@ -235,7 +235,6 @@ function flightPhases.airborne:nextFlightPhase()
         elseif not touchdownTime then
           touchdownTime = copilot.getTimestamp()
         elseif copilot.getTimestamp() - touchdownTime > 500 and not landed then
-          copilot.mcduWatcher:resetVars()
           events.landing:trigger()
           landed = true
         elseif copilot.GS() < 40 then

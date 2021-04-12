@@ -71,6 +71,11 @@ return {
         type = "bool"
       },
       {
+        name = "display_info",
+        default = UserOptions.FALSE,
+        type = "bool"
+      },
+      {
         name = "display_fail",
         default = UserOptions.FALSE,
         type = "bool"

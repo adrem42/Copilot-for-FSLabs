@@ -1,3 +1,4 @@
+
 local afterStart = Checklist:new(
   "afterStart",
   "After start",
@@ -9,15 +10,15 @@ copilot.checklists.afterStart = afterStart
 afterStart:appendItem {
   label = "antiIce",
   displayLabel = "Anti-Ice",
-  response = {ON = VoiceCommand:new "ON", OFF = VoiceCommand:new "OFF"},
-  onResponse = function(label, _, _, onFailed)
+  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
+  onResponse = function(check, label)
     local on1, on2 = FSL.OVHD_AI_Eng_1_Anti_Ice_Button:isDown(), FSL.OVHD_AI_Eng_2_Anti_Ice_Button:isDown()
     if label == "ON" then
-      if not on1 then onFailed "ENG 1 anti-ice is OFF" end
-      if not on2 then onFailed "ENG 2 anti-ice is OFF" end
+      check(on1, "ENG 1 anti-ice is off")
+      check(on2, "ENG 2 anti-ice is off")
     elseif label == "OFF" then
-      if on1 then onFailed "ENG 1 anti-ice is ON" end
-      if on2 then onFailed "ENG 2 anti-ice is ON" end
+      check(not on1, "ENG 1 anti-ice is on")
+      check(not on2, "ENG 2 anti-ice is on")
     end
   end
 }
@@ -25,12 +26,10 @@ afterStart:appendItem {
 afterStart:appendItem {
   label = "askidNwStrg",
   displayLabel = "A/SKID & N/W STRG",
-  response = {ON = VoiceCommand:new "ON", OFF = VoiceCommand:new "OFF"},
-  onResponse = function(label, _, _, onFailed)
-    if label == "OFF" then
-      onFailed "The correct response is 'ON'"
-    elseif FSL.MIP_BRAKES_ASKID_Button:getPosn() ~= "ON" then
-      onFailed "A/SKID & N/W STRG isn't on"
+  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
+  onResponse = function(check, label)
+    if check(label == "ON", "The correct response is 'on'") then
+      check(FSL.MIP_BRAKES_ASKID_Button:getPosn() == "ON", "A/SKID & N/W STRG isn't on")
     end
   end
 }
@@ -44,5 +43,5 @@ afterStart:appendItem {
 afterStart:appendItem {
   label = "trim",
   displayLabel = "Trim",
-  response = VoiceCommand:new "... rudder zero"
+  response = VoiceCommand:new "... zero"
 }

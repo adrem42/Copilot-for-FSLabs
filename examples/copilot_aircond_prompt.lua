@@ -1,5 +1,6 @@
 -- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
 -- any lua files in that directory
+-- Read more @{plugins.md|here}
 
 copilot.events.aboveTenThousand:addAction(function()
 

@@ -33,14 +33,10 @@ Bind.__index = Bind
 --- @param data.bindPush <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pushing the switch.
 --- @param data.bindPull <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pulling the switch.
 --- @bool data.extended True if the key is an extended key. For example, both the regular and the numpad Enter keys share the same keycode, but only the latter has the extended flag set.
---- @string data.key The keyboard key. The following values for are accepted (case-insensitive):<br><br>
---
--- * Alphanumeric character keys
--- * Virtual key codes: `key = "\222"`. 
--- * Named keys defined in `Copilot for FSLabs\lua\key_list.lua`
---
--- You can combine one key with one or more modifier keys (case-insensitive) using + as the delimiter. The list of modifier keys can be found in `Copilot for FSLabs\lua\key_list.lua`
--- @usage Bind {key = "LSHIFT+LALT+PageUp", extended = true, onPress = function() print "hi" end}
+--- @string data.key @{list_of_keys.md|See the list of keys here}
+-- @usage 
+-- Bind {key = "SHIFT+ALT+PageUp", extended = true, onPress = function() print "hi" end}
+-- Bind {key = "A", onPress = {FSL.OVHD_EXTLT_Nose_Switch, "TAXI"}}
 
 local bindMt = getmetatable(Bind)
 

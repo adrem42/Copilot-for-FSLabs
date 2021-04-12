@@ -12,6 +12,7 @@ public:
 
     MCDU(unsigned int side, unsigned int timeout, unsigned int port = defaultPort);
 
+    static std::string getStringFromRaw(const std::string& request);
     std::optional<std::string> getString();
 
     std::string getRaw();

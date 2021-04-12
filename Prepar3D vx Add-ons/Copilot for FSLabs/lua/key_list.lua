@@ -54,10 +54,6 @@ local modifiers = {
   RWin      = 0x5C, -- VK_RWIN
   Apps      = 0x5D, -- VK_APPS
 
-}
-
-local sendModifiers = {
-
   Shift     = 0x10, -- VK_SHIFT
   Control   = 0x11, -- VK_CONTROL
   Alt       = 0x12  -- VK_MENU
@@ -77,6 +73,5 @@ end
 
 makeLower(keys)
 makeLower(modifiers)
-makeLower(sendModifiers)
 
-return { keys = keys, modifiers = modifiers, sendModifiers = sendModifiers}
+return { keys = keys, modifiers = modifiers}

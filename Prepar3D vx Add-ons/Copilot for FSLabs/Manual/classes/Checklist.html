@@ -1,0 +1,410 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><strong>Checklist</strong></li>
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>Checklist</code></h1>
+<p>
+
+</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Checklist.currChecklist">Checklist.currChecklist()</a></td>
+	<td class="summary">Returns the checklist that is currently being executed</td>
+	</tr>
+</table>
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:new">Checklist:new(label, displayLabel, trigger)</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:currItem">Checklist:currItem()</a></td>
+	<td class="summary">Returns the current item that is being executedm or nil.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:execute">Checklist:execute()</a></td>
+	<td class="summary">Start executing the checklist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:appendItem">Checklist:appendItem(item)</a></td>
+	<td class="summary">Add new item to the end of the checklist.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:getItem">Checklist:getItem(label)</a></td>
+	<td class="summary">Gets item by its label</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:replaceItem">Checklist:replaceItem(item)</a></td>
+	<td class="summary">Replaces the item with the same label as item.label.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:insertItem">Checklist:insertItem(label, item)</a></td>
+	<td class="summary">Inserts an item after the item with the given label</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Checklist:removeItem">Checklist:removeItem(label)</a></td>
+	<td class="summary">Removes the item with the given label</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+    Methods
+    <dl class="function">
+    <dt>
+    <a name = "Checklist.currChecklist"></a>
+    <strong>Checklist.currChecklist()</strong>
+    </dt>
+    <dd>
+    Returns the checklist that is currently being executed
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        The checklist itself or nil.</li>
+        <li>
+        The current item, if there is a checklist, or nil.</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Checklist:new"></a>
+    <strong>Checklist:new(label, displayLabel, trigger)</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">label</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The name of the folder in <em>copilot\sounds\callouts</em> where the checklist-related callouts are located.
+        </li>
+        <li><span class="parameter">displayLabel</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of the checklist that will be displayed in the message windows and logs
+        </li>
+        <li><span class="parameter">trigger</span>
+         A VoiceCommand that's going to be the trigger for your checklist. It can be accessed through the <em>trigger</em> field.
+Use it to control the availability of the checklist by calling <code>myChecklist.trigger:activate()/deactivate()</code> (see <em>copilot\initChecklists.lua</em>)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:currItem"></a>
+    <strong>Checklist:currItem()</strong>
+    </dt>
+    <dd>
+    Returns the current item that is being executedm or nil.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:execute"></a>
+    <strong>Checklist:execute()</strong>
+    </dt>
+    <dd>
+    Start executing the checklist.  You don't need to call it. It will be called automatically when the trigger voice command is triggered.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:appendItem"></a>
+    <strong>Checklist:appendItem(item)</strong>
+    </dt>
+    <dd>
+    Add new item to the end of the checklist.  Browse the lua files at <em>copilot\checklists</em> for examples.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">item</span> A table with the following fields (only <code>label</code> and <code>response</code> are required):
+        <ul>
+        <li><span class="parameter">label</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The name of the sound file inside <em>copilot\sounds\callouts\checklistLabel</em>
+        </li>
+        <li><span class="parameter">response</span>
+         Either a VoiceCommand or a table in the <code>label=VoiceCommand</code> key=value format where label
+is a string that will be passed to item.onResponse. If <code>response</code> is a single voice command, it is converted to a table with one key: "response".
+        </li>
+        <li><span class="parameter">displayLabel</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The name of the item that will be displayed in message windows and logs
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">acknowledge</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The name of the sound file inside <em>copilot\sounds\callouts\checklistLabel</em> that will be played if the response to the challenge is correct. If absent, no callout is played.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">onResponse</span>
+            <span class="types"><span class="type">function</span></span>
+
+<p> A function that will be called following the response to decide whether the response was correct. It receives the following parameters:</p>
+
+<ol>
+    <li><p>A check function. </p>
+
+    <p>If it's called with a string as the single argument, the check is considered failed and the string describes the reason. </p>
+
+    <p>If the first argument is not a string, it is evaluated for truthiness: if the value is falsy, the check is considered failed and the optional second string argument describes the reason.</p>
+
+    <p>The reason string is used for logging and is displayed in a message window if display_fail=1.</p>
+
+    <p>The function returns a bool that indicates whether the check succeeded</p></li>
+    <li><p>The response voice command label</p></li>
+    <li><p>A recognition result table that has the following fields:<br></p>
+    <ul>
+        <li>phrase: string</li>
+        <li>confidence: number</li>
+        <li>props: If the phrase has any named properties, their values can be accessed through this table. See the <em>toData</em> item in <em>copilot\checklists\beforeStart.lua</em> for an example.</li>
+    </ul></li>
+    <li><p>A table where you can set some flags to control what happens next. The only field available is "acknowledge", which overrides item.acknowledge (see the <em>flapSetting</em> item in <em>coplot\checklists\beforeTakeoff.lua</em> for an example).
+    This table also provides the function <code>didFail</code> which returns true if the check function failed at least once.</p></li>
+    <li><p>The item. The response voice command can be accessed through item[label]</p></li>
+</ol>
+
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">beforeChallenge</span>
+            <span class="types"><span class="type">function</span></span>
+         A function to be called before the challenge. It receives the item itself as the only parameter. It can be used, for example,
+ to set the response phrases dynamically (see <em>copilot\checklists\beforeStart.lua</em> for an example).
+         (<em>optional</em>)
+        </li>
+        </li></ul>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:getItem"></a>
+    <strong>Checklist:getItem(label)</strong>
+    </dt>
+    <dd>
+    Gets item by its label
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">label</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        The item
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:replaceItem"></a>
+    <strong>Checklist:replaceItem(item)</strong>
+    </dt>
+    <dd>
+    Replaces the item with the same label as item.label.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">item</span>
+         Same as in <a href="../classes/Checklist.html#Checklist:appendItem">Checklist:appendItem</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:insertItem"></a>
+    <strong>Checklist:insertItem(label, item)</strong>
+    </dt>
+    <dd>
+    Inserts an item after the item with the given label
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">label</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Label of the item after which the new item is to be inserted
+        </li>
+        <li><span class="parameter">item</span>
+         Same as in <a href="../classes/Checklist.html#Checklist:appendItem">Checklist:appendItem</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Checklist:removeItem"></a>
+    <strong>Checklist:removeItem(label)</strong>
+    </dt>
+    <dd>
+    Removes the item with the given label
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">label</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-04-12 22:10:40 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

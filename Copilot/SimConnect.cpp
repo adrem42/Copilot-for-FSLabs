@@ -10,7 +10,12 @@ using namespace SimConnect;
 
 std::string aircraftName;
 
-size_t SimConnectEvent::currEventId = EVENT_CUSTOM_EVENT_MIN;
+size_t  currEventId = EVENT_CUSTOM_EVENT_MIN;
+
+size_t SimConnect::getUniqueEventID()
+{
+	return currEventId++;
+}
 
 std::mutex eventsMutex;
 std::unordered_map<size_t, std::weak_ptr<SimConnectEvent>> events;

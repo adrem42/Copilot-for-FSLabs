@@ -3,22 +3,14 @@ copilot = copilot or {}
 require "copilot.copilot.IniUtils"
 local options = require "copilot.copilot.CopilotOptions"
 
-do
-  local failureOptions
-  for _, section in ipairs(options) do
-    if section.title == "Failures" then
-      failureOptions = section.keys
-    end
+local failureOptions
+for _, section in ipairs(options) do
+  if section.title == "Failures" then
+    failureOptions = section.keys
   end
-  for _, failure in ipairs(require "copilot.copilot.failurelist") do
-    table.insert(
-      failureOptions, 
-      {
-        name = failure[1],
-        type = "double"
-      }
-    )
-  end
+end
+for _, failure in ipairs(require "copilot.copilot.failurelist") do
+  table.insert(failureOptions, {name = failure[1], type = "double"})
 end
 
 local path = APPDIR .. "\\options.ini"

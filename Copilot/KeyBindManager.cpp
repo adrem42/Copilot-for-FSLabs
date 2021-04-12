@@ -84,69 +84,43 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, ShiftValue shiftVal, EventType 
 {
     
     std::lock_guard<std::mutex> lock(bindMapMutex);
-
-    auto& keys = bindMap[shiftVal];
-
     bool retVal = false;
 
-    auto currKeyState = keyStates[keyCode];
-
-    Callbacks* keyCallbacks = nullptr;
-    std::vector<Callback>* callbacks = nullptr;
-
-    {
-        auto it = keys.find(keyCode);
-        if (it != keys.end()) {
-            keyCallbacks = &it->second;
-            retVal = !keyCallbacks->onPressRepeat.empty()
-                || !keyCallbacks->onPress.empty()
-                || !keyCallbacks->onRelease.empty();
-        }
-    }
-    
-    switch (event) {
-
-        case EventType::Press: {
-
-            if (keyCallbacks) {
-
-                switch (currKeyState) {
-
-                    case KeyState::Depressed:
-
-                        if (!keyCallbacks->onPressRepeat.empty())
-                            callbacks = &keyCallbacks->onPressRepeat;
-                        break;
-
-                    case KeyState::Released:
-
-                        if (!keyCallbacks->onPress.empty())
-                            callbacks = &keyCallbacks->onPress;
-                        break;
-                }
+    for (auto& [val, keys] : bindMap) {
+        if (val == NO_SHIFTS && shiftVal != NO_SHIFTS)
+            continue;
+        if ((shiftVal & val) == val) {
+            auto it = keys.find(keyCode);
+            if (it == keys.end()) continue;
+            auto& keyCallbacks = it->second;
+            if (keyCallbacks.onPress.size()
+                || keyCallbacks.onPressRepeat.size()
+                || keyCallbacks.onRelease.size()) {
+                retVal = true;
             }
 
-            keyStates[keyCode] = KeyState::Depressed;
-            break;
+            std::vector<Callback>* callbacks = nullptr;
+
+            switch (event) {
+                case EventType::Press:
+                    if (keyCallbacks.onPress.size())
+                        callbacks = &keyCallbacks.onPress;
+                    break;
+                case EventType::PressRepeat:
+                    if (keyCallbacks.onPressRepeat.size())
+                        callbacks = &keyCallbacks.onPress;
+                    break;
+                case EventType::Release:
+                    if (keyCallbacks.onRelease.size())
+                        callbacks = &keyCallbacks.onPress;
+                    break;
+            }
+            if (callbacks) {
+                std::lock_guard<std::mutex> lock(queueMutex);
+                eventQueue.emplace(Event{ timestamp, callbacks });
+                SetEvent(queueEvent);
+            }
         }
-
-        case EventType::Release: {
-
-            if (keyCallbacks && !keyCallbacks->onRelease.empty())
-                callbacks = &keyCallbacks->onRelease;
-
-            keyStates[keyCode] = KeyState::Released;
-            break;
-        }
-
-    }
-
-    if (callbacks) {
-
-        std::lock_guard<std::mutex> lock(queueMutex);
-        eventQueue.emplace(Event{ timestamp, callbacks });
-        SetEvent(queueEvent);
-
     }
 
     return retVal;

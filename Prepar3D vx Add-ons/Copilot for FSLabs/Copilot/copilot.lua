@@ -119,6 +119,17 @@ local function setup()
   
   if copilot.IS_FSL_AIRCRAFT then
     FlightPhaseProcessor.start()
+    copilot.events.landing:addAction(function()
+      copilot.mcduWatcher:clearVar "V1"
+      copilot.mcduWatcher:clearVar "Vr"
+      copilot.mcduWatcher:clearVar "V2"
+      copilot.mcduWatcher:clearVar "Vs"
+      copilot.mcduWatcher:clearVar "Vf"
+      copilot.mcduWatcher:clearVar "takeoffFlaps"
+      copilot.mcduWatcher:clearVar "takeoffRwy"
+      copilot.mcduWatcher:clearVar "flyingCircuits"
+      copilot.mcduWatcher:clearVar "isFmgcSetup"
+    end)
   end
 
   require "copilot.sequences"
@@ -142,34 +153,48 @@ local function setup()
     require "copilot.ScratchpadClearer"
   end
 
-  local hasUserFiles = false
+  local realResetGrammar = VoiceCommand.resetGrammar
+  local grammarWasReset = false
 
-  local function load(dir)
-    local customDir = APPDIR .. "\\Copilot\\" .. dir
-    for _file in lfs.dir(customDir) do
-      if _file:find("%.lua$") then
-        if not hasUserFiles then
-          hasUserFiles = true
-          print "Loading user lua files:"
+  function VoiceCommand.resetGrammar()
+    realResetGrammar()
+    grammarWasReset = true
+  end
+
+  local hasPlugins = false
+
+  local function loadPlugins(dir)
+    dir = dir .. "\\"
+    local pluginDir = APPDIR .. "\\Copilot\\" .. dir
+    local copilotPrefix = "copilot_"
+    for _file in lfs.dir(pluginDir) do
+      if _file:sub(1, #copilotPrefix) ~= copilotPrefix then
+        if _file:find("%.lua$") then
+          if not hasPlugins then
+            hasPlugins = true
+            print "Loading plugins:"
+          end
+          print(dir .. _file)
+          dofile(pluginDir .. _file)
         end
-        print(dir .. _file)
-        dofile(customDir .. _file)
       end
     end
   end
 
-  load "custom_common\\"
-  load(copilot.IS_FSL_AIRCRAFT and "custom\\" or "custom_non_fsl\\")
+  loadPlugins "custom_common"
+  loadPlugins(copilot.IS_FSL_AIRCRAFT and "custom" or "custom_non_fsl")
 
-  if not copilot.IS_FSL_AIRCRAFT and not hasUserFiles then
+  VoiceCommand.resetGrammar = realResetGrammar
+
+  if copilot.isVoiceControlEnabled and not grammarWasReset then
+    VoiceCommand.resetGrammar()
+  end
+
+  if not copilot.IS_FSL_AIRCRAFT and not hasPlugins then
     return false
   end
 
   wrapSequencesWithLogging()
-
-  if copilot.isVoiceControlEnabled then
-    VoiceCommand.resetGrammar()
-  end
 
   for _, event in pairs(copilot.events) do 
     if not event.areActionsSorted then

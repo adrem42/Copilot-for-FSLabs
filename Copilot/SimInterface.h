@@ -16,6 +16,7 @@ namespace SimInterface {
     extern HWND p3dWnd;
 
     void fireMouseMacro(size_t rectId, unsigned short clickType);
+    bool firingMouseMacro();
 
     void hideCursor();
 
