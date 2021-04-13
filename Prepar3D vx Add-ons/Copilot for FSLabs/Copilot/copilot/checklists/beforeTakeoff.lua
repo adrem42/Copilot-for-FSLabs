@@ -58,7 +58,7 @@ local function makeTakeoffRwyPhrase()
   if takeoffRwy:sub(3, 3) ~= " " then
     phraseString = phraseString .. " " .. ({L = "left", R = "right", C = "center"})[takeoffRwy:sub(3, 3)]
   end
-  takeoffRwyPhrase = Phrase.new():append("runway", true):append({"...", phraseString}, "rwy")
+  takeoffRwyPhrase = Phrase.new():appendOptional("runway"):append({"...", phraseString}, "rwy")
 end
 
 local function takeoffRwyOnResponse(check, _, recoResult)

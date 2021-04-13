@@ -4,25 +4,29 @@
 #include <map>
 #include <vector>
 
-Recognizer::Phrase::PhraseElement::PhraseElement(std::vector<std::wstring>&& variants, std::wstring&& propName, bool optional)
-	:optional(optional), propName(propName)
+const int IDX_STRING = 0;
+
+Recognizer::Phrase::PhraseElement::Variant::Variant(VariantValue val, std::wstring name)
+	:value(val), name(name)
 {
-	for (const auto& variant : variants) {
-		size_t pos = variant.find('=');
-		if (pos != std::string::npos) {
-			this->variants.emplace_back(Variant{ variant.substr(pos + 1, variant.length()), variant.substr(0, pos) });
-		} else {
-			this->variants.emplace_back(Variant{ variant, {} });
-		}
+	if (val.index() == IDX_STRING)  {
+		asString = std::get<std::wstring>(val);
+	} else {
+		asString = std::get<std::shared_ptr<Phrase>>(val)->asString;
 	}
+}
+
+Recognizer::Phrase::PhraseElement::PhraseElement(std::vector<Variant> variants, std::wstring propName, bool optional)
+	:optional(optional), propName(propName), variants(variants)
+{
 	if (optional)
 		asString += L"[";
 	if (variants.size() == 1) {
-		asString += this->variants[0].value;
+		asString += this->variants[0].asString;
 	} else {
 		asString += L"{";
 		for (size_t i = 0; i < this->variants.size(); ++i) {
-			asString += this->variants[i].value;
+			asString += this->variants[i].asString;
 			if (i < this->variants.size() - 1) {
 				asString += L", ";
 			}
@@ -39,45 +43,75 @@ Recognizer::Phrase& Recognizer::Phrase::setName(const std::string& name)
 	return *this;
 }
 
-Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement, std::wstring propName, bool optional)
-{
-	return append(std::vector<std::wstring>{std::move(phraseElement)}, std::move(propName), optional);
-}
-
-Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement, bool optional)
-{
-	std::wstring propName;
-	return append(phraseElement, propName, optional);
-}
-
 Recognizer::Phrase& Recognizer::Phrase::append(std::wstring phraseElement)
 {
-	return append(phraseElement, false);
+	return append(std::vector<PhraseElement::Variant>{std::move(PhraseElement::Variant(phraseElement))}, L"", false);
 }
 
-Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> elements, std::wstring propName, bool optional)
+Recognizer::Phrase& Recognizer::Phrase::appendOptional(VariantValue phraseElement)
+{
+	return append(std::vector<PhraseElement::Variant>{std::move(PhraseElement::Variant(phraseElement))}, L"", true);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::appendOptional(VariantValue phraseElement, std::wstring propName)
+{
+	return append(std::vector<PhraseElement::Variant>{std::move(PhraseElement::Variant(phraseElement))}, propName, true);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement)
+{
+	return append(phraseElement, L"");
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement, std::wstring propName)
+{
+	return append(phraseElement, propName, false);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::appendOptional(LuaVariantMap phraseElement)
+{
+	return append(phraseElement, L"", true);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::appendOptional(LuaVariantMap phraseElement, std::wstring propName)
+{
+	return append(phraseElement, propName, true);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement, std::wstring propName, bool optional)
+{
+	std::vector<PhraseElement::Variant> variants;
+
+	for (auto& element : phraseElement) {
+		std::wstring name;
+		VariantValue varValue;
+		sol::object stringOrPhrase;
+		if (element.get_type() == sol::type::table) {
+			sol::table t = element;
+			if (t["name"].get_type() == sol::type::string)
+				name = t.get<std::wstring>("name");
+			stringOrPhrase = t["phrase"];
+		} else {
+			stringOrPhrase = element;
+		}
+		if (stringOrPhrase.get_type() == sol::type::string) {
+			varValue = stringOrPhrase.as<std::wstring>();
+		} else {
+			varValue = std::shared_ptr<Phrase>(new Phrase(stringOrPhrase.as<Phrase>()));
+		}
+		variants.emplace_back(varValue, name);
+	}
+
+	return append(variants, propName, optional);
+}
+
+Recognizer::Phrase& Recognizer::Phrase::append(std::vector<PhraseElement::Variant> variants, std::wstring propName, bool optional)
 {
 	if (!phraseElements.empty())
-		asString += L" ";
-	auto& el = phraseElements.emplace_back(std::move(elements), std::move(propName), optional);
+				asString += L" ";
+	auto& el = phraseElements.emplace_back(variants, propName, optional);
 	asString += el.asString;
 	return *this;
-}
-
-Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> elements, std::wstring propName)
-{
-	return append(std::move(elements), propName, false);
-}
-
-Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> variants, bool optional)
-{
-	std::wstring propName;
-	return append(std::move(variants), propName, optional);
-}
-
-Recognizer::Phrase& Recognizer::Phrase::append(std::vector<std::wstring> variants)
-{
-	return append(std::move(variants), false);
 }
 
 bool checkResult(const std::string& msg, HRESULT hr)
@@ -323,21 +357,6 @@ void Recognizer::resetGrammar()
 
 	if (SUCCEEDED(hr)) {
 		std::lock_guard<std::recursive_mutex> lock(mtx);
-		/*for (auto& [_, rule] : rules) {
-			statesBefore[&rule] = rule.state;
-			if (rule.state != RuleState::Disabled)
-				rule.state = RuleState::Inactive;
-			for (const auto& phrase : rule.phrases) {
-				SPSTATEHANDLE initialState;
-				hr = recoGrammar->GetRule(NULL, rule.ruleID, SPRAF_TopLevel | SPRAF_Active | SPRAF_Dynamic, TRUE, &initialState);
-				checkResult("Error creating rule", hr);
-				if (SUCCEEDED(hr)) {
-					std::wstring phraseWstr = std::wstring(phrase.begin(), phrase.end());
-					hr = recoGrammar->AddWordTransition(initialState, NULL, phraseWstr.c_str(), L" ", SPWT_LEXICAL, 1, NULL);
-					checkResult("Error in AddWordTransition", hr);
-				}
-			}
-		}*/
 
 		for (auto& [_, rule] : rules) {
 
@@ -349,43 +368,65 @@ void Recognizer::resetGrammar()
 			}
 
 			for (Phrase& phrase : rule.phrases) {
-
 				auto& phraseElements = phrase.phraseElements;
-				size_t numElements = phraseElements.size();
+				
+				if (phraseElements.size() > 0) {
 
-				if (numElements > 0) {
+					std::function<void(std::vector<Phrase::PhraseElement>&, SPSTATEHANDLE)>parseElements;
+					parseElements = [&](std::vector<Phrase::PhraseElement>& elements, SPSTATEHANDLE endState) {
+						for (size_t i = 0; i < elements.size();) {
+							auto& phraseElement = elements[i];
+							SPSTATEHANDLE currState = phraseElement.state;
+							SPSTATEHANDLE nextState = endState;
+							if (++i < elements.size()) {
+								recoGrammar->CreateNewState(currState, &elements[i].state);
+								nextState = elements[i].state;
+							}
+
+							auto makeStateTransition = [&](Recognizer::Phrase::PhraseElement& element, SPSTATEHANDLE fromState, SPSTATEHANDLE toState) {
+
+								SPPROPERTYINFO prop{};
+								SPPROPERTYINFO* pProp = NULL;
+
+								if (!element.propName.empty()) {
+									pProp = &prop;
+									prop.pszName = element.propName.c_str();
+								}
+								for (auto& variant : element.variants) {
+									if (prop.pszName) {
+										prop.pszValue = variant.name.empty() ? variant.asString.c_str() : variant.name.c_str();
+									}
+									if (variant.value.index() == IDX_STRING) {
+										
+										hr = recoGrammar->AddWordTransition(fromState, toState, std::get<std::wstring>(variant.value).c_str(), L" ", SPWT_LEXICAL, 1.0f, pProp);
+										checkResult("Error in AddWordTransition", hr);
+									} else {
+										
+										Phrase& phrase = *std::get<std::shared_ptr<Phrase>>(variant.value);
+										if (!phrase.phraseElements.empty()) {
+											recoGrammar->CreateNewState(currState, &phrase.phraseElements[0].state);
+											hr = recoGrammar->AddWordTransition(fromState, phrase.phraseElements[0].state, NULL, L" ", SPWT_LEXICAL, 1.0f, pProp);
+											parseElements(phrase.phraseElements, nextState);
+										}
+									}
+								}
+								if (phraseElement.optional) {
+									hr = recoGrammar->AddWordTransition(fromState, toState, NULL, L" ", SPWT_LEXICAL, 1.0f, NULL);
+								}
+							};
+
+							makeStateTransition(phraseElement, currState, nextState);
+						}
+					};
 
 					hr = recoGrammar->GetRule(NULL, rule.ruleID, SPRAF_TopLevel | SPRAF_Active | SPRAF_Dynamic, TRUE, &phraseElements[0].state);
 					checkResult("Error creating rule", hr);
+
 					if (SUCCEEDED(hr)) {
-						for (size_t i = 0; i < numElements;) {
-							auto& phraseElement = phraseElements[i];
-							SPSTATEHANDLE currState = phraseElement.state;
-							SPSTATEHANDLE nextState = NULL;
-							if (++i < numElements) {
-								recoGrammar->CreateNewState(currState, &phraseElements[i].state);
-								nextState = phraseElements[i].state;
-							}
-							SPPROPERTYINFO prop{};
-							SPPROPERTYINFO* pProp = NULL;
-							if (phraseElement.propName != L"") {
-								pProp = &prop;
-								prop.pszName = phraseElement.propName.c_str();
-							}
-							for (auto& variant : phraseElement.variants) {
-								if (prop.pszName) {
-									prop.pszValue = variant.name ? variant.name.value().c_str() : variant.value.c_str();
-								}
-								hr = recoGrammar->AddWordTransition(currState, nextState, variant.value.c_str(), L" ", SPWT_LEXICAL, 1.0f, pProp);
-								checkResult("Error in AddWordTransition", hr);
-							}
-							if (phraseElement.optional) {
-								hr = recoGrammar->AddWordTransition(currState, nextState, NULL, L" ", SPWT_LEXICAL, 1.0f, pProp);
-							}
-						}
+						parseElements(phraseElements, NULL);
 					}
 				}
-			}
+			}	
 		}
 	}
 
@@ -440,15 +481,18 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 				 "Persistent", Recognizer::RulePersistenceMode::Persistent,
 				 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
 
-	auto PhraseType = lua.new_usertype<Phrase>("Phrase");
+	auto PhraseType = lua.new_usertype<Phrase>("Phrase", sol::factories([] {return std::make_shared<Phrase>(); }));
+
 	PhraseType["append"] = sol::overload(
-		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements, std::wstring propName, bool optional)>(&Phrase::append),
-		static_cast<Phrase & (Phrase::*)(std::vector<std::wstring> elements, std::wstring propName)>(&Phrase::append),
-		static_cast<Phrase&(Phrase::*)(std::wstring, std::wstring propName, bool optional)>(&Phrase::append),
-		static_cast<Phrase&(Phrase::*)(std::wstring phraseElement, bool optional)>(&Phrase::append),
-		static_cast<Phrase&(Phrase::*)(std::wstring phraseElement)>(&Phrase::append),
-		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements, bool optional)>(&Phrase::append),
-		static_cast<Phrase&(Phrase::*)(std::vector<std::wstring> elements)>(&Phrase::append)
+		static_cast<Phrase&(Phrase::*)(Phrase::LuaVariantMap, std::wstring)>(&Phrase::append),
+		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap)>(&Phrase::append),
+		static_cast<Phrase&(Phrase::*)(std::wstring)>(&Phrase::append)
+	);
+	PhraseType["appendOptional"] = sol::overload(
+		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap, std::wstring)>(&Phrase::appendOptional),
+		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap)>(&Phrase::appendOptional),
+		static_cast<Phrase & (Phrase::*)(Phrase::VariantValue, std::wstring)>(&Phrase::appendOptional),
+		static_cast<Phrase & (Phrase::*)(Phrase::VariantValue)>(&Phrase::appendOptional)
 	);
 	PhraseType[sol::meta_function::to_string] = [](const Phrase& phrase) {return phrase.asString; };
 
@@ -491,6 +535,8 @@ RecoResult Recognizer::getResult()
 				if (prop != nullptr) {
 					do {
 						props[prop->pszName] = prop->pszValue;
+						if (prop->pFirstChild)
+							copilot::logger->info("CHILD ISN?T NULL");
 					} while (prop = prop->pNextSibling);
 				}
 				return RecoResult{ std::move(phrase), confidence, std::move(props), ruleID };
