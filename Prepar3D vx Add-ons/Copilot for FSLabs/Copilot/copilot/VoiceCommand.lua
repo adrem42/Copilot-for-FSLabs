@@ -1,5 +1,5 @@
 
-if false then module "Event" end
+if false then module "VoiceCommand" end
 
 Event = Event or require "copilot.Event"
 local EventUtils = require "copilot.EventUtils"
@@ -20,6 +20,7 @@ local recognizer = copilot.recognizer
 -- the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of active phrases
 -- will also degrade the quality of recognition.<br>
 --
+--- <b>A VoiceCommand event emits a `RecoResult` as its payload</b>.
 --- @type VoiceCommand
 VoiceCommand = {DefaultConfidence = 0.93, logPrefix = "VoiceCommand"}
 setmetatable(VoiceCommand, {__index = Event})
@@ -49,14 +50,14 @@ local function parsePhrases(input)
 end
 
 --- Constructor
---- @param data A table containing the following fields (also the fields taken by @{Event:new|the parent constructor}):
---  @param data.phrase string or array of strings. @{addPhrase|You can modify the required confidence of each word in the phrase}
---  @param data.dummy string or array of strings. One or multiple dummy phrase variants which will activated and deactivated 
+--- @param args A table containing the following fields (also the fields taken by @{Event:new|the parent constructor}):
+--  @param args.phrase string or Phrase or array of strings and Phrase objects.
+--  @param args.dummy string or Phrase or array of strings and Phrase objects. One or multiple dummy phrase variants which will activated and deactivated 
 -- synchronously with the voice command's actual phrase variants to help the recognizer discriminate between them and similarly 
--- sounding phrases. For example, the default 'takeoff' voice command has a 'takeoff runway' dummy phrase which is an item on the
--- standard takeoff checklist. 
---  @number[opt=0.93] data.confidence between 0 and 1
---  @param[opt=false] data.persistent
+-- sounding phrases. 
+---
+--  @number[opt=0.93] args.confidence between 0 and 1
+--  @param[opt=false] args.persistent
 -- * omitted or false: the voice command will be deactivated after being triggered.
 -- * 'ignore': the voice command will be put into ignore mode after being triggered.
 -- * true: the voice command will stay active after being triggered.
@@ -64,21 +65,21 @@ end
 -- local myVoiceCommand = VoiceCommand:new {
 --  phrase = "hello",
 --  confidence = 0.95,
---  action = function() print "hi there" end
+--  action = function(_, recoResult) print "hi there" end
 -- }
 
-function VoiceCommand:new(data, confidence)
-  data = type(data) == "string"
-    and {phrase = data, confidence = confidence}
-    or type(data) == "table" and data
+function VoiceCommand:new(args, confidence)
+  args = type(args) == "string"
+    and {phrase = args, confidence = confidence}
+    or type(args) == "table" and args
     or {}
-  local voiceCommand = data
-  voiceCommand.confidence = data.confidence or VoiceCommand.DefaultConfidence
-  local phrase = parsePhrases(data.phrase)
-  data.phrase = nil
+  local voiceCommand = args
+  voiceCommand.confidence = args.confidence or VoiceCommand.DefaultConfidence
+  local phrase = parsePhrases(args.phrase)
+  args.phrase = nil
   if copilot.isVoiceControlEnabled then
     voiceCommand.ruleID = recognizer:addRule(
-      phrase, voiceCommand.confidence, _persistenceMode(data.persistent)
+      phrase, voiceCommand.confidence, _persistenceMode(args.persistent)
     )
     voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
@@ -87,9 +88,9 @@ function VoiceCommand:new(data, confidence)
   self.__index = self
   voiceCommand.logMsg = voiceCommand.logMsg or tostring(phrase[1])
   voiceCommand = setmetatable(Event:new(voiceCommand), self)
-  if data.dummy then
-    voiceCommand:addPhrase(parsePhrases(data.dummy), true)
-    data.dummy = nil
+  if args.dummy then
+    voiceCommand:addPhrase(parsePhrases(args.dummy), true)
+    args.dummy = nil
   end
   return voiceCommand
 end
@@ -120,9 +121,6 @@ function VoiceCommand:setPersistence(persistenceMode)
 end
 
 --- Adds phrase variants to a voice command.
---
----The SAPI recognizer has two confidence metrics - a float from 0-1 and another one that has three states: low, normal and high.
----If a word is preceded by a '+' or '-', its required confidence is set to 'high' or 'low', respectively, otherwise, it has the default required confidence 'normal'.
 ---@param phrase string or array of strings
 ---@bool dummy True to add dummy phrase variants, omitted or false to add actual phrase variants.
 ---@return self
@@ -133,10 +131,10 @@ end
 
 local function trimPhrase(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
 
---- Removes phrase variants from a voice command.
----@param phrase string or array of strings
----@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
----@return self
+-- --- Removes phrase variants from a voice command.
+-- ---@param phrase string or array of strings
+-- ---@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
+-- ---@return self
 function VoiceCommand:removePhrase(phrase, dummy)
   -- local phrasesToRemove = type(phrase) == "table" and phrase or {phrase}
   -- local deletthis = {}

@@ -24,27 +24,27 @@ Bind.__index = Bind
 --- * An array in the following format: `{**callable1**, arg1, arg2, ..., argn, **callable2**, arg1, arg2, ..., argn, ...}`
 --- where a callable can be either a function, callable table, or object followed by a method name: `FSL.OVHD_INTLT_Integ_Lt_Knob, "rotateLeft"`.
 --- @function Bind
---- @tparam table data A table that may contain the following fields: 
---- @param data.onPress See above.
---- @param data.onPressRepeat See above.
---- @param data.onRelease See above.
---- @param data.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
---- @param data.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
---- @param data.bindPush <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pushing the switch.
---- @param data.bindPull <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pulling the switch.
---- @bool data.extended True if the key is an extended key. For example, both the regular and the numpad Enter keys share the same keycode, but only the latter has the extended flag set.
---- @string data.key @{list_of_keys.md|See the list of keys here}
+--- @tparam table args A table that may contain the following fields: 
+--- @param args.onPress See above.
+--- @param args.onPressRepeat See above.
+--- @param args.onRelease See above.
+--- @param args.bindButton <a href="#Class_Button">Button</a> Binds the press and release actions of a physical key or button to those of a virtual cockpit button.
+--- @param args.bindToggleButton <a href="#Class_ToggleButton">ToggleButton</a> Maps the toggle states of a joystick toggle button to those of a virtual cockpit toggle button.
+--- @param args.bindPush <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pushing the switch.
+--- @param args.bindPull <a href="#Class_PushPullSwitch">PushPullSwitch</a> Same as `bindButton` — for pulling the switch.
+--- @bool args.extended True if the key is an extended key. For example, both the regular and the numpad Enter keys share the same keycode, but only the latter has the extended flag set.
+--- @string args.key @{list_of_keys.md|See the list of keys here}
 -- @usage 
 -- Bind {key = "SHIFT+ALT+PageUp", extended = true, onPress = function() print "hi" end}
 -- Bind {key = "A", onPress = {FSL.OVHD_EXTLT_Nose_Switch, "TAXI"}}
 
 local bindMt = getmetatable(Bind)
 
-function bindMt:__call(data)
-  util.assert(data.key, "You need to specify a key and/or button", 2)
-  local bind = self:prepareBind(data)
-  bind._keyBind = KeyBind:new(data)
-  if data.dispose == true then
+function bindMt:__call(args)
+  util.assert(args.key, "You need to specify a key and/or button", 2)
+  local bind = self:prepareBind(args)
+  bind._keyBind = KeyBind:new(args)
+  if args.dispose == true then
     util.setOnGCcallback(bind, function() bind:_destroy() end)
   end
   return setmetatable(bind, Bind)
@@ -54,53 +54,53 @@ function Bind:_destroy() self._keyBind:destroy() end
 Bind.unbind = Bind._destroy
 function Bind:rebind() self._keyBind:rebind() end
 
-local function makeTable(data)
-  return type(data) == "table" and data or {data}
+local function makeTable(args)
+  return type(args) == "table" and args or {args}
 end
 
-local function specialButtonBinding(data, onPress, onRelease)
-  data.onPress = makeTable(data.onPress)
-  data.onRelease = makeTable(data.onRelease)
-  data.onPress[#data.onPress+1] = onPress
-  data.onRelease[#data.onRelease+1] = onRelease
+local function specialButtonBinding(args, onPress, onRelease)
+  args.onPress = makeTable(args.onPress)
+  args.onRelease = makeTable(args.onRelease)
+  args.onPress[#args.onPress+1] = onPress
+  args.onRelease[#args.onRelease+1] = onRelease
 end
 
-function Bind:prepareBind(data)
+function Bind:prepareBind(args)
 
-  if data.bindPush then
-    specialButtonBinding(data, Bind._bindPush(data.bindPush))
+  if args.bindPush then
+    specialButtonBinding(args, Bind._bindPush(args.bindPush))
   end
 
-  if data.bindPull then
-    specialButtonBinding(data, Bind._bindPull(data.bindPull))
+  if args.bindPull then
+    specialButtonBinding(args, Bind._bindPull(args.bindPull))
   end
 
-  if data.bindButton then
-    specialButtonBinding(data, Bind._bindButton(data.bindButton))
+  if args.bindButton then
+    specialButtonBinding(args, Bind._bindButton(args.bindButton))
   end
 
-  if data.bindToggleButton then
-    specialButtonBinding(data, Bind._bindToggleButton(data.bindToggleButton))
+  if args.bindToggleButton then
+    specialButtonBinding(args, Bind._bindToggleButton(args.bindToggleButton))
   end
   
-  if data.onPress then
-    data.onPress = Bind.makeSingleFunc(data.onPress)
-    if data.cond then
-      local onPress = data.onPress
-      data.onPress = function() if data.cond() then onPress() end end
+  if args.onPress then
+    args.onPress = Bind.makeSingleFunc(args.onPress)
+    if args.cond then
+      local onPress = args.onPress
+      args.onPress = function() if args.cond() then onPress() end end
     end
   end
 
-  if data.onPressRepeat then
-    data.onPressRepeat = Bind.makeSingleFunc(data.onPress)
-    if data.cond then
-      local onPressRepeat = data.onPressRepeat
-      data.onPressRepeat = function() if data.cond() then onPressRepeat() end end
+  if args.onPressRepeat then
+    args.onPressRepeat = Bind.makeSingleFunc(args.onPress)
+    if args.cond then
+      local onPressRepeat = args.onPressRepeat
+      args.onPressRepeat = function() if args.cond() then onPressRepeat() end end
     end
   end
 
-  data.onRelease = data.onRelease and Bind.makeSingleFunc(data.onRelease)
-  return data
+  args.onRelease = args.onRelease and Bind.makeSingleFunc(args.onRelease)
+  return args
 end
 
 local bindArg = {}

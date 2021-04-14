@@ -29,7 +29,7 @@ beforeTakeoff:appendItem {
   onResponse = function(check, _, recoResult, res)
     local plannedSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
     plannedSetting = tostring(plannedSetting)
-    local responseSetting = recoResult.props.flapsSetting
+    local responseSetting = recoResult:getProp "flapsSetting"
     local actualSetting = FSL.PED_FLAP_LEVER:getPosn()
     if responseSetting ~= plannedSetting then
       check(responseSetting .. " isn't the planned flaps setting")
@@ -63,7 +63,7 @@ end
 
 local function takeoffRwyOnResponse(check, _, recoResult)
   if takeoffRwyPhrase then
-    check(recoResult.props.rwy ~= "...", "You said the wrong runway")
+    check(recoResult:getProp "rwy" ~= "...", "You said the wrong runway")
   end
 end
 

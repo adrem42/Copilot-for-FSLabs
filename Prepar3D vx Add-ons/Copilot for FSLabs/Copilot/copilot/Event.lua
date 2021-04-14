@@ -10,18 +10,19 @@ Event = {
   voiceCommands = {}, 
   dispatchQueue = {},
   queueMin = 1,
-  queueMax = 0
+  queueMax = 0,
+  NOLOGMSG = {}
 }
 Action = Action or require "copilot.Action"
 
 --- @type Event
 
 --- Constructor
---- @tparam[opt] table data A table containing the following fields:
--- @param[opt] data.action Function or <a href="#Class_Action">Action</a> or array of either that will be executed when the event is triggered.  
+--- @tparam[opt] table args A table containing the following fields:
+-- @param[opt] args.action Function or <a href="#Class_Action">Action</a> or array of either that will be executed when the event is triggered.  
 -- If it's an array of functions, each function can optionally be followed by string 'runAsCoroutine'.  
 -- Actions can also be added to an existing event via @{Event.Event.addAction}.
--- @string[opt] data.logMsg Message that will be logged when the event is triggered.
+-- @string[opt] args.logMsg Message that will be logged when the event is triggered.
 --- @usage
 -- local event1 = Event:new {
 --  action = function() print "test action" end,
@@ -36,9 +37,9 @@ Action = Action or require "copilot.Action"
 --  logMsg = "test event with coroutine actions"
 -- }
 
-function Event:new(data)
+function Event:new(args)
   self.__index = self
-  local event = setmetatable(data or {}, self)
+  local event = setmetatable(args or {}, self)
   event.actions = Ouroboros.new()
   event.sortedActions = {}
   event.coroDepends = {}
@@ -198,7 +199,9 @@ end
 
 function Event:dispatch(...)
   self.inDispatch = true
-  copilot.logger:debug(("%s: %s"):format(self.logPrefix, self:toString()))
+  if self.logMsg ~= self.NOLOGMSG then
+    copilot.logger:debug(("%s: %s"):format(self.logPrefix, self:toString()))
+  end
   if not self.areActionsSorted then self:sortActions() end
   self.actionsToRemove = {}
   for _, action in ipairs(self.sortedActions) do
@@ -214,7 +217,7 @@ function Event:dispatch(...)
 end
 
 --- Triggers the event which in turn executes all actions (if they are enabled). 
---- @param ... Any number of arguments that will be passed to each callback. The callbacks will also receive the event as the first parameter.
+--- @param ... Any number of arguments that will be passed to each listener as the event's payload (following the first argument, which is always the event itself)
 function Event:trigger(...)
   if self.inDispatch then
     self:enqueue(...)
@@ -266,10 +269,10 @@ function Event.waitForEvent(event, returnFunction)
   return checkEvent
 end
 
-local function checkCallingThread(func)
+local function checkCallingThread()
   local thread = coroutine.running()
   if not copilot.getCallbackStatus(thread) then
-    error(func .. " must be called from an Action coroutine or one that was passed to copilot.addCallback", 3)
+    error "waitForEvent functions must be called from a Copilot-managed coroutine"
   end
   return thread
 end
@@ -282,7 +285,7 @@ end
 ---@return Function that returns the event's payload.
 function Event.waitForEventWithTimeout(timeout, event)
 
-  local callingThread = checkCallingThread "waitForEventWithTimeout"
+  local callingThread = checkCallingThread()
   local getPayload
   local action = event:addOneOffAction(function(_, ...) 
     local payload = {...}
@@ -393,7 +396,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
   local numEvents, numSignaled = 0, 0
   local singleEvent, singleEventIdx
 
-  local callingThread = checkCallingThread "waitForEventsWithTimeout"
+  local callingThread = checkCallingThread()
 
   copilot.getThreadEvent(callingThread):addOneOffAction(function(_, res)
     if res == copilot.THREAD_REMOVED then
@@ -449,7 +452,7 @@ end
 ---@param key See `FSL2Lua.Bind`
 ---@return <a href="#Class_Event">Event</a>
 function Event.fromKeyPress(key)
-  local e = Event:new()
+  local e = Event:new {logMsg = Event.NOLOGMSG}
   local weakRef = setmetatable({e = e}, {__mode = "v"})
   e._keyBind = Bind {
     key = key, 
@@ -478,7 +481,7 @@ require "copilot.SingleEvent"
 --- 3. The selected item as a string.
 function Event.fromTextMenu(title, prompt, items, timeout)
   timeout = timeout or 0
-  local e = SingleEvent:new()
+  local e = SingleEvent:new {logMsg = Event.NOLOGMSG}
   local function callback(res, itemIdx, item)
     e:trigger(res, itemIdx, item)
   end
@@ -488,5 +491,4 @@ function Event.fromTextMenu(title, prompt, items, timeout)
 end
 
 require "copilot.ActionOrderSetter"
-
 return Event

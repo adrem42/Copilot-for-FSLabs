@@ -57,9 +57,11 @@ function Action:setEnabled(value) self.isEnabled = value end
 --- Returns true if the callback was configured to be run as a coroutine and is running now.
 function Action:isThreadRunning() return self.currentThread ~= nil end
 
-function Action:_runFuncCallback(...)
-  copilot.logger:debug("Action: " .. self:toString())
-  self.callback(...)
+function Action:_runFuncCallback(e, ...)
+  if e.logMsg ~= Event.NOLOGMSG then
+    copilot.logger:debug("Action: " .. self:toString())
+  end
+  self.callback(e, ...)
 end
 
 function Action:_onThreadFinished(payload)
@@ -70,7 +72,7 @@ function Action:_onThreadFinished(payload)
   end
 end
 
-function Action:_initNewThread(dependencies, ...)
+function Action:_initNewThread(dependencies, e, ...)
 
   if dependencies then
     self.currentThread = coroutine.create(function(...)
@@ -81,11 +83,15 @@ function Action:_initNewThread(dependencies, ...)
         end
       end
       if #events > 0 then Event.waitForEvents(events, true) end
-      copilot.logger:debug("Coroutine action: " .. self:toString())
-      return self.callback(...)
+      if e.logMsg ~= Event.NOLOGMSG then
+        copilot.logger:debug("Coroutine action: " .. self:toString())
+      end
+      return self.callback(e, ...)
     end)
   else
-    copilot.logger:debug("Coroutine action: " .. self:toString())
+    if e.logMsg ~= Event.NOLOGMSG then
+      copilot.logger:debug("Coroutine action: " .. self:toString())
+    end
     self.currentThread = coroutine.create(self.callback)
   end
 
@@ -93,7 +99,7 @@ function Action:_initNewThread(dependencies, ...)
     self.currentThread, ("%s of Action '%s'"):format(tostring(self.currentThread), self:toString())
   )
   threadEvent:addOneOffAction(function(_, ...) self.threadFinishedEvent:trigger(...) end)
-  copilot._initActionThread(self.currentThread, ...)
+  copilot._initActionThread(self.currentThread, e, ...)
 end
 
 --- Use this you want to disable the effect of @{stopOn} for one of the predefined actions in @{copilot.actions}

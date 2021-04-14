@@ -1,0 +1,1064 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_RecoResult">Class RecoResult </a></li>
+<li><a href="#Class_Phrase">Class Phrase </a></li>
+<li><a href="#Class_VoiceCommand">Class VoiceCommand </a></li>
+</ul>
+
+
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><strong>VoiceCommand</strong></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><a href="../examples/copilot_complex_phrase.lua.html">copilot_complex_phrase.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>VoiceCommand</code></h1>
+<p>
+
+</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Class_RecoResult">Class RecoResult </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#RecoResult.phrase">RecoResult.phrase</a></td>
+	<td class="summary">The phrase that was spoken</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RecoResult.confidence">RecoResult.confidence</a></td>
+	<td class="summary">Recognition engine confidence</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RecoResult.props">RecoResult.props</a></td>
+	<td class="summary">The properties and their values that were defined when constructing the Phrase.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RecoResult:getProp">RecoResult:getProp(...)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+</table>
+<h2><a href="#Class_Phrase">Class Phrase </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Phrase.new">Phrase.new()</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(str)</a></td>
+	<td class="summary">Appends a simple string</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(args)</a></td>
+	<td class="summary">Appends a named element with multiple variants.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(variants, propName)</a></td>
+	<td class="summary">Appends a named element with multiple variants.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(multiElement)</a></td>
+	<td class="summary">Appends an element with multiple variants.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(element)</a></td>
+	<td class="summary">Appends an optional element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(element, name)</a></td>
+	<td class="summary">Appends an optional named element.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(multiElement)</a></td>
+	<td class="summary">Appends an optional element with multiple variants.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(multiElement, name)</a></td>
+	<td class="summary">Appends an optional named element with multiple variants.</td>
+	</tr>
+</table>
+<h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:new">VoiceCommand:new(args)</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand.resetGrammar">VoiceCommand.resetGrammar()</a></td>
+	<td class="summary">Call this function inside a plugin lua before activating or deactivating voice commands.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:getPhrases">VoiceCommand:getPhrases(dummy)</a></td>
+	<td class="summary">Returns all phrase variants of a voice command.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:setPersistence">VoiceCommand:setPersistence(persistenceMode)</a></td>
+	<td class="summary">Sets persistence mode of a voice command.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:addPhrase">VoiceCommand:addPhrase(phrase, dummy)</a></td>
+	<td class="summary">Adds phrase variants to a voice command.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:removeAllPhrases">VoiceCommand:removeAllPhrases(dummy)</a></td>
+	<td class="summary">Removes all phrase variants from a voice command.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:setConfidence">VoiceCommand:setConfidence(confidence)</a></td>
+	<td class="summary">Sets required confidence of a voice command.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:activate">VoiceCommand:activate()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:ignore">VoiceCommand:ignore()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:deactivate">VoiceCommand:deactivate()</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:disable">VoiceCommand:disable()</a></td>
+	<td class="summary">Deactivates the voice command and makes successive calls to <a href="../libraries/VoiceCommand.html#VoiceCommand:activate">activate</a> and <a href="../libraries/VoiceCommand.html#VoiceCommand:ignore">ignore</a> have no effect.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:getAction">VoiceCommand:getAction()</a></td>
+	<td class="summary">If the voice command has only one action, returns that action.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:activateOn">VoiceCommand:activateOn(...)</a></td>
+	<td class="summary">The voice command will become active when the events passed as parameters are triggered.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:deactivateOn">VoiceCommand:deactivateOn(...)</a></td>
+	<td class="summary">The voice command will be deactivated when the events passed as parameters are triggered.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:ignoreOn">VoiceCommand:ignoreOn(...)</a></td>
+	<td class="summary">The voice command will go into ignore mode when the events passed as parameters</p>
+
+<p> are triggered.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:removeEventRef">VoiceCommand:removeEventRef(refType, ...)</a></td>
+	<td class="summary">Disables the effect of <a href="../libraries/VoiceCommand.html#VoiceCommand:activateOn">activateOn</a>, <a href="../libraries/VoiceCommand.html#VoiceCommand:deactivateOn">deactivateOn</a> or <a href="../libraries/VoiceCommand.html#VoiceCommand:ignore">ignore</a> for the default voice commands in <a href="../libraries/copilot.html#voiceCommands">copilot.voiceCommands</a></td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header has-description"><a name="Class_RecoResult"></a>Class RecoResult </h2>
+
+          <div class="section-description">
+          The payload of a VoiceCommand event
+          </div>
+            <h3>Usage:</h3>
+            <pre class="example"><span class="keyword">local</span> helloGoodbye = VoiceCommand:new {
+  phrase = Phrase.new()
+    :append {
+      propName = <span class="string">"what"</span>,
+      variants = {
+        {
+          propVal = <span class="string">"greeting"</span>,
+          variant = Phrase.new():append<span class="string">"hello"</span>:appendOptional({<span class="string">"there"</span>, <span class="string">"again"</span>}, <span class="string">"optProp"</span>)
+        },
+        <span class="string">"goodbye"</span>
+      },
+    }
+    :appendOptional<span class="string">"friend"</span>,
+  persistent = <span class="keyword">true</span>,
+  action = <span class="keyword">function</span>(_, res)
+    <span class="global">print</span>(res:getProp(<span class="string">"what"</span>)) <span class="comment">-- "greeting" or "goodbye"
+</span>    <span class="global">print</span>(res:getProp(<span class="string">"what"</span>, <span class="string">"optProp"</span>))  <span class="comment">-- "there", "again" or nil
+</span>    <span class="comment">-- without getProp, you would have to type this:
+</span>    <span class="keyword">local</span> optProp = res.props.what.children.optProp
+    <span class="keyword">if</span> optProp <span class="keyword">then</span>
+      <span class="global">print</span>(optProp.value)
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+}
+
+copilot.callOnce(<span class="keyword">function</span>()
+  helloGoodbye:activate()
+<span class="keyword">end</span>)</pre>
+    <dl class="function">
+    <dt>
+    <a name = "RecoResult.phrase"></a>
+    <strong>RecoResult.phrase</strong>
+    </dt>
+    <dd>
+    The phrase that was spoken
+
+
+    <ul>
+        <li><span class="parameter">phrase</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RecoResult.confidence"></a>
+    <strong>RecoResult.confidence</strong>
+    </dt>
+    <dd>
+    Recognition engine confidence
+
+
+    <ul>
+        <li><span class="parameter">confidence</span>
+            <span class="types"><span class="type">number</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RecoResult.props"></a>
+    <strong>RecoResult.props</strong>
+    </dt>
+    <dd>
+    The properties and their values that were defined when constructing the Phrase.
+ If a value is optional, it will not have an entry in the tree.
+
+
+    <ul>
+        <li><span class="parameter">props</span> Property tree.
+        <ul>
+        <li><span class="parameter">children</span>
+         Child properties. A property tree has children when you have a Phrase within a Phrase
+        </li>
+        <li><span class="parameter">value</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        </li></ul>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RecoResult:getProp"></a>
+    <strong>RecoResult:getProp(...)</strong>
+    </dt>
+    <dd>
+
+
+
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+         The tree path to the property
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        The value field of the property or nil</li>
+        <li>
+        The property or nil</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_Phrase"></a>Class Phrase </h2>
+
+          <div class="section-description">
+          Class that allows you to create complex phrases with optional elements,
+ elements with multiple variants and named properties.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "Phrase.new"></a>
+    <strong>Phrase.new()</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Phrase:append"></a>
+    <strong>Phrase:append(str)</strong>
+    </dt>
+    <dd>
+    Appends a simple string
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Phrase:append"></a>
+    <strong>Phrase:append(args)</strong>
+    </dt>
+    <dd>
+    Appends a named element with multiple variants. <br/>
+ Multiple variants of a property can be aliased by the same name (like "greeting" in the example below).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span>
+
+
+        <ul>
+        <li><span class="parameter">propName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of the property
+        </li>
+        <li><span class="parameter">optional</span>
+            <span class="types"><span class="type">bool</span></span>
+         Whether this element is optional
+         (<em>default</em> false)
+        </li>
+        <li><span class="parameter">variants</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         An array of variants where a variant can be:
+ <ul>
+ <li>A table with a <code>propVal</code> and a <code>variant</code> field that is either a string or Phrase</li>
+ <li>A string or a Phrase</li>
+ </ul>
+        </li>
+        </li></ul>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">Phrase.new()
+ :append {
+   propName = <span class="string">"what"</span>,
+   variants = {
+     <span class="string">"goodbye"</span>, <span class="comment">-- same as {propVal = "goodbye", variant = "goodbye"}
+</span>     {propVal = <span class="string">"greeting"</span>, variant = <span class="string">"hi"</span>},
+     {
+       propVal = <span class="string">"greeting"</span>,
+       variant = Phrase.new():append<span class="string">"good day"</span>:appendOptional(<span class="string">"sir"</span>, <span class="string">"extraPolite"</span>)
+     },
+     {propVal = <span class="string">"greeting"</span>, variant = <span class="string">"hello"</span>}
+   },
+ }</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Phrase:append"></a>
+    <strong>Phrase:append(variants, propName)</strong>
+    </dt>
+    <dd>
+    Appends a named element with multiple variants.
+ Multiple variants of a property can be aliased by the same name.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">variants</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         An array of variants where a variant can be:
+ <ul>
+ <li>A table with a <code>propVal</code> and a <code>variant</code> field that is either a string or Phrase</li>
+ <li>A string or a Phrase</li>
+ </ul>
+        </li>
+        <li><span class="parameter">propName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         name of the property
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">Phrase.new():append({<span class="string">"hello"</span>, <span class="string">"goodbye"</span>}, <span class="string">"what"</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Phrase:append"></a>
+    <strong>Phrase:append(multiElement)</strong>
+    </dt>
+    <dd>
+    Appends an element with multiple variants.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">multiElement</span>
+         See above
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Phrase:appendOptional"></a>
+    <strong>Phrase:appendOptional(element)</strong>
+    </dt>
+    <dd>
+    Appends an optional element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">element</span>
+         A string or a Phrase
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Phrase:appendOptional"></a>
+    <strong>Phrase:appendOptional(element, name)</strong>
+    </dt>
+    <dd>
+    Appends an optional named element.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">element</span>
+         A string or a Phrase
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name of the property
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Phrase:appendOptional"></a>
+    <strong>Phrase:appendOptional(multiElement)</strong>
+    </dt>
+    <dd>
+    Appends an optional element with multiple variants.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">multiElement</span>
+         See above
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Phrase:appendOptional"></a>
+    <strong>Phrase:appendOptional(multiElement, name)</strong>
+    </dt>
+    <dd>
+    Appends an optional named element with multiple variants.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">multiElement</span>
+         See above
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_VoiceCommand"></a>Class VoiceCommand </h2>
+
+          <div class="section-description">
+          VoiceCommand is a subclass of <a href="#Class_Event">Event</a> and is implemented with the Windows Speech API. </p>
+
+<p> A voice command can be in one of these  states:</p>
+
+<ul>
+    <li><p>Active</p></li>
+    <li><p>Inactive</p></li>
+    <li><p>Ignore mode: the phrases are active in the recognizer but recognition events don't trigger the voice command.</p></li>
+</ul>
+
+<p> If you only have a couple of phrases active in the recognizer at a given time, especially short ones, the accuracy will be low and
+ the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of active phrases
+ will also degrade the quality of recognition.<br></p>
+
+<p> <b>A VoiceCommand event emits a <a href="../libraries/VoiceCommand.html#RecoResult">RecoResult</a> as its payload</b>.
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "VoiceCommand:new"></a>
+    <strong>VoiceCommand:new(args)</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span> A table containing the following fields (also the fields taken by <a href="../libraries/Event.html#Action:new">the parent constructor</a>):
+        <ul>
+        <li><span class="parameter">phrase</span>
+         string or Phrase or array of strings and Phrase objects.
+        </li>
+        <li><span class="parameter">dummy</span>
+         string or Phrase or array of strings and Phrase objects. One or multiple dummy phrase variants which will activated and deactivated
+ synchronously with the voice command's actual phrase variants to help the recognizer discriminate between them and similarly
+ sounding phrases.
+        </li>
+        <li><span class="parameter">confidence</span>
+            <span class="types"><span class="type">number</span></span>
+         between 0 and 1
+         (<em>default</em> 0.93)
+        </li>
+        <li><span class="parameter">persistent</span>
+
+
+<ul>
+    <li>omitted or false: the voice command will be deactivated after being triggered.</li>
+    <li>'ignore': the voice command will be put into ignore mode after being triggered.</li>
+    <li>true: the voice command will stay active after being triggered.</li>
+</ul>
+
+         (<em>default</em> false)
+        </li>
+        </li></ul>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> myVoiceCommand = VoiceCommand:new {
+ phrase = <span class="string">"hello"</span>,
+ confidence = <span class="number">0.95</span>,
+ action = <span class="keyword">function</span>(_, recoResult) <span class="global">print</span> <span class="string">"hi there"</span> <span class="keyword">end</span>
+}</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand.resetGrammar"></a>
+    <strong>VoiceCommand.resetGrammar()</strong>
+    </dt>
+    <dd>
+    Call this function inside a plugin lua before activating or deactivating voice commands. <br/>
+ You also need to call this after modifying the existing phrase set in any way for the changes to take place.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:getPhrases"></a>
+    <strong>VoiceCommand:getPhrases(dummy)</strong>
+    </dt>
+    <dd>
+    Returns all phrase variants of a voice command.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">dummy</span>
+            <span class="types"><span class="type">bool</span></span>
+         True to return dummy phrase variants, omitted or false to return actual phrase variants.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Array of Phrase objects
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:setPersistence"></a>
+    <strong>VoiceCommand:setPersistence(persistenceMode)</strong>
+    </dt>
+    <dd>
+    Sets persistence mode of a voice command.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">persistenceMode</span>
+
+
+<ul>
+    <li>omitted or false: the voice command will be deactivated after being triggered.</li>
+    <li>'ignore': the voice command will be put into ignore mode after being triggered.</li>
+    <li>true: the voice command will stay active after being triggered.</li>
+</ul>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:addPhrase"></a>
+    <strong>VoiceCommand:addPhrase(phrase, dummy)</strong>
+    </dt>
+    <dd>
+    Adds phrase variants to a voice command.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phrase</span>
+         string or array of strings
+        </li>
+        <li><span class="parameter">dummy</span>
+            <span class="types"><span class="type">bool</span></span>
+         True to add dummy phrase variants, omitted or false to add actual phrase variants.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:removeAllPhrases"></a>
+    <strong>VoiceCommand:removeAllPhrases(dummy)</strong>
+    </dt>
+    <dd>
+    Removes all phrase variants from a voice command.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">dummy</span>
+            <span class="types"><span class="type">bool</span></span>
+         True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:setConfidence"></a>
+    <strong>VoiceCommand:setConfidence(confidence)</strong>
+    </dt>
+    <dd>
+    Sets required confidence of a voice command.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">confidence</span>
+            <span class="types"><span class="type">number</span></span>
+         A number from 0-1
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:activate"></a>
+    <strong>VoiceCommand:activate()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:ignore"></a>
+    <strong>VoiceCommand:ignore()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:deactivate"></a>
+    <strong>VoiceCommand:deactivate()</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:disable"></a>
+    <strong>VoiceCommand:disable()</strong>
+    </dt>
+    <dd>
+    Deactivates the voice command and makes successive calls to <a href="../libraries/VoiceCommand.html#VoiceCommand:activate">activate</a> and <a href="../libraries/VoiceCommand.html#VoiceCommand:ignore">ignore</a> have no effect.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:getAction"></a>
+    <strong>VoiceCommand:getAction()</strong>
+    </dt>
+    <dd>
+    If the voice command has only one action, returns that action.  All default voice commands have only one action.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:activateOn"></a>
+    <strong>VoiceCommand:activateOn(...)</strong>
+    </dt>
+    <dd>
+    The voice command will become active when the events passed as parameters are triggered. </p>
+
+<p> Adds an 'activate' event reference that can be removed from the event via <a href="../libraries/VoiceCommand.html#VoiceCommand:removeEventRef">removeEventRef</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+          one or more events
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:deactivateOn"></a>
+    <strong>VoiceCommand:deactivateOn(...)</strong>
+    </dt>
+    <dd>
+    The voice command will be deactivated when the events passed as parameters are triggered. </p>
+
+<p> Adds a 'deactivate' event reference that can be removed from the event via <a href="../libraries/VoiceCommand.html#VoiceCommand:removeEventRef">removeEventRef</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+          one or more events
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:ignoreOn"></a>
+    <strong>VoiceCommand:ignoreOn(...)</strong>
+    </dt>
+    <dd>
+    The voice command will go into ignore mode when the events passed as parameters</p>
+
+<p> are triggered. </p>
+
+<p> Adds a 'ignore' event reference that can be removed from the event via <a href="../libraries/VoiceCommand.html#VoiceCommand:removeEventRef">removeEventRef</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">...</span>
+          one or more events
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:removeEventRef"></a>
+    <strong>VoiceCommand:removeEventRef(refType, ...)</strong>
+    </dt>
+    <dd>
+    Disables the effect of <a href="../libraries/VoiceCommand.html#VoiceCommand:activateOn">activateOn</a>, <a href="../libraries/VoiceCommand.html#VoiceCommand:deactivateOn">deactivateOn</a> or <a href="../libraries/VoiceCommand.html#VoiceCommand:ignore">ignore</a> for the default voice commands in <a href="../libraries/copilot.html#voiceCommands">copilot.voiceCommands</a>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">refType</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         'activate', 'deactivate' or 'ignore'
+        </li>
+        <li><span class="parameter">...</span>
+         one or more <a href="#Class_Event">Event</a>'s
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">copilot.voiceCommands.gearUp:removeEventRef(<span class="string">'activate'</span>,
+copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-04-14 20:00:12 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -267,6 +267,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 			copilot::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(mouseMacroCallback.get());
 			sol::state_view lua(ts);
 			mouseMacroEvent = lua["Event"]["new"](lua["Event"]);
+			mouseMacroEvent["logMsg"] = lua["Event"]["NOLOGMSG"];
 		}
 		return mouseMacroEvent;
 	};

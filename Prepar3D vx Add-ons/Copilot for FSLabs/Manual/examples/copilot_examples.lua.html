@@ -36,6 +36,7 @@
 <ul class="nowrap">
   <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
   <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><a href="../examples/copilot_complex_phrase.lua.html">copilot_complex_phrase.lua</a></li>
   <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
   <li><strong>copilot_examples.lua</strong></li>
 </ul>
@@ -44,6 +45,7 @@
   <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
   <li><a href="../libraries/copilot.html">copilot</a></li>
   <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/VoiceCommand.html">VoiceCommand</a></li>
   <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
 <h2>Classes</h2>
@@ -75,7 +77,42 @@
 </span><span class="comment">-- Read more <a href="../manual/plugins.md.html#">here</a>
 </span>
 <span class="comment">------------------------------------------------------------------------------
-</span><span class="comment">-- Adding a simple voice command
+</span><span class="comment">-- Changing a default sequence
+</span><span class="comment">------------------------------------------------------------------------------
+</span>
+<span class="comment">-- There's also copilot.prependSequence()
+</span>copilot.appendSequence(<span class="string">"lineup"</span>, <span class="keyword">function</span>()
+  FSL.OVHD_EXTLT_Nose_Switch <span class="string">"TO"</span>
+  FSL.OVHD_EXTLT_Strobe_Switch <span class="string">"AUTO"</span>
+<span class="keyword">end</span>)
+
+<span class="comment">-- If you want to remove something from a default sequence
+</span><span class="comment">-- or add something in the middle of it,
+</span><span class="comment">-- you need to replace the default implementation.
+</span><span class="comment">-- This example shows how to shut off an engine in the middle of the taxi
+</span><span class="comment">-- sequence:
+</span>copilot.replaceSequence(<span class="string">"during_taxi"</span>, <span class="keyword">function</span>()
+  FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == <span class="number">1</span> <span class="keyword">and</span> <span class="string">"2"</span> <span class="keyword">or</span> <span class="string">"1"</span>)
+  FSL.PED_WXRadar_PWS_Switch <span class="string">"AUTO"</span>
+  copilot.sleep(<span class="number">100</span>)
+  FSL.PED_WXRadar_PWS_Switch <span class="string">"AUTO"</span>
+  FSL.MIP_BRAKES_AUTOBRK_MAX_Button()
+  FSL.PED_ENG_2_MSTR_Switch <span class="string">"OFF"</span>
+  <span class="keyword">for</span> _ = <span class="number">1</span>, <span class="number">5</span> <span class="keyword">do</span>
+    FSL.PED_ECP_TO_CONFIG_Button()
+    copilot.sleep(<span class="number">50</span>, <span class="number">100</span>)
+  <span class="keyword">end</span>
+<span class="keyword">end</span>)
+
+<span class="comment">------------------------------------------------------------------------------
+</span><span class="comment">-- Changing a default voice command
+</span><span class="comment">------------------------------------------------------------------------------
+</span>
+<span class="keyword">local</span> startApu = copilot.voiceCommands.startApu
+startApu:removeAllPhrases():addPhrase(<span class="string">"start apu"</span>):setConfidence(<span class="number">0.90</span>)
+
+<span class="comment">------------------------------------------------------------------------------
+</span><span class="comment">-- Adding a simple voice command (click <a href="../examples/copilot_complex_phrase.lua.html#">here</a> for a more complex example)
 </span><span class="comment">------------------------------------------------------------------------------
 </span>
 <span class="keyword">local</span> getMetar = VoiceCommand:new {
@@ -97,8 +134,6 @@
     copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
     FSL.PED_MCDU_LSK_L6()
     copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
-    FSL.PED_MCDU_LSK_L6()
-    copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
     FSL.PED_MCDU_LSK_R2()
     copilot.sleep(<span class="number">500</span>, <span class="number">1000</span>)
     FSL.PED_MCDU_LSK_R2()
@@ -113,42 +148,6 @@
 <span class="comment">--- It's necessary to call this before activating any voice commands here
 </span>VoiceCommand.resetGrammar()
 getMetar:activate()
-
-<span class="comment">------------------------------------------------------------------------------
-</span><span class="comment">-- Changing a default sequence
-</span><span class="comment">------------------------------------------------------------------------------
-</span>
-<span class="comment">-- There's also copilot.prependSequence()
-</span>
-copilot.appendSequence(<span class="string">"lineup"</span>, <span class="keyword">function</span>()
-  FSL.OVHD_EXTLT_Nose_Switch <span class="string">"TO"</span>
-  FSL.OVHD_EXTLT_Strobe_Switch <span class="string">"AUTO"</span>
-<span class="keyword">end</span>)
-
-<span class="comment">-- If you want to remove something from a default sequence, add something in the middle of it,
-</span><span class="comment">-- you need to replace the default implementation
-</span><span class="comment">-- This example shows how to shut off an engine in the middle of the taxi
-</span><span class="comment">-- sequence:
-</span>
-copilot.replaceSequence(<span class="string">"during_taxi"</span>, <span class="keyword">function</span>()
-  FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == <span class="number">1</span> <span class="keyword">and</span> <span class="string">"2"</span> <span class="keyword">or</span> <span class="string">"1"</span>)
-  FSL.PED_WXRadar_PWS_Switch <span class="string">"AUTO"</span>
-  copilot.sleep(<span class="number">100</span>)
-  FSL.PED_WXRadar_PWS_Switch <span class="string">"AUTO"</span>
-  FSL.MIP_BRAKES_AUTOBRK_MAX_Button()
-  FSL.PED_ENG_2_MSTR_Switch <span class="string">"OFF"</span>
-  <span class="keyword">for</span> _ = <span class="number">1</span>, <span class="number">5</span> <span class="keyword">do</span>
-    FSL.PED_ECP_TO_CONFIG_Button()
-    copilot.sleep(<span class="number">50</span>, <span class="number">100</span>)
-  <span class="keyword">end</span>
-<span class="keyword">end</span>)
-
-<span class="comment">------------------------------------------------------------------------------
-</span><span class="comment">-- Changing a default voice command
-</span><span class="comment">------------------------------------------------------------------------------
-</span>
-<span class="keyword">local</span> startApu = copilot.voiceCommands.startApu
-startApu:removeAllPhrases():addPhrase(<span class="string">"start apu"</span>):setConfidence(<span class="number">0.90</span>)
 
 <span class="comment">------------------------------------------------------------------------------
 </span><span class="comment">-- Adding a new action and voice command
@@ -216,7 +215,7 @@ startApu:removeAllPhrases():addPhrase(<span class="string">"start apu"</span>):s
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-13 10:03:36 </i>
+<i style="float:right;">Last updated 2021-04-14 20:00:12 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -4,61 +4,20 @@
 -- Read more @{plugins.md|here}
 
 ------------------------------------------------------------------------------
--- Adding a simple voice command
-------------------------------------------------------------------------------
-
-local getMetar = VoiceCommand:new {
-
-  phrase = {"get the metar please", "get the metar"},
-
-  -- persistent = false can be omitted as voice commands are created 
-  -- non-persistent by default, meaning they deactivate after being recognized.
-  -- We don't want this voice command to be persistent because it wouldn't make
-  -- sense to trigger it again during the execution of the action.
-  persistent = false,
-  
-  action = function(voiceCommand) -- Voice commands and events pass a reference
-    -- to themselves as the first argument to their action callbacks.
-    copilot.sleep(500, 1000)
-    if not FSL.MCDU:getString():find "MCDU MENU" then
-      FSL.PED_MCDU_KEY_MENU()
-    end
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_L6()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_L6()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_R2()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_R2()
-    copilot.sleep(500, 1000)
-    FSL.PED_MCDU_LSK_R6()
-    -- Reactivate the voice command
-    voiceCommand:activate()
-  end
-
-}
-
---- It's necessary to call this before activating any voice commands here
-VoiceCommand.resetGrammar()
-getMetar:activate()
-
-------------------------------------------------------------------------------
 -- Changing a default sequence
 ------------------------------------------------------------------------------
 
 -- There's also copilot.prependSequence()
-
 copilot.appendSequence("lineup", function()
   FSL.OVHD_EXTLT_Nose_Switch "TO"
   FSL.OVHD_EXTLT_Strobe_Switch "AUTO"
 end)
 
--- If you want to remove something from a default sequence, add something in the middle of it,
--- you need to replace the default implementation
+-- If you want to remove something from a default sequence
+-- or add something in the middle of it,
+-- you need to replace the default implementation.
 -- This example shows how to shut off an engine in the middle of the taxi 
 -- sequence:
-
 copilot.replaceSequence("during_taxi", function()
   FSL.PED_WXRadar_SYS_Switch(FSL:getPilot() == 1 and "2" or "1")
   FSL.PED_WXRadar_PWS_Switch "AUTO"
@@ -78,6 +37,44 @@ end)
 
 local startApu = copilot.voiceCommands.startApu
 startApu:removeAllPhrases():addPhrase("start apu"):setConfidence(0.90)
+
+------------------------------------------------------------------------------
+-- Adding a simple voice command (click @{copilot_complex_phrase.lua|here} for a more complex example)
+------------------------------------------------------------------------------
+
+local getMetar = VoiceCommand:new {
+
+  phrase = {"get the metar please", "get the metar"},
+
+  -- persistent = false can be omitted as voice commands are created
+  -- non-persistent by default, meaning they deactivate after being recognized.
+  -- We don't want this voice command to be persistent because it wouldn't make
+  -- sense to trigger it again during the execution of the action.
+  persistent = false,
+
+  action = function(voiceCommand) -- Voice commands and events pass a reference
+    -- to themselves as the first argument to their action callbacks.
+    copilot.sleep(500, 1000)
+    if not FSL.MCDU:getString():find "MCDU MENU" then
+      FSL.PED_MCDU_KEY_MENU()
+    end
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_L6()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_R2()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_R2()
+    copilot.sleep(500, 1000)
+    FSL.PED_MCDU_LSK_R6()
+    -- Reactivate the voice command
+    voiceCommand:activate()
+  end
+
+}
+
+--- It's necessary to call this before activating any voice commands here
+VoiceCommand.resetGrammar()
+getMetar:activate()
 
 ------------------------------------------------------------------------------
 -- Adding a new action and voice command

@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 2.0.5 beta</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+
+
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><strong>copilot_complex_phrase.lua</strong></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+</ul>
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/VoiceCommand.html">VoiceCommand</a></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+    <h2>copilot_complex_phrase.lua</h2>
+<pre>
+<span class="comment">-- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
+</span><span class="comment">-- any lua files in that directory
+</span><span class="comment">-- Read more <a href="../manual/plugins.md.html#">here</a>
+</span>
+<span class="keyword">local</span> MCDU_ERROR = <span class="string">"unexpected display state"</span>
+<span class="keyword">local</span> getWeatherSequence, ensureAirportSelected, pressAndWait
+<span class="keyword">local</span> alphabet = {
+  <span class="string">"Alfa"</span>,
+  <span class="string">"Bravo"</span>,
+  <span class="string">"Charlie"</span>,
+  <span class="string">"Delta"</span>,
+  <span class="string">"Echo"</span>,
+  <span class="string">"Foxtrot"</span>,
+  <span class="string">"Golf"</span>,
+  <span class="string">"Hotel"</span>,
+  <span class="string">"India"</span>,
+  <span class="string">"Juliett"</span>,
+  <span class="string">"Kilo"</span>,
+  <span class="string">"Lima"</span>,
+  <span class="string">"Mike"</span>,
+  <span class="string">"November"</span>,
+  <span class="string">"Oscar"</span>,
+  <span class="string">"Papa"</span>,
+  <span class="string">"Quebec"</span>,
+  <span class="string">"Romeo"</span>,
+  <span class="string">"Sierra"</span>,
+  <span class="string">"Tango"</span>,
+  <span class="string">"Uniform"</span>,
+  <span class="string">"Victor"</span>,
+  <span class="string">"Whiskey"</span>,
+  <span class="string">"X-ray"</span>,
+  <span class="string">"Yankee"</span>,
+  <span class="string">"Zulu"</span>
+}
+
+<span class="comment">-- Some examples of what you can say with this:
+</span><span class="comment">-- 'Get the weather please'
+</span><span class="comment">-- 'Get the destination forecast please'
+</span><span class="comment">-- 'Get the METAR at Echo November Golf Mike please'
+</span>
+<span class="keyword">local</span> <span class="keyword">function</span> makePhrase(withICAO)
+  <span class="keyword">local</span> phrase = Phrase.new():append <span class="string">"get the"</span>
+  <span class="keyword">if</span> <span class="keyword">not</span> withICAO <span class="keyword">then</span>
+    phrase:appendOptional(<span class="string">"destination"</span>, <span class="string">"destination"</span>)
+  <span class="keyword">end</span>
+  phrase:append {
+    propName = <span class="string">"reportType"</span>,
+    variants = {<span class="string">"metar"</span>, <span class="string">"forecast"</span>, {propVal = <span class="string">"metar"</span>, variant = <span class="string">"weather"</span>}}
+  }
+  <span class="keyword">if</span> withICAO <span class="keyword">then</span>
+    <span class="keyword">local</span> variants = {}
+    <span class="keyword">for</span> _, code <span class="keyword">in</span> <span class="global">pairs</span>(alphabet) <span class="keyword">do</span>
+      variants[#variants+<span class="number">1</span>] = {propVal = code:sub(<span class="number">1</span>, <span class="number">1</span>), variant = code}
+    <span class="keyword">end</span>
+    phrase:append<span class="string">"at"</span>:append {
+        propName = <span class="string">"ICAO"</span>,
+        asString = <span class="string">"ICAO code"</span>,
+        variants = Phrase.new()
+          :append(variants, <span class="string">"1"</span>):append(variants, <span class="string">"2"</span>)
+          :append(variants, <span class="string">"3"</span>):append(variants, <span class="string">"4"</span>)
+      }
+  <span class="keyword">end</span>
+  phrase:appendOptional(<span class="string">"please"</span>, <span class="string">"isPolite"</span>)
+  <span class="keyword">return</span> phrase
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> getWeather = VoiceCommand:new {
+  phrase = {makePhrase(<span class="keyword">true</span>), makePhrase()},
+  confidence = <span class="number">0.9</span>,
+  action = <span class="keyword">function</span>(vc, res)
+    <span class="keyword">if</span> <span class="keyword">not</span> res:getProp <span class="string">"isPolite"</span> <span class="keyword">then</span>
+      copilot.speak <span class="string">"You have to ask nicely"</span>
+    <span class="keyword">else</span>
+      <span class="keyword">local</span> numTries = <span class="number">0</span>
+      <span class="keyword">local</span> airport
+      <span class="keyword">if</span> res:getProp <span class="string">"ICAO"</span> <span class="keyword">then</span>
+        airport = res:getProp(<span class="string">"ICAO"</span>, <span class="string">"1"</span>) ..
+          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"2"</span>) ..
+          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"3"</span>) ..
+          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"4"</span>)
+      <span class="keyword">else</span>
+        airport = res:getProp <span class="string">"destination"</span> <span class="keyword">or</span> <span class="string">"origin"</span>
+      <span class="keyword">end</span>
+      <span class="keyword">repeat</span>
+        <span class="keyword">local</span> ok, err = <span class="global">pcall</span>(
+          getWeatherSequence, res:getProp <span class="string">"reportType"</span>, airport
+        )
+        numTries = numTries + <span class="number">1</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">and</span> err ~= MCDU_ERROR <span class="keyword">then</span>
+          vc:activate()
+          <span class="global">error</span>(err)
+        <span class="keyword">end</span>
+      <span class="keyword">until</span> ok <span class="keyword">or</span> numTries == <span class="number">5</span>
+    <span class="keyword">end</span>
+    vc:activate()
+  <span class="keyword">end</span>
+}
+
+Bind {key = <span class="string">"SHIFT+F"</span>, onPress = <span class="keyword">function</span>() getWeather:activate() <span class="keyword">end</span>}
+
+getWeatherSequence = <span class="keyword">function</span>(reportType, airport)
+  <span class="keyword">if</span> <span class="keyword">not</span> FSL.MCDU:getString():find <span class="string">"MCDU MENU"</span> <span class="keyword">then</span>
+    pressAndWait(FSL.PED_MCDU_KEY_MENU, <span class="string">"MCDU MENU"</span>)
+  <span class="keyword">end</span>
+  pressAndWait(FSL.PED_MCDU_LSK_L6, <span class="string">"ATSU DATALINK"</span>)
+  pressAndWait(FSL.PED_MCDU_LSK_R2, <span class="string">"AOC MENU"</span>)
+  pressAndWait(FSL.PED_MCDU_LSK_R2, <span class="string">"ATIS/WX"</span>)
+  <span class="keyword">if</span> airport == <span class="string">"destination"</span> <span class="keyword">then</span>
+    ensureAirportSelected(<span class="number">97</span>, FSL.PED_MCDU_LSK_L2)
+  <span class="keyword">elseif</span> airport == <span class="string">"origin"</span> <span class="keyword">then</span>
+    ensureAirportSelected(<span class="number">49</span>, FSL.PED_MCDU_LSK_L1)
+  <span class="keyword">else</span>
+    ensureAirportSelected(airport)
+  <span class="keyword">end</span>
+  <span class="keyword">if</span> reportType == <span class="string">"forecast"</span> <span class="keyword">then</span>
+    FSL.PED_MCDU_LSK_R5()
+  <span class="keyword">else</span>
+    FSL.PED_MCDU_LSK_R6()
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+ensureAirportSelected = <span class="keyword">function</span>(firstArg, selectKey)
+  <span class="keyword">local</span> disp = FSL.MCDU:getString()
+  <span class="keyword">local</span> manSelected = <span class="keyword">false</span>
+  <span class="keyword">local</span> autoSelected, ICAO
+  <span class="keyword">if</span> <span class="global">type</span>(firstArg) == <span class="string">"string"</span> <span class="keyword">then</span>
+    ICAO = firstArg
+    autoSelected = <span class="keyword">false</span>
+  <span class="keyword">else</span>
+    autoSelected = FSL.MCDU:getArray()[firstArg].isBold
+    ICAO = disp:sub(firstArg, firstArg + <span class="number">3</span>)
+  <span class="keyword">end</span>
+  <span class="keyword">local</span> hasManualEntry
+  <span class="keyword">local</span> freeSlot
+  <span class="keyword">local</span> manEntryIdx = <span class="number">69</span>
+  <span class="keyword">for</span> i = <span class="number">1</span>, <span class="number">4</span> <span class="keyword">do</span>
+    <span class="keyword">if</span> disp:sub(manEntryIdx, manEntryIdx) ~= <span class="string">"["</span> <span class="keyword">then</span>
+      hasManualEntry = <span class="keyword">true</span>
+      <span class="keyword">if</span> disp:sub(manEntryIdx, manEntryIdx + <span class="number">3</span>) == ICAO <span class="keyword">then</span>
+        manSelected = <span class="keyword">true</span>
+      <span class="keyword">end</span>
+    <span class="keyword">else</span>
+      freeSlot = freeSlot <span class="keyword">or</span> i
+    <span class="keyword">end</span>
+    manEntryIdx = manEntryIdx + <span class="number">48</span>
+  <span class="keyword">end</span>
+  <span class="keyword">if</span> <span class="keyword">not</span> manSelected <span class="keyword">and</span> (<span class="keyword">not</span> autoSelected <span class="keyword">or</span> hasManualEntry) <span class="keyword">then</span>
+    <span class="keyword">if</span> selectKey <span class="keyword">then</span>
+      pressAndWait(selectKey)
+    <span class="keyword">else</span>
+      copilot.scratchpadClearer.clearScratchpad()
+      FSL.MCDU:<span class="global">type</span>(ICAO)
+    <span class="keyword">end</span>
+    pressAndWait(FSL[<span class="string">"PED_MCDU_LSK_R"</span> .. (freeSlot <span class="keyword">or</span> <span class="number">1</span>)])
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+pressAndWait = <span class="keyword">function</span>(keyToPress, checkFunc, waitMin, waitMax, init, timeout)
+  init = init <span class="keyword">or</span> FSL.MCDU:getString()
+  <span class="keyword">if</span> <span class="keyword">not</span> checkFunc <span class="keyword">then</span>
+    checkFunc = <span class="keyword">function</span>(disp) <span class="keyword">return</span> disp ~= init <span class="keyword">end</span>
+  <span class="keyword">elseif</span> <span class="global">type</span>(checkFunc) == <span class="string">"string"</span> <span class="keyword">then</span>
+    <span class="keyword">local</span> sub = checkFunc
+    <span class="keyword">local</span> firstLine = init:sub(<span class="number">1</span>, <span class="number">48</span>)
+    checkFunc = <span class="keyword">function</span>(disp)
+      <span class="keyword">if</span> disp:find(sub) <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">true</span> <span class="keyword">end</span>
+      <span class="keyword">if</span> disp:sub(<span class="number">1</span>, <span class="number">48</span>) ~= firstLine <span class="keyword">then</span> <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>) <span class="keyword">end</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+  <span class="keyword">if</span> timeout ~= <span class="number">0</span> <span class="keyword">then</span>
+    timeout = timeout <span class="keyword">or</span> <span class="number">10000</span>
+    <span class="keyword">local</span> timedOut = <span class="keyword">not</span> checkWithTimeout(timeout, <span class="keyword">function</span>()
+      keyToPress()
+      <span class="keyword">return</span> checkWithTimeout(<span class="number">1000</span>, <span class="keyword">function</span>()
+        ipc.sleep(<span class="number">100</span>)
+        <span class="keyword">return</span> checkFunc(FSL.MCDU:getString())
+      <span class="keyword">end</span>)
+    <span class="keyword">end</span>)
+    <span class="keyword">if</span> timedOut <span class="keyword">then</span> <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>) <span class="keyword">end</span>
+  <span class="keyword">else</span>
+    <span class="keyword">repeat</span> ipc.sleep(<span class="number">100</span>) <span class="keyword">until</span> checkFunc(FSL.MCDU:getString())
+  <span class="keyword">end</span>
+  ipc.sleep(<span class="global">math</span>.random(waitMin <span class="keyword">or</span> <span class="number">300</span>, waitMax <span class="keyword">or</span> <span class="number">1000</span>))
+  <span class="keyword">if</span> <span class="keyword">not</span> checkFunc(FSL.MCDU:getString()) <span class="keyword">then</span> <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>) <span class="keyword">end</span>
+<span class="keyword">end</span></pre>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-04-14 20:00:12 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -15,6 +15,7 @@ if false then
   function copilot.displayText(text, duration, color) end
 end
 
+
 local flapsLimits = {}
 
 copilot.flapsLimits = flapsLimits
@@ -22,7 +23,8 @@ copilot.flapsLimits = flapsLimits
 if FSL:getAcType() == "A321" then
   flapsLimits.flapsOne = 235
   flapsLimits.flapsTwo = 215
-  flapsLimits.flapsThree = 195
+  
+  flapsLimits.flapsThree = 1
   flapsLimits.flapsFull = 190
 else
   flapsLimits.flapsOne = 230

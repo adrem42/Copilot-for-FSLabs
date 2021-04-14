@@ -63,15 +63,15 @@ beforeStart:appendItem {
   end,
   onResponse = function(check, _, recoResult)
     if recoResult.phrase == "checked" then return end
-    local props = recoResult.props
-    local responseV1 = props.V1_1 .. props.V1_2 .. props.V1_3
-    local responseV2 = props.V2_1 .. props.V2_2 .. props.V2_3
+    local responseV1 = recoResult:getProp "V1_1" .. recoResult:getProp "V1_2" .. recoResult:getProp "V1_3"
+    local responseV2 = recoResult:getProp "V2_1" .. recoResult:getProp "V2_2" .. recoResult:getProp "V2_3"
     check(responseV1 == V1, "Wrong V1")
     check(responseV2 == V2, "Wrong V2")
-    if props.FLEX then
-      check(props.FLEX ~= "...", "Weird FLEX (and not OK)")
-    elseif props.TOGA then
-      check(props.TOGA == "TOGA", "The correct response is 'TOGA'")
+    local flexProp, togaProp = recoResult:getProp "FLEX", recoResult:getProp "TOGA"
+    if flexProp then
+      check(flexProp ~= "...", "You said the wrong FLEX")
+    elseif togaProp then
+      check(togaProp == "TOGA", "The correct response is 'TOGA'")
     end
   end
 }

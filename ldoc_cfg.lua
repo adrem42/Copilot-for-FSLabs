@@ -37,10 +37,13 @@ file = {
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Event.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/ActionOrderSetter.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/SingleEvent.lua',
+  'Copilot/Recognizer.h',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/VoiceCommand.lua',
+  
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Checklist.lua',
   'Copilot/Joystick.h',
   'Copilot/CopilotScript.cpp'
+ 
 }
 
 format = 'markdown'
@@ -66,6 +69,7 @@ pretty='lxsh'
 ]]
 
 local file = require "Prepar3D vx Add-ons.Copilot for FSLabs.FSL2Lua.FSL2Lua.file"
+
 
 local versionInfo = file.read "Copilot\\versionInfo.h"
 

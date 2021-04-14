@@ -78,7 +78,7 @@ Recognizer::Phrase& Recognizer::Phrase::appendOptional(LuaVariantMap phraseEleme
 	return append(phraseElement, propName, true);
 }
 
-Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement, std::wstring propName, bool optional)
+Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement, std::wstring propName, bool optional, std::wstring asString)
 {
 	std::vector<PhraseElement::Variant> variants;
 
@@ -88,9 +88,9 @@ Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement, std:
 		sol::object stringOrPhrase;
 		if (element.get_type() == sol::type::table) {
 			sol::table t = element;
-			if (t["name"].get_type() == sol::type::string)
-				name = t.get<std::wstring>("name");
-			stringOrPhrase = t["phrase"];
+			if (t["propVal"].get_type() == sol::type::string)
+				name = t.get<std::wstring>("propVal");
+			stringOrPhrase = t["variant"];
 		} else {
 			stringOrPhrase = element;
 		}
@@ -102,15 +102,19 @@ Recognizer::Phrase& Recognizer::Phrase::append(LuaVariantMap phraseElement, std:
 		variants.emplace_back(varValue, name);
 	}
 
-	return append(variants, propName, optional);
+	return append(variants, propName, optional, asString);
 }
 
-Recognizer::Phrase& Recognizer::Phrase::append(std::vector<PhraseElement::Variant> variants, std::wstring propName, bool optional)
+Recognizer::Phrase& Recognizer::Phrase::append(std::vector<PhraseElement::Variant> variants, std::wstring propName, bool optional, std::wstring asString)
 {
 	if (!phraseElements.empty())
-				asString += L" ";
+		this->asString += L" ";
 	auto& el = phraseElements.emplace_back(variants, propName, optional);
-	asString += el.asString;
+	if (!asString.empty()) {
+		this->asString += L"<" + asString + L">";
+	} else {
+		this->asString += el.asString;
+	}
 	return *this;
 }
 
@@ -175,14 +179,21 @@ void Recognizer::registerCallback(ISpNotifyCallback* callback)
 RuleID Recognizer::addRule(std::vector<Phrase> phrases, float confidence, RulePersistenceMode persistenceMode)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
-	CurrRuleId++;
-	rules.emplace(CurrRuleId, std::move(Rule{ phrases, confidence, CurrRuleId, persistenceMode}));
-	return CurrRuleId;
+	auto ruleID = newRuleId();
+	rules.emplace(ruleID, std::move(Rule{ phrases, confidence, ruleID, persistenceMode}));
+	return ruleID;
 }
 
 Recognizer::Rule& Recognizer::getRuleById(RuleID ruleID)
 {
 	return rules[ruleID];
+}
+
+RuleID Recognizer::newRuleId()
+{
+	static RuleID currRuleId = 0;
+	currRuleId++;
+	return currRuleId;
 }
 
 void Recognizer::logRuleStatus(std::string& prefix, const Rule& rule)
@@ -369,7 +380,7 @@ void Recognizer::resetGrammar()
 
 			for (Phrase& phrase : rule.phrases) {
 				auto& phraseElements = phrase.phraseElements;
-				
+
 				if (phraseElements.size() > 0) {
 
 					std::function<void(std::vector<Phrase::PhraseElement>&, SPSTATEHANDLE)>parseElements;
@@ -400,19 +411,23 @@ void Recognizer::resetGrammar()
 										
 										hr = recoGrammar->AddWordTransition(fromState, toState, std::get<std::wstring>(variant.value).c_str(), L" ", SPWT_LEXICAL, 1.0f, pProp);
 										checkResult("Error in AddWordTransition", hr);
+										if (phraseElement.optional) {
+											hr = recoGrammar->AddWordTransition(fromState, toState, NULL, L" ", SPWT_LEXICAL, 1.0f, NULL);
+										}
 									} else {
 										
 										Phrase& phrase = *std::get<std::shared_ptr<Phrase>>(variant.value);
 										if (!phrase.phraseElements.empty()) {
-											recoGrammar->CreateNewState(currState, &phrase.phraseElements[0].state);
-											hr = recoGrammar->AddWordTransition(fromState, phrase.phraseElements[0].state, NULL, L" ", SPWT_LEXICAL, 1.0f, pProp);
-											parseElements(phrase.phraseElements, nextState);
+											hr = recoGrammar->GetRule(NULL, phrase.ruleID, SPRAF_Dynamic, TRUE, &phrase.phraseElements[0].state);
+											hr = recoGrammar->AddRuleTransition(fromState, toState, phrase.phraseElements[0].state, 1, pProp);
+											if (phraseElement.optional) {
+												hr = recoGrammar->AddRuleTransition(fromState, toState, phrase.phraseElements[0].state, 1.0f, NULL);
+											}
+											parseElements(phrase.phraseElements, NULL);
 										}
 									}
 								}
-								if (phraseElement.optional) {
-									hr = recoGrammar->AddWordTransition(fromState, toState, NULL, L" ", SPWT_LEXICAL, 1.0f, NULL);
-								}
+								
 							};
 
 							makeStateTransition(phraseElement, currState, nextState);
@@ -485,13 +500,30 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 
 	PhraseType["append"] = sol::overload(
 		static_cast<Phrase&(Phrase::*)(Phrase::LuaVariantMap, std::wstring)>(&Phrase::append),
-		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap)>(&Phrase::append),
-		static_cast<Phrase&(Phrase::*)(std::wstring)>(&Phrase::append)
+		static_cast<Phrase&(Phrase::*)(std::wstring)>(&Phrase::append),
+		[](Phrase& phrase, sol::table t) -> Phrase& {
+			Phrase::LuaVariantMap variantMap;
+			if (t["variants"].get_type() == sol::type::table) {
+				variantMap = t.get<Phrase::LuaVariantMap>("variants");
+			} else {
+				variantMap.push_back(t["variants"]);
+			}
+			if (t["propName"].get_type() == sol::type::string && !variantMap.empty()) {
+				return phrase.append(
+					variantMap,
+					t.get<std::wstring>("propName"),
+					t.get<std::optional<bool>>("optional").value_or(false),
+					t.get<std::optional<std::wstring>>("asString").value_or(L"")
+				);
+			} else {
+				return phrase.append(t.as<Phrase::LuaVariantMap>());
+			}
+		}
 	);
 	PhraseType["appendOptional"] = sol::overload(
 		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap, std::wstring)>(&Phrase::appendOptional),
-		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap)>(&Phrase::appendOptional),
 		static_cast<Phrase & (Phrase::*)(Phrase::VariantValue, std::wstring)>(&Phrase::appendOptional),
+		static_cast<Phrase & (Phrase::*)(Phrase::LuaVariantMap)>(&Phrase::appendOptional),
 		static_cast<Phrase & (Phrase::*)(Phrase::VariantValue)>(&Phrase::appendOptional)
 	);
 	PhraseType[sol::meta_function::to_string] = [](const Phrase& phrase) {return phrase.asString; };
@@ -500,6 +532,38 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 	ResultType["props"] = sol::readonly_property([](RecoResult& res) {return res.props; });
 	ResultType["confidence"] = sol::readonly_property([](RecoResult& res) {return res.confidence; });
 	ResultType["phrase"] = sol::readonly_property([](RecoResult& res) {return res.phrase; });
+	using getPropRet = std::tuple<sol::optional<std::wstring>, sol::optional<PropTreeEntry&>>;
+	ResultType["getProp"] = [](RecoResult& res, sol::variadic_args va) -> getPropRet {
+		if (va.leftover_count() == 0)
+			throw "Invalid argument";
+		std::function<sol::optional<PropTreeEntry&>( PropTree&, size_t)> walk;
+		walk = [&]( PropTree& tree, size_t keyIdx) -> sol::optional<PropTreeEntry&> {
+			if (keyIdx > (va.leftover_count() - 1))
+				return {};
+			auto key = va.get<std::wstring>(keyIdx);
+			auto it = tree.find(key);
+			if (it == tree.end()) return {};
+			if (keyIdx + 1 > (va.leftover_count() - 1))
+				return it->second;
+			return walk(it->second.children, keyIdx + 1);
+		};
+		sol::optional<PropTreeEntry&> ret{};
+		if (va[0].is<PropTreeEntry>()) {
+			ret = walk(va.get<PropTreeEntry>(0).children, 1);
+		} else {
+			ret = walk(res.props, 0);
+		}
+		if (ret) {
+			auto& val = ret.value();
+			return std::make_tuple(val.value, ret);
+		}
+		return getPropRet();
+	};
+
+	auto PropTreeEntryType = lua.new_usertype<PropTreeEntry>("RecoResultPropTreeEntry");
+	PropTreeEntryType["value"] = sol::readonly_property([](PropTreeEntry& entry) {return entry.value; });
+	PropTreeEntryType["children"] = sol::readonly_property([](PropTreeEntry& entry) {return entry.children; });
+	PropTreeEntryType[sol::meta_function::to_string] = [](PropTreeEntry& entry) {return entry.value; };
 	
 	lua.new_enum<RuleState>(
 		"RuleState",
@@ -512,17 +576,25 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 	);
 }
 
+void walkPropertyTree(const SPPHRASEPROPERTY* prop, PropTree& propTree) {
+	if (!prop) return;
+	do {
+		auto it = propTree.emplace(prop->pszName, PropTreeEntry{ prop->pszValue });
+		walkPropertyTree(prop->pFirstChild, it.first->second.children);
+	} while (prop = prop->pNextSibling);
+};
+
 RecoResult Recognizer::getResult()
 {
 	CSpEvent event;
 	if (event.GetFrom(recoContext) == S_OK && event.eEventId == SPEI_RECOGNITION) {
 		HRESULT hr;
 		CSpDynamicString dstrText;
-		SPPHRASE* spphrase;
-		auto _recoResult = event.RecoResult();
-		hr = _recoResult->GetPhrase(&spphrase);
+		CSpPhrasePtr spphrase;
+		auto recoResult = event.RecoResult();
+		hr = recoResult->GetPhrase(&spphrase);
 		if (SUCCEEDED(hr))
-			hr = _recoResult->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, TRUE, &dstrText, NULL);
+			hr = recoResult->GetText(SP_GETWHOLEPHRASE, SP_GETWHOLEPHRASE, TRUE, &dstrText, NULL);
 		if (SUCCEEDED(hr)) {
 			RuleID ruleID = spphrase->Rule.ulId;
 			float confidence = spphrase->Rule.SREngineConfidence;
@@ -530,16 +602,9 @@ RecoResult Recognizer::getResult()
 			std::lock_guard<std::recursive_mutex> lock(mtx);
 			const Rule& rule = getRuleById(ruleID);
 			if (rule.state != RuleState::Ignore && confidence >= rule.confidence) {
-				std::unordered_map<std::wstring, std::wstring> props;
-				const SPPHRASEPROPERTY* prop = spphrase->pProperties;
-				if (prop != nullptr) {
-					do {
-						props[prop->pszName] = prop->pszValue;
-						if (prop->pFirstChild)
-							copilot::logger->info("CHILD ISN?T NULL");
-					} while (prop = prop->pNextSibling);
-				}
-				return RecoResult{ std::move(phrase), confidence, std::move(props), ruleID };
+				PropTree propTree;
+				walkPropertyTree(spphrase->pProperties, propTree);
+				return RecoResult{ std::move(phrase), confidence, std::move(propTree), ruleID };
 			}
 		}
 	}
