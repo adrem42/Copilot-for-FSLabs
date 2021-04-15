@@ -16,6 +16,16 @@ local MCDU = {
   },
 }
 
+--- Count of cells in a line
+---@int LENGTH_LINE 
+MCDU.LENGTH_LINE = 24
+--- Total line count
+---@int NUM_LINES 
+MCDU.NUM_LINES = 14
+---Total cell count
+---@int LENGTH 
+MCDU.LENGTH = MCDU.LENGTH_LINE * MCDU.NUM_LINES
+
 function MCDU:new(side, port)
   self.__index = self
   return setmetatable ({
@@ -88,10 +98,31 @@ function MCDU:getString(startpos, endpos)
   return display
 end
 
---- Returns the scratchpad - the last line on the display.
+--- Returns the start index and the end index of a line
+--- @int lineNum
+--- @treturn int Start index
+--- @treturn int End index
+function MCDU:getLineIdx(lineNum)
+  local endIdx = self.LENGTH_LINE * lineNum
+  local startIdx = endIdx - self.LENGTH_LINE + 1
+  return startIdx, endIdx
+end
+
+--- Returns a line of the display
+--- @int lineNum 
+--- @string[opt] disp If you already have a display string, you can pass it here.
 --- @treturn string
-function MCDU:getScratchpad()
-  return self:getString(313)
+function MCDU:getLine(lineNum, disp)
+  disp = disp or self:getString()
+  local endIdx = lineNum * self.LENGTH_LINE
+  return disp:sub(endIdx - self.LENGTH_LINE + 1, endIdx)
+end
+
+--- Returns the last display line
+-- @string[opt] disp If you already have a display string, you can pass it here.
+--- @treturn string
+function MCDU:getScratchpad(disp)
+  return self:getLine(self.NUM_LINES, disp)
 end
 
 --- Types str on the keyboard.

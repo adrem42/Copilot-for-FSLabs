@@ -33,40 +33,44 @@ local alphabet = {
   "Zulu"
 }
 
+local variants = {}
+for _, code in pairs(alphabet) do
+  variants[#variants+1] = {propVal = code:sub(1, 1), variant = code}
+end
+local alphabetPhrase  = Phrase.new():append(variants, "letter")
+local reportPhrase    = Phrase.new():append {
+  propName = "reportType",
+  variants = {"metar", "forecast", {propVal = "metar", variant = "weather"}}
+}
+
 -- Some examples of what you can say with this:
 -- 'Get the weather please'
 -- 'Get the destination forecast please'
 -- 'Get the METAR at Echo November Golf Mike please'
 
-local function makePhrase(withICAO)
-  local phrase = Phrase.new():append "get the"
-  if not withICAO then
-    phrase:appendOptional("destination", "destination")
-  end
-  phrase:append {
-    propName = "reportType",
-    variants = {"metar", "forecast", {propVal = "metar", variant = "weather"}}
-  }
-  if withICAO then
-    local variants = {}
-    for _, code in pairs(alphabet) do
-      variants[#variants+1] = {propVal = code:sub(1, 1), variant = code}
-    end
-    phrase:append"at":append {
-        propName = "ICAO",
-        asString = "ICAO code",
-        variants = Phrase.new()
-          :append(variants, "1"):append(variants, "2")
-          :append(variants, "3"):append(variants, "4")
-      }
-  end
-  phrase:appendOptional("please", "isPolite")
-  return phrase
-end
-
 local getWeather = VoiceCommand:new {
-  phrase = {makePhrase(true), makePhrase()},
+
   confidence = 0.9,
+
+  phrase = Phrase.new()
+    :append "get the"
+    :append {
+      Phrase.new()
+        :appendOptional("destination", "destination")
+        :append(reportPhrase),
+      Phrase.new()
+        :append(reportPhrase)
+        :append "at"
+        :append {
+          propName = "ICAO",
+          asString = "ICAO code",
+          variants = Phrase.new()
+            :append(alphabetPhrase, "1"):append(alphabetPhrase, "2")
+            :append(alphabetPhrase, "3"):append(alphabetPhrase, "4")
+        }
+    }
+    :appendOptional("please", "isPolite"),
+
   action = function(vc, res)
     if not res:getProp "isPolite" then
       copilot.speak "You have to ask nicely"
@@ -74,10 +78,11 @@ local getWeather = VoiceCommand:new {
       local numTries = 0
       local airport
       if res:getProp "ICAO" then
-        airport = res:getProp("ICAO", "1") ..
-          res:getProp("ICAO", "2") ..
-          res:getProp("ICAO", "3") ..
-          res:getProp("ICAO", "4") 
+        airport = 
+          res:getProp("ICAO", "1", "letter") ..
+          res:getProp("ICAO", "2", "letter") ..
+          res:getProp("ICAO", "3", "letter") ..
+          res:getProp("ICAO", "4", "letter") 
       else
         airport = res:getProp "destination" or "origin"
       end
@@ -142,7 +147,7 @@ ensureAirportSelected = function(firstArg, selectKey)
     else
       freeSlot = freeSlot or i
     end
-    manEntryIdx = manEntryIdx + 48
+    manEntryIdx = manEntryIdx + FSL.MCDU.LENGTH_LINE * 2
   end
   if not manSelected and (not autoSelected or hasManualEntry) then
     if selectKey then 
@@ -161,16 +166,20 @@ pressAndWait = function(keyToPress, checkFunc, waitMin, waitMax, init, timeout)
     checkFunc = function(disp) return disp ~= init end
   elseif type(checkFunc) == "string" then
     local sub = checkFunc
-    local firstLine = init:sub(1, 48)
+    local firstLine = FSL.MCDU:getLine(1, init)
     checkFunc = function(disp)
       if disp:find(sub) then return true end
-      if disp:sub(1, 48) ~= firstLine then error(MCDU_ERROR, 0) end
+      if FSL.MCDU:getLine(1, disp) ~= firstLine then
+        -- Oh no, someone opened a different page in our MCDU!
+        error(MCDU_ERROR, 0) 
+      end
     end
   end
   if timeout ~= 0 then 
     timeout = timeout or 10000
     local timedOut = not checkWithTimeout(timeout, function()
-      keyToPress()
+      keyToPress() 
+      -- Press again every second if nothing happens, for good measure
       return checkWithTimeout(1000, function()
         ipc.sleep(100)
         return checkFunc(FSL.MCDU:getString())

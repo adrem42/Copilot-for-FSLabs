@@ -63,6 +63,7 @@ std::string HttpSession::makeRequest()
         bResults = WinHttpReceiveResponse(hRequest, NULL);
 
     std::string result;
+    lastError = 0;
 
     if (bResults) {
         do {

@@ -283,6 +283,18 @@
 <h2><a href="#Class_MCDU">Class MCDU </a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#MCDU.LENGTH_LINE">MCDU.LENGTH_LINE</a></td>
+	<td class="summary">Count of cells in a line</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU.NUM_LINES">MCDU.NUM_LINES</a></td>
+	<td class="summary">Total line count</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU.LENGTH">MCDU.LENGTH</a></td>
+	<td class="summary">Total cell count</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#MCDU:getArray">MCDU:getArray()</a></td>
 	<td class="summary">Returns the MCDU display as an array of display cells.</td>
 	</tr>
@@ -291,8 +303,16 @@
 	<td class="summary">Returns the MCDU display as a string.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad()</a></td>
-	<td class="summary">Returns the scratchpad - the last line on the display.</td>
+	<td class="name" nowrap><a href="#MCDU:getLineIdx">MCDU:getLineIdx(lineNum)</a></td>
+	<td class="summary">Returns the start index and the end index of a line</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:getLine">MCDU:getLine(lineNum[, disp])</a></td>
+	<td class="summary">Returns a line of the display</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MCDU:getScratchpad">MCDU:getScratchpad([disp])</a></td>
+	<td class="summary">Returns the last display line</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#MCDU:type">MCDU:type(str)</a></td>
@@ -1260,6 +1280,72 @@ FSL:setPilot(<span class="number">1</span>)
 
     <dl class="function">
     <dt>
+    <a name = "MCDU.LENGTH_LINE"></a>
+    <strong>MCDU.LENGTH_LINE</strong>
+    </dt>
+    <dd>
+    Count of cells in a line
+
+
+    <ul>
+        <li><span class="parameter">LENGTH_LINE</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU.NUM_LINES"></a>
+    <strong>MCDU.NUM_LINES</strong>
+    </dt>
+    <dd>
+    Total line count
+
+
+    <ul>
+        <li><span class="parameter">NUM_LINES</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU.LENGTH"></a>
+    <strong>MCDU.LENGTH</strong>
+    </dt>
+    <dd>
+    Total cell count
+
+
+    <ul>
+        <li><span class="parameter">LENGTH</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "MCDU:getArray"></a>
     <strong>MCDU:getArray()</strong>
     </dt>
@@ -1343,13 +1429,89 @@ FSL:setPilot(<span class="number">1</span>)
 
 </dd>
     <dt>
-    <a name = "MCDU:getScratchpad"></a>
-    <strong>MCDU:getScratchpad()</strong>
+    <a name = "MCDU:getLineIdx"></a>
+    <strong>MCDU:getLineIdx(lineNum)</strong>
     </dt>
     <dd>
-    Returns the scratchpad - the last line on the display.
+    Returns the start index and the end index of a line
 
 
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lineNum</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+        Start index</li>
+        <li>
+           <span class="types"><span class="type">int</span></span>
+        End index</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:getLine"></a>
+    <strong>MCDU:getLine(lineNum[, disp])</strong>
+    </dt>
+    <dd>
+    Returns a line of the display
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">lineNum</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">disp</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         If you already have a display string, you can pass it here.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "MCDU:getScratchpad"></a>
+    <strong>MCDU:getScratchpad([disp])</strong>
+    </dt>
+    <dd>
+    Returns the last display line
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">disp</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         If you already have a display string, you can pass it here.
+         (<em>optional</em>)
+        </li>
+    </ul>
 
     <h3>Returns:</h3>
     <ol>
@@ -1434,7 +1596,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-14 20:00:12 </i>
+<i style="float:right;">Last updated 2021-04-15 16:24:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

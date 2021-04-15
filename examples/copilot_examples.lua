@@ -39,8 +39,12 @@ local startApu = copilot.voiceCommands.startApu
 startApu:removeAllPhrases():addPhrase("start apu"):setConfidence(0.90)
 
 ------------------------------------------------------------------------------
--- Adding a simple voice command (click @{copilot_complex_phrase.lua|here} for a more complex example)
+-- Adding a simple voice command 
 ------------------------------------------------------------------------------
+
+--- Click @{copilot_complex_phrase.lua|here} for a more interesting version  with the ability to choose 
+--- the report type (weather or forecast) and 
+--- the airport (origin, destination, or any ICAO code)
 
 local getMetar = VoiceCommand:new {
 

@@ -342,7 +342,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	SoundType["play"] = sol::overload(static_cast<void (Sound::*)(int)>(&Sound::enqueue),
 									  static_cast<void (Sound::*)()>(&Sound::enqueue));
 
-	Recognizer::makeLuaBindings(lua);
+
 
 	auto McduWatcherType = lua.new_usertype<McduWatcher>("McduWatcher");
 	McduWatcherType["getVar"] = &McduWatcher::getVar;
@@ -360,7 +360,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	std::string port = options["general"]["http_port"];
 	mcduWatcher = std::make_unique<McduWatcher>(pmSide, std::stoi(port));
-	
+	recognizer->makeLuaBindings(lua);
 	copilot["recognizer"] = recognizer;
 	copilot["recoResultFetcher"] = recoResultFetcher;
 	copilot["mcduWatcher"] = mcduWatcher;

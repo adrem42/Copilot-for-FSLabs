@@ -112,36 +112,28 @@
 	<td class="summary">Constructor</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(str)</a></td>
-	<td class="summary">Appends a simple string</td>
+	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(element[, propName])</a></td>
+	<td class="summary">Appends an element</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(args)</a></td>
-	<td class="summary">Appends a named element with multiple variants.</td>
+	<td class="summary">Appends an element.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(variants, propName)</a></td>
-	<td class="summary">Appends a named element with multiple variants.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(multiElement)</a></td>
+	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(variants[, propName])</a></td>
 	<td class="summary">Appends an element with multiple variants.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(element)</a></td>
+	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(element[, propName])</a></td>
 	<td class="summary">Appends an optional element.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(element, name)</a></td>
-	<td class="summary">Appends an optional named element.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(multiElement)</a></td>
+	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(variants[, propName])</a></td>
 	<td class="summary">Appends an optional element with multiple variants.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(multiElement, name)</a></td>
-	<td class="summary">Appends an optional named element with multiple variants.</td>
+	<td class="name" nowrap><a href="#Phrase.propName">Phrase.propName</a></td>
+	<td class="summary">Replaces an element with the given propName with another element</td>
 	</tr>
 </table>
 <h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
@@ -241,12 +233,7 @@
   action = <span class="keyword">function</span>(_, res)
     <span class="global">print</span>(res:getProp(<span class="string">"what"</span>)) <span class="comment">-- "greeting" or "goodbye"
 </span>    <span class="global">print</span>(res:getProp(<span class="string">"what"</span>, <span class="string">"optProp"</span>))  <span class="comment">-- "there", "again" or nil
-</span>    <span class="comment">-- without getProp, you would have to type this:
-</span>    <span class="keyword">local</span> optProp = res.props.what.children.optProp
-    <span class="keyword">if</span> optProp <span class="keyword">then</span>
-      <span class="global">print</span>(optProp.value)
-    <span class="keyword">end</span>
-  <span class="keyword">end</span>
+</span>  <span class="keyword">end</span>
 }
 
 copilot.callOnce(<span class="keyword">function</span>()
@@ -380,19 +367,21 @@ copilot.callOnce(<span class="keyword">function</span>()
 </dd>
     <dt>
     <a name = "Phrase:append"></a>
-    <strong>Phrase:append(str)</strong>
+    <strong>Phrase:append(element[, propName])</strong>
     </dt>
     <dd>
-    Appends a simple string
+    Appends an element
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">str</span>
+        <li><span class="parameter">element</span>
+         A string or Phrase
+        </li>
+        <li><span class="parameter">propName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
+         Name of the property
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -411,8 +400,7 @@ copilot.callOnce(<span class="keyword">function</span>()
     <strong>Phrase:append(args)</strong>
     </dt>
     <dd>
-    Appends a named element with multiple variants. <br/>
- Multiple variants of a property can be aliased by the same name (like "greeting" in the example below).
+    Appends an element.
 
 
     <h3>Parameters:</h3>
@@ -431,8 +419,7 @@ copilot.callOnce(<span class="keyword">function</span>()
          (<em>default</em> false)
         </li>
         <li><span class="parameter">variants</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         An array of variants where a variant can be:
+         Either a single string or Phrase or an array of variants where a variant can be:
  <ul>
  <li>A table with a <code>propVal</code> and a <code>variant</code> field that is either a string or Phrase</li>
  <li>A string or a Phrase</li>
@@ -451,8 +438,7 @@ copilot.callOnce(<span class="keyword">function</span>()
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">Phrase.new()
- :append {
+        <pre class="example">Phrase.new():append {
    propName = <span class="string">"what"</span>,
    variants = {
      <span class="string">"goodbye"</span>, <span class="comment">-- same as {propVal = "goodbye", variant = "goodbye"}
@@ -469,11 +455,10 @@ copilot.callOnce(<span class="keyword">function</span>()
 </dd>
     <dt>
     <a name = "Phrase:append"></a>
-    <strong>Phrase:append(variants, propName)</strong>
+    <strong>Phrase:append(variants[, propName])</strong>
     </dt>
     <dd>
-    Appends a named element with multiple variants.
- Multiple variants of a property can be aliased by the same name.
+    Appends an element with multiple variants.
 
 
     <h3>Parameters:</h3>
@@ -488,7 +473,8 @@ copilot.callOnce(<span class="keyword">function</span>()
         </li>
         <li><span class="parameter">propName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         name of the property
+         Property name.
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -507,33 +493,8 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
     <dt>
-    <a name = "Phrase:append"></a>
-    <strong>Phrase:append(multiElement)</strong>
-    </dt>
-    <dd>
-    Appends an element with multiple variants.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">multiElement</span>
-         See above
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        self
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "Phrase:appendOptional"></a>
-    <strong>Phrase:appendOptional(element)</strong>
+    <strong>Phrase:appendOptional(element[, propName])</strong>
     </dt>
     <dd>
     Appends an optional element.
@@ -544,34 +505,10 @@ copilot.callOnce(<span class="keyword">function</span>()
         <li><span class="parameter">element</span>
          A string or a Phrase
         </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-        self
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Phrase:appendOptional"></a>
-    <strong>Phrase:appendOptional(element, name)</strong>
-    </dt>
-    <dd>
-    Appends an optional named element.
-
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">element</span>
-         A string or a Phrase
-        </li>
-        <li><span class="parameter">name</span>
+        <li><span class="parameter">propName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Name of the property
+         Property name.
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -587,7 +524,7 @@ copilot.callOnce(<span class="keyword">function</span>()
 </dd>
     <dt>
     <a name = "Phrase:appendOptional"></a>
-    <strong>Phrase:appendOptional(multiElement)</strong>
+    <strong>Phrase:appendOptional(variants[, propName])</strong>
     </dt>
     <dd>
     Appends an optional element with multiple variants.
@@ -595,8 +532,13 @@ copilot.callOnce(<span class="keyword">function</span>()
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">multiElement</span>
+        <li><span class="parameter">variants</span>
          See above
+        </li>
+        <li><span class="parameter">propName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Property name.
+         (<em>optional</em>)
         </li>
     </ul>
 
@@ -611,19 +553,15 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
     <dt>
-    <a name = "Phrase:appendOptional"></a>
-    <strong>Phrase:appendOptional(multiElement, name)</strong>
+    <a name = "Phrase.propName"></a>
+    <strong>Phrase.propName</strong>
     </dt>
     <dd>
-    Appends an optional named element with multiple variants.
+    Replaces an element with the given propName with another element
 
 
-    <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">multiElement</span>
-         See above
-        </li>
-        <li><span class="parameter">name</span>
+        <li><span class="parameter">propName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
 
 
@@ -631,11 +569,6 @@ copilot.callOnce(<span class="keyword">function</span>()
         </li>
     </ul>
 
-    <h3>Returns:</h3>
-    <ol>
-
-        self
-    </ol>
 
 
 
@@ -1057,7 +990,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-14 20:00:12 </i>
+<i style="float:right;">Last updated 2021-04-15 16:24:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

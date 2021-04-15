@@ -4,21 +4,24 @@ copilot.scratchpadClearer = {ANY = {}, NONE = {}}
 local messageSets = {{thread = "global", msgs = copilot.scratchpadClearer.NONE}}
 local lastMessage, nextClearTime
 
+local startIdx, endIdx = FSL.MCDU:getLineIdx(FSL.MCDU.NUM_LINES)
+endIdx = endIdx - 6
 function copilot.scratchpadClearer.getScratchpad(disp)
   disp = disp or FSL.MCDU:getString()
-  return disp:sub(313, 330), disp
+  return disp:sub(startIdx, endIdx), disp
 end
 
 function copilot.scratchpadClearer.clearScratchpad()
 
   local old = copilot.scratchpadClearer.getScratchpad()
-  if old:find "SELECT DESIRED SYSTEM" then return false end
+  if old:find "SELECT DESIRED SYSTEM" or not old:find "%S" then 
+    return false 
+  end
 
   copilot.logger:debug("Clearing scratchpad: " .. old)
-
   repeat FSL.PED_MCDU_KEY_CLR()
   until not copilot.scratchpadClearer.getScratchpad():find "%S"
-
+  
   return true
 end
 

@@ -1,4 +1,5 @@
 #include "MCDU.h"
+#include "Copilot.h"
 
 MCDU::MCDU(unsigned int side, unsigned int timeout, unsigned int port)
 {
@@ -31,7 +32,14 @@ std::string MCDU::getStringFromRaw(const std::string& response)
                         _char += (curr - '0') * pow(10, i++);
                         curr = *--jsonChar;
                     } while (curr != '[');
-                    buff[--pos] = _char;
+                    if (_char)
+                        buff[--pos] = _char;
+                    else
+                        buff[--pos] = ' ';
+#ifdef _DEBUG
+                    if (!_char)
+                        copilot::logger->warn("0 terminator in the middle of the string, position: {}, raw response: {}", pos, response);
+#endif
                 }
                 break;
             case '[':
@@ -42,6 +50,9 @@ std::string MCDU::getStringFromRaw(const std::string& response)
         }
         prev = curr == ',' ? prev : curr;
     } while (pos > 0);
+
+    if (strlen(buff) < 336)
+        return "";
 
     return buff;
 }
