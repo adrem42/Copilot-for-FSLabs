@@ -77,44 +77,11 @@
 </span>
 <span class="keyword">local</span> MCDU_ERROR = <span class="string">"unexpected display state"</span>
 <span class="keyword">local</span> getWeatherSequence, ensureAirportSelected, pressAndWait
-<span class="keyword">local</span> alphabet = {
-  <span class="string">"Alfa"</span>,
-  <span class="string">"Bravo"</span>,
-  <span class="string">"Charlie"</span>,
-  <span class="string">"Delta"</span>,
-  <span class="string">"Echo"</span>,
-  <span class="string">"Foxtrot"</span>,
-  <span class="string">"Golf"</span>,
-  <span class="string">"Hotel"</span>,
-  <span class="string">"India"</span>,
-  <span class="string">"Juliett"</span>,
-  <span class="string">"Kilo"</span>,
-  <span class="string">"Lima"</span>,
-  <span class="string">"Mike"</span>,
-  <span class="string">"November"</span>,
-  <span class="string">"Oscar"</span>,
-  <span class="string">"Papa"</span>,
-  <span class="string">"Quebec"</span>,
-  <span class="string">"Romeo"</span>,
-  <span class="string">"Sierra"</span>,
-  <span class="string">"Tango"</span>,
-  <span class="string">"Uniform"</span>,
-  <span class="string">"Victor"</span>,
-  <span class="string">"Whiskey"</span>,
-  <span class="string">"X-ray"</span>,
-  <span class="string">"Yankee"</span>,
-  <span class="string">"Zulu"</span>
-}
 
-<span class="keyword">local</span> variants = {}
-<span class="keyword">for</span> _, code <span class="keyword">in</span> <span class="global">pairs</span>(alphabet) <span class="keyword">do</span>
-  variants[#variants+<span class="number">1</span>] = {propVal = code:sub(<span class="number">1</span>, <span class="number">1</span>), variant = code}
-<span class="keyword">end</span>
-<span class="keyword">local</span> alphabetPhrase  = Phrase.new():append(variants, <span class="string">"letter"</span>)
-<span class="keyword">local</span> reportPhrase    = Phrase.new():append {
+<span class="keyword">local</span> reportPhrase = PhraseBuilder.new():append {
   propName = <span class="string">"reportType"</span>,
   variants = {<span class="string">"metar"</span>, <span class="string">"forecast"</span>, {propVal = <span class="string">"metar"</span>, variant = <span class="string">"weather"</span>}}
-}
+}:build <span class="string">"report type"</span>
 
 <span class="comment">-- Some examples of what you can say with this:
 </span><span class="comment">-- 'Get the weather please'
@@ -125,51 +92,43 @@
 
   confidence = <span class="number">0.9</span>,
 
-  phrase = Phrase.new()
+  phrase = PhraseBuilder.new()
     :append <span class="string">"get the"</span>
     :append {
-      Phrase.new()
+      PhraseBuilder.new()
         :appendOptional(<span class="string">"destination"</span>, <span class="string">"destination"</span>)
-        :append(reportPhrase),
-      Phrase.new()
+        :append(reportPhrase)
+        :build(),
+      PhraseBuilder.new()
         :append(reportPhrase)
         :append <span class="string">"at"</span>
-        :append {
-          propName = <span class="string">"ICAO"</span>,
-          asString = <span class="string">"ICAO code"</span>,
-          variants = Phrase.new()
-            :append(alphabetPhrase, <span class="string">"1"</span>):append(alphabetPhrase, <span class="string">"2"</span>)
-            :append(alphabetPhrase, <span class="string">"3"</span>):append(alphabetPhrase, <span class="string">"4"</span>)
-        }
+        :append(PhraseUtils.phrases.ICAOairportCode())
+        :build()
     }
-    :appendOptional(<span class="string">"please"</span>, <span class="string">"isPolite"</span>),
+    :appendOptional(<span class="string">"please"</span>, <span class="string">"isPolite"</span>)
+    :build(),
 
   action = <span class="keyword">function</span>(vc, res)
+
     <span class="keyword">if</span> <span class="keyword">not</span> res:getProp <span class="string">"isPolite"</span> <span class="keyword">then</span>
       copilot.speak <span class="string">"You have to ask nicely"</span>
-    <span class="keyword">else</span>
-      <span class="keyword">local</span> numTries = <span class="number">0</span>
-      <span class="keyword">local</span> airport
-      <span class="keyword">if</span> res:getProp <span class="string">"ICAO"</span> <span class="keyword">then</span>
-        airport =
-          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"1"</span>, <span class="string">"letter"</span>) ..
-          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"2"</span>, <span class="string">"letter"</span>) ..
-          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"3"</span>, <span class="string">"letter"</span>) ..
-          res:getProp(<span class="string">"ICAO"</span>, <span class="string">"4"</span>, <span class="string">"letter"</span>)
-      <span class="keyword">else</span>
-        airport = res:getProp <span class="string">"destination"</span> <span class="keyword">or</span> <span class="string">"origin"</span>
-      <span class="keyword">end</span>
-      <span class="keyword">repeat</span>
-        <span class="keyword">local</span> ok, err = <span class="global">pcall</span>(
-          getWeatherSequence, res:getProp <span class="string">"reportType"</span>, airport
-        )
-        numTries = numTries + <span class="number">1</span>
-        <span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">and</span> err ~= MCDU_ERROR <span class="keyword">then</span>
-          vc:activate()
-          <span class="global">error</span>(err)
-        <span class="keyword">end</span>
-      <span class="keyword">until</span> ok <span class="keyword">or</span> numTries == <span class="number">5</span>
+      vc:activate()
+      <span class="keyword">return</span>
     <span class="keyword">end</span>
+
+    <span class="keyword">local</span> airport = PhraseUtils.getPhraseResult(res, <span class="string">"ICAOairportCode"</span>)
+      <span class="keyword">or</span> res:getProp <span class="string">"destination"</span> <span class="keyword">or</span> <span class="string">"origin"</span>
+
+    <span class="keyword">local</span> numTries = <span class="number">0</span>
+    <span class="keyword">repeat</span>
+      <span class="keyword">local</span> ok, err = <span class="global">pcall</span>(getWeatherSequence, res:getProp<span class="string">"reportType"</span>, airport)
+      numTries = numTries + <span class="number">1</span>
+      <span class="keyword">if</span> <span class="keyword">not</span> ok <span class="keyword">and</span> err ~= MCDU_ERROR <span class="keyword">then</span>
+        vc:activate()
+        <span class="global">error</span>(err)
+      <span class="keyword">end</span>
+    <span class="keyword">until</span> ok <span class="keyword">or</span> numTries == <span class="number">5</span>
+
     vc:activate()
   <span class="keyword">end</span>
 }
@@ -243,7 +202,7 @@ pressAndWait = <span class="keyword">function</span>(keyToPress, checkFunc, wait
     checkFunc = <span class="keyword">function</span>(disp)
       <span class="keyword">if</span> disp:find(sub) <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">true</span> <span class="keyword">end</span>
       <span class="keyword">if</span> FSL.MCDU:getLine(<span class="number">1</span>, disp) ~= firstLine <span class="keyword">then</span>
-        <span class="comment">-- Oh no, someone opened a different page in our MCDU!
+        <span class="comment">-- Oh no, someone opened a different page on our MCDU!
 </span>        <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>)
       <span class="keyword">end</span>
     <span class="keyword">end</span>
@@ -271,7 +230,7 @@ pressAndWait = <span class="keyword">function</span>(keyToPress, checkFunc, wait
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-15 16:24:49 </i>
+<i style="float:right;">Last updated 2021-04-16 01:00:08 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

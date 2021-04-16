@@ -33,7 +33,7 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Class_RecoResult">Class RecoResult </a></li>
-<li><a href="#Class_Phrase">Class Phrase </a></li>
+<li><a href="#Class_PhraseBuilder">Class PhraseBuilder </a></li>
 <li><a href="#Class_VoiceCommand">Class VoiceCommand </a></li>
 </ul>
 
@@ -105,35 +105,35 @@
 </td>
 	</tr>
 </table>
-<h2><a href="#Class_Phrase">Class Phrase </a></h2>
+<h2><a href="#Class_PhraseBuilder">Class PhraseBuilder </a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Phrase.new">Phrase.new()</a></td>
+	<td class="name" nowrap><a href="#PhraseBuilder.new">PhraseBuilder.new()</a></td>
 	<td class="summary">Constructor</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(element[, propName])</a></td>
+	<td class="name" nowrap><a href="#PhraseBuilder:append">PhraseBuilder:append(element[, propName])</a></td>
 	<td class="summary">Appends an element</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(args)</a></td>
+	<td class="name" nowrap><a href="#PhraseBuilder:append">PhraseBuilder:append(args)</a></td>
 	<td class="summary">Appends an element.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:append">Phrase:append(variants[, propName])</a></td>
+	<td class="name" nowrap><a href="#PhraseBuilder:append">PhraseBuilder:append(variants[, propName])</a></td>
 	<td class="summary">Appends an element with multiple variants.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(element[, propName])</a></td>
+	<td class="name" nowrap><a href="#PhraseBuilder:appendOptional">PhraseBuilder:appendOptional(element[, propName])</a></td>
 	<td class="summary">Appends an optional element.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase:appendOptional">Phrase:appendOptional(variants[, propName])</a></td>
+	<td class="name" nowrap><a href="#PhraseBuilder:appendOptional">PhraseBuilder:appendOptional(variants[, propName])</a></td>
 	<td class="summary">Appends an optional element with multiple variants.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Phrase.propName">Phrase.propName</a></td>
-	<td class="summary">Replaces an element with the given propName with another element</td>
+	<td class="name" nowrap><a href="#PhraseBuilder:build">PhraseBuilder:build([asString])</a></td>
+	<td class="summary">Builds the phrase</td>
 	</tr>
 </table>
 <h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
@@ -217,18 +217,20 @@
           </div>
             <h3>Usage:</h3>
             <pre class="example"><span class="keyword">local</span> helloGoodbye = VoiceCommand:new {
-  phrase = Phrase.new()
+  phrase = PhraseBuilder.new()
     :append {
       propName = <span class="string">"what"</span>,
       variants = {
         {
           propVal = <span class="string">"greeting"</span>,
-          variant = Phrase.new():append<span class="string">"hello"</span>:appendOptional({<span class="string">"there"</span>, <span class="string">"again"</span>}, <span class="string">"optProp"</span>)
+          variant = PhraseBuilder.new()
+            :append<span class="string">"hello"</span>:appendOptional({<span class="string">"there"</span>, <span class="string">"again"</span>}, <span class="string">"optProp"</span>):build()
         },
         <span class="string">"goodbye"</span>
       },
     }
-    :appendOptional<span class="string">"friend"</span>,
+    :appendOptional<span class="string">"friend"</span>
+    :build(),
   persistent = <span class="keyword">true</span>,
   action = <span class="keyword">function</span>(_, res)
     <span class="global">print</span>(res:getProp(<span class="string">"what"</span>)) <span class="comment">-- "greeting" or "goodbye"
@@ -344,7 +346,7 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
 </dl>
-    <h2 class="section-header has-description"><a name="Class_Phrase"></a>Class Phrase </h2>
+    <h2 class="section-header has-description"><a name="Class_PhraseBuilder"></a>Class PhraseBuilder </h2>
 
           <div class="section-description">
           Class that allows you to create complex phrases with optional elements,
@@ -352,8 +354,8 @@ copilot.callOnce(<span class="keyword">function</span>()
           </div>
     <dl class="function">
     <dt>
-    <a name = "Phrase.new"></a>
-    <strong>Phrase.new()</strong>
+    <a name = "PhraseBuilder.new"></a>
+    <strong>PhraseBuilder.new()</strong>
     </dt>
     <dd>
     Constructor
@@ -366,8 +368,8 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
     <dt>
-    <a name = "Phrase:append"></a>
-    <strong>Phrase:append(element[, propName])</strong>
+    <a name = "PhraseBuilder:append"></a>
+    <strong>PhraseBuilder:append(element[, propName])</strong>
     </dt>
     <dd>
     Appends an element
@@ -396,8 +398,8 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
     <dt>
-    <a name = "Phrase:append"></a>
-    <strong>Phrase:append(args)</strong>
+    <a name = "PhraseBuilder:append"></a>
+    <strong>PhraseBuilder:append(args)</strong>
     </dt>
     <dd>
     Appends an element.
@@ -438,24 +440,27 @@ copilot.callOnce(<span class="keyword">function</span>()
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">Phrase.new():append {
+        <pre class="example">PhraseBuilder.new():append {
    propName = <span class="string">"what"</span>,
    variants = {
      <span class="string">"goodbye"</span>, <span class="comment">-- same as {propVal = "goodbye", variant = "goodbye"}
 </span>     {propVal = <span class="string">"greeting"</span>, variant = <span class="string">"hi"</span>},
      {
        propVal = <span class="string">"greeting"</span>,
-       variant = Phrase.new():append<span class="string">"good day"</span>:appendOptional(<span class="string">"sir"</span>, <span class="string">"extraPolite"</span>)
+       variant = PhraseBuilder.new()
+         :append <span class="string">"good day"</span>
+         :appendOptional(<span class="string">"sir"</span>, <span class="string">"extraPolite"</span>)
+         :build()
      },
      {propVal = <span class="string">"greeting"</span>, variant = <span class="string">"hello"</span>}
    },
- }</pre>
+ }:build()</pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "Phrase:append"></a>
-    <strong>Phrase:append(variants[, propName])</strong>
+    <a name = "PhraseBuilder:append"></a>
+    <strong>PhraseBuilder:append(variants[, propName])</strong>
     </dt>
     <dd>
     Appends an element with multiple variants.
@@ -488,13 +493,13 @@ copilot.callOnce(<span class="keyword">function</span>()
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">Phrase.new():append({<span class="string">"hello"</span>, <span class="string">"goodbye"</span>}, <span class="string">"what"</span>)</pre>
+        <pre class="example">PhraseBuilder.new():append({<span class="string">"hello"</span>, <span class="string">"goodbye"</span>}, <span class="string">"what"</span>):build()</pre>
     </ul>
 
 </dd>
     <dt>
-    <a name = "Phrase:appendOptional"></a>
-    <strong>Phrase:appendOptional(element[, propName])</strong>
+    <a name = "PhraseBuilder:appendOptional"></a>
+    <strong>PhraseBuilder:appendOptional(element[, propName])</strong>
     </dt>
     <dd>
     Appends an optional element.
@@ -523,8 +528,8 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
     <dt>
-    <a name = "Phrase:appendOptional"></a>
-    <strong>Phrase:appendOptional(variants[, propName])</strong>
+    <a name = "PhraseBuilder:appendOptional"></a>
+    <strong>PhraseBuilder:appendOptional(variants[, propName])</strong>
     </dt>
     <dd>
     Appends an optional element with multiple variants.
@@ -553,22 +558,27 @@ copilot.callOnce(<span class="keyword">function</span>()
 
 </dd>
     <dt>
-    <a name = "Phrase.propName"></a>
-    <strong>Phrase.propName</strong>
+    <a name = "PhraseBuilder:build"></a>
+    <strong>PhraseBuilder:build([asString])</strong>
     </dt>
     <dd>
-    Replaces an element with the given propName with another element
+    Builds the phrase
 
 
+    <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">propName</span>
+        <li><span class="parameter">asString</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
+         Alias for the phrase's string representation in the logs.
+         (<em>optional</em>)
         </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+        A Phrase object
+    </ol>
 
 
 
@@ -990,7 +1000,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-15 16:24:49 </i>
+<i style="float:right;">Last updated 2021-04-16 01:00:08 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

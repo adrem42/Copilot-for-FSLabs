@@ -43,7 +43,7 @@ local function parsePhrases(input)
   input = type(input) == "table" and input or {input}
   for i, v in ipairs(input) do
     if type(v) == "string" then
-      input[i] = Phrase.new():append(v)
+      input[i] = PhraseBuilder.new():append(v):build()
     end
   end
   return input

@@ -70,6 +70,7 @@ copilot.checklists = {}
 
 Event = require "copilot.Event"
 VoiceCommand = require "copilot.VoiceCommand"
+require "copilot.PhraseUtils"
 require "copilot.Checklist"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor

@@ -28,18 +28,20 @@ struct PropTreeEntry {
  * @usage
 	*  
 	* local helloGoodbye = VoiceCommand:new {
-	*   phrase = Phrase.new()
+	*   phrase = PhraseBuilder.new()
 	*     :append {
 	*       propName = "what",
 	*       variants = {
 	*         {
  	*           propVal = "greeting",
- 	*           variant = Phrase.new():append"hello":appendOptional({"there", "again"}, "optProp")
+ 	*           variant = PhraseBuilder.new()
+	*             :append"hello":appendOptional({"there", "again"}, "optProp"):build()
  	*         },
  	*         "goodbye"
 	*       },
 	*     }
-	*     :appendOptional"friend",
+	*     :appendOptional"friend"
+	*     :build(),
 	*   persistent = true,
 	*   action = function(_, res)
 	*     print(res:getProp("what")) -- "greeting" or "goodbye"
@@ -89,17 +91,20 @@ private:
 	RuleID newRuleId();
 public:
 	enum class RulePersistenceMode { NonPersistent, Persistent, Ignore };
+	class PhraseBuilder;
 	/***
 	* Class that allows you to create complex phrases with optional elements,
 	* elements with multiple variants and named properties.
-	* @type Phrase
+	* @type PhraseBuilder
 	*/
-	struct Phrase : public std::enable_shared_from_this<Phrase> {
+	struct Phrase {
+
 		friend class Recognizer;
+		friend class PhraseBuilder;
 		ISpRecoGrammar* const recoGrammar;
 		Recognizer* const recognizer;
 		using VariantValue = std::variant<std::wstring, std::shared_ptr<Phrase>>;
-		using LuaVariantMap = std::vector<sol::object>;
+		
 		struct PhraseElement {
 			struct Variant { 
 				VariantValue value; 
@@ -119,7 +124,7 @@ public:
 		SPSTATEHANDLE initialState;
 		const RuleID ruleID;
 
-		Phrase(Recognizer* recognizer, ISpRecoGrammar* recoGrammar);
+		Phrase(Recognizer* recognizer, ISpRecoGrammar* recoGrammar, std::vector<PhraseElement>, std::wstring);
 
 		void resetGrammar();
 
@@ -130,9 +135,20 @@ public:
 		*/
 		
 		std::vector<PhraseElement> phraseElements;
+		const std::wstring asString;
+
+	};
+
+	struct PhraseBuilder { 
+		friend class Recognizer;
+		Recognizer* const recognizer; 
+		ISpRecoGrammar* const recoGrammar;
+		std::vector<Phrase::PhraseElement> phraseElements;
 		std::wstring asString;
-		std::string name;
-		std::shared_ptr<Phrase> setName(const std::string&);
+		using LuaVariantMap = std::vector<sol::object>;
+
+		PhraseBuilder(Recognizer* recognizer, ISpRecoGrammar* recoGrammar)
+			:recognizer(recognizer), recoGrammar(recoGrammar) { }
 
 		/***
 		* Appends an element
@@ -141,11 +157,11 @@ public:
 		* @string[opt] propName Name of the property
 		* @return self
 		*/
-		std::shared_ptr<Phrase> append(VariantValue);
-		std::shared_ptr<Phrase> append(VariantValue, std::wstring);
+		PhraseBuilder& append(Phrase::VariantValue);
+		PhraseBuilder& append(Phrase::VariantValue, std::wstring);
 
 		/***
-		* Appends an element. 
+		* Appends an element.
 		* @function append
 		* @tparam table args
 		* @string args.propName Name of the property
@@ -156,19 +172,22 @@ public:
 		* <li>A string or a Phrase</li>
 		* </ul>
 		* @return self
-		* @usage 
-		* Phrase.new():append {
+		* @usage
+		* PhraseBuilder.new():append {
 		*    propName = "what",
 		*    variants = {
 		*      "goodbye", -- same as {propVal = "goodbye", variant = "goodbye"}
 		*      {propVal = "greeting", variant = "hi"},
 		*      {
 		*        propVal = "greeting",
-		*        variant = Phrase.new():append"good day":appendOptional("sir", "extraPolite")  
+		*        variant = PhraseBuilder.new()
+		*          :append "good day"
+		*          :appendOptional("sir", "extraPolite")
+		*          :build()
 		*      },
 		*      {propVal = "greeting", variant = "hello"}
 		*    },
-		*  }
+		*  }:build()
 		*/
 
 		/***
@@ -182,11 +201,11 @@ public:
 		* @string[opt] propName Property name.
 		* @return self
 		* @usage
-		* Phrase.new():append({"hello", "goodbye"}, "what")
+		* PhraseBuilder.new():append({"hello", "goodbye"}, "what"):build()
 		*/
-		std::shared_ptr<Phrase> append(LuaVariantMap);
-		std::shared_ptr<Phrase> append(LuaVariantMap, std::wstring);
-		
+		PhraseBuilder& append(LuaVariantMap);
+		PhraseBuilder& append(LuaVariantMap, std::wstring);
+
 		/***
 		* Appends an optional element.
 		* @function appendOptional
@@ -194,8 +213,8 @@ public:
 		* @string[opt] propName Property name.
 		* @return self
 		*/
-		std::shared_ptr<Phrase> appendOptional(VariantValue);
-		std::shared_ptr<Phrase> appendOptional(VariantValue, std::wstring);
+		PhraseBuilder& appendOptional(Phrase::VariantValue);
+		PhraseBuilder& appendOptional(Phrase::VariantValue, std::wstring);
 
 		/***
 		* Appends an optional element with multiple variants.
@@ -204,25 +223,26 @@ public:
 		* @string[opt] propName Property name.
 		* @return self
 		*/
-		std::shared_ptr<Phrase> appendOptional(LuaVariantMap);
-		std::shared_ptr<Phrase> appendOptional(LuaVariantMap, std::wstring);
+		PhraseBuilder& appendOptional(LuaVariantMap);
+		PhraseBuilder& appendOptional(LuaVariantMap, std::wstring);
 
 		/***
-		* Replaces an element with the given propName with another element
-		* @string propName
-		* @return self
+		* Builds the phrase
+		* @function build
+		* @string[opt] asString Alias for the phrase's string representation in the logs.
+		* @return A Phrase object
 		*/
-		std::shared_ptr<Phrase> replace(std::wstring propName, VariantValue);
+		std::shared_ptr<Phrase> build();
+		std::shared_ptr<Phrase> build(std::wstring);
 
 	private:
-
-		std::shared_ptr<Phrase> append(LuaVariantMap, std::wstring, bool, std::wstring = L"");
-		std::shared_ptr<Phrase> append(std::vector<PhraseElement::Variant>, std::wstring, bool, std::wstring = L"");
+		std::shared_ptr<Phrase> _build(std::wstring);
+		PhraseBuilder& append(LuaVariantMap, std::wstring, bool, std::wstring = L"");
+		PhraseBuilder& append(std::vector<Phrase::PhraseElement::Variant>, std::wstring, bool, std::wstring = L"");
 	};
 private:
-	std::unordered_set<std::shared_ptr<Phrase>> dirtyPhrases;
-	bool hasDirtyRules = false;
-	void markPhraseDirty(std::shared_ptr<Phrase>);
+	bool grammarIsDirty = false;
+	
 	enum class RuleState { Active, Inactive, Ignore, Disabled };
 	struct Rule {
 		std::vector<std::shared_ptr<Phrase>> phrases;
@@ -245,6 +265,7 @@ private:
 	std::unordered_map<RuleID, Rule> rules;
 	std::recursive_mutex mtx;
 public:
+	void markGrammarDirty();
 	Recognizer();
 	~Recognizer();
 	void registerCallback(ISpNotifyCallback* callback);

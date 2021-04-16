@@ -22,7 +22,7 @@ Display possible responses to a checklist item challenge in a message window.
 A phrase may contain optional elements or elements with multiple variants, for example:
 
 	@plain
-	{Airbus, Boeing, ...} is the best [aircraft manufacturer]
+	{Airbus}+{Boeing}+{...} is the best [aircraft manufacturer]
 
 "..." means "match anything"
 

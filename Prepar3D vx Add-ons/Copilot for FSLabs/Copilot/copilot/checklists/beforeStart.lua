@@ -48,9 +48,10 @@ beforeStart:appendItem {
     else
       V1 = disp[49].char .. disp[50].char .. disp[51].char
       V2 = disp[145].char .. disp[146].char .. disp[147].char
-      local phrase = Phrase.new()
+      local phrase = PhraseBuilder.new()
         :append("V1"):append(digits, "V1_1"):append(digits, "V1_2"):append(digits, "V1_3")
         :append("V2"):append(digits, "V2_1"):append(digits, "V2_2"):append(digits, "V2_3")
+        :build()
       local isFLEX = disp[215].char ~= nil
       if isFLEX then
         phrase:append("FLEX"):append({"...", disp[215].char .. disp[216].char}, "FLEX")

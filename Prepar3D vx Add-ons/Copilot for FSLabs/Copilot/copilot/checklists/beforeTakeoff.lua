@@ -24,7 +24,7 @@ beforeTakeoff:appendItem {
   label = "flapSetting",
   displayLabel = "Flap Setting",
   response = VoiceCommand:new {
-    phrase = Phrase.new():append("config"):append({"1", "2", "3"}, "flapsSetting")
+    phrase = PhraseBuilder.new():append("config"):append({"1", "2", "3"}, "flapsSetting"):build()
   },
   onResponse = function(check, _, recoResult, res)
     local plannedSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
@@ -58,7 +58,7 @@ local function makeTakeoffRwyPhrase()
   if takeoffRwy:sub(3, 3) ~= " " then
     phraseString = phraseString .. " " .. ({L = "left", R = "right", C = "center"})[takeoffRwy:sub(3, 3)]
   end
-  takeoffRwyPhrase = Phrase.new():appendOptional("runway"):append({"...", phraseString}, "rwy")
+  takeoffRwyPhrase = PhraseBuilder.new():appendOptional("runway"):append({"...", phraseString}, "rwy"):build()
 end
 
 local function takeoffRwyOnResponse(check, _, recoResult)

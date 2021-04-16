@@ -4,44 +4,11 @@
 
 local MCDU_ERROR = "unexpected display state"
 local getWeatherSequence, ensureAirportSelected, pressAndWait
-local alphabet = {
-  "Alfa",
-  "Bravo",
-  "Charlie",
-  "Delta",
-  "Echo",
-  "Foxtrot",
-  "Golf",
-  "Hotel",
-  "India",
-  "Juliett",
-  "Kilo",
-  "Lima",
-  "Mike",
-  "November",
-  "Oscar",
-  "Papa",
-  "Quebec",
-  "Romeo",
-  "Sierra",
-  "Tango",
-  "Uniform",
-  "Victor",
-  "Whiskey",
-  "X-ray",
-  "Yankee",
-  "Zulu"
-}
 
-local variants = {}
-for _, code in pairs(alphabet) do
-  variants[#variants+1] = {propVal = code:sub(1, 1), variant = code}
-end
-local alphabetPhrase  = Phrase.new():append(variants, "letter")
-local reportPhrase    = Phrase.new():append {
+local reportPhrase = PhraseBuilder.new():append {
   propName = "reportType",
   variants = {"metar", "forecast", {propVal = "metar", variant = "weather"}}
-}
+}:build "report type"
 
 -- Some examples of what you can say with this:
 -- 'Get the weather please'
@@ -52,51 +19,43 @@ local getWeather = VoiceCommand:new {
 
   confidence = 0.9,
 
-  phrase = Phrase.new()
+  phrase = PhraseBuilder.new()
     :append "get the"
     :append {
-      Phrase.new()
+      PhraseBuilder.new()
         :appendOptional("destination", "destination")
-        :append(reportPhrase),
-      Phrase.new()
+        :append(reportPhrase)
+        :build(),
+      PhraseBuilder.new()
         :append(reportPhrase)
         :append "at"
-        :append {
-          propName = "ICAO",
-          asString = "ICAO code",
-          variants = Phrase.new()
-            :append(alphabetPhrase, "1"):append(alphabetPhrase, "2")
-            :append(alphabetPhrase, "3"):append(alphabetPhrase, "4")
-        }
+        :append(PhraseUtils.phrases.ICAOairportCode())
+        :build()
     }
-    :appendOptional("please", "isPolite"),
+    :appendOptional("please", "isPolite")
+    :build(),
 
   action = function(vc, res)
+
     if not res:getProp "isPolite" then
       copilot.speak "You have to ask nicely"
-    else
-      local numTries = 0
-      local airport
-      if res:getProp "ICAO" then
-        airport = 
-          res:getProp("ICAO", "1", "letter") ..
-          res:getProp("ICAO", "2", "letter") ..
-          res:getProp("ICAO", "3", "letter") ..
-          res:getProp("ICAO", "4", "letter") 
-      else
-        airport = res:getProp "destination" or "origin"
-      end
-      repeat 
-        local ok, err = pcall(
-          getWeatherSequence, res:getProp "reportType", airport
-        )
-        numTries = numTries + 1
-        if not ok and err ~= MCDU_ERROR then 
-          vc:activate()
-          error(err) 
-        end
-      until ok or numTries == 5
+      vc:activate()
+      return
     end
+
+    local airport = PhraseUtils.getPhraseResult(res, "ICAOairportCode")
+      or res:getProp "destination" or "origin"
+
+    local numTries = 0
+    repeat 
+      local ok, err = pcall(getWeatherSequence, res:getProp"reportType", airport)
+      numTries = numTries + 1
+      if not ok and err ~= MCDU_ERROR then 
+        vc:activate()
+        error(err) 
+      end
+    until ok or numTries == 5
+
     vc:activate()
   end
 }
@@ -170,7 +129,7 @@ pressAndWait = function(keyToPress, checkFunc, waitMin, waitMax, init, timeout)
     checkFunc = function(disp)
       if disp:find(sub) then return true end
       if FSL.MCDU:getLine(1, disp) ~= firstLine then
-        -- Oh no, someone opened a different page in our MCDU!
+        -- Oh no, someone opened a different page on our MCDU!
         error(MCDU_ERROR, 0) 
       end
     end
