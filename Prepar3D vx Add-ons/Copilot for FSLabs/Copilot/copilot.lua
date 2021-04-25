@@ -118,7 +118,7 @@ local function setup()
   
   if copilot.IS_FSL_AIRCRAFT then
     FlightPhaseProcessor.start()
-    copilot.events.landing:addAction(function()
+    local function clearVars()
       copilot.mcduWatcher:clearVar "V1"
       copilot.mcduWatcher:clearVar "Vr"
       copilot.mcduWatcher:clearVar "V2"
@@ -128,7 +128,9 @@ local function setup()
       copilot.mcduWatcher:clearVar "takeoffRwy"
       copilot.mcduWatcher:clearVar "flyingCircuits"
       copilot.mcduWatcher:clearVar "isFmgcSetup"
-    end)
+    end
+    copilot.events.landing:addAction(clearVars)
+    copilot.events.aboveTenThousand:addAction(clearVars)
   end
 
   require "copilot.sequences"

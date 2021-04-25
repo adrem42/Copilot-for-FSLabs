@@ -8,11 +8,19 @@ if copilot.isVoiceControlEnabled then
     return copilot.getFlightPhase() == copilot.flightPhases[name]
   end
 
+  local function isExtendFlightPhase()
+    return isFlightPhrase "belowTenThousand" or isFlightPhrase "flyingCircuits"
+  end
+
+  local function isRetractFlightPhase()
+    return isFlightPhrase "climbout" or isFlightPhrase "flyingCircuits"
+  end
+
   copilot.voiceCommands.flapsUp = VoiceCommand:new {
     phrase = {"flaps up", "flaps zero"},
     confidence = 0.94,
     action = function()
-      if not isFlightPhrase "climbout" and not isFlightPhrase "flyingCircuits" then return end
+      if not isRetractFlightPhase() then return end
       if FSL.PED_FLAP_LEVER:getPosn() ~= "1" then return end
       local Vs = copilot.mcduWatcher:getVar("Vs")
       if Vs and copilot.IAS() < Vs then 
@@ -31,13 +39,13 @@ if copilot.isVoiceControlEnabled then
     confidence = 0.94,
     action = function()
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
-      if (isFlightPhrase "climbout" or isFlightPhrase "flyingCircuits") and flaps == "2" or flaps == "3" then
+      if isRetractFlightPhase() and flaps == "2" or flaps == "3" then
         local Vf = copilot.mcduWatcher:getVar "Vf"
         if Vf and copilot.IAS() < Vf then
           copilot.playCallout "speedTooLow"
           return
         end
-      elseif (isFlightPhrase "belowTenThousand" or isFlightPhrase "flyingCircuits") and flaps == "0" then
+      elseif isExtendFlightPhase() and flaps == "0" then
         if copilot.IAS() > flapsLimits.flapsOne then
           copilot.playCallout "speedTooHigh"
           return
@@ -54,8 +62,8 @@ if copilot.isVoiceControlEnabled then
     phrase = "flaps two",
     confidence = 0.94,
     action = function()
+      if not isExtendFlightPhase() then return end
       if FSL.PED_FLAP_LEVER:getPosn() ~= "1" then return end
-      if not isFlightPhrase "belowTenThousand" and not isFlightPhrase "flyingCircuits" then return end
       if copilot.IAS() > flapsLimits.flapsTwo then
         copilot.playCallout "speedTooHigh"
         return
@@ -71,8 +79,8 @@ if copilot.isVoiceControlEnabled then
     phrase = "flaps three",
     confidence = 0.94,
     action = function()
+      if not isExtendFlightPhase() then return end
       if FSL.PED_FLAP_LEVER:getPosn() ~= "2" then return end
-      if not isFlightPhrase "belowTenThousand" and not isFlightPhrase "flyingCircuits" then return end
       if copilot.IAS() > flapsLimits.flapsThree then
         copilot.playCallout "speedTooHigh"
       end
@@ -87,8 +95,8 @@ if copilot.isVoiceControlEnabled then
     phrase = "flaps full",
     confidence = 0.94,
     action = function()
+      if not isExtendFlightPhase() then return end
       if FSL.PED_FLAP_LEVER:getPosn() ~= "3" then return end
-      if not isFlightPhrase "belowTenThousand" and not isFlightPhrase "flyingCircuits" then return end
       if copilot.IAS() > flapsLimits.flapsFull then
         copilot.playCallout "speedTooHigh"
       end
