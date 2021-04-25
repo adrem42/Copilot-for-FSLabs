@@ -48,7 +48,6 @@ namespace FSUIPC {
 
 	void writeSTR(DWORD offset, const std::string& str)
 	{
-		std::lock_guard<std::mutex> lock(mutex);
 		writeSTR(offset, str, str.length());
 	}
 

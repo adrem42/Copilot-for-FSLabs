@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <title>Copilot for FSLabs 2.0.6</title>
     <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 2.0.5 beta</h1>
+<h1>Copilot for FSLabs 2.0.6</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -52,6 +52,7 @@
   <li><a href="../libraries/copilot.html">copilot</a></li>
   <li><a href="../libraries/Event.html">Event</a></li>
   <li><a href="../libraries/VoiceCommand.html">VoiceCommand</a></li>
+  <li><a href="../libraries/PhraseUtils.html">PhraseUtils</a></li>
   <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
 <h2>Classes</h2>
@@ -91,16 +92,28 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#checkWithTimeout">checkWithTimeout([timeout=5000], block, ...)</a></td>
+	<td class="name" nowrap><a href="#checkWithTimeout">checkWithTimeout(timeout, block, ...)</a></td>
 	<td class="summary">Executes the callback until it signals a truthy value or the timeout elapses.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#withTimeout">withTimeout([timeout=5000], block, ...)</a></td>
+	<td class="name" nowrap><a href="#checkWithTimeout">checkWithTimeout(timeout, interval, block, ...)</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#withTimeout">withTimeout(timeout, block, ...)</a></td>
 	<td class="summary">Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout([timeout=5000], block, ...)</a></td>
+	<td class="name" nowrap><a href="#withTimeout">withTimeout(timeout, interval, block, ...)</a></td>
+	<td class="summary"><span></td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout(timeout, block, ...)</a></td>
 	<td class="summary">Repeats the callback until the timeout elapses</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#repeatWithTimeout">repeatWithTimeout(timeout, interval, block, ...)</a></td>
+	<td class="summary"><span></td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Bind">Bind(args)</a></td>
@@ -307,7 +320,7 @@
 	<td class="summary">Returns the start index and the end index of a line</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#MCDU:getLine">MCDU:getLine(lineNum[, disp])</a></td>
+	<td class="name" nowrap><a href="#MCDU:getLine">MCDU:getLine(lineNum[, disp][, startPos=1][, endPos=MCDU.LENGTH_LINE])</a></td>
 	<td class="summary">Returns a line of the display</td>
 	</tr>
 	<tr>
@@ -323,8 +336,8 @@
 	<td class="summary">Returns false if the display is blank.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells()</a></td>
-	<td class="summary">Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.</td>
+	<td class="name" nowrap><a href="#MCDU:printCells">MCDU:printCells([startLine=1][, endLine=MCDU.NUM_LINES])</a></td>
+	<td class="summary"><span></td>
 	</tr>
 </table>
 
@@ -337,7 +350,7 @@
     <dl class="function">
     <dt>
     <a name = "checkWithTimeout"></a>
-    <strong>checkWithTimeout([timeout=5000], block, ...)</strong>
+    <strong>checkWithTimeout(timeout, block, ...)</strong>
     </dt>
     <dd>
     Executes the callback until it signals a truthy value or the timeout elapses.
@@ -348,7 +361,44 @@
         <li><span class="parameter">timeout</span>
             <span class="types"><span class="type">int</span></span>
          Timeout in milliseconds
-         (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">block</span>
+            <span class="types"><span class="type">function</span></span>
+         A callback that should return a truthy first value to signal the condition.
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to block.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        True + the rest of the values returned by block if the condition was signaled, false if the timeout has elapsed.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "checkWithTimeout"></a>
+    <strong>checkWithTimeout(timeout, interval, block, ...)</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">interval</span>
+            <span class="types"><span class="type">int</span></span>
+         Interval to sleep between checks
         </li>
         <li><span class="parameter">block</span>
             <span class="types"><span class="type">function</span></span>
@@ -372,7 +422,7 @@
 </dd>
     <dt>
     <a name = "withTimeout"></a>
-    <strong>withTimeout([timeout=5000], block, ...)</strong>
+    <strong>withTimeout(timeout, block, ...)</strong>
     </dt>
     <dd>
     Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.
@@ -383,7 +433,45 @@
         <li><span class="parameter">timeout</span>
             <span class="types"><span class="type">int</span></span>
          Timeout in milliseconds
-         (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">block</span>
+            <span class="types"><span class="type">function</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to block.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Either nil if the timeout has elapsed, or the values returned by block.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "withTimeout"></a>
+    <strong>withTimeout(timeout, interval, block, ...)</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">interval</span>
+            <span class="types"><span class="type">int</span></span>
+         Interval to sleep between checks
         </li>
         <li><span class="parameter">block</span>
             <span class="types"><span class="type">function</span></span>
@@ -408,7 +496,7 @@
 </dd>
     <dt>
     <a name = "repeatWithTimeout"></a>
-    <strong>repeatWithTimeout([timeout=5000], block, ...)</strong>
+    <strong>repeatWithTimeout(timeout, block, ...)</strong>
     </dt>
     <dd>
     Repeats the callback until the timeout elapses
@@ -419,7 +507,40 @@
         <li><span class="parameter">timeout</span>
             <span class="types"><span class="type">int</span></span>
          Timeout in milliseconds
-         (<em>default</em> 5000)
+        </li>
+        <li><span class="parameter">block</span>
+            <span class="types"><span class="type">function</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments to forward to block.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "repeatWithTimeout"></a>
+    <strong>repeatWithTimeout(timeout, interval, block, ...)</strong>
+    </dt>
+    <dd>
+    <span>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+            <span class="types"><span class="type">int</span></span>
+         Timeout in milliseconds
+        </li>
+        <li><span class="parameter">interval</span>
+            <span class="types"><span class="type">int</span></span>
+         Interval to sleep between block invocations
         </li>
         <li><span class="parameter">block</span>
             <span class="types"><span class="type">function</span></span>
@@ -1462,7 +1583,7 @@ FSL:setPilot(<span class="number">1</span>)
 </dd>
     <dt>
     <a name = "MCDU:getLine"></a>
-    <strong>MCDU:getLine(lineNum[, disp])</strong>
+    <strong>MCDU:getLine(lineNum[, disp][, startPos=1][, endPos=MCDU.LENGTH_LINE])</strong>
     </dt>
     <dd>
     Returns a line of the display
@@ -1480,6 +1601,20 @@ FSL:setPilot(<span class="number">1</span>)
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
          If you already have a display string, you can pass it here.
          (<em>optional</em>)
+        </li>
+        <li><span class="parameter">startPos</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+         (<em>default</em> 1)
+        </li>
+        <li><span class="parameter">endPos</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+         (<em>default</em> MCDU.LENGTH_LINE)
         </li>
     </ul>
 
@@ -1577,12 +1712,40 @@ FSL:setPilot(<span class="number">1</span>)
 </dd>
     <dt>
     <a name = "MCDU:printCells"></a>
-    <strong>MCDU:printCells()</strong>
+    <strong>MCDU:printCells([startLine=1][, endLine=MCDU.NUM_LINES])</strong>
     </dt>
     <dd>
-    Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.
+
+<p><span>  Prints information about each display cell in the following order:</p>
+
+<ul>
+    <li><p>Display index</p></li>
+    <li><p>Position in the line</p></li>
+    <li><p>The character</p></li>
+    <li><p>The code of the character</p></li>
+    <li><p>Color</p></li>
+    <li><p>Whether it's bold</p></li>
+</ul>
 
 
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">startLine</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+         (<em>default</em> 1)
+        </li>
+        <li><span class="parameter">endLine</span>
+            <span class="types"><span class="type">int</span></span>
+
+
+
+         (<em>default</em> MCDU.NUM_LINES)
+        </li>
+    </ul>
 
 
 
@@ -1596,7 +1759,7 @@ FSL:setPilot(<span class="number">1</span>)
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-16 01:00:08 </i>
+<i style="float:right;">Last updated 2021-04-25 18:28:41 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -5,9 +5,9 @@
 local MCDU_ERROR = "unexpected display state"
 local getWeatherSequence, ensureAirportSelected, pressAndWait
 
-local reportPhrase = PhraseBuilder.new():append {
+local reportTypePhrase = PhraseBuilder.new():append {
   propName = "reportType",
-  variants = {"metar", "forecast", {propVal = "metar", variant = "weather"}}
+  choices = {"metar", "forecast", {propVal = "metar", choice = "weather"}}
 }:build "report type"
 
 -- Some examples of what you can say with this:
@@ -23,13 +23,13 @@ local getWeather = VoiceCommand:new {
     :append "get the"
     :append {
       PhraseBuilder.new()
-        :appendOptional("destination", "destination")
-        :append(reportPhrase)
+        :appendOptional({"destination", "arrival"}, "destination")
+        :append(reportTypePhrase)
         :build(),
       PhraseBuilder.new()
-        :append(reportPhrase)
+        :append(reportTypePhrase)
         :append "at"
-        :append(PhraseUtils.phrases.ICAOairportCode())
+        :append(PhraseUtils.getPhrase "ICAOairportCode", "ICAO")
         :build()
     }
     :appendOptional("please", "isPolite")
@@ -43,18 +43,21 @@ local getWeather = VoiceCommand:new {
       return
     end
 
-    local airport = PhraseUtils.getPhraseResult(res, "ICAOairportCode")
-      or res:getProp "destination" or "origin"
+    local reportType = res:getProp "reportType"
+    local airport = 
+      PhraseUtils.getPhraseResult("ICAOairportCode", res, "ICAO") or 
+      res:getProp "destination" and "destination" or 
+      "origin"
 
-    local numTries = 0
+    local numTries, maxTries = 0, 5
     repeat 
-      local ok, err = pcall(getWeatherSequence, res:getProp"reportType", airport)
-      numTries = numTries + 1
+      local ok, err = pcall(getWeatherSequence, reportType, airport)
       if not ok and err ~= MCDU_ERROR then 
         vc:activate()
         error(err) 
       end
-    until ok or numTries == 5
+      numTries = numTries + 1
+    until ok or numTries == maxTries
 
     vc:activate()
   end
@@ -63,19 +66,16 @@ local getWeather = VoiceCommand:new {
 Bind {key = "SHIFT+F", onPress = function() getWeather:activate() end}
 
 getWeatherSequence = function(reportType, airport)
-  if not FSL.MCDU:getString():find "MCDU MENU" then
-    pressAndWait(FSL.PED_MCDU_KEY_MENU, "MCDU MENU")
+  local disp = FSL.MCDU:getString()
+  if not disp:find "ATIS/WX" then
+    if not disp:find "MCDU MENU" then
+      pressAndWait(FSL.PED_MCDU_KEY_MENU, "MCDU MENU", nil, nil, disp)
+    end
+    pressAndWait(FSL.PED_MCDU_LSK_L6, "ATSU DATALINK")
+    pressAndWait(FSL.PED_MCDU_LSK_R2, "AOC MENU")
+    pressAndWait(FSL.PED_MCDU_LSK_R2, "ATIS/WX")
   end
-  pressAndWait(FSL.PED_MCDU_LSK_L6, "ATSU DATALINK")
-  pressAndWait(FSL.PED_MCDU_LSK_R2, "AOC MENU")
-  pressAndWait(FSL.PED_MCDU_LSK_R2, "ATIS/WX")
-  if airport == "destination" then
-    ensureAirportSelected(97, FSL.PED_MCDU_LSK_L2)
-  elseif airport == "origin" then
-    ensureAirportSelected(49, FSL.PED_MCDU_LSK_L1)
-  else
-    ensureAirportSelected(airport)
-  end
+  ensureAirportSelected(airport)
   if reportType == "forecast" then
     FSL.PED_MCDU_LSK_R5()
   else
@@ -83,40 +83,44 @@ getWeatherSequence = function(reportType, airport)
   end
 end
 
-ensureAirportSelected = function(firstArg, selectKey)
+ensureAirportSelected = function(airport)
   local disp = FSL.MCDU:getString()
-  local manSelected = false
-  local autoSelected, ICAO 
-  if type(firstArg) == "string" then
-    ICAO = firstArg
-    autoSelected = false
+  local autoSelected, ICAO, selectKey
+  if airport == "origin" or airport == "destination" then
+    local autoEntryIdx
+    if airport == "origin" then
+      autoEntryIdx = 49
+      selectKey = FSL.PED_MCDU_LSK_L1
+    else
+      autoEntryIdx = 97
+      selectKey = FSL.PED_MCDU_LSK_L2
+    end
+    ICAO = disp:match("^%u%u%u%u", autoEntryIdx) or error "huh?"
+    autoSelected = FSL.MCDU:getArray()[autoEntryIdx].isBold
   else
-    autoSelected = FSL.MCDU:getArray()[firstArg].isBold
-    ICAO = disp:sub(firstArg, firstArg + 3)
+    ICAO = airport
+    autoSelected = false
   end
-  local hasManualEntry
-  local freeSlot
-  local manEntryIdx = 69
-  for i = 1, 4 do
-    if disp:sub(manEntryIdx, manEntryIdx) ~= "[" then
+  local freeSlot, hasManualEntry
+  local manualEntryIdx = 69
+  for line = 1, 4 do
+    local entry = disp:match("^%u%u%u%u", manualEntryIdx)
+    if entry == ICAO then return end
+    if entry then 
       hasManualEntry = true
-      if disp:sub(manEntryIdx, manEntryIdx + 3) == ICAO then
-        manSelected = true
-      end
-    else
-      freeSlot = freeSlot or i
+    else 
+      freeSlot = freeSlot or line 
     end
-    manEntryIdx = manEntryIdx + FSL.MCDU.LENGTH_LINE * 2
+    manualEntryIdx = manualEntryIdx + FSL.MCDU.LENGTH_LINE * 2
   end
-  if not manSelected and (not autoSelected or hasManualEntry) then
-    if selectKey then 
-      pressAndWait(selectKey)
-    else
-      copilot.scratchpadClearer.clearScratchpad()
-      FSL.MCDU:type(ICAO)
-    end
-    pressAndWait(FSL["PED_MCDU_LSK_R" .. (freeSlot or 1)])
+  if autoSelected and not hasManualEntry then return end
+  if selectKey then 
+    pressAndWait(selectKey)
+  else
+    copilot.scratchpadClearer.clearScratchpad()
+    FSL.MCDU:type(ICAO)
   end
+  pressAndWait(FSL["PED_MCDU_LSK_R" .. (freeSlot or 1)])
 end
 
 pressAndWait = function(keyToPress, checkFunc, waitMin, waitMax, init, timeout)
@@ -124,30 +128,27 @@ pressAndWait = function(keyToPress, checkFunc, waitMin, waitMax, init, timeout)
   if not checkFunc then
     checkFunc = function(disp) return disp ~= init end
   elseif type(checkFunc) == "string" then
-    local sub = checkFunc
-    local firstLine = FSL.MCDU:getLine(1, init)
-    checkFunc = function(disp)
-      if disp:find(sub) then return true end
-      if FSL.MCDU:getLine(1, disp) ~= firstLine then
-        -- Oh no, someone opened a different page on our MCDU!
-        error(MCDU_ERROR, 0) 
-      end
+    local stringToMatch = checkFunc
+    checkFunc = function(disp) return disp:find(stringToMatch) end
+  end
+  local firstLine = FSL.MCDU:getLine(1, init)
+  local function _checkFunc()
+    local disp = FSL.MCDU:getString()
+    if checkFunc(disp) then return true end
+    if FSL.MCDU:getLine(1, disp) ~= firstLine then
+      -- Oh no, someone opened a different page on our MCDU!
+      error(MCDU_ERROR, 0) 
     end
   end
   if timeout ~= 0 then 
     timeout = timeout or 10000
-    local timedOut = not checkWithTimeout(timeout, function()
+    if not checkWithTimeout(timeout, function()
       keyToPress() 
-      -- Press again every second if nothing happens, for good measure
-      return checkWithTimeout(1000, function()
-        ipc.sleep(100)
-        return checkFunc(FSL.MCDU:getString())
-      end)
-    end)
-    if timedOut then error(MCDU_ERROR, 0) end
+      return checkWithTimeout(1000, 100, _checkFunc)
+    end) then error(MCDU_ERROR, 0) end
   else
-    repeat ipc.sleep(100) until checkFunc(FSL.MCDU:getString())
+    repeat ipc.sleep(100) until _checkFunc()
   end
   ipc.sleep(math.random(waitMin or 300, waitMax or 1000))
-  if not checkFunc(FSL.MCDU:getString()) then error(MCDU_ERROR, 0) end
+  if not _checkFunc() then error(MCDU_ERROR, 0) end
 end

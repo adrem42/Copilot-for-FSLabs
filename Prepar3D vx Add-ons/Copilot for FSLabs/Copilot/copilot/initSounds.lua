@@ -4,7 +4,7 @@ local callouts = {}
 copilot.sounds = {callouts = callouts}
 copilot.PLAY_BLOCKING = -1
 
-local visit
+local loadFolder
 
 local function loadNormalConfig(dir, prefix, cfg)
   local ext = {}
@@ -12,7 +12,7 @@ local function loadNormalConfig(dir, prefix, cfg)
     if _file:find "[^%.]" then
       local maybeSubdir = dir .. "\\" .. _file
       if lfs.attributes(maybeSubdir, "mode") == "directory" then
-        visit(maybeSubdir, prefix .. _file)
+        loadFolder(maybeSubdir, prefix .. _file)
       else
         local name, _ext = _file:match "(.*)%.(.*)$"
         ext[name:lower()] = _ext
@@ -31,26 +31,38 @@ local function loadNormalConfig(dir, prefix, cfg)
       string.format("%s\\%s", dir, name .. "." .. ext[name:lower()]), entry.length or 0, entry.volume or 1
     )
   end
+  copilot.playCallout = copilot.playCallout or function(fileName, delay)
+    if callouts[fileName] then
+      callouts[fileName]:play(delay or 0)
+    else
+      copilot.logger:warn("Callout " .. fileName .. " not found")
+    end
+  end
 end
 
 local function loadTtsConfig(ttsCfg)
 
   local ttsPhrases = {}
 
-  local function visitTts(t, prefix)
+  local function load(t, prefix)
     if prefix ~= "" then prefix = prefix .. "." end
     for k, v in pairs(t) do
       if type(v) == "table" then
-        visitTts(v, prefix .. k)
+        load(v, prefix .. k)
       else
         ttsPhrases[prefix .. k] = v
       end
     end
   end
 
-  visitTts(ttsCfg, "")
+  if ttsCfg.parent then
+    local dir = copilot.soundDir .. "\\callouts\\" .. ttsCfg.parent .. "\\"
+    load(loadfile(dir .. "config.lua") or load(dir .."sounds.lua"), "")
+  end
 
-  function copilot.playCallout(fileName, delay)
+  load(ttsCfg, "")
+
+  copilot.playCallout = copilot.playCallout or function(fileName, delay)
     if ttsPhrases[fileName] then
       copilot.speak(ttsPhrases[fileName], delay or 0)
     else
@@ -61,7 +73,7 @@ end
 
 local isTTS
 
-visit = function(dir, prefix)
+loadFolder = function(dir, prefix)
   if prefix ~= "" then prefix = prefix .. "." end
   local cfg = loadfile(dir .. "\\config.lua") or loadfile(dir .. "\\sounds.lua")
   if cfg then
@@ -76,18 +88,9 @@ visit = function(dir, prefix)
         loadTtsConfig(cfg)
       else
         loadNormalConfig(dir, prefix, cfg)
-        if not copilot.playCallout then
-          function copilot.playCallout(fileName, delay)
-            if callouts[fileName] then
-              callouts[fileName]:play(delay or 0)
-            else
-              copilot.logger:warn("Callout " .. fileName .. " not found")
-            end
-          end
-        end
       end
     end
   end
 end
 
-visit(calloutDir, "")
+loadFolder(calloutDir, "")

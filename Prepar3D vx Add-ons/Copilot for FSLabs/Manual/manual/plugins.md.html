@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <title>Copilot for FSLabs 2.0.6</title>
     <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 2.0.5 beta</h1>
+<h1>Copilot for FSLabs 2.0.6</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -54,6 +54,7 @@
   <li><a href="../libraries/copilot.html">copilot</a></li>
   <li><a href="../libraries/Event.html">Event</a></li>
   <li><a href="../libraries/VoiceCommand.html">VoiceCommand</a></li>
+  <li><a href="../libraries/PhraseUtils.html">PhraseUtils</a></li>
   <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
 <h2>Classes</h2>
@@ -81,21 +82,20 @@
 
 <p>If you have multiple files that you want to be loaded in a particular order, use the standard library <em>require</em> function. Since the <em>custom</em> folder isn't scanned recursively, you can have one main lua file at the top level and have the rest in subfolders. For example, given the following structure:</p>
 
-<pre><code>Copilot for FSLabs\copilot\custom\
-    init.lua
-    myplugin\
-        file1.lua
-        file2.lua
-</code></pre>
+<p>  @plain
+  Copilot for FSLabs\copilot\custom\</p>
 
+<pre>
+init.lua
+myplugin\
+  file1.lua
+  file2.lua
+</pre>
 
 <p>you can load file1.lua and file2.lua from init.lua (which will be loaded by Copilot) like this:</p>
 
-
-<pre>
-<span class="global">require</span> <span class="string">"copilot.custom.myplugin.file1"</span>
-<span class="global">require</span> <span class="string">"copilot.custom.myplugin.file2"</span>
-</pre>
+<p>  require "copilot.custom.myplugin.file1"
+  require "copilot.custom.myplugin.file2"</p>
 
 <p>If you want to use Copilot with other aircraft, use the <em>custom_non_fsl</em> folder instead of <em>custom</em> (you'll need to create it yourself). If you have multiple add-ons, you'll need to write code that tells which aircraft was loaded. One way to do that is matching a substring in <em>copilot.aircraftTitle</em>.</p>
 
@@ -109,20 +109,20 @@
 
 <p>Copilot constantly monitors the PF's MCDU for certain variables (for example, the takeoff speeds). This is done on a background thread because the main thread may be blocked at any time by other code. </p>
 
-<p>You can have the background thread additionally run your own code. To do that, create a lua file at a location of your choice and call <em>copilot.addMcduCallback(filePath)</em> from your plugin code. The file should return a callback that will receive the MCDU display data and store variables using the <em>setVar</em> function (it can also call <em>getVar</em> and <em>clearVar</em>). These variables can be retrieved from the main thread using <em>copilot.mcduWatcher:getVar(varname)</em>.</p>
+<p>You can have the background thread additionally run your own code. To do that, create a lua file at a location of your choice and call <code>copilot.addMcduCallback(filePath)</code> from your plugin code. The file should return a callback that will receive the MCDU display data and store variables using the <code>setVar</code> function (it can also call <code>getVar</code> and <code>clearVar</code>). These variables can be retrieved and cleared from the main thread using the functions returned by <code>copilot.addMcduCallback</code>.</p>
 
-<p>The parameter passed to your callback is a table containing the fields <em>PF</em>, <em>PM</em>, <em>CPT</em> and <em>FO</em>. Each one is an array of tables representing MCDU display cells. A cell table contains the fields <em>char</em>, <em>color</em> and <em>isBold</em>. Each MCDU table additionaly has an <em>str</em> field which represents the display as a string.</p>
+<p>The parameter passed to your callback is a table containing the fields <code>PF</code>, <code>PM</code>, <code>CPT</code> and <code>FO</code>. Each one is an array of tables representing MCDU display cells. A cell table contains the fields <code>char</code>, <code>color</code> and <code>isBold</code>. Each MCDU table additionaly has an <code>str</code> field which represents the display as a string.</p>
 
 
 <pre>
 <span class="comment">-- Copilot for FSLabs\copilot\custom\myplugin\mcdu.lua
 </span>
 <span class="keyword">return</span> <span class="keyword">function</span>(data)
-    <span class="keyword">local</span> PF = data.PF.str
-    <span class="keyword">if</span> PF:sub(<span class="number">40</span>, <span class="number">46</span>) == <span class="string">"FROM/TO"</span> <span class="keyword">and</span> data.PF[<span class="number">64</span>].color == <span class="string">"cyan"</span> <span class="keyword">then</span>
-        setVar(<span class="string">"FROM"</span>,  PF:sub(<span class="number">64</span>, <span class="number">67</span>))
-        setVar(<span class="string">"TO"</span>,    PF:sub(<span class="number">69</span>, <span class="number">72</span>))
-    <span class="keyword">end</span>
+  <span class="keyword">local</span> PF = data.PF.str
+  <span class="keyword">if</span> PF:sub(<span class="number">40</span>, <span class="number">46</span>) == <span class="string">"FROM/TO"</span> <span class="keyword">and</span> data.PF[<span class="number">64</span>].color == <span class="string">"cyan"</span> <span class="keyword">then</span>
+    setVar(<span class="string">"FROM"</span>,  PF:sub(<span class="number">64</span>, <span class="number">67</span>))
+    setVar(<span class="string">"TO"</span>,    PF:sub(<span class="number">69</span>, <span class="number">72</span>))
+  <span class="keyword">end</span>
 <span class="keyword">end</span>
 </pre>
 
@@ -132,27 +132,28 @@
 <pre>
 <span class="comment">-- Copilot for FSLabs\copilot\custom\init.lua
 </span>
-copilot.addMcduCallback(APPDIR .. <span class="string">"copilot\\custom\\myplugin\\mcdu.lua"</span>)
+<span class="keyword">local</span> getMcduVar, clearMcduVar = copilot.addMcduCallback(
+  APPDIR .. <span class="string">"copilot\\custom\\myplugin\\mcdu.lua"</span>
+)
 
 copilot.addCallback(<span class="keyword">function</span>()
-    <span class="global">print</span>((<span class="string">"FROM: %s TO: %s"</span>):format(
-        copilot.mcduWatcher:getVar <span class="string">"FROM"</span> <span class="keyword">or</span> <span class="string">"????"</span>,
-        copilot.mcduWatcher:getVar <span class="string">"TO"</span> <span class="keyword">or</span> <span class="string">"????"</span>))
+  <span class="global">print</span>((<span class="string">"FROM: %s TO: %s"</span>):format(
+    getMcduVar <span class="string">"FROM"</span> <span class="keyword">or</span> <span class="string">"????"</span>, getMcduVar <span class="string">"TO"</span> <span class="keyword">or</span> <span class="string">"????"</span>))
 <span class="keyword">end</span>, <span class="keyword">nil</span>, <span class="number">1000</span>)
 
 copilot.events.chocksSet:addAction(<span class="keyword">function</span>()
-    copilot.mcduWatcher:clearVar <span class="string">"FROM"</span>
-    copilot.mcduWatcher:clearVar <span class="string">"TO"</span>
+  clearMcduVar <span class="string">"FROM"</span>
+  clearMcduVar <span class="string">"TO"</span>
 <span class="keyword">end</span>)
 
 Bind {
-    key = <span class="string">"A"</span>,
-    onPress = <span class="keyword">function</span>()
-        <span class="comment">-- use this function to find the display cell indices:
-</span>        FSL.MCDU:printCells() <span class="comment">-- PM MCDU
-</span>        <span class="comment">--FSL.PF.MCDU:printCells()
-</span>        <span class="comment">--FSL.CPT.MCDU:printCells()
-</span>    <span class="keyword">end</span>
+  key = <span class="string">"A"</span>,
+  onPress = <span class="keyword">function</span>()
+    <span class="comment">-- use <a href="../libraries/FSL2Lua.html#MCDU:printCells">this function</a> to find the display cell indices:
+</span>    FSL.MCDU:printCells() <span class="comment">-- PM MCDU
+</span>    <span class="comment">--FSL.PF.MCDU:printCells()
+</span>    <span class="comment">--FSL.CPT.MCDU:printCells()
+</span>  <span class="keyword">end</span>
 }
 </pre>
 
@@ -162,7 +163,7 @@ Bind {
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-16 01:00:08 </i>
+<i style="float:right;">Last updated 2021-04-25 18:28:41 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

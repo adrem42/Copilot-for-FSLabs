@@ -15,8 +15,8 @@ return {
   noReverseLeft = "no reverse left",
   noReverseRight = "no reverse right",
   noReverse = "no reverse",
-  decel = "decel",
-  noDecel = "no decel",
+  decel = "desell",
+  noDecel = "no desell",
   seventy = "seventy",
   fullLeft_1 = "full left",
   fullLeft_2 = "full left",
@@ -27,14 +27,17 @@ return {
   neutral_1 = "neutral",
   neutral_2 = "neutral",
   neutral_3 = "neutral",
-  flapsOne = "flaps one",
-  flapsTwo = "flaps two",
-  flapsThree = "flaps three",
-  flapsFull = "flaps full",
-  flapsZero = "flaps zero",
+  flapsOne = "speed checked, flaps one",
+  flapsTwo = "speed checked, flaps two",
+  flapsThree = "speed checked, flaps three",
+  flapsFull = "speed checked, flaps full",
+  flapsZero = "speed checked, flaps zero",
+  speedTooLow = "speed too low",
+  speedTooHigh = "speed too high",
 
   checklists = {
 
+    standingBy = "standing by",
     doubleCheck = "double check that please",
     checked = "checked",
     

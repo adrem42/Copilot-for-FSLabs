@@ -20,7 +20,7 @@ local recognizer = copilot.recognizer
 -- the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of active phrases
 -- will also degrade the quality of recognition.<br>
 --
---- <b>A VoiceCommand event emits a `RecoResult` as its payload</b>.
+--- <b>A VoiceCommand event emits a RecoResult as its payload</b>.
 --- @type VoiceCommand
 VoiceCommand = {DefaultConfidence = 0.93, logPrefix = "VoiceCommand"}
 setmetatable(VoiceCommand, {__index = Event})
@@ -39,7 +39,7 @@ local function _persistenceMode(persistence)
   end
 end
 
-local function parsePhrases(input)
+local function makePhrases(input)
   input = type(input) == "table" and input or {input}
   for i, v in ipairs(input) do
     if type(v) == "string" then
@@ -49,6 +49,14 @@ local function parsePhrases(input)
   return input
 end
 
+---Constructor
+---@function new
+
+---Constructor
+---@function new
+---@param phrase A string or Phrase or array of strings and Phrase objects
+---@number[opt=0.93] confidence Required recognition engine confidence between 0 and 1 
+
 --- Constructor
 --- @param args A table containing the following fields (also the fields taken by @{Event:new|the parent constructor}):
 --  @param args.phrase string or Phrase or array of strings and Phrase objects.
@@ -56,7 +64,7 @@ end
 -- synchronously with the voice command's actual phrase variants to help the recognizer discriminate between them and similarly 
 -- sounding phrases. 
 ---
---  @number[opt=0.93] args.confidence between 0 and 1
+--  @number[opt=0.93] args.confidence Required recognition engine confidence between 0 and 1
 --  @param[opt=false] args.persistent
 -- * omitted or false: the voice command will be deactivated after being triggered.
 -- * 'ignore': the voice command will be put into ignore mode after being triggered.
@@ -69,27 +77,26 @@ end
 -- }
 
 function VoiceCommand:new(args, confidence)
-  args = type(args) == "string"
-    and {phrase = args, confidence = confidence}
-    or type(args) == "table" and args
-    or {}
+  if type(args) == "nil" then
+    args = {}
+  elseif type(args) == "table" and args[1] or type(args) == "string" or type(args) == "userdata" then
+    args = {phrase = args, confidence = confidence}
+  end
   local voiceCommand = args
   voiceCommand.confidence = args.confidence or VoiceCommand.DefaultConfidence
-  local phrase = parsePhrases(args.phrase)
+  local phrases = makePhrases(args.phrase)
   args.phrase = nil
   if copilot.isVoiceControlEnabled then
-    voiceCommand.ruleID = recognizer:addRule(
-      phrase, voiceCommand.confidence, _persistenceMode(args.persistent)
-    )
+    voiceCommand.ruleID = recognizer:addRule(phrases, voiceCommand.confidence, _persistenceMode(args.persistent))
     voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
   end
   voiceCommand.eventRefs = {activate = {}, deactivate = {}, ignore = {}}
   self.__index = self
-  voiceCommand.logMsg = voiceCommand.logMsg or tostring(phrase[1])
+  voiceCommand.logMsg = voiceCommand.logMsg or tostring(phrases[1])
   voiceCommand = setmetatable(Event:new(voiceCommand), self)
   if args.dummy then
-    voiceCommand:addPhrase(parsePhrases(args.dummy), true)
+    voiceCommand:addPhrase(makePhrases(args.dummy), true)
     args.dummy = nil
   end
   return voiceCommand
@@ -125,7 +132,9 @@ end
 ---@bool dummy True to add dummy phrase variants, omitted or false to add actual phrase variants.
 ---@return self
 function VoiceCommand:addPhrase(phrase, dummy)
-  recognizer:addPhrases(parsePhrases(phrase), self.ruleID, dummy == true and true or false)
+  local phrases = makePhrases(phrase)
+  if #self:getPhrases() == 0 then self.logMsg = tostring(phrases[1]) end
+  recognizer:addPhrases(phrases, self.ruleID, dummy == true and true or false)
   return self
 end
 
@@ -155,6 +164,7 @@ end
 ---@return self
 function VoiceCommand:removeAllPhrases(dummy)
   recognizer:removeAllPhrases(self.ruleID, dummy == true and true or false)
+  self.logMsg = nil
   return self
 end
 

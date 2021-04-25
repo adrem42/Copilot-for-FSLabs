@@ -75,7 +75,8 @@ function Event:new(args)
 end
 
 function Event:toString()
-  return self.logMsg or tostring(self):gsub("table: 0+", "")
+  if self.logMsg and self.logMsg ~= Event.NOLOGMSG then return self.logMsg end
+  return tostring(self):gsub("table: 0+", "")
 end
 
 function Event:getActions()
@@ -256,7 +257,9 @@ function Event.waitForEvent(event, returnFunction)
     getPayload = function() return unpack(payload) end
   end)
 
-  a:addLogMsg("waitForEvent signal for event: " .. event:toString())
+  if event.logMsg ~= Event.NOLOGMSG then
+    a:addLogMsg("waitForEvent signal for event: " .. event:toString())
+  end
   
   local checkEvent = setmetatable({}, {
     __call = function ()
@@ -351,7 +354,9 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
       local payload = {...}
       payloadGetters[event] = function() return unpack(payload) end
     end)
-    actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+    if event.logMsg ~= Event.NOLOGMSG then
+      actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+    end
   end
 
   local checkEvents = setmetatable({}, {})
@@ -421,8 +426,9 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
         singleEventIdx = i
       end
     end)
-
-    actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+    if event.logMsg ~= Event.NOLOGMSG then
+      actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+    end
   end
 
   local alreadySignaled =

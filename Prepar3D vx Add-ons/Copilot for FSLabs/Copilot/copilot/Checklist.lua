@@ -19,7 +19,7 @@ Checklist.checklistEvent = Event:new()
 
 Checklist.sayAgainVoiceCommand  = addVoiceCommand "say again"
 Checklist.standbyVoiceCommand   = addVoiceCommand "standby checklist"
-Checklist.resumeVoiceCommand    = addVoiceCommand {phrase = {"resume checklist", "continue checklist"}}
+Checklist.resumeVoiceCommand    = addVoiceCommand {"resume checklist", "continue checklist"}
 Checklist.restartVoiceCommand   = addVoiceCommand {
   phrase = "restart checklist",
   action = function() Checklist.checklistEvent:trigger "checklist_reset" end
@@ -36,6 +36,12 @@ local function itemInfo(checklist, item, itemIdx)
   )
 end
 
+local function resetCurrChecklist()
+  Checklist._currItem = nil
+  Checklist._currChecklist = nil
+  Checklist._currItemIdx = nil
+end
+
 ---Constructor
 ---@string label The name of the folder in *copilot\sounds\callouts* where the checklist-related callouts are located.
 ---@string displayLabel Name of the checklist that will be displayed in the message windows and logs
@@ -43,19 +49,29 @@ end
 ---Use it to control the availability of the checklist by calling `myChecklist.trigger:activate()/deactivate()` (see *copilot\initChecklists.lua*)
 function Checklist:new(label, displayLabel, trigger)
   self.__index = self
-  local checklist = setmetatable({
+  local checklist
+  checklist = setmetatable({
     items = {},
     label = label,
     displayLabel = displayLabel,
     trigger = trigger,
-    doneEvent = Event:new {logMsg = "Checklist finished: " .. label}
+    _action = trigger:addAction(function() return checklist:execute() end, Action.COROUTINE)
   }, self)
-  trigger:addAction(function()
-    copilot.addCoroutine(function()
-      checklist:execute()
-    end)
+  checklist._action:doneEvent():addAction(function(...)
+    if select(1, ...) == copilot.THREAD_REMOVED then
+      resetCurrChecklist()
+      if self._doneEvent then self._doneEvent:trigger "error" end
+    end
   end)
   return checklist
+end
+
+function Checklist:doneEvent()
+  if not self._doneEvent then
+    self._doneEvent = Event:new {logMsg = Event.NOLOGMSG}
+    self._action:doneEvent():addAction(function(_, ...) self._doneEvent:trigger(...) end)
+  end
+  return self._doneEvent
 end
 
 function Checklist:_playCallout(fileName)
@@ -87,36 +103,49 @@ function Checklist:currItem()
   return self._currItem, self._currItemIdx
 end
 
-function Checklist:_handleResponse(item, responseLabel, recoResult, phrases)
-
-  if not item.onResponse then
-    return {res = "checklist_continue"}
-  end
-
+local function makeCheckFunc()
   local failed = {}
-  local didFail = false
-
-  local function check(arg1, message)
+  return failed, function (arg1, message)
     local val
-    if type(arg1) == "string" then
+    if not message then
       val = false
       message = arg1
     else
       val = arg1
     end
     if not val then
-      didFail = true
-      if message then failed[#failed+1] = message end
+      failed[#failed+1] = message
     end
     return val and true or false
   end
+end
 
-  local res = {didFail = function() return didFail end}
+function Checklist:_handleResponse(item, responseLabel, recoResult, phrases)
 
-  item.onResponse(check, responseLabel, recoResult, res, item)
+  if not item.onResponse then
+    return {res = "checklist_continue"}
+  end
+
+  local failed, check = makeCheckFunc()
+
+  local res = {didFail = function() return #failed > 0 end}
+
+  if not item.onResponseCoroutine then
+    item.onResponse(check, recoResult, responseLabel, res, item)
+  else
+    local co, onResponseThread = copilot.addCoroutine(function()
+      item.onResponse(check, recoResult, responseLabel, res, item)
+    end)
+    self.restartVoiceCommand:deactivate()
+    local e, payload = Event.waitForEvents {onResponseThread, self.checklistEvent}
+    if e == self.checklistEvent then
+      copilot.removeCallback(co)
+      return self:_handleCommonEvents(payload()) 
+    end
+  end
 
   if not res.res then
-    res.res = didFail and "item_reset" or "checklist_continue"
+    res.res = res.didFail() and "item_reset_after_fail" or "checklist_continue"
   end
 
   if #failed > 0 then
@@ -129,14 +158,14 @@ function Checklist:_handleResponse(item, responseLabel, recoResult, phrases)
     print(msg)
     if copilot.UserOptions.checklists.display_fail == copilot.UserOptions.TRUE then
       if copilot.UserOptions.checklists.display_info == copilot.UserOptions.TRUE then
-        msg = msg .. "\n\nPhrase variants:\n\n" .. table.concat(phrases, "\n")
+        msg = msg .. "\n\nResponse variants:\n\n" .. table.concat(phrases, "\n")
       end
       self.didShowText = true
       copilot.displayText(msg, 40, "print_yellow")
     end
   end
 
-  if res.res == "item_reset" then
+  if res.res == "item_reset_after_fail" then
     if not res.disableDefault then
       self:_playCallout("checklists.doubleCheck")
     end
@@ -174,12 +203,10 @@ function Checklist:_awaitResponse(item)
 
   if item.numRetries == 0 and copilot.UserOptions.checklists.display_info == copilot.UserOptions.TRUE then
     self.didShowText = true
-    copilot.displayText(
-      string.format(
-        "Checklist item: %s, response variants:\n\n%s",
-        itemInfo(self, item), 
-        table.concat(phrases, "\n")
-      ), 
+    copilot.displayText(string.format(
+      "Checklist item: %s\nResponse variants:\n\n%s",
+      itemInfo(self, item), 
+      table.concat(phrases, "\n")), 
       40
     )
   end
@@ -187,9 +214,10 @@ function Checklist:_awaitResponse(item)
   local event, payload = Event.waitForEvents(events)
 
   if event == self.sayAgainVoiceCommand then
-    return self:_executeItem(item)
+    self:_playCallout(item.label)
+    return self:_awaitResponse(item)
   elseif event == self.standbyVoiceCommand then
-    return self:_awaitResume(item)
+    return self:_onStby(item)
   elseif event == commonEvents then
     return self:_handleCommonEvents(payload())
   else
@@ -200,8 +228,9 @@ function Checklist:_awaitResponse(item)
   end
 end
 
-function Checklist:_awaitResume(item)
+function Checklist:_onStby(item)
   self.standbyVoiceCommand:ignore()
+  self:_playCallout "checklists.standingBy"
   for _, vc in pairs(item.response) do
     vc:ignore()
   end
@@ -216,6 +245,10 @@ function Checklist:_awaitResume(item)
 end
 
 function Checklist:_executeItem(item)
+  if self.didShowText and copilot.UserOptions.checklists.display_info == copilot.UserOptions.FALSE then
+    self.didShowText = false
+    copilot.displayText ""
+  end
   if item.beforeChallenge then
     item.beforeChallenge(item)
   end
@@ -253,8 +286,9 @@ function Checklist:_resumeVoiceCommands()
   end
 end
 
---- Start executing the checklist. You don't need to call it. It will be called automatically when the trigger voice command is triggered.
 function Checklist:execute()
+
+  if #self.items == 0 then return end
 
   if Checklist._currChecklist then
     if Checklist._currChecklist ~= self then
@@ -262,8 +296,6 @@ function Checklist:execute()
     end
     return
   end
-
-  if #self.items == 0 then return end
 
   Checklist._currChecklist = self
   self.didShowText = false
@@ -289,7 +321,7 @@ function Checklist:execute()
     end
     if res.res == "checklist_reset" then
       print("Resetting checklist: " .. self.displayLabel)
-      Checklist._currChecklist = nil
+      resetCurrChecklist()
       return self:execute()
     elseif res.res == "checklist_cancel" then
       print("Checklist canceled: " .. self.displayLabel)
@@ -312,21 +344,19 @@ function Checklist:execute()
     else error "huh?" end
   end
 
-  self._currItem = nil
-  self._currItemIdx = nil
+  resetCurrChecklist()
 
   if completionStatus == "completed" then
     self:_playCallout "completed"
   end
 
-  Checklist._currChecklist = nil
   if self.didShowText then
     copilot.displayText ""
   end
 
   self:_resumeVoiceCommands()
 
-  self.doneEvent:trigger(completionStatus)
+  return completionStatus
 
 end
 
@@ -360,24 +390,21 @@ end
 ---
 ---    If it's called with a string as the single argument, the check is considered failed and the string describes the reason. 
 ---
----    If the first argument is not a string, it is evaluated for truthiness: if the value is falsy, the check is considered failed and the optional second string argument describes the reason.
+---    If it's called with two arguments, the first argument is evaluated for truthiness: if the value is falsy, the check is considered failed and the second string argument describes the reason.
 ---
 ---    The reason string is used for logging and is displayed in a message window if display_fail=1.
 ---
 ---    The function returns a bool that indicates whether the check succeeded
---- 2. The response voice command label
 ---
---- 3. A recognition result table that has the following fields:<br>
----     * phrase: string
----     * confidence: number
----     * props: If the phrase has any named properties, their values can be accessed through this table. See the *toData* item in *copilot\checklists\beforeStart.lua* for an example.
+--- 2. A <a href='..\libraries\VoiceCommand.html#Class_RecoResult'>RecoResult</a> object
+---
+--- 3. The response voice command label
 ---
 --- 4. A table where you can set some flags to control what happens next. The only field available is "acknowledge", which overrides item.acknowledge (see the *flapSetting* item in *coplot\checklists\beforeTakeoff.lua* for an example).
 --- This table also provides the function `didFail` which returns true if the check function failed at least once.
 ---
 --- 5. The item. The response voice command can be accessed through item[label]
----@tparam[opt] function item.beforeChallenge A function to be called before the challenge. It receives the item itself as the only parameter. It can be used, for example,
---- to set the response phrases dynamically (see *copilot\checklists\beforeStart.lua* for an example).
+---@tparam[opt] function item.beforeChallenge A function to be called before the challenge. It receives the item itself as the only parameter.
 function Checklist:appendItem(item)
   self:_insertItem(#self.items+1, item)
   return self
@@ -453,7 +480,7 @@ local function showMenu()
     return
   end
 
-  local function checkItemChanged()
+  local function hasItemChanged()
     if select(2, Checklist.currChecklist()) == item then
       return false
     end
@@ -481,7 +508,7 @@ local function showMenu()
   local menuCanceled = res == #menuItems
   if status ~= TextMenuResult.OK or 
     menuCanceled or 
-    checkItemChanged() or
+    hasItemChanged() or
     res == 1 and not repeatPrevAvailable then 
     return 
   end
@@ -490,7 +517,7 @@ local function showMenu()
 
   textMenu:setMenu("Are you sure?", text .. ": " .. prompt, {"Yes", "Cancel"}):show()
   status, res = Event.waitForEvent(textMenu.event)
-  if res == 1 and not checkItemChanged() then 
+  if res == 1 and not hasItemChanged() then 
     Checklist.checklistEvent:trigger(action)
   end
 end

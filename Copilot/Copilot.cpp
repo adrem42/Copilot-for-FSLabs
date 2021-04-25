@@ -38,9 +38,20 @@ namespace copilot {
 	bool isFslAircraft = false;
 	bool _simRunning = true;
 
+	bool muteKeyDepressed = false;
+	std::chrono::milliseconds delayBeforeUnmute = std::chrono::milliseconds(1000);
+	std::chrono::time_point<std::chrono::system_clock> muteKeyReleasedTime = std::chrono::system_clock::now();
+
 	bool simRunning()
 	{
 		return _simRunning;
+	}
+
+	bool isMuted()
+	{
+		if (muteKeyDepressed)
+			return true;
+		return std::chrono::system_clock::now() - muteKeyReleasedTime < delayBeforeUnmute;
 	}
 
 	std::string copilotScriptPath()
@@ -117,11 +128,16 @@ namespace copilot {
 		}).detach();
 	}
 
-	void onMuteKey(bool state)
+	void onMuteKey(bool isPressed)
 	{
-		LuaPlugin::withScript<CopilotScript>(copilotScriptPath(), [=](CopilotScript& script) {
-			script.onMuteKey(state);
-		});
+		if (!isPressed && muteKeyDepressed) {
+			muteKeyReleasedTime = std::chrono::system_clock::now();
+			copilot::logger->info("Unmuted");
+		} else if (isPressed && !muteKeyDepressed) {
+			copilot::logger->info("Muted");
+		}
+		muteKeyDepressed = isPressed;
+
 	}
 
 	double readLvar(const std::string& name)

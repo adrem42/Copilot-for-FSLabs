@@ -2,10 +2,7 @@
 local beforeStartBelow = Checklist:new(
   "beforeStartBelow",
   "Before Start below the Line",
-  VoiceCommand:new {
-    phrase = {"before start below the line", "below the line"}, 
-    confidence = 0.9
-  }
+  VoiceCommand:new({"before start below the line", "below the line"}, 0.9)
 )
 
 copilot.checklists.beforeStartBelow = beforeStartBelow
@@ -49,7 +46,7 @@ beforeStartBelow:appendItem {
   label = "askidNwStrg",
   displayLabel = "A/SKID & N/W STRG",
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     check(FSL.MIP_BRAKES_ASKID_Button:getPosn() == label, "A/SKID & N/W STRG isn't " .. label)
   end
 }
@@ -58,7 +55,7 @@ beforeStartBelow:appendItem {
   label = "beacon",
   displayLabel = "Beacon",
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     if check(label == "ON", "The correct response is 'on'") then
       check(FSL.OVHD_EXTLT_Beacon_Switch:getPosn() == "ON", "Beacon switch isn't on")
     end
@@ -78,7 +75,7 @@ beforeStartBelow:appendItem {
   label = "parkingBrake",
   displayLabel = "Parking Brake",
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     check(FSL.PED_PARK_BRAKE_Switch:getPosn() == label, "Parking brake switch isn't " .. label)
   end
 }

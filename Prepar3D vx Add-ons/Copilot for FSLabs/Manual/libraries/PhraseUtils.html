@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Copilot for FSLabs 2.0.6</title>
+    <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Copilot for FSLabs 2.0.6</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Libraries</h2>
+<ul class="nowrap">
+  <li><a href="../libraries/FSL2Lua.html">FSL2Lua</a></li>
+  <li><a href="../libraries/copilot.html">copilot</a></li>
+  <li><a href="../libraries/Event.html">Event</a></li>
+  <li><a href="../libraries/VoiceCommand.html">VoiceCommand</a></li>
+  <li><strong>PhraseUtils</strong></li>
+  <li><a href="../libraries/Joystick.html">Joystick</a></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../classes/Checklist.html">Checklist</a></li>
+  <li><a href="../classes/TextMenu.html">TextMenu</a></li>
+</ul>
+<h2>Manual</h2>
+<ul class="nowrap">
+  <li><a href="../manual/checklists.md.html">Checklists</a></li>
+  <li><a href="../manual/flows.md.html">Flows of the Pilot Monitoring</a></li>
+  <li><a href="../manual/fsuipc.md.html">FSUIPC Lua API compatibility</a></li>
+  <li><a href="../manual/installation.md.html">Installation</a></li>
+  <li><a href="../manual/list_of_keys.md.html">Keyboard keys</a></li>
+  <li><a href="../manual/listofcontrols.md.html">FSLabs cockpit controls</a></li>
+  <li><a href="../manual/plugins.md.html">Making a plugin</a></li>
+  <li><a href="../manual/standalonescripts.md.html">Using the keyboard and joystick binding facilities</a></li>
+</ul>
+<h2>Examples</h2>
+<ul class="nowrap">
+  <li><a href="../examples/autorun.lua.html">autorun.lua</a></li>
+  <li><a href="../examples/copilot_aircond_prompt.lua.html">copilot_aircond_prompt.lua</a></li>
+  <li><a href="../examples/copilot_complex_phrase.lua.html">copilot_complex_phrase.lua</a></li>
+  <li><a href="../examples/copilot_events_example.lua.html">copilot_events_example.lua</a></li>
+  <li><a href="../examples/copilot_examples.lua.html">copilot_examples.lua</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>PhraseUtils</code></h1>
+<p>Collection of reusable phrase components.</p>
+<p>
+
+
+<h6>How to use:</h6>
+<p> 1. Append a phrase returned by <a href="../libraries/PhraseUtils.html#getPhrase">getPhrase</a> to your PhraseBuilder. The element needs to be bound to a named property.<br>
+ 2. Retrieve the result using <a href="../libraries/PhraseUtils.html#getPhraseResult">getPhraseResult</a>, passing to it the path to the property.<br><br></p>
+
+
+<h6>These are the available phrases:</h6>
+
+<p> <code>digit</code></p>
+
+<blockquote>
+    <p>A single digit from 0-9</p>
+</blockquote>
+
+<p> <code>spelledNumber</code></p>
+<blockquote>
+    <p>Arguments: number of digits</p>
+</blockquote>
+
+<p> <code>phoneticLetter</code></p>
+
+<p> <code>ICAOairportCode</code></p>
+
+<p> <code>runwayId</code></p>
+
+
+<pre>
+<span class="keyword">local</span> proposeRoute = VoiceCommand:new {
+  confidence = <span class="number">0.9</span>,
+  phrase = PhraseBuilder.new()
+    :append <span class="string">"let's fly from"</span>
+    :append(PhraseUtils.getPhrase <span class="string">"ICAOairportCode"</span>, <span class="string">"from"</span>)
+    :append <span class="string">"to"</span>
+    :append {
+      propName = <span class="string">"to"</span>,
+      choices = {
+        <span class="string">"amsterdam"</span>,
+        <span class="string">"oslo"</span>,
+        <span class="string">"zurich"</span>,
+        {
+          propVal = <span class="string">"ICAO"</span>,
+          choice = PhraseUtils.getPhrase <span class="string">"ICAOairportCode"</span>
+        }
+      }
+    }
+    :build()
+}
+
+copilot.addCoroutine(<span class="keyword">function</span>()
+  proposeRoute:activate()
+  <span class="keyword">local</span> res = Event.waitForEvent(proposeRoute)
+  <span class="keyword">local</span> from = PhraseUtils.getPhraseResult(<span class="string">"ICAOairportCode"</span>, res, <span class="string">"from"</span>)
+  <span class="keyword">local</span> to = res:getProp <span class="string">"to"</span>
+  <span class="keyword">if</span> to == <span class="string">"ICAO"</span> <span class="keyword">then</span>
+    to = PhraseUtils.getPhraseResult(<span class="string">"ICAOairportCode"</span>, res, <span class="string">"to"</span>)
+  <span class="keyword">end</span>
+  <span class="global">print</span>(<span class="string">"From: "</span> .. from .. <span class="string">", to: "</span> .. to)
+<span class="keyword">end</span>)
+</pre>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#getPhrase">getPhrase(phraseName[, ...])</a></td>
+	<td class="summary">Gets a component by its name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#getPhraseResult">getPhraseResult(phraseName, res, ...)</a></td>
+	<td class="summary">Retrieves the value from the phrase's properties.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+    Methods
+    <dl class="function">
+    <dt>
+    <a name = "getPhrase"></a>
+    <strong>getPhrase(phraseName[, ...])</strong>
+    </dt>
+    <dd>
+    Gets a component by its name.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phraseName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">...</span>
+         arguments
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A Phrase object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "getPhraseResult"></a>
+    <strong>getPhraseResult(phraseName, res, ...)</strong>
+    </dt>
+    <dd>
+    Retrieves the value from the phrase's properties.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phraseName</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">res</span>
+         A RecoResult object
+        </li>
+        <li><span class="parameter">...</span>
+         path The path to the property. Same as the parameters of <a href="../libraries/VoiceCommand.html#RecoResult:getProp">RecoResult:getProp</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        Phrase-specific result
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2021-04-25 18:28:41 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

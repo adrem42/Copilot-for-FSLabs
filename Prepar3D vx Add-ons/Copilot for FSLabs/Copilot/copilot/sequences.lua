@@ -118,7 +118,7 @@ function copilot.sequences:afterStart()
   if CG then
     trimMessage = "Setting the takeoff trim using the MACTOW from the latest ATSU loadsheet: %.2f%%"
   else
-    CG = ipc.readDBL(0x2EF8) * 100
+    CG = copilot.CG()
     trimMessage = "No ATSU loadsheet found, setting the takeoff trim using the simulator CG variable: %.2f%%"
   end
   copilot.logger:info(trimMessage:format(CG))
@@ -158,8 +158,6 @@ function copilot.sequences:waitForLineup()
   until count == 4
 end
 
-copilot.events.lineUpSequenceCompleted = Event:new()
-
 function copilot.sequences:lineUpSequence()
   
   FSL.PED_ATCXPDR_ON_OFF_Switch "ON"
@@ -193,7 +191,6 @@ function copilot.sequences:lineUpSequence()
     FSL.OVHD_AC_Pack_2_Button:toggleUp()
   end
 
-  copilot.events.lineUpSequenceCompleted:trigger()
 end
 
 function copilot.sequences:takeoffSequence()

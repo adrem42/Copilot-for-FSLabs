@@ -15,11 +15,19 @@
 #include <unordered_set>
 
 using RuleID = DWORD;
-struct PropTreeEntry;
-using PropTree = std::unordered_map<std::wstring, PropTreeEntry>;
+struct RecoProp;
+using PropTree = std::unordered_map<std::wstring, RecoProp>;
 
-struct PropTreeEntry {
+/***
+* @type RecoProp
+*/
+struct RecoProp {
+	/*** @string value */
 	std::wstring value;
+	/*undocumented because pretty much useless*/
+	float confidence; 
+	/*** Table in the `propName=RecoProp` format 
+	*@tfield table children */
 	PropTree children;
 };
 
@@ -31,21 +39,23 @@ struct PropTreeEntry {
 	*   phrase = PhraseBuilder.new()
 	*     :append {
 	*       propName = "what",
-	*       variants = {
+	*       choices = {
 	*         {
  	*           propVal = "greeting",
- 	*           variant = PhraseBuilder.new()
-	*             :append"hello":appendOptional({"there", "again"}, "optProp"):build()
+ 	*           choice = PhraseBuilder.new()
+	*             :append "hello"
+	*             :appendOptional({"there", "again"}, "optProp")
+	*             :build()
  	*         },
  	*         "goodbye"
 	*       },
 	*     }
-	*     :appendOptional"friend"
+	*     :appendOptional "friend"
 	*     :build(),
 	*   persistent = true,
-	*   action = function(_, res)
-	*     print(res:getProp("what")) -- "greeting" or "goodbye"
-	*     print(res:getProp("what", "optProp"))  -- "there", "again" or nil
+	*   action = function(_, recoResult)
+	*     print(recoResult:getProp("what")) -- "greeting" or "goodbye"
+	*     print(recoResult:getProp("what", "optProp"))  -- "there", "again" or nil
 	*   end
 	* }
 	* 
@@ -68,19 +78,18 @@ struct RecoResult {
 	float confidence;
 	/***
 	* The properties and their values that were defined when constructing the Phrase.
-	* If a value is optional, it will not have an entry in the tree.
-	* @field props Property tree.
-	* @string props.value 
-	* @field props.children Child properties. A property tree has children when you have a Phrase within a Phrase
+	* If a property-bound phrase element is optional and the element is absent in the spoken phrase, `props.propName` will be nil.
+	* @tfield table props Table in the `propName=RecoProp` format.
 	*/
 	PropTree props;
 	/***
-	* @function getProp Retrieves a named property.
-	* 
-	* @param ... The tree path to the property
-	* 
-	* @treturn string The value field of the property or nil
-	* @return The property or nil
+	* Convenience method for retrieving property values.
+	* @function getProp 
+	* @param ... path Strings denoting the tree path to the wanted property. If the first argument is a RecoProp, the search will be started there.
+	* @treturn[1] string The value field of the RecoProp
+	* @return[1] RecoProp 
+	* @return[2] nil
+	* @return[2] nil
 	*/
 	RuleID ruleID;
 };
@@ -91,10 +100,23 @@ private:
 	RuleID newRuleId();
 public:
 	enum class RulePersistenceMode { NonPersistent, Persistent, Ignore };
+
+	/***
+	 * Allows you to create complex phrases containing multiple-choice and optional elements that can be bound to named properties.
+	 * 
+	 * A Phrase can be used on its own and as a building block for composing other Phrases. A Phrase can have multiple parent Phrases as well as multiple child Phrases.
+	 * 
+	 * Use the PhraseBuilder class to create a Phrase (which itself is immutable).
+	 * @type Phrase
+	 */
+
+	/***
+	* @field .    
+	*/
+
 	class PhraseBuilder;
 	/***
-	* Class that allows you to create complex phrases with optional elements,
-	* elements with multiple variants and named properties.
+	* Builds a Phrase
 	* @type PhraseBuilder
 	*/
 	struct Phrase {
@@ -103,28 +125,28 @@ public:
 		friend class PhraseBuilder;
 		ISpRecoGrammar* const recoGrammar;
 		Recognizer* const recognizer;
-		using VariantValue = std::variant<std::wstring, std::shared_ptr<Phrase>>;
+		using ChoiceValue = std::variant<std::wstring, std::shared_ptr<Phrase>>;
 		
 		struct PhraseElement {
-			struct Variant { 
-				VariantValue value; 
+			struct Choice { 
+				ChoiceValue value; 
 				std::wstring name; 
 				std::wstring asString;
-				Variant() = delete;
-				Variant(VariantValue val, std::wstring name = L"");
+				Choice() = delete;
+				Choice(ChoiceValue val, std::wstring name = L"");
 			};
-			std::vector<Variant> variants;
+			std::vector<Choice> choices;
 			std::wstring propName;
 			bool optional;
 			SPSTATEHANDLE state = 0;
 			std::wstring asString;
-			PhraseElement(std::vector<Variant> variants, std::wstring propName, bool optional);
+			PhraseElement(std::vector<Choice>, std::wstring, bool);
 		};
 
 		SPSTATEHANDLE initialState;
 		const RuleID ruleID;
 
-		Phrase(Recognizer* recognizer, ISpRecoGrammar* recoGrammar, std::vector<PhraseElement>, std::wstring);
+		Phrase(Recognizer*, ISpRecoGrammar*, std::vector<PhraseElement>, std::wstring);
 
 		void resetGrammar();
 
@@ -137,6 +159,8 @@ public:
 		std::vector<PhraseElement> phraseElements;
 		const std::wstring asString;
 
+		~Phrase();
+
 	};
 
 	struct PhraseBuilder { 
@@ -145,7 +169,7 @@ public:
 		ISpRecoGrammar* const recoGrammar;
 		std::vector<Phrase::PhraseElement> phraseElements;
 		std::wstring asString;
-		using LuaVariantMap = std::vector<sol::object>;
+		using LuaChoiceMap = std::vector<sol::object>;
 
 		PhraseBuilder(Recognizer* recognizer, ISpRecoGrammar* recoGrammar)
 			:recognizer(recognizer), recoGrammar(recoGrammar) { }
@@ -157,8 +181,8 @@ public:
 		* @string[opt] propName Name of the property
 		* @return self
 		*/
-		PhraseBuilder& append(Phrase::VariantValue);
-		PhraseBuilder& append(Phrase::VariantValue, std::wstring);
+		PhraseBuilder& append(Phrase::ChoiceValue);
+		PhraseBuilder& append(Phrase::ChoiceValue, std::wstring);
 
 		/***
 		* Appends an element.
@@ -166,45 +190,47 @@ public:
 		* @tparam table args
 		* @string args.propName Name of the property
 		* @bool[opt=false] args.optional Whether this element is optional
-		* @param args.variants Either a single string or Phrase or an array of variants where a variant can be:
+		* @string[opt] args.asString Alias for the elements's string representation in the logs.
+		* @param args.choices Either a single string or Phrase or an array of choices where a choice can be:
 		* <ul>
-		* <li>A table with a `propVal` and a `variant` field that is either a string or Phrase</li>
+		* <li>A table with a `propVal` and a `choice` field that is either a string or Phrase</li>
 		* <li>A string or a Phrase</li>
 		* </ul>
 		* @return self
 		* @usage
 		* PhraseBuilder.new():append {
 		*    propName = "what",
-		*    variants = {
-		*      "goodbye", -- same as {propVal = "goodbye", variant = "goodbye"}
-		*      {propVal = "greeting", variant = "hi"},
+		*    choices = {
+		*      "goodbye", -- same as {propVal = "goodbye", choice = "goodbye"}
+		*      {propVal = "greeting", choice = "hi"},
 		*      {
 		*        propVal = "greeting",
-		*        variant = PhraseBuilder.new()
+		*        choice = PhraseBuilder.new()
 		*          :append "good day"
 		*          :appendOptional("sir", "extraPolite")
 		*          :build()
 		*      },
-		*      {propVal = "greeting", variant = "hello"}
+		*      {propVal = "greeting", choice = "hello"}
 		*    },
 		*  }:build()
 		*/
 
 		/***
-		* Appends an element with multiple variants.
+		* Appends a multiple-choice element.
 		* @function append
-		* @tparam table variants An array of variants where a variant can be:
+		* @tparam table choices An array of choices where a choice can be:
 		* <ul>
-		* <li>A table with a `propVal` and a `variant` field that is either a string or Phrase</li>
+		* <li>A table with a `propVal` and a `choice` field that is either a string or Phrase</li>
 		* <li>A string or a Phrase</li>
 		* </ul>
+		* If you have Phrases in the list, consider using the above overload for readability
 		* @string[opt] propName Property name.
 		* @return self
 		* @usage
 		* PhraseBuilder.new():append({"hello", "goodbye"}, "what"):build()
 		*/
-		PhraseBuilder& append(LuaVariantMap);
-		PhraseBuilder& append(LuaVariantMap, std::wstring);
+		PhraseBuilder& append(LuaChoiceMap);
+		PhraseBuilder& append(LuaChoiceMap, std::wstring);
 
 		/***
 		* Appends an optional element.
@@ -213,18 +239,18 @@ public:
 		* @string[opt] propName Property name.
 		* @return self
 		*/
-		PhraseBuilder& appendOptional(Phrase::VariantValue);
-		PhraseBuilder& appendOptional(Phrase::VariantValue, std::wstring);
+		PhraseBuilder& appendOptional(Phrase::ChoiceValue);
+		PhraseBuilder& appendOptional(Phrase::ChoiceValue, std::wstring);
 
 		/***
-		* Appends an optional element with multiple variants.
+		* Appends an optional multiple-choice element.
 		* @function appendOptional
-		* @param variants See above
+		* @param choices See above
 		* @string[opt] propName Property name.
 		* @return self
 		*/
-		PhraseBuilder& appendOptional(LuaVariantMap);
-		PhraseBuilder& appendOptional(LuaVariantMap, std::wstring);
+		PhraseBuilder& appendOptional(LuaChoiceMap);
+		PhraseBuilder& appendOptional(LuaChoiceMap, std::wstring);
 
 		/***
 		* Builds the phrase
@@ -237,13 +263,15 @@ public:
 
 	private:
 		std::shared_ptr<Phrase> _build(std::wstring);
-		PhraseBuilder& append(LuaVariantMap, std::wstring, bool, std::wstring = L"");
-		PhraseBuilder& append(std::vector<Phrase::PhraseElement::Variant>, std::wstring, bool, std::wstring = L"");
+		PhraseBuilder& append(LuaChoiceMap, std::wstring, bool, std::wstring = L"");
+		PhraseBuilder& append(std::vector<Phrase::PhraseElement::Choice>, std::wstring, bool, std::wstring = L"");
 	};
+public:
+		enum class RuleState { Active, Inactive, Ignore, Disabled };
 private:
 	bool grammarIsDirty = false;
 	
-	enum class RuleState { Active, Inactive, Ignore, Disabled };
+	
 	struct Rule {
 		std::vector<std::shared_ptr<Phrase>> phrases;
 		float confidence;

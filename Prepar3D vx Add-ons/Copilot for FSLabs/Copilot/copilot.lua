@@ -1,6 +1,7 @@
 
 if false then module("copilot") end
 
+require "copilot.extensions"
 require "copilot.util"
 require "copilot.copilot.IniUtils"
 
@@ -9,9 +10,6 @@ file = require "FSL2Lua.FSL2Lua.file"
 if copilot.UserOptions.general.con_log_level then
   copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
 end
-
-local title = ipc.readSTR(0x3D00,256)
-copilot.aircraftTitle = title:sub(1, title:find("\0") - 1)
 
 copilot.getTimestamp = ipc.elapsedtime
 copilot.__dummy = function() end
@@ -134,7 +132,6 @@ local function setup()
   end
 
   require "copilot.sequences"
-  require "copilot.voiceCommands"
 
   if copilot.IS_FSL_AIRCRAFT and options.callouts.enable == options.TRUE  then
     require "copilot.callouts"
@@ -186,6 +183,10 @@ local function setup()
   loadPlugins(copilot.IS_FSL_AIRCRAFT and "custom" or "custom_non_fsl")
 
   VoiceCommand.resetGrammar = realResetGrammar
+
+  if copilot.isVoiceControlEnabled and options.voice_control.mute_on_startup == options.TRUE then
+    muteCopilot()
+  end
 
   if copilot.isVoiceControlEnabled and not grammarWasReset then
     VoiceCommand.resetGrammar()

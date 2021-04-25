@@ -16,7 +16,6 @@ Button.guard = nil
 
 function Button:new(control)
   control = getmetatable(self):new(control)
-  if control.name:find "MCDU" then control.interactionLength = 100 end
   return setmetatable(control, self)
 end
 

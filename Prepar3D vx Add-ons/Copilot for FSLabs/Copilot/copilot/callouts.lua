@@ -23,14 +23,7 @@ function copilot.callouts:resetFlags()
   self.flightControlsChecked = false
 end
 
-local aicraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
-
-local function getFslV1Option()
-  local aircraftCfg = file.read(aicraftDir .. "aircraft.cfg")
-  local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(copilot.aircraftTitle, nil, true))
-  local fltsimCfg = file.read(string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir)) or ""
-  return tonumber(fltsimCfg:match("sdac_v1_call=(%d)"))
-end
+local function getFslV1Option() return tonumber(copilot.getFltSimCfg():match("sdac_v1_call=(%d)")) end
 
 function copilot.callouts:takeoff()
   local FslV1Option = getFslV1Option()
@@ -221,8 +214,7 @@ function copilot.callouts.brakeCheck:__call()
     local leftPressure = ipc.readLvar("VC_MIP_BrkPress_L")
     local rightPressure = ipc.readLvar("VC_MIP_BrkPress_R")
     if leftPressure == 0 and rightPressure == 0 then
-      copilot.sleep(plusminus(800,0.2))
-      copilot.playCallout("pressureZero", delay)
+      copilot.playCallout("pressureZero", plusminus(800,0.2))
       copilot.events.brakesChecked:trigger()
       self.brakesChecked = true
       return true
@@ -440,11 +432,10 @@ function copilot.callouts:start()
         :activateOn(copilot.events.enginesStarted)
         :deactivateOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
       copilot.voiceCommands.brakeCheck:addAction(function()
-        local timedOut = not checkWithTimeout(5000, function()
-            copilot.suspend(100)
+        if not checkWithTimeout(5000, function()
+          copilot.suspend(100)
           return self.brakeCheck:brakeCheckConditions()
-        end)
-        if timedOut then return end
+        end) then return end
         if self:brakeCheck() then
           copilot.voiceCommands.brakeCheck:ignore()
         end

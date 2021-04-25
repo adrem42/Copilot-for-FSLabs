@@ -39,6 +39,7 @@ file = {
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/SingleEvent.lua',
   'Copilot/Recognizer.h',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/VoiceCommand.lua',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/PhraseUtils.lua',
   
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Checklist.lua',
   'Copilot/Joystick.h',

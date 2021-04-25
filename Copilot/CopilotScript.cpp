@@ -311,17 +311,19 @@ void CopilotScript::initLuaState(sol::state_view lua)
 		end
 	)");
 
-	mcduWatcherLua["getVar"] = [this](const std::string& name) {
-		return mcduWatcher->getVar(name);
+	mcduWatcherLua["getVar"] = [this](const std::string& key) {
+		return currMcduWatcherVarStore->getVar(key);
 	};
-	mcduWatcherLua["setVar"] = [this](const std::string& key, LuaVar value) {
-		mcduWatcher->setVar(key, value);
+	mcduWatcherLua["setVar"] = [this](const std::string& key, McduWatcher::LuaVar value) {
+		 currMcduWatcherVarStore->setVar(key, value);
 	};
 	mcduWatcherLua["clearVar"] = [this](const std::string& key) {
-		mcduWatcher->clearVar(key);
+		currMcduWatcherVarStore->clearVar(key);
 	};
 
 	copilot["addMcduCallback"] = [this](const std::string& path) {
+		if (backgroundThread.joinable())
+			throw "You must call addMcduCallback during the initial setup";
 		sol::protected_function_result pfr = mcduWatcherLua.safe_script_file(path);
 		if (!pfr.valid()) {
 			throw ScriptStartupError(pfr);
@@ -329,7 +331,14 @@ void CopilotScript::initLuaState(sol::state_view lua)
 		if (pfr.get_type() != sol::type::function) {
 			throw ScriptStartupError(path + " needs to return a function");
 		}
-		mcduWatcherLuaCallbacks.push_back(pfr);
+		McduWatcherLuaCallback& callback = mcduWatcherLuaCallbacks.emplace_back(McduWatcherLuaCallback {pfr.get<sol::protected_function>()});
+		auto getVar = [varStore = callback.varStore] (const std::string& key) {
+			return varStore->getVar(key);
+		};
+		auto clearVar = [varStore = callback.varStore](const std::string& key) {
+			varStore->clearVar(key);
+		};
+		return std::make_tuple(std::move(getVar), std::move(clearVar));
 	};
 
 	auto RecoResultFetcherType = lua.new_usertype<RecoResultFetcher>("RecoResultFetcher");
@@ -449,7 +458,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	callbackRunner->makeLuaBindings(lua, "copilot");
 
-	startBackgroundThread();
+	
 }
 
 CopilotScript::Events CopilotScript::createEvents()
@@ -485,6 +494,7 @@ void CopilotScript::run()
 
 	if (!shouldRun) return;
 	
+	startBackgroundThread();
 
 	auto events = createEvents();
 
@@ -559,12 +569,6 @@ void CopilotScript::onSimExit()
 	stopBackgroundThreadTimer();
 }
 
-void CopilotScript::onMuteKey(bool state)
-{
-	if (recoResultFetcher)
-		recoResultFetcher->onMuteKey(state);
-}
-
 void CopilotScript::enqueueCallback(LuaCallback callback)
 {
 	std::lock_guard<std::mutex> lock(luaCallbackQueueMutex);
@@ -593,8 +597,10 @@ void CopilotScript::onMessageLoopTimer()
 					data["CPT"] = pfDisplay;
 					data["FO"] = pmDisplay;
 				}
-				for (const auto& callback : mcduWatcherLuaCallbacks)
-					callProtectedFunction(callback, data);
+				for (auto& callback : mcduWatcherLuaCallbacks) {
+					currMcduWatcherVarStore = callback.varStore.get();
+					callProtectedFunction(callback.callback, data);
+				}
 			});
 		} else {
 			mcduWatcher->update(nullptr);

@@ -15,6 +15,8 @@ if false then
   function copilot.displayText(text, duration, color) end
 end
 
+local file = require "FSL2Lua.FSL2Lua.file"
+
 
 local flapsLimits = {}
 
@@ -85,6 +87,8 @@ function copilot.IAS() return ipc.readUW(0x02BC) / 128 end
 function copilot.reverseThrustSelected() return ipc.readLvar("VC_PED_TL_1") > 100 and ipc.readLvar("VC_PED_TL_2") > 100 end
 --- Returns the altitude in feet referenced to 1013 hPa.
 function copilot.ALT() return ipc.readSD(0x3324) end
+--- Returns the sim CG variable
+function copilot.CG() return ipc.readDBL(0x2EF8) * 100 end
 
 --- Returns true if the thrust levers in the CLB detent or above.
 function copilot.thrustLeversSetForTakeoff()
@@ -128,6 +132,14 @@ local function getSequence(name)
   return copilot.sequences[name], name
 end
 
+local function replaceSequence(name, func)
+  if type(copilot.sequences[name]) == "table" and copilot.sequences[name].__call then
+    copilot.sequences[name] = func
+  elseif type(copilot.sequences[name]) == "function" then
+    copilot.sequences[name].__call = func
+  end
+end
+
 --- Appends a function to a default sequence
 ---@string name Name of the sequence in in options.ini or in the code
 ---@tparam function func The function to append
@@ -138,28 +150,28 @@ end
 --- end)
 function copilot.appendSequence(name, func)
   local old, _name = getSequence(name)
-  copilot.sequences[_name] = function(...)
+  replaceSequence(_name, function(...)
     func(...)
     old(...)
-  end
+  end)
 end
 
 --- Prepends a function to a default sequence
 ---@string name  Name of the sequence in in options.ini or in the code
 ---@tparam function func The function to prepend
 function copilot.prependSequence(name, func)
-  local old = getSequence(name)
-  copilot.sequences[name] = function(...)
+  local old, _name = getSequence(name)
+  replaceSequence(_name, function(...)
     old(...)
     func(...)
-  end
+  end)
 end
 
 --- Replaces a default sequence
 ---@string name  Name of the sequence in in options.ini or in the code
 ---@tparam function func New sequence
 function copilot.replaceSequence(name, func)
-  copilot.sequences[select(2, getSequence(name))] = func
+  replaceSequence(select(2, getSequence(name)), func)
 end
 
 function pairsByKeys (t, f)
@@ -175,3 +187,15 @@ function pairsByKeys (t, f)
   end
   return iter
 end
+
+local title = ipc.readSTR(0x3D00,256)
+copilot.aircraftTitle = title:sub(1, title:find("\0") - 1)
+
+local aicraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
+local aircraftCfg = file.read(aicraftDir .. "aircraft.cfg")
+local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(copilot.aircraftTitle, nil, true))
+local fltsimCfgPath = string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir)
+
+--- Reads the fltsim.cfg (the FSLabs airframe config file) and returns it as a string
+--- @treturn string The content of the file. An empty string is returned if the file couldn't be read.
+function copilot.getFltSimCfg() return file.read(fltsimCfgPath) or "" end

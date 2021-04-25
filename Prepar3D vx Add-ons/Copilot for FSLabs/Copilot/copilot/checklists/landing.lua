@@ -24,7 +24,7 @@ landing:appendItem {
   label = "autoThrust",
   displayLabel = "A/THR",
   response = {SPEED = VoiceCommand:new "speed", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     local athrOn = FSL.GSLD_FCU_ATHR_Switch:isLit()
     if label == "SPEED" then
       check(athrOn, "Auto-thrust is off")

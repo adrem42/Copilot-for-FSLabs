@@ -23,9 +23,6 @@ function Action:new(callback, flags)
     eventRefs = {stop = {}},
     events = {}
   }, self)
-  if a.runAsCoroutine then
-    a.threadFinishedEvent = Event:new {action = function(_, ...) a:_onThreadFinished(...) end}
-  end
   util.setOnGCcallback(a, function() copilot.logger:trace("Action gc: " .. a:toString()) end)
   return a
 end
@@ -62,24 +59,30 @@ function Action:_runFuncCallback(e, ...)
     copilot.logger:debug("Action: " .. self:toString())
   end
   self.callback(e, ...)
+  if self._doneEvent then self._doneEvent:trigger() end
 end
 
-function Action:_onThreadFinished(payload)
+function Action:doneEvent()
+  self._doneEvent = self._doneEvent or Event:new {logMsg = Event.NOLOGMSG}
+  return self._doneEvent
+end
+
+function Action:_onThreadFinished(...)
   copilot.logger:debug("Finished coroutine action: " .. self:toString())
   self.currentThread = nil
-  if self.cleanUpCallback and payload == copilot.THREAD_REMOVED then
+  if self.cleanUpCallback and select(1, ...) == copilot.THREAD_REMOVED then
     self.cleanUpCallback()
   end
+  if self._doneEvent then self._doneEvent:trigger(...) end
 end
 
 function Action:_initNewThread(dependencies, e, ...)
-
   if dependencies then
     self.currentThread = coroutine.create(function(...)
       local events = {}
       for _, dependency in ipairs(dependencies) do
         if dependency.currentThread then
-          events[#events+1] = dependency.threadFinishedEvent
+          events[#events+1] = dependency:doneEvent()
         end
       end
       if #events > 0 then Event.waitForEvents(events, true) end
@@ -98,7 +101,7 @@ function Action:_initNewThread(dependencies, e, ...)
   local _, threadEvent = copilot.addCallback(
     self.currentThread, ("%s of Action '%s'"):format(tostring(self.currentThread), self:toString())
   )
-  threadEvent:addOneOffAction(function(_, ...) self.threadFinishedEvent:trigger(...) end)
+  threadEvent:addOneOffAction(function(_, ...) self:_onThreadFinished(...) end)
   copilot._initActionThread(self.currentThread, e, ...)
 end
 

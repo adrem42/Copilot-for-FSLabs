@@ -59,6 +59,11 @@ return {
         name = "enable",
         default = UserOptions.TRUE, 
         type = "bool"
+      },
+      {
+        name = "mute_on_startup",
+        default = UserOptions.FALSE,
+        type = "bool"
       }
     }
   },

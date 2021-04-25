@@ -19,16 +19,9 @@ In addition to the normal response to a challenge, you may say "restart checklis
 ### display_info:
 
 Display possible responses to a checklist item challenge in a message window.
-A phrase may contain optional elements or elements with multiple variants, for example:
-
-	@plain
-	{Airbus}+{Boeing}+{...} is the best [aircraft manufacturer]
-
-"..." means "match anything"
-
 ### display_fail
 
-If the copilot didn't like how you responded to a challenge (he will say "double check that"), display the reason in a message window.
+If the copilot didn't like how you responded to a challenge (he will say "double check that"), display the reason in a message window (the same message will also be logged in the regular log regardless of this setting).
 
 ### menu_keybind
 
@@ -42,19 +35,19 @@ The difference is that cancelling will also reactivate the checklist's trigger v
 ##### "trigger phrase"
 When the copilot starts listening for the trigger phrase<br><br>
 
-##### "before start to the line"
+##### "before start to the line" or "before start checklist"
 If preflight action enabled: when preflight action is finished, otherwise: when the chocks are set.<br><br>
 
-##### "before start below the line"
+##### "before start below the line" or "below the line"
 When before start to the line is finished.<br><br>
 
 ##### "after start checklist"
 If after\_start action enabled: when after\_start action is finished, otherwise: when the engines are started.<br><br>
 
-##### "before takeoff to the line"
+##### "before takeoff to the line" or "before takeoff checklist"
 When after start checklist is finished.<br><br>
 
-##### "before takeoff below the line"
+##### "before takeoff below the line" or "below the line"
 If lineup action enabled: when lineup action is finished and before takeoff to the line is finished, otherwise: when before takeoff to the line is finished.<br><br>
 
 ##### "landing checklist"
@@ -105,12 +98,14 @@ The above checklist will require the following callout file structure:
 	copilot\sounds\callouts\soundSetName\checklists\approach\
 		config.lua
 		announce.wav
+		completed.wav
 		briefing.wav
 
 with config.lua that looks like this:
 
 	return {
 		"announce",
+		"completed",
 		"briefing"
 	}
 
@@ -118,10 +113,11 @@ Alternatively, you can create a text-to-speech set by creating the file *copilot
 
 	return {
 		isTTS = true,
+		parent = "TTS", -- inherit all phrases from the default TTS set
 		checklists = {
-			doubleCheck = "double check that please"
 			approach = {
 				announce = "approach checklist",
+				completed = "approach checklist completed",
 				briefing = "briefing"
 			}
 		}

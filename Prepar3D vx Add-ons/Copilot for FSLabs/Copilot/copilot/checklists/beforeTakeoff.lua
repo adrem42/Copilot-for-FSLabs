@@ -2,83 +2,109 @@
 local beforeTakeoff = Checklist:new(
   "beforeTakeoff",
   "Before Takeoff to the Line",
-  VoiceCommand:new {phrase = {"before takeoff checklist", "before takeoff to the line"}}
+  VoiceCommand:new {"before takeoff checklist", "before takeoff to the line"}
 )
 
 copilot.checklists.beforeTakeoff = beforeTakeoff
 
-local flightControlsEvent = copilot.events.flightControlsChecked:toSingleEvent()
+local flightControlsChecked
+copilot.events.flightControlsChecked:addAction(function() flightControlsChecked = true end)
+copilot.events.engineShutdown:addAction(function() flightControlsChecked = false end)
+
 beforeTakeoff:appendItem {
   label = "flightControls",
   displayLabel = "Flight Controls",
   response = VoiceCommand:new "checked",
   acknowledge = "checklists.checked",
-  onResponse = function(check)
-    if check(Event.waitForEventWithTimeout(0, flightControlsEvent) ~= Event.TIMEOUT, "Flight controls not checked") then
-      flightControlsEvent:reset()
-    end
-  end
+  onResponse = function(check) check(flightControlsChecked, "Flight controls not checked") end
 }
 
 beforeTakeoff:appendItem {
   label = "flapSetting",
   displayLabel = "Flap Setting",
-  response = VoiceCommand:new {
-    phrase = PhraseBuilder.new():append("config"):append({"1", "2", "3"}, "flapsSetting"):build()
-  },
-  onResponse = function(check, _, recoResult, res)
+  response = VoiceCommand:new (
+    PhraseBuilder.new():append("config"):append({"1", "2", "3"}, "flapsSetting"):build()
+  ),
+  onResponse = function(check, recoResult, _, res)
     local plannedSetting = copilot.mcduWatcher:getVar "takeoffFlaps" or FSL:getTakeoffFlapsFromMcdu()
     plannedSetting = tostring(plannedSetting)
     local responseSetting = recoResult:getProp "flapsSetting"
     local actualSetting = FSL.PED_FLAP_LEVER:getPosn()
     if responseSetting ~= plannedSetting then
-      check(responseSetting .. " isn't the planned flaps setting")
+      check(("MCDU flap setting is %s (you said %s)"):format(plannedSetting, responseSetting))
     elseif responseSetting ~= actualSetting then
-      check("Flap setting isn't " .. responseSetting)
+      check(("The actual flap setting is %s (you said %s)"):format(actualSetting, responseSetting))
     else
       res.acknowledge = "conf" .. responseSetting
     end
   end
 }
 
-local takeoffRwyPhrase
+local mcduRunway
 
-local function makeTakeoffRwyPhrase()
-  local takeoffRwy = copilot.mcduWatcher:getVar "takeoffRwy"
-  if not takeoffRwy then
-    FSL.CPT.PED_MCDU_KEY_PERF()
-    copilot.sleep(1000, 2000)
-    takeoffRwy = FSL.MCDU:getString(18, 21)
-  end
-  if takeoffRwy:sub(1, 1) == " " then
-    takeoffRwyPhrase = nil
-    return
-  end
-  local phraseString = takeoffRwy:sub(1, 1) .. " " .. takeoffRwy:sub(2, 2)
-  if takeoffRwy:sub(3, 3) ~= " " then
-    phraseString = phraseString .. " " .. ({L = "left", R = "right", C = "center"})[takeoffRwy:sub(3, 3)]
-  end
-  takeoffRwyPhrase = PhraseBuilder.new():appendOptional("runway"):append({"...", phraseString}, "rwy"):build()
+local function initFindRunwayInMcdu()
+  mcduRunway = copilot.mcduWatcher:getVar "takeoffRwy"
+  if not mcduRunway then FSL.PED_MCDU_KEY_PERF() end
 end
 
-local function takeoffRwyOnResponse(check, _, recoResult)
-  if takeoffRwyPhrase then
-    check(recoResult:getProp "rwy" ~= "...", "You said the wrong runway")
+local function findRunwayInMcdu()
+  while true do
+    local rwy = withTimeout(1000, function()
+      local disp = FSL.MCDU:getString()
+      if disp:find "TAKE OFF RWY" then  
+        return disp:sub(18, 20)
+      end
+      copilot.suspend(100)
+    end)
+    if rwy then return rwy end
+    FSL.PED_MCDU_KEY_PERF()
   end
 end
+
+local function checkTakeoffRwyResponse(check, res, firstTry)
+  mcduRunway = mcduRunway or findRunwayInMcdu()
+  local selectedRunway
+  local function secondTry() 
+    mcduRunway = nil
+    FSL.PED_MCDU_KEY_PERF()
+    return checkTakeoffRwyResponse(check, res, false)
+  end
+  if mcduRunway:sub(1, 1) == " " then
+    if firstTry then return secondTry() end
+    return check "No takeoff runway in the MCDU"
+  elseif mcduRunway:sub(3, 3) == " " then
+    selectedRunway = mcduRunway:sub(1, 2)
+  else
+    selectedRunway = mcduRunway
+  end
+  local responseRwy = PhraseUtils.getPhraseResult("runwayId", res, "takeoffRwy")
+  if responseRwy ~= selectedRunway then 
+    if firstTry then return secondTry() end
+    check(("MCDU takeoff runway is %s (you said %s)"):format(selectedRunway, responseRwy))
+  end
+end
+
+local function takeoffRwyOnResponse(check, res)
+  checkTakeoffRwyResponse(check, res, true)
+end
+
+local takeoffRwyPhraseBase = PhraseBuilder.new()
+  :appendOptional "runway"
+  :append(PhraseUtils.getPhrase "runwayId", "takeoffRwy")
+  :build()
 
 beforeTakeoff:appendItem {
   label = "briefingAndPerf",
   displayLabel = "Briefing & Perf",
-  response = VoiceCommand:new(),
-  beforeChallenge = function(item)
-    makeTakeoffRwyPhrase()
-    item.response.response:removeAllPhrases():addPhrase(
-      takeoffRwyPhrase and takeoffRwyPhrase:append "confirmed" or "confirmed"
-    )
-    VoiceCommand.resetGrammar()
-  end,
-  onResponse = takeoffRwyOnResponse
+  response = VoiceCommand:new(
+    PhraseBuilder.new()
+      :append(takeoffRwyPhraseBase)
+      :appendOptional "confirmed"
+      :build()
+  ),
+  beforeChallenge = initFindRunwayInMcdu,
+  onResponse = takeoffRwyOnResponse,
+  onResponseCoroutine = true
 }
 
 beforeTakeoff:appendItem {
@@ -97,7 +123,7 @@ beforeTakeoff:appendItem {
 local beforeTakeoffBelow = Checklist:new(
   "beforeTakeoffBelow",
   "Before Takeoff below the Line",
-  VoiceCommand:new {phrase = {"before takeoff below the line", "below the line"}, confidence = 0.9}
+  VoiceCommand:new({"before takeoff below the line", "below the line"}, 0.9)
 )
 
 copilot.checklists.beforeTakeoffBelow = beforeTakeoffBelow
@@ -105,20 +131,17 @@ copilot.checklists.beforeTakeoffBelow = beforeTakeoffBelow
 beforeTakeoffBelow:appendItem {
   label = "takeoffRwy",
   displayLabel = "Takeoff RWY",
-  response = VoiceCommand:new(),
-  beforeChallenge = function(item)
-    makeTakeoffRwyPhrase()
-    item.response.response:removeAllPhrases():addPhrase(takeoffRwyPhrase and takeoffRwyPhrase or "confirmed")
-    VoiceCommand.resetGrammar()
-  end,
-  onResponse = takeoffRwyOnResponse
+  response = VoiceCommand:new(takeoffRwyPhraseBase),
+  beforeChallenge = initFindRunwayInMcdu,
+  onResponse = takeoffRwyOnResponse,
+  onResponseCoroutine = true
 }
 
 beforeTakeoffBelow:appendItem {
   label = "packs",
   displayLabel = "Packs",
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     local _, atsuTakeoffPacks = FSL.atsuLog:getTakeoffPacks()
     local packsShouldBeOff
     if atsuTakeoffPacks then

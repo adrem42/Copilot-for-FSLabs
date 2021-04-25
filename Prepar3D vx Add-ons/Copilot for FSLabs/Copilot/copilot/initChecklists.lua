@@ -23,37 +23,37 @@ end
 bindToAction {
   "preflight",
   ifEnabled = function()
-    checklists.beforeStart.trigger:activateOn(actions.preflight.threadFinishedEvent)
+    checklists.beforeStart.trigger:activateOn(actions.preflight:doneEvent())
   end,
   ifDisabled = function()
     checklists.beforeStart.trigger:activateOn(events.chocksSet)
   end
 }
 
-checklists.beforeStartBelow.trigger:activateOn(checklists.beforeStart.doneEvent)
+checklists.beforeStartBelow.trigger:activateOn(checklists.beforeStart:doneEvent())
 
 bindToAction {
   "after_start",
   ifEnabled = function()
-    checklists.afterStart.trigger:activateOn(actions.afterStart.threadFinishedEvent)
+    checklists.afterStart.trigger:activateOn(actions.afterStart:doneEvent())
   end,
   ifDisabled = function()
     checklists.afterStart.trigger:activateOn(events.enginesStarted)
   end
 }
 
-checklists.beforeTakeoff.trigger:activateOn(checklists.afterStart.doneEvent)
+checklists.beforeTakeoff.trigger:activateOn(checklists.afterStart:doneEvent())
 
 bindToAction {
   "lineup",
   ifEnabled = function()
     events.enginesStarted:addAction(function()
-      Event.waitForEvents({events.lineUpSequenceCompleted, checklists.beforeTakeoff.doneEvent}, true)
+      Event.waitForEvents({actions.lineup:doneEvent(), checklists.beforeTakeoff:doneEvent()}, true)
       checklists.beforeTakeoffBelow.trigger:activate()
     end, Action.COROUTINE):stopOn(events.engineShutdown, events.airborne)
   end,
   ifDisabled = function()
-    checklists.beforeTakeoffBelow.trigger:activateOn(checklists.beforeTakeoff.doneEvent)
+    checklists.beforeTakeoffBelow.trigger:activateOn(checklists.beforeTakeoff:doneEvent())
   end
 }
 
@@ -74,7 +74,7 @@ end)
 events.belowTenThousand:addAction(function()
   repeat copilot.suspend(5000) until copilot.IAS() < 200
   checklists.landing.trigger:activate()
-  repeat copilot.suspend(5000) until copilot.radALT() < 500
+  repeat copilot.suspend(5000) until copilot.radALT() < 500 / 3.28084
   checklists.landing.trigger:deactivate()
 end, Action.COROUTINE)
 
@@ -84,7 +84,7 @@ events.landing:addAction(function()
   end)
 end)
 
-checklists.securingTheAircraft.trigger:activateOn(checklists.parking.doneEvent)
+checklists.securingTheAircraft.trigger:activateOn(checklists.parking:doneEvent())
 
 events.enginesStarted:addAction(function()
   checklists.parking.trigger:deactivate()

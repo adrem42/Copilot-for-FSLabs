@@ -5,41 +5,84 @@
 
 local file = require "FSL2Lua.FSL2Lua.file"
 
+local function parseTimeoutArgs(...)
+  local block, firstArgIdx, interval
+  local timeout = ipc.elapsedtime() + select(1, ...)
+  local secondArg = select(2, ...)
+  if type(secondArg) == "function" then 
+    block = secondArg
+    firstArgIdx = 3
+  else
+    interval = secondArg
+    block = select(3, ...)
+    firstArgIdx = 4
+  end
+  return block, timeout, interval, firstArgIdx
+end
+
 --- Executes the callback until it signals a truthy value or the timeout elapses.
---@int[opt=5000] timeout Timeout in milliseconds
+--@int timeout Timeout in milliseconds
 --@tparam function block A callback that should return a truthy first value to signal the condition.
 --@param ... Arguments to forward to block.
 --@treturn bool True + the rest of the values returned by block if the condition was signaled, false if the timeout has elapsed.
-function checkWithTimeout(timeout, block, ...)
-  timeout = ipc.elapsedtime() + (timeout or 5000)
+function checkWithTimeout(...)
+  local block, timeout, interval, firstArgIdx = parseTimeoutArgs(...)
   repeat 
-    local results = {block(...)}
-    if results[1] then return true, unpack(results, 2) end
+    local res = {block(select(firstArgIdx, ...))}
+    if res[1] then return true, unpack(res, 2) end
+    if interval then ipc.sleep(interval) end
   until ipc.elapsedtime() > timeout
   return false
 end
 
+---<span>
+---@function checkWithTimeout
+--@int timeout Timeout in milliseconds
+--@int interval Interval to sleep between checks
+--@tparam function block A callback that should return a truthy first value to signal the condition.
+--@param ... Arguments to forward to block.
+--@treturn bool True + the rest of the values returned by block if the condition was signaled, false if the timeout has elapsed.
+
 --- Executes the callback until the timeout elapses or the first value returned by the callback is anything other than nil.
---@int[opt=5000] timeout Timeout in milliseconds
+--@int timeout Timeout in milliseconds
 --@tparam function block
 --@param ... Arguments to forward to block.
 --@return Either nil if the timeout has elapsed, or the values returned by block.
-function withTimeout(timeout, block, ...)
-  timeout = ipc.elapsedtime() + (timeout or 5000)
+function withTimeout(...)
+  local block, timeout, interval, firstArgIdx = parseTimeoutArgs(...)
   repeat
-    local results = {block(...)}
-    if results[1] ~= nil then return unpack(results) end
+    local res = {block(select(firstArgIdx, ...))}
+    if res[1] ~= nil then return unpack(res) end
+    if interval then ipc.sleep(interval) end
   until ipc.elapsedtime() > timeout
 end
 
---- Repeats the callback until the timeout elapses
---@int[opt=5000] timeout Timeout in milliseconds
+--- <span>
+---@function withTimeout
+--@int timeout Timeout in milliseconds
+--@int interval Interval to sleep between checks
 --@tparam function block
 --@param ... Arguments to forward to block.
-function repeatWithTimeout(timeout, block, ...)
-  timeout = ipc.elapsedtime() + (timeout or 5000)
-  repeat block(...) until ipc.elapsedtime() > timeout
+--@return Either nil if the timeout has elapsed, or the values returned by block.
+
+--- Repeats the callback until the timeout elapses
+--@int timeout Timeout in milliseconds
+--@tparam function block
+--@param ... Arguments to forward to block.
+function repeatWithTimeout(...)
+  local block, timeout, interval, firstArgIdx = parseTimeoutArgs(...)
+  repeat 
+    block(select(firstArgIdx, ...)) 
+    if interval then ipc.sleep(interval) end
+  until ipc.elapsedtime() > timeout
 end
+
+--- <span>
+---@function repeatWithTimeout
+--@int timeout Timeout in milliseconds
+--@int interval Interval to sleep between block invocations
+--@tparam function block
+--@param ... Arguments to forward to block.
 
 math.randomseed(os.time())
 

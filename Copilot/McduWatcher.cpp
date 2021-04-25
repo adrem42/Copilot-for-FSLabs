@@ -37,7 +37,9 @@ void McduWatcher::update(std::function<void(const std::string&, const std::strin
 		return;
 	}
 
-	std::lock_guard<std::recursive_mutex> lock(mtx);
+	std::lock_guard<std::recursive_mutex> lock(mainVarStore.mtx);
+
+	auto& vars = mainVarStore.vars;
 
 	auto pfDisp = pfMcdu->getStringFromRaw(rawPfDisp);
 	{
@@ -72,18 +74,14 @@ void McduWatcher::update(std::function<void(const std::string&, const std::strin
 	}
 }
 
-std::optional<LuaVar> McduWatcher::getVar(const std::string& name)
+std::optional<McduWatcher::LuaVar> McduWatcher::getVar(const std::string& name)
 {
-	std::lock_guard<std::recursive_mutex> lock(mtx);
-	if (vars.find(name) != vars.end())
-		return vars[name];
-	return {};
+	return mainVarStore.getVar(name);
 }
 
 void McduWatcher::setVar(const std::string& name, LuaVar value)
 {
-	std::lock_guard<std::recursive_mutex> lock(mtx);
-	vars[name] = value;
+	mainVarStore.setVar(name, value);
 }
 
 void McduWatcher::clearVar(const std::string& name)
@@ -92,6 +90,25 @@ void McduWatcher::clearVar(const std::string& name)
 		isFmgcSetup.initB = false;
 		isFmgcSetup.takeoff = false;
 	}
+	mainVarStore.clearVar(name);
+}
+
+std::optional<McduWatcher::LuaVar> McduWatcher::VariableStore::getVar(const std::string& name)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	if (vars.find(name) != vars.end())
+		return vars[name];
+	return {};
+}
+
+void McduWatcher::VariableStore::setVar(const std::string& name, LuaVar value)
+{
+	std::lock_guard<std::recursive_mutex> lock(mtx);
+	vars[name] = value;
+}
+
+void McduWatcher::VariableStore::clearVar(const std::string& name)
+{
 	std::lock_guard<std::recursive_mutex> lock(mtx);
 	vars.erase(name);
 	return;

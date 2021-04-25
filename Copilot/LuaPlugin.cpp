@@ -305,35 +305,61 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	ipc["writeStruct"] = writeStruct;
 
 	ipc["writeUB"] = write<uint8_t>;
+	ipc["prepareWriteUB"] = writeNoProcess<uint8_t>;
 	ipc["readUB"] = read<uint8_t>;
 
 	ipc["writeSB"] = write<int8_t>;
+	ipc["prepareWriteSB"] = writeNoProcess<int8_t>;
 	ipc["readSB"] = read<int8_t>;
 
 	ipc["writeUW"] = write<uint16_t>;
+	ipc["prepareWriteUW"] = writeNoProcess<uint16_t>;
 	ipc["readUW"] = read<uint16_t>;
 
 	ipc["writeSW"] = write<int16_t>;
+	ipc["prepareWriteSW"] = writeNoProcess<int16_t>;
 	ipc["readSW"] = read<int16_t>;
 
 	ipc["writeUD"] = write<uint32_t>;
+	ipc["prepareWriteUD"] = writeNoProcess<uint32_t>;
 	ipc["readUD"] = read<uint32_t>;
 
 	ipc["writeSD"] = write<int32_t>;
+	ipc["prepareWriteSD"] = writeNoProcess<int32_t>;
 	ipc["readSD"] = read<int32_t>;
 
 	ipc["writeDD"] = write<int64_t>;
+	ipc["prepareWriteDD"] = writeNoProcess<int64_t>;
 	ipc["readDD"] = read<int64_t>;
 
 	ipc["writeFLT"] = write<float>;
+	ipc["prepareWriteFLT"] = writeNoProcess<float>;
 	ipc["readFLT"] = read<float>;
 
 	ipc["writeDBL"] = write<double>;
+	ipc["prepareWriteDBL"] = writeNoProcess<double>;
 	ipc["readDBL"] = read<double>;
 
 	ipc["writeSTR"] = sol::overload(
 		static_cast<void(*)(DWORD, const std::string&, size_t)>(&writeSTR),
 		static_cast<void(*)(DWORD, const std::string&)>(&writeSTR)
+	);
+
+	ipc["process"] = [] {
+		std::lock_guard<std::mutex> lock(FSUIPC::mutex);
+		DWORD result;
+		FSUIPC_Process(&result);
+	};
+
+	auto prepareWriteSTR = [](DWORD offset, const std::string& str, size_t length) {
+		std::lock_guard<std::mutex> lock(FSUIPC::mutex);
+		DWORD result;
+		FSUIPC_Write(offset, length, const_cast<char*>(str.c_str()), &result);
+	};
+
+	ipc["prepareWriteSTR"] = sol::overload(
+		prepareWriteSTR,
+		[=] (DWORD offset, const std::string& str){prepareWriteSTR(offset, str, str.length());}
 	);
 	ipc["readSTR"] = &::readSTR;
 

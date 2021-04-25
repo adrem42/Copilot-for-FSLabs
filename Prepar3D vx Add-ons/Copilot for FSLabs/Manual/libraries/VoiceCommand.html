@@ -3,7 +3,7 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <head>
-    <title>Copilot for FSLabs 2.0.5 beta</title>
+    <title>Copilot for FSLabs 2.0.6</title>
     <link rel="stylesheet" href="../ldoc_pale.css" type="text/css" />
 </head>
 <body>
@@ -24,7 +24,7 @@
 
 <div id="navigation">
 <br/>
-<h1>Copilot for FSLabs 2.0.5 beta</h1>
+<h1>Copilot for FSLabs 2.0.6</h1>
 
 <ul>
   <li><a href="../index.html">Index</a></li>
@@ -32,7 +32,9 @@
 
 <h2>Contents</h2>
 <ul>
+<li><a href="#Class_RecoProp">Class RecoProp </a></li>
 <li><a href="#Class_RecoResult">Class RecoResult </a></li>
+<li><a href="#Class_Phrase">Class Phrase </a></li>
 <li><a href="#Class_PhraseBuilder">Class PhraseBuilder </a></li>
 <li><a href="#Class_VoiceCommand">Class VoiceCommand </a></li>
 </ul>
@@ -44,6 +46,7 @@
   <li><a href="../libraries/copilot.html">copilot</a></li>
   <li><a href="../libraries/Event.html">Event</a></li>
   <li><strong>VoiceCommand</strong></li>
+  <li><a href="../libraries/PhraseUtils.html">PhraseUtils</a></li>
   <li><a href="../libraries/Joystick.html">Joystick</a></li>
 </ul>
 <h2>Classes</h2>
@@ -84,6 +87,19 @@
 </p>
 
 
+<h2><a href="#Class_RecoProp">Class RecoProp </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#RecoProp.value">RecoProp.value</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RecoProp.children">RecoProp.children</a></td>
+	<td class="summary">Table in the <code>propName=RecoProp</code> format</td>
+	</tr>
+</table>
 <h2><a href="#Class_RecoResult">Class RecoResult </a></h2>
 <table class="function_list">
 	<tr>
@@ -100,6 +116,13 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#RecoResult:getProp">RecoResult:getProp(...)</a></td>
+	<td class="summary">Convenience method for retrieving property values.</td>
+	</tr>
+</table>
+<h2><a href="#Class_Phrase">Class Phrase </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#.">.</a></td>
 	<td class="summary">
 
 </td>
@@ -120,16 +143,16 @@
 	<td class="summary">Appends an element.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#PhraseBuilder:append">PhraseBuilder:append(variants[, propName])</a></td>
-	<td class="summary">Appends an element with multiple variants.</td>
+	<td class="name" nowrap><a href="#PhraseBuilder:append">PhraseBuilder:append(choices[, propName])</a></td>
+	<td class="summary">Appends a multiple-choice element.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#PhraseBuilder:appendOptional">PhraseBuilder:appendOptional(element[, propName])</a></td>
 	<td class="summary">Appends an optional element.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#PhraseBuilder:appendOptional">PhraseBuilder:appendOptional(variants[, propName])</a></td>
-	<td class="summary">Appends an optional element with multiple variants.</td>
+	<td class="name" nowrap><a href="#PhraseBuilder:appendOptional">PhraseBuilder:appendOptional(choices[, propName])</a></td>
+	<td class="summary">Appends an optional multiple-choice element.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#PhraseBuilder:build">PhraseBuilder:build([asString])</a></td>
@@ -138,6 +161,14 @@
 </table>
 <h2><a href="#Class_VoiceCommand">Class VoiceCommand </a></h2>
 <table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:new">VoiceCommand:new()</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VoiceCommand:new">VoiceCommand:new(phrase[, confidence=0.93])</a></td>
+	<td class="summary">Constructor</td>
+	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#VoiceCommand:new">VoiceCommand:new(args)</a></td>
 	<td class="summary">Constructor</td>
@@ -210,6 +241,56 @@
 <br/>
 
 
+    <h2 class="section-header "><a name="Class_RecoProp"></a>Class RecoProp </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "RecoProp.value"></a>
+    <strong>RecoProp.value</strong>
+    </dt>
+    <dd>
+
+
+
+
+
+    <ul>
+        <li><span class="parameter">value</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RecoProp.children"></a>
+    <strong>RecoProp.children</strong>
+    </dt>
+    <dd>
+    Table in the <code>propName=RecoProp</code> format
+
+
+    <ul>
+        <li><span class="parameter">children</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
     <h2 class="section-header has-description"><a name="Class_RecoResult"></a>Class RecoResult </h2>
 
           <div class="section-description">
@@ -220,21 +301,23 @@
   phrase = PhraseBuilder.new()
     :append {
       propName = <span class="string">"what"</span>,
-      variants = {
+      choices = {
         {
           propVal = <span class="string">"greeting"</span>,
-          variant = PhraseBuilder.new()
-            :append<span class="string">"hello"</span>:appendOptional({<span class="string">"there"</span>, <span class="string">"again"</span>}, <span class="string">"optProp"</span>):build()
+          choice = PhraseBuilder.new()
+            :append <span class="string">"hello"</span>
+            :appendOptional({<span class="string">"there"</span>, <span class="string">"again"</span>}, <span class="string">"optProp"</span>)
+            :build()
         },
         <span class="string">"goodbye"</span>
       },
     }
-    :appendOptional<span class="string">"friend"</span>
+    :appendOptional <span class="string">"friend"</span>
     :build(),
   persistent = <span class="keyword">true</span>,
-  action = <span class="keyword">function</span>(_, res)
-    <span class="global">print</span>(res:getProp(<span class="string">"what"</span>)) <span class="comment">-- "greeting" or "goodbye"
-</span>    <span class="global">print</span>(res:getProp(<span class="string">"what"</span>, <span class="string">"optProp"</span>))  <span class="comment">-- "there", "again" or nil
+  action = <span class="keyword">function</span>(_, recoResult)
+    <span class="global">print</span>(recoResult:getProp(<span class="string">"what"</span>)) <span class="comment">-- "greeting" or "goodbye"
+</span>    <span class="global">print</span>(recoResult:getProp(<span class="string">"what"</span>, <span class="string">"optProp"</span>))  <span class="comment">-- "there", "again" or nil
 </span>  <span class="keyword">end</span>
 }
 
@@ -292,22 +375,14 @@ copilot.callOnce(<span class="keyword">function</span>()
     </dt>
     <dd>
     The properties and their values that were defined when constructing the Phrase.
- If a value is optional, it will not have an entry in the tree.
+ If a property-bound phrase element is optional and the element is absent in the spoken phrase, <code>props.propName</code> will be nil.
 
 
     <ul>
-        <li><span class="parameter">props</span> Property tree.
-        <ul>
-        <li><span class="parameter">children</span>
-         Child properties. A property tree has children when you have a Phrase within a Phrase
+        <li><span class="parameter">props</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Table in the <code>propName=RecoProp</code> format.
         </li>
-        <li><span class="parameter">value</span>
-            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
-        </li>
-        </li></ul>
     </ul>
 
 
@@ -320,15 +395,13 @@ copilot.callOnce(<span class="keyword">function</span>()
     <strong>RecoResult:getProp(...)</strong>
     </dt>
     <dd>
-
-
-
+    Convenience method for retrieving property values.
 
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">...</span>
-         The tree path to the property
+         path Strings denoting the tree path to the wanted property. If the first argument is a RecoProp, the search will be started there.
         </li>
     </ul>
 
@@ -336,10 +409,51 @@ copilot.callOnce(<span class="keyword">function</span>()
     <ol>
         <li>
            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-        The value field of the property or nil</li>
+        The value field of the RecoProp</li>
         <li>
-        The property or nil</li>
+        RecoProp</li>
     </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        nil</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header has-description"><a name="Class_Phrase"></a>Class Phrase </h2>
+
+          <div class="section-description">
+          Allows you to create complex phrases containing multiple-choice and optional elements that can be bound to named properties. </p>
+
+<p> A Phrase can be used on its own and as a building block for composing other Phrases. A Phrase can have multiple parent Phrases as well as multiple child Phrases.</p>
+
+<p> Use the PhraseBuilder class to create a Phrase (which itself is immutable).
+          </div>
+    <dl class="function">
+    <dt>
+    <a name = "."></a>
+    <strong>.</strong>
+    </dt>
+    <dd>
+
+
+
+
+
+    <ul>
+        <li><span class="parameter">.</span>
+
+
+
+        </li>
+    </ul>
+
 
 
 
@@ -349,8 +463,7 @@ copilot.callOnce(<span class="keyword">function</span>()
     <h2 class="section-header has-description"><a name="Class_PhraseBuilder"></a>Class PhraseBuilder </h2>
 
           <div class="section-description">
-          Class that allows you to create complex phrases with optional elements,
- elements with multiple variants and named properties.
+          Builds a Phrase
           </div>
     <dl class="function">
     <dt>
@@ -420,10 +533,15 @@ copilot.callOnce(<span class="keyword">function</span>()
          Whether this element is optional
          (<em>default</em> false)
         </li>
-        <li><span class="parameter">variants</span>
-         Either a single string or Phrase or an array of variants where a variant can be:
+        <li><span class="parameter">asString</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Alias for the elements's string representation in the logs.
+         (<em>optional</em>)
+        </li>
+        <li><span class="parameter">choices</span>
+         Either a single string or Phrase or an array of choices where a choice can be:
  <ul>
- <li>A table with a <code>propVal</code> and a <code>variant</code> field that is either a string or Phrase</li>
+ <li>A table with a <code>propVal</code> and a <code>choice</code> field that is either a string or Phrase</li>
  <li>A string or a Phrase</li>
  </ul>
         </li>
@@ -442,17 +560,17 @@ copilot.callOnce(<span class="keyword">function</span>()
     <ul>
         <pre class="example">PhraseBuilder.new():append {
    propName = <span class="string">"what"</span>,
-   variants = {
-     <span class="string">"goodbye"</span>, <span class="comment">-- same as {propVal = "goodbye", variant = "goodbye"}
-</span>     {propVal = <span class="string">"greeting"</span>, variant = <span class="string">"hi"</span>},
+   choices = {
+     <span class="string">"goodbye"</span>, <span class="comment">-- same as {propVal = "goodbye", choice = "goodbye"}
+</span>     {propVal = <span class="string">"greeting"</span>, choice = <span class="string">"hi"</span>},
      {
        propVal = <span class="string">"greeting"</span>,
-       variant = PhraseBuilder.new()
+       choice = PhraseBuilder.new()
          :append <span class="string">"good day"</span>
          :appendOptional(<span class="string">"sir"</span>, <span class="string">"extraPolite"</span>)
          :build()
      },
-     {propVal = <span class="string">"greeting"</span>, variant = <span class="string">"hello"</span>}
+     {propVal = <span class="string">"greeting"</span>, choice = <span class="string">"hello"</span>}
    },
  }:build()</pre>
     </ul>
@@ -460,21 +578,22 @@ copilot.callOnce(<span class="keyword">function</span>()
 </dd>
     <dt>
     <a name = "PhraseBuilder:append"></a>
-    <strong>PhraseBuilder:append(variants[, propName])</strong>
+    <strong>PhraseBuilder:append(choices[, propName])</strong>
     </dt>
     <dd>
-    Appends an element with multiple variants.
+    Appends a multiple-choice element.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">variants</span>
+        <li><span class="parameter">choices</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         An array of variants where a variant can be:
+         An array of choices where a choice can be:
  <ul>
- <li>A table with a <code>propVal</code> and a <code>variant</code> field that is either a string or Phrase</li>
+ <li>A table with a <code>propVal</code> and a <code>choice</code> field that is either a string or Phrase</li>
  <li>A string or a Phrase</li>
  </ul>
+ If you have Phrases in the list, consider using the above overload for readability
         </li>
         <li><span class="parameter">propName</span>
             <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
@@ -529,15 +648,15 @@ copilot.callOnce(<span class="keyword">function</span>()
 </dd>
     <dt>
     <a name = "PhraseBuilder:appendOptional"></a>
-    <strong>PhraseBuilder:appendOptional(variants[, propName])</strong>
+    <strong>PhraseBuilder:appendOptional(choices[, propName])</strong>
     </dt>
     <dd>
-    Appends an optional element with multiple variants.
+    Appends an optional multiple-choice element.
 
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">variants</span>
+        <li><span class="parameter">choices</span>
          See above
         </li>
         <li><span class="parameter">propName</span>
@@ -602,9 +721,48 @@ copilot.callOnce(<span class="keyword">function</span>()
  the recognizer will recognize just about anything as those phrases. On the other hand, having a lot of active phrases
  will also degrade the quality of recognition.<br></p>
 
-<p> <b>A VoiceCommand event emits a <a href="../libraries/VoiceCommand.html#RecoResult">RecoResult</a> as its payload</b>.
+<p> <b>A VoiceCommand event emits a RecoResult as its payload</b>.
           </div>
     <dl class="function">
+    <dt>
+    <a name = "VoiceCommand:new"></a>
+    <strong>VoiceCommand:new()</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VoiceCommand:new"></a>
+    <strong>VoiceCommand:new(phrase[, confidence=0.93])</strong>
+    </dt>
+    <dd>
+    Constructor
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">phrase</span>
+         A string or Phrase or array of strings and Phrase objects
+        </li>
+        <li><span class="parameter">confidence</span>
+            <span class="types"><span class="type">number</span></span>
+         Required recognition engine confidence between 0 and 1
+         (<em>default</em> 0.93)
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
     <dt>
     <a name = "VoiceCommand:new"></a>
     <strong>VoiceCommand:new(args)</strong>
@@ -627,7 +785,7 @@ copilot.callOnce(<span class="keyword">function</span>()
         </li>
         <li><span class="parameter">confidence</span>
             <span class="types"><span class="type">number</span></span>
-         between 0 and 1
+         Required recognition engine confidence between 0 and 1
          (<em>default</em> 0.93)
         </li>
         <li><span class="parameter">persistent</span>
@@ -1000,7 +1158,7 @@ copilot.events.goAround, copilot.events.takeoffInitiated)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-04-16 01:00:08 </i>
+<i style="float:right;">Last updated 2021-04-25 18:28:41 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

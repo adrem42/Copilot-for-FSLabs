@@ -80,8 +80,14 @@ private:
 	
 	UINT_PTR backgroundThreadTimerId;
 
+	struct McduWatcherLuaCallback {
+		sol::protected_function callback;
+		std::shared_ptr<McduWatcher::VariableStore> varStore = std::make_shared<McduWatcher::VariableStore>();
+	};
+
 	sol::state mcduWatcherLua;
-	std::vector<sol::protected_function> mcduWatcherLuaCallbacks;
+	McduWatcher::VariableStore* currMcduWatcherVarStore;
+	std::vector<McduWatcherLuaCallback> mcduWatcherLuaCallbacks;
 	sol::protected_function mcduWatcherToArray;
 
 	static constexpr UINT WM_STARTTIMER = WM_APP, WM_STOPTIMER = WM_APP + 1;
@@ -121,8 +127,6 @@ public:
 	void onSimStart();
 
 	void onSimExit();
-
-	void onMuteKey(bool);
 
 	template <typename T>
 	RegisterID registerLuaObject(T obj)

@@ -108,11 +108,11 @@ bool KeyBindManager::onKeyEvent(KeyCode keyCode, ShiftValue shiftVal, EventType 
                     break;
                 case EventType::PressRepeat:
                     if (keyCallbacks.onPressRepeat.size())
-                        callbacks = &keyCallbacks.onPress;
+                        callbacks = &keyCallbacks.onPressRepeat;
                     break;
                 case EventType::Release:
                     if (keyCallbacks.onRelease.size())
-                        callbacks = &keyCallbacks.onPress;
+                        callbacks = &keyCallbacks.onRelease;
                     break;
             }
             if (callbacks) {

@@ -26,6 +26,7 @@ namespace copilot {
 	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName);
 	void onWindowClose();
 	bool simRunning();
+	bool isMuted();
 
 	void launchFSL2LuaScript();
 

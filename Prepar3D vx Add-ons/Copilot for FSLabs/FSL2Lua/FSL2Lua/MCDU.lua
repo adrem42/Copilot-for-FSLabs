@@ -111,11 +111,15 @@ end
 --- Returns a line of the display
 --- @int lineNum 
 --- @string[opt] disp If you already have a display string, you can pass it here.
+--- @int[opt=1] startPos
+--- @int[opt=MCDU.LENGTH_LINE] endPos
 --- @treturn string
-function MCDU:getLine(lineNum, disp)
+function MCDU:getLine(lineNum, disp, startPos, endPos)
   disp = disp or self:getString()
-  local endIdx = lineNum * self.LENGTH_LINE
-  return disp:sub(endIdx - self.LENGTH_LINE + 1, endIdx)
+  startPos = startPos or 1
+  endPos = endPos or self.LENGTH_LINE
+  local lineEndIdx = lineNum * self.LENGTH_LINE
+  return disp:sub(lineEndIdx - self.LENGTH_LINE + startPos, lineEndIdx - (self.LENGTH_LINE - endPos))
 end
 
 --- Returns the last display line
@@ -155,16 +159,48 @@ function MCDU:isOn()
   return self:getString():find("%S") ~= nil
 end
 
---- Prints information about each display cell: its index, character (including its numerical representation) and whether it's bold.
-function MCDU:printCells()
-  for pos, cell in ipairs(self:getArray()) do
-    print(
-      pos, 
-      cell.char and string.format("%s (%s)", cell.char, string.byte(cell.char)) or "", 
+---<span>
+---
+--- Prints information about each display cell in the following order:
+---
+--- * Display index
+---
+--- * Position in the line
+---
+--- * The character
+---
+--- * The code of the character
+---
+--- * Color
+---
+--- * Whether it's bold
+---@int[opt=1] startLine
+---@int[opt=MCDU.NUM_LINES] endLine   
+function MCDU:printCells(startLine, endLine)
+  startLine = startLine or 1
+  endLine = endLine or self.NUM_LINES
+  local arr = self:getArray()
+  print()
+  print("#### START OF " .. self.sideStr .. " MCDU INFO ####")
+  print()
+  for pos = self:getLineIdx(startLine), select(2, self:getLineIdx(endLine)) do
+    local cell = arr[pos]
+    if (pos - 1) % self.LENGTH_LINE == 0 then
+      print "--------------------------------"
+      print("Line " .. ((pos - 1) / self.LENGTH_LINE) + 1)
+      print "---------------------------------"
+    end
+    print(string.format(
+      "%-5s %-4s %-3s %-3s %-8s %s",
+      pos, ((pos - 1) % self.LENGTH_LINE + 1),
+      cell.char or "", cell.char and string.byte(cell.char) or "", 
       cell.color or "", 
       cell.isBold and "bold" or cell.isBold == false and "not bold" or ""
-    )
+    ))
   end
+  print()
+  print("#### END OF " .. self.sideStr .. " MCDU INFO ####")
+  print()
 end
 
 return MCDU

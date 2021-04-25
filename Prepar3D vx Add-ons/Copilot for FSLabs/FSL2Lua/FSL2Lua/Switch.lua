@@ -79,7 +79,7 @@ function Switch:_setPositionToLvar(targetPos, initPos, twoSwitches)
   
   local currPos = initPos or self:getLvarValue()
 
-  self:_startInteract(plusminus(100), twoSwitches)()
+  self:_startInteract(plusminus(500), twoSwitches)()
 
   while true do
     local endInteract = self:_startInteract(plusminus(self.interactionLength or 80))

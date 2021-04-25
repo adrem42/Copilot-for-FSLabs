@@ -31,7 +31,7 @@ parking:appendItem {
   label = "seatBelts",
   displayLabel = "Seat Belts",
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     if check(label == "OFF", "The correct response is 'off'") then
       check(FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() == "OFF", "The seat belts switch isn't off")
     end

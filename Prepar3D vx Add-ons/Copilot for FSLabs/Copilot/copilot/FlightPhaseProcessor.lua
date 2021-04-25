@@ -50,9 +50,9 @@ function FlightPhaseProcessor:init()
     self:setFlightPhase(self.initialFlightPhase)
   elseif not FlightPhaseProcessor.enginesRunning() then
     self:setFlightPhase(
-      FlightPhaseProcessor.chocksOn() 
-        and flightPhases.onChocks 
-        or flightPhases.engineShutdown
+      FlightPhaseProcessor.chocksOn() and 
+      flightPhases.onChocks or 
+      flightPhases.engineShutdown
     )
   elseif copilot.onGround() then
     self:setFlightPhase(flightPhases.taxi, events.enginesStarted)
@@ -94,9 +94,7 @@ end
 function FlightPhaseProcessor:run()
   self:init()
   while true do
-    self:setFlightPhase(
-      self.currFlightPhase:nextFlightPhase()
-    )
+    self:setFlightPhase(self.currFlightPhase:nextFlightPhase())
   end
 end
 
