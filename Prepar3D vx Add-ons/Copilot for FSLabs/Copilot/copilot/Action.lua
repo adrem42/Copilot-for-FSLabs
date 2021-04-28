@@ -142,9 +142,11 @@ end
 --- Add log info that will be logged when the action is started or stopped
 --- @string msg
 --- @return self
-function Action:addLogMsg(msg)
+function Action:setLogMsg(msg)
   self.logMsg = msg
   return self
 end
+
+Action.addLogMsg = Action.setLogMsg
 
 return Action

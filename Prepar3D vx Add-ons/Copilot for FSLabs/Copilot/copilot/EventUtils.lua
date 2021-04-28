@@ -21,7 +21,7 @@ function EventUtils.makeEventRef(obj, func, refType, ...)
     local a = event:addAction(func)
     obj.eventRefs[refType][event] = a
     if event.logMsg ~= Event.NOLOGMSG then
-      a:addLogMsg(("'%s' '%s' on event '%s'"):format(refType, obj:toString(), event:toString()))
+      a:setLogMsg(("'%s' '%s' on event '%s'"):format(refType, obj:toString(), event:toString()))
     end
   end
 end

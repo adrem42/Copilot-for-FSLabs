@@ -39,7 +39,7 @@ if copilot.isVoiceControlEnabled then
     confidence = 0.94,
     action = function()
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
-      if isRetractFlightPhase() and flaps == "2" or flaps == "3" then
+      if isRetractFlightPhase() and (flaps == "2" or flaps == "3") then
         local Vf = copilot.mcduWatcher:getVar "Vf"
         if Vf and copilot.IAS() < Vf then
           copilot.playCallout "speedTooLow"
@@ -83,6 +83,7 @@ if copilot.isVoiceControlEnabled then
       if FSL.PED_FLAP_LEVER:getPosn() ~= "2" then return end
       if copilot.IAS() > flapsLimits.flapsThree then
         copilot.playCallout "speedTooHigh"
+        return
       end
       VoiceCommand:react(500)
       copilot.playCallout "flapsThree"
@@ -99,6 +100,7 @@ if copilot.isVoiceControlEnabled then
       if FSL.PED_FLAP_LEVER:getPosn() ~= "3" then return end
       if copilot.IAS() > flapsLimits.flapsFull then
         copilot.playCallout "speedTooHigh"
+        return
       end
       VoiceCommand:react(500)
       copilot.playCallout "flapsFull"
@@ -160,15 +162,20 @@ if copilot.isVoiceControlEnabled then
 end
 
 copilot.actions.airborne = copilot.events.airborne:addAction(function()
-  copilot.voiceCommands.lineup:deactivate()
-  copilot.voiceCommands.takeoff:deactivate()
-  copilot.voiceCommands.gearDown:ignore()
-  copilot.voiceCommands.flapsUp:activate()
-  copilot.voiceCommands.flapsOne:activate()
-  copilot.voiceCommands.flapsTwo:activate()
-  copilot.voiceCommands.flapsThree:activate()
-  copilot.voiceCommands.flapsFull:activate()
   firstFlight = false
+  if copilot.isVoiceControlEnabled then
+    if copilot.voiceCommands.lineup then
+      copilot.voiceCommands.lineup:deactivate()
+    end
+    copilot.voiceCommands.brakeCheck:deactivate()
+    copilot.voiceCommands.takeoff:deactivate()
+    copilot.voiceCommands.gearDown:ignore()
+    copilot.voiceCommands.flapsUp:activate()
+    copilot.voiceCommands.flapsOne:activate()
+    copilot.voiceCommands.flapsTwo:activate()
+    copilot.voiceCommands.flapsThree:activate()
+    copilot.voiceCommands.flapsFull:activate()
+  end
 end)
 
 copilot.actions.goAround = copilot.events.goAround:addAction(function()
@@ -211,13 +218,13 @@ copilot.actions.preflight = copilot.events.chocksSet:addAction(function()
 
   end
 end, "runAsCoroutine")
-  :addLogMsg "Preflight"
+  :setLogMsg "Preflight"
   :stopOn(copilot.events.enginesStarted)
   
 
 if copilot.UserOptions.actions.after_start == copilot.UserOptions.ENABLED then
   copilot.actions.afterStart = copilot.events.enginesStarted:addAction(function() copilot.sequences:afterStart() end, "runAsCoroutine")
-    :addLogMsg "After start"
+    :setLogMsg "After start"
 end
 
 if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
@@ -227,7 +234,7 @@ if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
     copilot.suspend(plusminus(5000))
     copilot.callOnce(copilot.sequences.taxiSequence)
   end, "runAsCoroutine")
-    :addLogMsg "Taxi"
+    :setLogMsg "Taxi"
     :stopOn(copilot.events.chocksSet, copilot.events.takeoffInitiated2)
     
 end
@@ -252,7 +259,7 @@ if copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
       copilot.sequences:waitForLineup()
       copilot.callOnce(copilot.sequences.lineUpSequence)
     end, "runAsCoroutine")
-      :addLogMsg "Lineup"
+      :setLogMsg "Lineup"
       :stopOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
   end
 end
@@ -278,7 +285,7 @@ do
     if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
       copilot.sequences.takeoffSequence()
     end
-  end):addLogMsg "Takeoff"
+  end):setLogMsg "Takeoff"
 
   if copilot.UserOptions.actions.after_takeoff == copilot.UserOptions.ENABLED then
     copilot.actions.afterTakeoff = copilot.events.airborne:addAction(function()
@@ -286,7 +293,7 @@ do
       copilot.suspend(plusminus(2000))
       copilot.sequences.afterTakeoffSequence()
     end, "runAsCoroutine")
-      :addLogMsg "After takeoff"
+      :setLogMsg "After takeoff"
       :stopOn(copilot.events.landing)
   end
 
@@ -297,7 +304,7 @@ do
       copilot.voiceCommands.takeoff:deactivate()
     end
     copilot.events.takeoffInitiated2:trigger()
-  end, "runAsCoroutine"):addLogMsg "No voice takeoff trigger"
+  end, "runAsCoroutine"):setLogMsg "No voice takeoff trigger"
 
 end
 
@@ -314,7 +321,7 @@ copilot.actions.aboveTenThousand = copilot.events.aboveTenThousand:addAction(fun
   if copilot.UserOptions.actions.ten_thousand_dep == copilot.UserOptions.ENABLED then
     copilot.sequences.tenThousandDep()
   end
-end, "runAsCoroutine"):addLogMsg "Above 10'000"
+end, "runAsCoroutine"):setLogMsg "Above 10'000"
 
 copilot.actions.belowTenThousand = copilot.events.belowTenThousand:addAction(function()
   if copilot.isVoiceControlEnabled then
@@ -329,7 +336,7 @@ copilot.actions.belowTenThousand = copilot.events.belowTenThousand:addAction(fun
   if copilot.UserOptions.actions.ten_thousand_arr == copilot.UserOptions.ENABLED then
     copilot.sequences:tenThousandArr()
   end
-end, "runAsCoroutine"):addLogMsg "Below 10'000"
+end, "runAsCoroutine"):setLogMsg "Below 10'000"
 
 copilot.actions.landing = copilot.events.landing:addAction(function()
   if copilot.isVoiceControlEnabled then
@@ -363,7 +370,7 @@ copilot.actions.landing = copilot.events.landing:addAction(function()
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.taxiLightOff:activate()
   end
-end, "runAsCoroutine"):addLogMsg "Landing"
+end, "runAsCoroutine"):setLogMsg "Landing"
 
 if copilot.isVoiceControlEnabled then
 

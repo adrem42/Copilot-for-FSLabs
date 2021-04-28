@@ -7,18 +7,30 @@ local beforeStartBelow = Checklist:new(
 
 copilot.checklists.beforeStartBelow = beforeStartBelow
 
-local doorPageWasOpen
+local ecpButtons = table.map({
+  "ENG", "BLEED", "PRESS", "ELEC", "HYD", "FUEL", 
+  "APU", "COND", "FCTL", "WHEEL", "STS"
+}, function(page)
+  return FSL["PED_ECP_" .. page .. "_Button"]
+end)
+
+local function confirmDoorEcamPage()
+  if FSL.PED_ECP_DOOR_Button:isLit() then return end
+  for _, butt in ipairs(ecpButtons) do
+    if butt:isLit() then 
+      butt:pressIfLit() 
+      return
+    end
+  end
+end
+
 beforeStartBelow:appendItem {
   label = "windowsDoors",
   displayLabel = "Windows / Doors",
   response = VoiceCommand:new "closed",
-  beforeChallenge = function()
-    doorPageWasOpen = FSL.PED_ECP_DOOR_Button:isLit()
-    if not doorPageWasOpen then
-      FSL.PED_ECP_DOOR_Button()
-    end
-  end,
-  onResponse = function(check, _, _, res)
+  beforeChallenge = confirmDoorEcamPage,
+  onResponse = function(check)
+    confirmDoorEcamPage()
     check(ipc.readLvar("VC_WINDOW_CPT") == 0, "CPT window is open")
     check(ipc.readLvar("VC_WINDOW_FO") == 0, "FO window is open")
     local function checkDoor(lvar, door)
@@ -35,10 +47,6 @@ beforeStartBelow:appendItem {
     checkDoor("FSLA320_pax_door6", "FSLA320_pax_door6")
     checkDoor("FSLA320_pax_door7", "FSLA320_pax_door7")
     checkDoor("FSLA320_pax_door8", "FSLA320_pax_door8")
-    copilot.sleep(0, 1000)
-    if not res.didFail() and not doorPageWasOpen then
-      FSL.PED_ECP_DOOR_Button:pressIfLit()
-    end
   end
 }
 

@@ -40,6 +40,7 @@ local function _persistenceMode(persistence)
 end
 
 local function makePhrases(input)
+  if not copilot.isVoiceControlEnabled then return "" end
   input = type(input) == "table" and input or {input}
   for i, v in ipairs(input) do
     if type(v) == "string" then

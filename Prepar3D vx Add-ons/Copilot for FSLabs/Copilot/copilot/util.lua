@@ -25,8 +25,7 @@ copilot.flapsLimits = flapsLimits
 if FSL:getAcType() == "A321" then
   flapsLimits.flapsOne = 235
   flapsLimits.flapsTwo = 215
-  
-  flapsLimits.flapsThree = 1
+  flapsLimits.flapsThree = 195
   flapsLimits.flapsFull = 190
 else
   flapsLimits.flapsOne = 230

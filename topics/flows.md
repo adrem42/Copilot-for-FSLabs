@@ -28,6 +28,10 @@ The aileron and elevator checks need to be performed before the rudder check.
 
 #### Trigger:
 
+##### voice_control = 1:
+Say 'Flight control check'<br><br>
+##### voice_control = 0:
+
 Full left or full right aileron deflection/
 full up or full down elevator deflection
 ___

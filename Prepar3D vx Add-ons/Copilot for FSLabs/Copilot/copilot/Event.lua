@@ -258,7 +258,7 @@ function Event.waitForEvent(event, returnFunction)
   end)
 
   if event.logMsg ~= Event.NOLOGMSG then
-    a:addLogMsg("waitForEvent signal for event: " .. event:toString())
+    a:setLogMsg("waitForEvent signal for event: " .. event:toString())
   end
   
   local checkEvent = setmetatable({}, {
@@ -355,7 +355,7 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
       payloadGetters[event] = function() return unpack(payload) end
     end)
     if event.logMsg ~= Event.NOLOGMSG then
-      actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+      actions[event]:setLogMsg("waitForEvents signal for event: " .. event:toString())
     end
   end
 
@@ -427,7 +427,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
       end
     end)
     if event.logMsg ~= Event.NOLOGMSG then
-      actions[event]:addLogMsg("waitForEvents signal for event: " .. event:toString())
+      actions[event]:setLogMsg("waitForEvents signal for event: " .. event:toString())
     end
   end
 

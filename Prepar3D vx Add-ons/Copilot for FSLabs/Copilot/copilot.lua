@@ -68,7 +68,9 @@ copilot.checklists = {}
 
 Event = require "copilot.Event"
 VoiceCommand = require "copilot.VoiceCommand"
-require "copilot.PhraseUtils"
+if copilot.isVoiceControlEnabled then
+  require "copilot.PhraseUtils"
+end
 require "copilot.Checklist"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor
@@ -145,7 +147,7 @@ local function setup()
     require "copilot.actions"
   end
 
-  if copilot.IS_FSL_AIRCRAFT and options.checklists.enable == options.TRUE then
+  if copilot.IS_FSL_AIRCRAFT and options.checklists.enable == options.TRUE and copilot.isVoiceControlEnabled then
     require "copilot.initChecklists"
   end
 
@@ -210,11 +212,14 @@ local function setup()
     require "copilot.failures"
   end
 
+  copilot.scratchpadClearer.setMessages {"GPS PRIMARY", "ENTER DEST DATA"}
+
   return true
   
 end
 
 if setup() then 
-  print ">>>>>> Setup finished <<<<<<"
+  print ">>>>>> Setup finished"
+  print(">>>>>> Voice control is " .. (copilot.isVoiceControlEnabled and "enabled" or "disabled"))
   startUpdating()
 end
