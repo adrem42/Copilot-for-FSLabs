@@ -22,6 +22,8 @@
 #include "CopilotScript.h"
 #include <filesystem>
 #include <thread>
+#include <sapi.h>
+#include <sphelper.h>
 
 using namespace std::literals::chrono_literals;
 using namespace P3D;
@@ -181,6 +183,84 @@ namespace copilot {
 		appDir = appDir.substr(0, appDir.find("Copilot.dll"));
 	}
 
+	void enumInputDevices(int lineWidth)
+	{
+		::CoInitialize(NULL);
+		HRESULT hr;
+		CComPtr<IEnumSpObjectTokens> enumTokens;
+
+		CComPtr<ISpObjectToken> defaultToken;
+		hr = SpGetDefaultTokenFromCategoryId(SPCAT_AUDIOIN, &defaultToken);
+		CSpDynamicString defaultDeviceId;
+		defaultToken->GetStringValue(L"DeviceId", &defaultDeviceId);
+
+		hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
+		ULONG count;
+		hr = enumTokens->GetCount(&count);
+		copilot::logger->info("{:*^{}}", " Input devices: ", lineWidth);
+		copilot::logger->info("");
+		for (size_t i = 0; i < count; ++i) {
+			CComPtr<ISpObjectToken> token;
+			CSpDynamicString deviceName, deviceId;
+			hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
+			hr = token->GetStringValue(L"DeviceName", &deviceName);
+			hr = token->GetStringValue(L"DeviceId", &deviceId);
+			copilot::logger->info(
+				L"{}={} {}", 
+				i + 1, 
+				deviceName, 
+				!(wcscmp(deviceId, defaultDeviceId)) ? L"(Default)" : L""
+			);
+		}
+		
+	}
+
+	void enumOutputSapiDevices(int lineWidth)
+	{
+		::CoInitialize(NULL);
+		HRESULT hr;
+		CComPtr<IEnumSpObjectTokens> enumTokens;
+
+		CComPtr<ISpObjectToken> defaultToken;
+		hr = SpGetDefaultTokenFromCategoryId(SPCAT_AUDIOOUT, &defaultToken);
+		CSpDynamicString defaultDeviceId;
+		defaultToken->GetStringValue(L"DeviceId", &defaultDeviceId);
+
+		hr = SpEnumTokens(SPCAT_AUDIOOUT, NULL, NULL, &enumTokens);
+		ULONG count;
+		hr = enumTokens->GetCount(&count);
+		copilot::logger->info("{:*^{}}", " SAPI output devices: ", lineWidth);
+		copilot::logger->info("");
+		for (size_t i = 0; i < count; ++i) {
+			CComPtr<ISpObjectToken> token;
+			CSpDynamicString deviceName, deviceId;
+			hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
+			hr = token->GetStringValue(L"DeviceName", &deviceName);
+			hr = token->GetStringValue(L"DeviceId", &deviceId);
+			copilot::logger->info(
+				L"{}={} {}",
+				i + 1,
+				deviceName,
+				!(wcscmp(deviceId, defaultDeviceId)) ? L"(Default)" : L""
+			);
+		}
+
+	}
+
+	void enumOutputDevices(int lineWidth)
+	{
+		
+		BASS_SetConfig(BASS_CONFIG_UNICODE, true);
+
+		BASS_DEVICEINFO info;
+		copilot::logger->info("{:*^{}}", " Output devices: ", lineWidth);
+		copilot::logger->info("");
+		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
+			copilot::logger->info(
+				"{}={} {}",i, info.name,info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : ""
+			);
+	}
+
 	void init()
 	{
 		findAppDir();
@@ -192,16 +272,11 @@ namespace copilot {
 			int lineWidth = 60;
 			copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
 			copilot::logger->info("");
-
-			BASS_SetConfig(BASS_CONFIG_UNICODE, true);
-
-			BASS_DEVICEINFO info;
-			copilot::logger->info("{:*^{}}", " Output device info: ", lineWidth);
+			enumOutputDevices(lineWidth);
 			copilot::logger->info("");
-			for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
-				copilot::logger->info("{}={} {}",
-									  i, info.name,
-									  info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
+			enumOutputSapiDevices(lineWidth);
+			copilot::logger->info("");
+			enumInputDevices(lineWidth);
 			copilot::logger->info("");
 			copilot::logger->info("{:*^{}}", "", lineWidth);
 			copilot::logger->info("");

@@ -50,18 +50,32 @@ bindToAction {
     events.enginesStarted:addAction(function()
       Event.waitForEvents({actions.lineup:doneEvent(), checklists.beforeTakeoff:doneEvent()}, true)
       checklists.beforeTakeoffBelow.trigger:activate()
-    end, Action.COROUTINE):stopOn(events.engineShutdown, events.airborne)
+    end, Action.COROUTINE)
+      :stopOn(events.engineShutdown, events.airborne)
+      :setLogMsg(Event.NOLOGMSG)
   end,
   ifDisabled = function()
     checklists.beforeTakeoffBelow.trigger:activateOn(checklists.beforeTakeoff:doneEvent())
   end
 }
 
+bindToAction {
+  "after_takeoff",
+  ifEnabled = function ()
+    checklists.afterTakeoff.trigger:activateOn(actions.afterTakeoff.doneEvent(), actions.afterGoAround.doneEvent())    
+  end,
+  ifDisabled = function()
+    checklists.afterTakeoff.trigger:activateOn(events.airborne, events.goAround)
+  end
+}
+
+checklists.afterTakeoffBelow:activateOn(checklists.afterTakeoff:doneEvent())
+
 events.engineShutdown:addAction(function()
   checklists.afterStart.trigger:deactivate()
   checklists.beforeTakeoff.trigger:deactivate()
   checklists.beforeTakeoffBelow.trigger:deactivate()
-end)
+end):setLogMsg(Event.NOLOGMSG)
 
 events.airborne:addAction(function()
   checklists.beforeStart.trigger:deactivate()
@@ -69,24 +83,25 @@ events.airborne:addAction(function()
   checklists.afterStart.trigger:deactivate()
   checklists.beforeTakeoff.trigger:deactivate()
   checklists.beforeTakeoffBelow.trigger:deactivate()
-end)
+end):setLogMsg(Event.NOLOGMSG)
 
 events.belowTenThousand:addAction(function()
+  checklists.approach.trigger:activate()
   repeat copilot.suspend(5000) until copilot.IAS() < 200
   checklists.landing.trigger:activate()
   repeat copilot.suspend(5000) until copilot.radALT() < 500 / 3.28084
   checklists.landing.trigger:deactivate()
-end, Action.COROUTINE)
+end, Action.COROUTINE):setLogMsg(Event.NOLOGMSG)
 
 events.landing:addAction(function()
   events.engineShutdown:addOneOffAction(function()
     checklists.parking.trigger:activate()
   end)
-end)
+end):setLogMsg(Event.NOLOGMSG)
 
 checklists.securingTheAircraft.trigger:activateOn(checklists.parking:doneEvent())
 
 events.enginesStarted:addAction(function()
   checklists.parking.trigger:deactivate()
   checklists.securingTheAircraft.trigger:deactivate()
-end)
+end):setLogMsg(Event.NOLOGMSG)

@@ -12,9 +12,9 @@ securingTheAircraft:appendItem {
   displayLabel = "ADIRS",
   response = VoiceCommand:new {phrase = "off", dummy = "on"},
   onResponse = function(check)
-    check(FSL.OVHD_ADIRS_1_Knob:getPosn() == "OFF", "ADIRS 1 knob isn't off")
-    check(FSL.OVHD_ADIRS_2_Knob:getPosn() == "OFF", "ADIRS 2 knob isn't off")
-    check(FSL.OVHD_ADIRS_3_Knob:getPosn() == "OFF", "ADIRS 3 knob isn't off")
+    check(FSL.OVHD_ADIRS_1_Knob:getPosn() == "OFF", "ADIRS 1 isn't off")
+    check(FSL.OVHD_ADIRS_2_Knob:getPosn() == "OFF", "ADIRS 2 isn't off")
+    check(FSL.OVHD_ADIRS_3_Knob:getPosn() == "OFF", "ADIRS 3 isn't off")
   end
 }
 

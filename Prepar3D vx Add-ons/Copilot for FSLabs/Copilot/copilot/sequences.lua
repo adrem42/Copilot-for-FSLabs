@@ -201,17 +201,28 @@ function copilot.sequences:takeoffSequence()
   end
 end
 
+function copilot.sequences.afterTakeoffCommon()
+  FSL.PED_SPD_BRK_LEVER "RET"
+  FSL.OVHD_EXTLT_Nose_Switch "OFF"
+  FSL.OVHD_EXTLT_RwyTurnoff_Switch "OFF"
+end
+
+copilot.sequences.afterGoAround = copilot.sequences.afterTakeoffCommon
+
 function copilot.sequences:afterTakeoffSequence()
 
   FSL.OVHD_AC_Pack_1_Button:toggleDown()
-  copilot.suspend(plusminus(10000,0.2))
+  copilot.suspend(9000, 15000)
   FSL.OVHD_AC_Pack_2_Button:toggleDown()
 
   repeat copilot.suspend(1000) until ipc.readLvar "FSLA320_slat_l_1" == 0
 
-  copilot.suspend(plusminus(2000, 0.5))
+  copilot.suspend(1000, 3000)
 
-  FSL.PED_SPD_BRK_LEVER "RET"
+  copilot.sequences.afterTakeoffCommon()
+
+  FSL.PED_ATCXPDR_MODE_Switch "TARA"
+
 end
 
 function copilot.sequences.tenThousandDep()
@@ -341,4 +352,79 @@ function copilot.sequences.afterLanding:__call()
 
   self.noApu = false
 
+end
+
+local function extPwrAvail() return ipc.readLvar "FSLA320_GndPwr" == 1 end
+local function extPwrButtonPressed(rect, action)
+  return rect == FSL.OVHD_ELEC_EXT_PWR_Button.rectangle and action == "leftPress"
+end
+
+function copilot.sequences.parking()
+
+  local extPwrConnectedByPF
+
+  local extPwrButtMonitor = copilot.mouseMacroEvent():addAction(function(_, rect, action)
+    if extPwrAvail() and extPwrButtonPressed(rect, action) then
+      extPwrConnectedByPF = true
+    end
+  end)
+
+  copilot.events.enginesStarted:addOneOffAction(function()
+    copilot.mouseMacroEvent():removeAction(extPwrButtMonitor)
+  end)
+
+  FSL.OVHD_AI_Eng_1_Anti_Ice_Button:toggleUp()
+  FSL.OVHD_AI_Eng_2_Anti_Ice_Button:toggleUp()
+  FSL.OVHD_AI_Wing_Anti_Ice_Button:toggleUp()
+
+  FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleDown()
+
+  FSL.OVHD_FUEL_L_TK_1_PUMP_Button:toggleUp()
+  FSL.OVHD_FUEL_L_TK_2_PUMP_Button:toggleUp()
+  if FSL:getAcType() == "A321" then
+    FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button:toggleUp()
+    FSL.OVHD_FUEL_CTR_TK_2_VALVE_Button:toggleUp()
+  else
+    FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button:toggleUp()
+    FSL.OVHD_FUEL_CTR_TK_2_PUMP_Button:toggleUp()
+  end
+  FSL.OVHD_FUEL_R_TK_1_PUMP_Button:toggleUp()
+  FSL.OVHD_FUEL_R_TK_2_PUMP_Button:toggleUp()
+
+  repeat copilot.suspend(1000) until extPwrAvail()
+
+  copilot.suspend(1000, 10000)
+
+  if not extPwrConnectedByPF then
+    FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftPress"
+    copilot.sleep(1000, 2000)
+    FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftRelease"
+    FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleDown()
+    FSL.OVHD_APU_Master_Button:toggleDown()
+  end
+
+end
+
+function copilot.sequences.securingTheAircraft()
+
+  FSL.OVHD_OXY_CREW_SUPPLY_Button:toggleUp()
+
+  FSL.OVHD_EXTLT_Strobe_Switch "OFF"
+  FSL.OVHD_EXTLT_Beacon_Switch "OFF"
+  FSL.OVHD_EXTLT_Wing_Switch "OFF"
+  FSL.OVHD_EXTLT_NavLogo_Switch "OFF"
+  FSL.OVHD_EXTLT_RwyTurnoff_Switch "OFF"
+  FSL.OVHD_EXTLT_Land_L_Switch "OFF"
+  FSL.OVHD_EXTLT_Land_R_Switch "OFF"
+  FSL.OVHD_EXTLT_Nose_Switch "OFF"
+
+  FSL.OVHD_SIGNS_EmerExitLight_Switch "OFF"
+  FSL.OVHD_SIGNS_NoSmoking_Switch "OFF"
+  FSL.OVHD_SIGNS_SeatBelts_Switch "OFF"
+
+  FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleUp()
+  FSL.OVHD_APU_Master_Button:toggleUp()
+
+  FSL.OVHD_ELEC_BAT_1_Button:toggleUp()
+  FSL.OVHD_ELEC_BAT_2_Button:toggleUp()
 end

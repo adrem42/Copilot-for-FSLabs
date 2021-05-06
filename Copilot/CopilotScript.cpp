@@ -16,6 +16,8 @@
 #include <string>
 #include <filesystem>
 #include "SimInterface.h"
+#include <sapi.h>
+#include <sphelper.h>
 
 std::unordered_map< P3D::MOUSE_CLICK_TYPE, std::string> clickTypes{
 	{P3D::MOUSE_CLICK_LEFT_SINGLE,		"leftPress"},
@@ -32,8 +34,10 @@ void CopilotScript::MouseRectListenerCallback::MouseRectListenerProc(UINT rect, 
 		withScript<CopilotScript>(pScript, [=](CopilotScript& script) {
 			script.enqueueCallback([=, &script](sol::state_view& lua) {
 				auto it = clickTypes.find(clickType);
-				if (it != clickTypes.end())
-					script.mouseMacroEvent["trigger"](script.mouseMacroEvent, rect, it->second);
+				if (it != clickTypes.end()) {
+					sol::protected_function trigger = lua["Event"]["trigger"];
+					script.callProtectedFunction(trigger, script.mouseMacroEvent, rect, it->second);
+				}
 			});
 		});
 	}
@@ -244,6 +248,19 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	if (SUCCEEDED(CoInitialize(NULL))) {
 		HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, reinterpret_cast<void**>(&voice));
+		int deviceId = options["callouts"]["sapi_device_id"];
+		if (deviceId != -1) {
+			CComPtr<IEnumSpObjectTokens> enumTokens;
+			HRESULT hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
+			CComPtr<ISpObjectToken> objectToken;
+			if (SUCCEEDED(hr))
+				hr = enumTokens->Item(deviceId - 1, &objectToken);
+			if (SUCCEEDED(hr))
+				hr = SpCreateObjectFromToken(objectToken, &voice);
+			if (FAILED(hr)) {
+				throw ScriptStartupError("Error setting non-default output device");
+			}
+		}
 	}
 
 	Sound::init(devNum, pmSide, volume * 0.01, voice);
@@ -351,8 +368,6 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	SoundType["play"] = sol::overload(static_cast<void (Sound::*)(int)>(&Sound::enqueue),
 									  static_cast<void (Sound::*)()>(&Sound::enqueue));
 
-
-
 	auto McduWatcherType = lua.new_usertype<McduWatcher>("McduWatcher");
 	McduWatcherType["getVar"] = &McduWatcher::getVar;
 	McduWatcherType["clearVar"] = &McduWatcher::clearVar;
@@ -360,10 +375,14 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	bool voiceControl = options["voice_control"]["enable"] == 1;
 	if (voiceControl) {
 		try {
-			recognizer = std::make_shared<Recognizer>();
+			int deviceId = options["voice_control"]["device_id"];
+			if (deviceId != Recognizer::DEFAULT_DEVICE_ID)
+				deviceId--;
+			recognizer = std::make_shared<Recognizer>(deviceId);
 		} 		catch (std::exception& ex) {
-			throw ScriptStartupError("Failed to create Recognizer.");
+			throw ScriptStartupError("Failed to create recognizer: " + std::string(ex.what()));
 		}
+		
 		recoResultFetcher = std::make_shared<RecoResultFetcher>(recognizer);
 	}
 

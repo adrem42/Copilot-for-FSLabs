@@ -52,13 +52,13 @@ You can combine one key with one or more modifier keys using + as the delimiter:
 Tab   
 LShift   
 RShift    
-LControl   
-RControl  
+LControl or LCtrl   
+RControl or RCtrl  
 LAlt    
 RAlt     
 LWin    
 RWin  
 Apps     
 Shift    
-Control    
+Control or Ctrl  
 Alt   

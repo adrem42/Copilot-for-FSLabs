@@ -2,7 +2,8 @@ if false then module "Event" end
 
 local Event = Event or require "copilot.Event"
 
---- @type SingleEvent An Event that can only be signaled once
+--- An Event that can be signaled only once
+--- @type SingleEvent 
 SingleEvent = setmetatable({}, Event)
 SingleEvent.__index = SingleEvent
 
@@ -10,17 +11,20 @@ SingleEvent.__index = SingleEvent
 function SingleEvent:addAction(...)
   local action = Event.addAction(self, ...)
   if self.payload then
-    self:_runAction(action, unpack(self.payload))
+    self:_runAction(action, self.payload)
   end
   return action
 end
 
---- Same as `Event:trigger`, but does nothing after being called once.
-function SingleEvent:trigger(...)
+function SingleEvent:_trigger(payload)
   if self.payload then return end
-  self.payload = {...}
-  return Event.trigger(self, ...)
+  self.payload = payload
+  return Event._trigger(self, payload)
 end
+
+--- Same as `Event:trigger`, but does nothing after being called once.
+--- @function trigger
+--- @param ...
 
 function SingleEvent:reset()
   self.payload = nil

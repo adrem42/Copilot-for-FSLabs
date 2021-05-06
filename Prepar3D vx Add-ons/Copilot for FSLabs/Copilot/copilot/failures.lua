@@ -5,7 +5,6 @@ local file = require "FSL2Lua.FSL2Lua.file"
 local minutesLoggedAtStart, scriptStartTime, coldAndDark
 local debugging = copilot.UserOptions.failures.debug == copilot.UserOptions.ENABLED
 local failureStates
-local failures = {}
 local function sleep(time) ipc.sleep(time or 100) end
 
 local aircraftReg
@@ -18,10 +17,13 @@ end
 local aircraftRegDir = APPDIR .. "Copilot\\failures\\" .. aircraftReg
 local stateFilePath = aircraftRegDir .. "\\state.lua"
 
-for _, v in ipairs(require "Copilot.copilot.failurelist") do
-  local failureName = v[1]
-  failures[failureName] = {rate = copilot.UserOptions.failures[failureName], A321 = v.A321 ~= 0}
-end
+local failures = table.mapPairs(
+  require "Copilot.copilot.failurelist",
+  function (_, v)
+    local failureName = v[1]
+    return failureName, {rate = copilot.UserOptions.failures[failureName], A321 = v.A321 ~= 0}
+  end
+)
 
 local function waitForDisplay(substring, disappear)
   local newDisp

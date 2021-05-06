@@ -29,6 +29,7 @@ beforeStartBelow:appendItem {
   displayLabel = "Windows / Doors",
   response = VoiceCommand:new "closed",
   beforeChallenge = confirmDoorEcamPage,
+  acknowledge = "closed",
   onResponse = function(check)
     confirmDoorEcamPage()
     check(ipc.readLvar("VC_WINDOW_CPT") == 0, "CPT window is open")
@@ -47,15 +48,6 @@ beforeStartBelow:appendItem {
     checkDoor("FSLA320_pax_door6", "FSLA320_pax_door6")
     checkDoor("FSLA320_pax_door7", "FSLA320_pax_door7")
     checkDoor("FSLA320_pax_door8", "FSLA320_pax_door8")
-  end
-}
-
-beforeStartBelow:appendItem {
-  label = "askidNwStrg",
-  displayLabel = "A/SKID & N/W STRG",
-  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, _, label)
-    check(FSL.MIP_BRAKES_ASKID_Button:getPosn() == label, "A/SKID & N/W STRG isn't " .. label)
   end
 }
 
@@ -82,14 +74,8 @@ beforeStartBelow:appendItem {
 beforeStartBelow:appendItem {
   label = "parkingBrake",
   displayLabel = "Parking Brake",
-  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
+  response = {ON = VoiceCommand:new {"on", "set"}, OFF = VoiceCommand:new {"off", "released"}},
   onResponse = function(check, _, label)
     check(FSL.PED_PARK_BRAKE_Switch:getPosn() == label, "Parking brake switch isn't " .. label)
   end
-}
-
-beforeStartBelow:appendItem {
-  label = "mobileDevices",
-  displayLabel = "Mobile Devices",
-  response = VoiceCommand:new "off"
 }

@@ -4,17 +4,17 @@ To make Copilot load your lua code, simply create a lua file with the name of yo
 
 If you have multiple files that you want to be loaded in a particular order, use the standard library *require* function. Since the *custom* folder isn't scanned recursively, you can have one main lua file at the top level and have the rest in subfolders. For example, given the following structure:
 
-  @plain
-  Copilot for FSLabs\copilot\custom\
-    init.lua
-    myplugin\
-      file1.lua
-      file2.lua
+    @plain
+    Copilot for FSLabs\copilot\custom\
+      init.lua
+      myplugin\
+        file1.lua
+        file2.lua
 
 you can load file1.lua and file2.lua from init.lua (which will be loaded by Copilot) like this:
 
-  require "copilot.custom.myplugin.file1"
-  require "copilot.custom.myplugin.file2"
+    require "copilot.custom.myplugin.file1"
+    require "copilot.custom.myplugin.file2"
 
 If you want to use Copilot with other aircraft, use the *custom\_non\_fsl* folder instead of *custom* (you'll need to create it yourself). If you have multiple add-ons, you'll need to write code that tells which aircraft was loaded. One way to do that is matching a substring in *copilot.aircraftTitle*.
 

@@ -26,7 +26,7 @@ You can restart or stop the script from its Add-ons submenu.
 
 Read @{plugins.md|here} if you want to extend the functionality of the script.
 
-## Setting up speech recognition>
+## Setting up speech recognition
 
 You need to have English as the Windows language in order for the speech recognition to work . 
 

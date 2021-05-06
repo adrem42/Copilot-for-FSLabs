@@ -1,6 +1,6 @@
 Bind = Bind or {}
 
-local keyCodes = require "key_list"
+local keyCodes = require "FSL2Lua.FSL2Lua.keyList"
 local KeyBindWrapper = {}
 
 function KeyBindWrapper:new(data)

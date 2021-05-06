@@ -106,7 +106,7 @@ function Encoder:_calculateDirection(this, thisPrev, other)
 end
 
 function Encoder:_onPinEvent(pin, event, timestamp)
-  state = event == Joystick.BUTTON_EVENT_PRESS
+  local state = event == Joystick.BUTTON_EVENT_PRESS
   local direction, other
   if pin == self._pinA then
     other = self._prevStateB

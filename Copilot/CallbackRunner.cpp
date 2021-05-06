@@ -23,8 +23,6 @@ void CallbackRunner::maybeAwaken(Timestamp deadline)
 std::shared_ptr<CallbackRunner::Callback> CallbackRunner::checkAlreadyAdded(sol::object& o, std::optional<std::string>& name)
 {
 	sol::state_view lua(o.lua_state());
-	sol::object lul = lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE][o];
-	auto type = lul.get_type();
 	sol::optional<std::shared_ptr<Callback>> maybeCallback = lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE][o];
 	if (maybeCallback.has_value()) {
 		if ((*maybeCallback)->name == name) {

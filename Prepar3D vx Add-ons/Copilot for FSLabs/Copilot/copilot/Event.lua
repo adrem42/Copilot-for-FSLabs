@@ -11,7 +11,7 @@ Event = {
   dispatchQueue = {},
   queueMin = 1,
   queueMax = 0,
-  NOLOGMSG = {}
+  NOLOGMSG = ""
 }
 Action = Action or require "copilot.Action"
 
@@ -74,9 +74,13 @@ function Event:new(args)
   return event
 end
 
+function Event:log(msg, logLevel)
+  if self.logMsg == Event.NOLOGMSG then return end
+  copilot.logger[logLevel or "debug"](copilot.logger, msg)
+end
+
 function Event:toString()
-  if self.logMsg and self.logMsg ~= Event.NOLOGMSG then return self.logMsg end
-  return tostring(self):gsub("table: 0+", "")
+  return self.logMsg or tostring(self):gsub("table: 0+", "")
 end
 
 function Event:getActions()
@@ -94,11 +98,11 @@ end
 -- myEvent:addAction(function() end, 'runAsCoroutine')
 --- @return The added <a href="#Class_Action">Action</a>.
 function Event:addAction(...)
-  local args = {...}
+  local firstArg = select(1, ...)
   local action
-  if util.isType(args[1], Action) then
-    action = args[1]
-  elseif util.isCallable(args[1]) then
+  if util.isType(firstArg, Action) then
+    action = firstArg
+  elseif util.isCallable(firstArg) then
     action = Action:new(...)
   end
   util.assert(util.isType(action, Action), "Failed to create action", 2)
@@ -136,12 +140,15 @@ end
 -- myEvent:removeAction(myAction)
 ---@return self
 function Event:removeAction(action)
+  if not self.actions.nodes[action] then
+    return self
+  end
   if self.inDispatch then
     self.actionsToRemove[#self.actionsToRemove+1] = action
     return self
   end
-  for i, a in ipairs(self.sortedActions) do
-    if action == a then
+  for i = #self.sortedActions, 1, - 1 do
+    if action == self.sortedActions[i] then
       table.remove(self.sortedActions, i)
       break
     end
@@ -154,33 +161,31 @@ function Event:removeAction(action)
 end
 
 function Event:getActionCount() 
-  if not self.areActionsSorted then self:sortActions() end
+  if not self.areActionsSorted then 
+    self:sortActions() 
+  end
   return #self.sortedActions
 end
 
-function Event:_runCoroutineAction(action, ...)
-  if action:isThreadRunning() then return false end
-  action:_initNewThread(
-    #self.coroDepends[action] > 0 and self.coroDepends[action] or nil,
-    ...
-  )
-  return true
-end
-
-function Event:_runAction(action, ...)
-  if action.isEnabled then
-    if action.runAsCoroutine then self:_runCoroutineAction(action, self, ...)
-    else action:_runFuncCallback(self, ...) end
-    return true
+function Event:_runAction(action, payload)
+  if not action.isEnabled then return end
+  if action.runAsCoroutine then 
+    if action:isThreadRunning() then return end
+    action:_initNewThread(
+      #self.coroDepends[action] > 0 and self.coroDepends[action] or nil,
+      self,
+      payload
+    )
+  else 
+    action:_runFuncCallback(self, payload) 
   end
-  return false
 end
 
 function Event.processEventQueue()
   local oldMax = Event.queueMax
   for i = Event.queueMin, Event.queueMax do
     local e = Event.dispatchQueue[i]
-    e.event:dispatch(unpack(e.payload))
+    e.event:dispatch(e.payload)
     Event.dispatchQueue[i] = nil
   end
   Event.queueMin = Event.queueMax
@@ -189,45 +194,51 @@ function Event.processEventQueue()
   end
 end
 
-function Event:enqueue(...)
+function Event:enqueue(payload)
   local queueIdx = Event.queueMax + 1
   Event.queueMax = queueIdx
-  Event.dispatchQueue[queueIdx] = {event = self, payload = {...}}
+  Event.dispatchQueue[queueIdx] = {event = self, payload = payload}
   if Event.queueMin == Event.queueMax then
     copilot.addCallback(Event.processEventQueue)
   end
 end
 
-function Event:dispatch(...)
-  self.inDispatch = true
-  if self.logMsg ~= self.NOLOGMSG then
-    copilot.logger:debug(("%s: %s"):format(self.logPrefix, self:toString()))
+function Event:dispatch(payload)
+  self:log(("%s: %s"):format(self.logPrefix, self:toString()))
+  if not self.areActionsSorted then 
+    self:sortActions() 
   end
-  if not self.areActionsSorted then self:sortActions() end
+  self.inDispatch = true
   self.actionsToRemove = {}
-  for _, action in ipairs(self.sortedActions) do
-    if self:_runAction(action, ...) and self.runOnce[action] then
+  for i = 1, #self.sortedActions do
+    local action = self.sortedActions[i]
+    self:_runAction(action, payload)
+    if self.runOnce[action] then
       self.actionsToRemove[#self.actionsToRemove+1] = action
     end
   end
   self.inDispatch = false
-  for _, action in ipairs(self.actionsToRemove) do 
-    self:removeAction(action)  
+  for i = #self.actionsToRemove, 1, -1 do
+    self:removeAction(self.actionsToRemove[i])  
   end
   self.actionsToRemove = nil
+end
+
+function Event:_trigger(payload)
+  if self.inDispatch then
+    self:enqueue(payload)
+  else
+    self:dispatch(payload)
+  end
+  for child in pairs(self.children) do
+    child:_trigger(payload)
+  end
 end
 
 --- Triggers the event which in turn executes all actions (if they are enabled). 
 --- @param ... Any number of arguments that will be passed to each listener as the event's payload (following the first argument, which is always the event itself)
 function Event:trigger(...)
-  if self.inDispatch then
-    self:enqueue(...)
-  else
-    self:dispatch(...)
-  end
-  for child in pairs(self.children) do
-    child:trigger()
-  end
+  self:_trigger(table.pack(...))
 end
 
 Event.TIMEOUT = setmetatable({}, {__tostring = function() return "Event.TIMEOUT" end})
@@ -253,14 +264,12 @@ function Event.waitForEvent(event, returnFunction)
   local getPayload
 
   local a = event:addOneOffAction(function(_, ...) 
-    local payload = {...}
-    getPayload = function() return unpack(payload) end
+    local payload = table.pack(...)
+    getPayload = function() return table.unpack(payload) end
   end)
 
-  if event.logMsg ~= Event.NOLOGMSG then
-    a:setLogMsg("waitForEvent signal for event: " .. event:toString())
-  end
-  
+  a:setLogMsg(Event.NOLOGMSG)
+
   local checkEvent = setmetatable({}, {
     __call = function ()
       if getPayload then return true, getPayload end
@@ -291,8 +300,8 @@ function Event.waitForEventWithTimeout(timeout, event)
   local callingThread = checkCallingThread()
   local getPayload
   local action = event:addOneOffAction(function(_, ...) 
-    local payload = {...}
-    getPayload = function() return unpack(payload) end
+    local payload = table.pack(...)
+    getPayload = function() return table.unpack(payload) end
     copilot.cancelCallbackTimeout(callingThread)
   end)
 
@@ -323,7 +332,7 @@ end
 ---@return If returnFunction is false:
 ---
 --- * If waitForall is true: Table with events as keys and functions that return their payload as values.
---- * If waitForAll is false: The first event that was signaled.
+--- * If waitForAll is false: The first event that was signaled, a function that returns its payload and the event's array index.
 ---
 ---If returnFunction is true, a function that returns the following values: 
 ---
@@ -351,12 +360,10 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
   for _, event in ipairs(events) do
     payloadGetters[event] = NO_PAYLOAD
     actions[event] = event:addOneOffAction(function(_, ...)
-      local payload = {...}
-      payloadGetters[event] = function() return unpack(payload) end
+      local payload = table.pack(...)
+      payloadGetters[event] = function() return table.unpack(payload) end
     end)
-    if event.logMsg ~= Event.NOLOGMSG then
-      actions[event]:setLogMsg("waitForEvents signal for event: " .. event:toString())
-    end
+    actions[event]:setLogMsg(Event.NOLOGMSG)
   end
 
   local checkEvents = setmetatable({}, {})
@@ -394,6 +401,7 @@ end
 ---@return If waitForAll is true: Table with events as keys and functions that return their payload as values or Event.TIMEOUT<br>
 --- If waitForAll is false: The first event that was signaled or Event.TIMEOUT
 ---@return If waitForAll is false: Function that returns the signaled event's payload.
+---@return If waitForAll is false: Array index of the event
 function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
 
   local payloadGetters = {}
@@ -415,8 +423,8 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
     payloadGetters[event] = NO_PAYLOAD
 
     actions[event] = event:addOneOffAction(function(_, ...)
-      local payload = {...}
-      payloadGetters[event] = function() return unpack(payload) end
+      local payload = table.pack(...)
+      payloadGetters[event] = function() return table.unpack(payload) end
       numSignaled = numSignaled + 1
       if not waitForAll or numSignaled == numEvents then
         copilot.cancelCallbackTimeout(callingThread)
@@ -426,9 +434,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
         singleEventIdx = i
       end
     end)
-    if event.logMsg ~= Event.NOLOGMSG then
-      actions[event]:setLogMsg("waitForEvents signal for event: " .. event:toString())
-    end
+    actions[event]:setLogMsg(Event.NOLOGMSG)
   end
 
   local alreadySignaled =

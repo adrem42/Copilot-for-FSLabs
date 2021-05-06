@@ -25,17 +25,15 @@ local recognizer = copilot.recognizer
 VoiceCommand = {DefaultConfidence = 0.93, logPrefix = "VoiceCommand"}
 setmetatable(VoiceCommand, {__index = Event})
 
-local PersistenceMode = {
-  ignore = RulePersistenceMode.Ignore,
-  [true] = RulePersistenceMode.Persistent,
-  [false] = RulePersistenceMode.NonPersistent
-}
-
 local function _persistenceMode(persistence)
-  if persistence == nil then
+  if not persistence then
     return RulePersistenceMode.NonPersistent
+  elseif persistence == true then
+    return RulePersistenceMode.Persistent
+  elseif persistence == "ignore" then
+    return RulePersistenceMode.Ignore
   else
-    return PersistenceMode[persistence] or error("Invalid persistence mode", 3)
+    error("Invalid persistence mode", 3)
   end
 end
 
@@ -139,8 +137,6 @@ function VoiceCommand:addPhrase(phrase, dummy)
   return self
 end
 
-local function trimPhrase(phrase) return phrase:gsub("[%+%-]+(%S+)", "%1") end
-
 -- --- Removes phrase variants from a voice command.
 -- ---@param phrase string or array of strings
 -- ---@bool dummy True to remove dummy phrase variants, omitted or false to remove actual phrase variants.
@@ -173,6 +169,7 @@ end
 --- @number confidence A number from 0-1
 ---@return self
 function VoiceCommand:setConfidence(confidence)
+  self.confidence = confidence
   recognizer:setConfidence(confidence, self.ruleID)
   return self
 end

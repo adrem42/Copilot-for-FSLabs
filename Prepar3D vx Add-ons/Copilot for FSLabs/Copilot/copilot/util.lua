@@ -17,7 +17,6 @@ end
 
 local file = require "FSL2Lua.FSL2Lua.file"
 
-
 local flapsLimits = {}
 
 copilot.flapsLimits = flapsLimits

@@ -31,13 +31,6 @@ local function loadNormalConfig(dir, prefix, cfg)
       string.format("%s\\%s", dir, name .. "." .. ext[name:lower()]), entry.length or 0, entry.volume or 1
     )
   end
-  copilot.playCallout = copilot.playCallout or function(fileName, delay)
-    if callouts[fileName] then
-      callouts[fileName]:play(delay or 0)
-    else
-      copilot.logger:warn("Callout " .. fileName .. " not found")
-    end
-  end
 end
 
 local function loadTtsConfig(ttsCfg)
@@ -62,7 +55,11 @@ local function loadTtsConfig(ttsCfg)
 
   load(ttsCfg, "")
 
-  copilot.playCallout = copilot.playCallout or function(fileName, delay)
+  function copilot.calloutExists(fileName)
+    return ttsPhrases[fileName] ~= nil
+  end
+
+  function copilot.playCallout(fileName, delay)
     if ttsPhrases[fileName] then
       copilot.speak(ttsPhrases[fileName], delay or 0)
     else
@@ -85,12 +82,34 @@ loadFolder = function(dir, prefix)
       isTTS = cfg.isTTS and true or false
       cfg.isTTS = nil
       if isTTS then
+        copilot.usingTTScallouts = true
         loadTtsConfig(cfg)
       else
+        function copilot.calloutExists(fileName)
+          return callouts[fileName] ~= nil
+        end
+        function copilot.playCallout(fileName, delay)
+          if callouts[fileName] then
+            callouts[fileName]:play(delay or 0)
+          else
+            copilot.logger:warn("Callout " .. fileName .. " not found")
+          end
+        end
         loadNormalConfig(dir, prefix, cfg)
       end
     end
   end
+end
+
+function copilot.addCallout(fileName, ...)
+  local args = {...}
+  local ext, length, volume
+  if type(args[1]) == "string" then
+    ext, length, volume = args[1], args[2], args[3]
+  else
+    ext, length, volume = "wav", args[1], args[2]
+  end
+  callouts[fileName] = Sound:new(string.format("%s\\%s.%s", calloutDir, fileName, ext), length or 0, volume or 1)
 end
 
 loadFolder(calloutDir, "")

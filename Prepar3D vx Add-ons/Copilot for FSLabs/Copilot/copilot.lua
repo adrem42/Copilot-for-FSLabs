@@ -1,7 +1,6 @@
 
 if false then module("copilot") end
 
-require "copilot.extensions"
 require "copilot.util"
 require "copilot.copilot.IniUtils"
 
@@ -117,50 +116,59 @@ local function setup()
     options.callouts.enable == options.FALSE then
     options.actions.during_taxi = options.FALSE
   end
-  
+
   if copilot.IS_FSL_AIRCRAFT then
+
+    require "copilot.sequences"
+    require "copilot.ScratchpadClearer"
+
+    if options.callouts.enable == options.TRUE  then
+      require "copilot.callouts"
+      copilot.callouts:setup()
+      copilot.callouts:start()
+    end
+  
+    if options.actions.enable == options.TRUE then
+      require "copilot.actions"
+    end
+  
+    if options.checklists.enable == options.TRUE and copilot.isVoiceControlEnabled then
+      require "copilot.initChecklists"
+    end
+
     FlightPhaseProcessor.start()
+
+    local function clearVar(key) copilot.mcduWatcher:clearVar(key) end
     local function clearVars()
-      copilot.mcduWatcher:clearVar "V1"
-      copilot.mcduWatcher:clearVar "Vr"
-      copilot.mcduWatcher:clearVar "V2"
-      copilot.mcduWatcher:clearVar "Vs"
-      copilot.mcduWatcher:clearVar "Vf"
-      copilot.mcduWatcher:clearVar "takeoffFlaps"
-      copilot.mcduWatcher:clearVar "takeoffRwy"
-      copilot.mcduWatcher:clearVar "flyingCircuits"
-      copilot.mcduWatcher:clearVar "isFmgcSetup"
+      clearVar "V1"
+      clearVar "Vr"
+      clearVar "V2"
+      clearVar "Vs"
+      clearVar "Vf"
+      clearVar "takeoffFlaps"
+      clearVar "takeoffRwy"
+      clearVar "flyingCircuits"
+      clearVar "isFmgcSetup"
+      clearVar "transAlt"
     end
     copilot.events.landing:addAction(clearVars)
     copilot.events.aboveTenThousand:addAction(clearVars)
+
   end
 
-  require "copilot.sequences"
-
-  if copilot.IS_FSL_AIRCRAFT and options.callouts.enable == options.TRUE  then
-    require "copilot.callouts"
-    copilot.callouts:setup()
-    copilot.callouts:start()
-  end
-
-  if copilot.IS_FSL_AIRCRAFT and options.actions.enable == options.TRUE then
-    require "copilot.actions"
-  end
-
-  if copilot.IS_FSL_AIRCRAFT and options.checklists.enable == options.TRUE and copilot.isVoiceControlEnabled then
-    require "copilot.initChecklists"
-  end
-
-  if copilot.IS_FSL_AIRCRAFT then
-    require "copilot.ScratchpadClearer"
-  end
-
-  local realResetGrammar = VoiceCommand.resetGrammar
-  local grammarWasReset = false
-
-  function VoiceCommand.resetGrammar()
-    realResetGrammar()
-    grammarWasReset = true
+  if copilot.isVoiceControlEnabled then
+    local confidenceBaseline = options.voice_control.confidence_baseline
+    local confidenceOverride = options.voice_control.confidence_override
+    if confidenceOverride then
+      for _, vc in pairs(Event.voiceCommands) do
+        vc:setConfidence(confidenceOverride)
+      end
+    elseif confidenceBaseline ~= VoiceCommand.DefaultConfidence then
+      local mult = confidenceBaseline / VoiceCommand.DefaultConfidence
+      for _, vc in pairs(Event.voiceCommands) do
+        vc:setConfidence(vc.confidence * mult)
+      end
+    end
   end
 
   local hasPlugins = false
@@ -168,17 +176,14 @@ local function setup()
   local function loadPlugins(dir)
     dir = dir .. "\\"
     local pluginDir = APPDIR .. "\\Copilot\\" .. dir
-    local copilotPrefix = "copilot_"
     for _file in lfs.dir(pluginDir) do
-      if _file:sub(1, #copilotPrefix) ~= copilotPrefix then
-        if _file:find("%.lua$") then
-          if not hasPlugins then
-            hasPlugins = true
-            print "Loading plugins:"
-          end
-          print(dir .. _file)
-          dofile(pluginDir .. _file)
+      if _file:find("%.lua$") then
+        if not hasPlugins then
+          hasPlugins = true
+          print "Loading plugins:"
         end
+        print(dir .. _file)
+        dofile(pluginDir .. _file)
       end
     end
   end
@@ -186,33 +191,28 @@ local function setup()
   loadPlugins "custom_common"
   loadPlugins(copilot.IS_FSL_AIRCRAFT and "custom" or "custom_non_fsl")
 
-  VoiceCommand.resetGrammar = realResetGrammar
-
-  if copilot.isVoiceControlEnabled and options.voice_control.mute_on_startup == options.TRUE then
-    muteCopilot()
-  end
-
-  if copilot.isVoiceControlEnabled and not grammarWasReset then
-    VoiceCommand.resetGrammar()
-  end
-
-  if not copilot.IS_FSL_AIRCRAFT and not hasPlugins then
+  if copilot.IS_FSL_AIRCRAFT then
+    if options.failures.enable == options.TRUE and not debugging then 
+      require "copilot.failures"
+    end
+    copilot.scratchpadClearer.setMessages {"GPS PRIMARY", "ENTER DEST DATA"}
+    wrapSequencesWithLogging()
+  elseif not hasPlugins then
     return false
   end
 
-  wrapSequencesWithLogging()
+  if copilot.isVoiceControlEnabled then
+    VoiceCommand.resetGrammar()
+    if options.voice_control.mute_on_startup == options.TRUE then
+      muteCopilot()
+    end
+  end
 
   for _, event in pairs(copilot.events) do 
     if not event.areActionsSorted then
       event:sortActions()
     end
   end
-
-  if copilot.IS_FSL_AIRCRAFT and options.failures.enable == options.TRUE and not debugging then 
-    require "copilot.failures"
-  end
-
-  copilot.scratchpadClearer.setMessages {"GPS PRIMARY", "ENTER DEST DATA"}
 
   return true
   

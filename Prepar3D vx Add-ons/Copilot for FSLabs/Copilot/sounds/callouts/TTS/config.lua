@@ -39,11 +39,9 @@ return {
 
     standingBy = "standing by",
     doubleCheck = "double check that please",
-    checked = "checked",
     
     beforeStart = {
-      announce = "before start to the line",
-      completed = "before start to the line completed",
+      completed = "down to the line",
       cockpitPrep = "cockpit preparation",
       signs = "signs",
       fuelQuantity = "fuel quantity",
@@ -52,8 +50,7 @@ return {
     },
 
     beforeStartBelow = {
-      announce = "before start below the line",
-      completed = "before start below the line completed",
+      completed = "before start checklist complete",
       windowsDoors = "windows, doors",
       askidNwStrg = "anti-skid and nosewheel steering",
       beacon = "beacon",
@@ -63,8 +60,7 @@ return {
     },
 
     afterStart = {
-      announce = "after start checklist",
-      completed = "after start checklist completed",
+      completed = "after start checklist complete",
       antiIce = "anti ice",
       askidNwStrg = "anti-skid and nosewheel steering",
       ecamStatus = "ecam status",
@@ -72,8 +68,7 @@ return {
     },
 
     beforeTakeoff = {
-      announce = "before takeoff to the line",
-      completed = "before takeoff to the line completed",
+      completed = "down to the line",
       conf1 = "config 1",
       conf2 = "config 2",
       conf3 = "config 3",
@@ -85,23 +80,21 @@ return {
     },
 
     beforeTakeoffBelow = {
-      announce = "before takeoff below the line",
-      completed = "before takeoff below the line completed",
+      completed = "before takeoff checklist complete",
       takeoffRwy = "takeoff runway",
-      packs = "packs"
+      packs = "packs",
+      checked = "checked"
     },
 
     landing = {
-      announce = "landing checklist",
-      completed = "landing checklist completed",
+      completed = "landing checklist complete",
       ecamMemo = "ecam memo",
       autoThrust = "auto thrust",
       landingNoBlue = "landing no blue"
     },
 
     parking = {
-      announce = "parking checklist",
-      completed = "parking checklist completed",
+      completed = "parking checklist complete",
       radarAndPws = "radar and predictive windshear",
       engines = "engines",
       seatBelts = "seat belts",
@@ -113,8 +106,7 @@ return {
     },
 
     securingTheAircraft = {
-      announce = "securing the aircraft checklist",
-      completed = "securing the aircraft checklist completed",
+      completed = "securing the aircraft checklist complete",
       adirs = "aydirs",
       oxygen = "oxygen",
       apuBleed = "apu bleed",

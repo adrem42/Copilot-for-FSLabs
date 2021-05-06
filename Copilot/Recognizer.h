@@ -293,8 +293,9 @@ private:
 	std::unordered_map<RuleID, Rule> rules;
 	std::recursive_mutex mtx;
 public:
+	static const int DEFAULT_DEVICE_ID = -1;
 	void markGrammarDirty();
-	Recognizer();
+	Recognizer(int deviceId = DEFAULT_DEVICE_ID);
 	~Recognizer();
 	void registerCallback(ISpNotifyCallback* callback);
 	RuleID addRule(std::vector<std::shared_ptr<Phrase>> phrases, float confidence, RulePersistenceMode persistenceMode);

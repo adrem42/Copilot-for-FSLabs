@@ -8,12 +8,13 @@ local parking = Checklist:new(
 copilot.checklists.parking = parking
 
 parking:appendItem {
-  label = "radarAndPws",
-  displayLabel = "Radar and PWS",
-  response = VoiceCommand:new {phrase = "off", dummy = "on"},
-  onResponse = function(check)
-    check(FSL.PED_WXRadar_SYS_Switch:getPosn() == "OFF", "Radar isn't off")
-    check(FSL.PED_WXRadar_PWS_Switch:getPosn() == "OFF", "PWS isn't off")
+  label = "apuBleed",
+  displayLabel = "APU Bleed",
+  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
+  onResponse = function(check, _, label)
+    if check(label == "ON", "The correct response is 'on'") then
+      check(not FSL.OVHD_AC_Eng_APU_Bleed_Button:isDown(), "APU bleed isn't on")
+    end
   end
 }
 
@@ -39,15 +40,35 @@ parking:appendItem {
 }
 
 parking:appendItem {
-  label = "brakeTemp",
-  displayLabel = "Brake Temperature",
-  response = VoiceCommand:new "checked"
-}
-
-parking:appendItem {
   label = "externalLights",
   displayLabel = "External Lights",
-  response = VoiceCommand:new "checked",
+  response = {OFF = VoiceCommand:new "off", NAV_LOGO_ON = VoiceCommand:new "nav logo on"},
+  onResponse = function(check, label)
+    local lightSwitches = {
+      FSL.OVHD_EXTLT_Beacon_Switch,
+      FSL.OVHD_EXTLT_Land_L_Switch,
+      FSL.OVHD_EXTLT_Land_R_Switch,
+      FSL.OVHD_EXTLT_Nose_Switch,
+      FSL.OVHD_EXTLT_RwyTurnoff_Switch,
+      FSL.OVHD_EXTLT_Strobe_Switch,
+      FSL.OVHD_EXTLT_Wing_Switch
+    }
+    local function checkSwitchesOff()
+      for _, switch in ipairs(lightSwitches) do
+        if switch:getPosn() ~= "OFF" then
+          check "Not all switches are off"
+          return
+        end
+      end
+    end
+    if label == "OFF" then
+      lightSwitches[#lightSwitches+1] = FSL.OVHD_EXTLT_NavLogo_Switch
+      checkSwitchesOff()
+    elseif label == "NAV_LOGO_ON" then
+      check(FSL.OVHD_EXTLT_NavLogo_Switch:getPosn() == "OFF", "The nav/logo switch isn't 'on'")
+      checkSwitchesOff()
+    end
+  end
 }
 
 parking:appendItem  {
@@ -73,13 +94,22 @@ parking:appendItem  {
 }
 
 parking:appendItem {
-  label = "adirs",
-  displayLabel = "ADIRS",
-  response = VoiceCommand:new "checked"
-}
-
-parking:appendItem {
   label = "park",
   displayLabel = "Park BRK / Chocks",
-  response = VoiceCommand:new "checked"
+  response = VoiceCommand.new(
+    PhraseBuilder.new()
+      :append({"ON", "OFF"}, "parkingBrake")
+      :append "and"
+      :append({"in", "out"}, "chocks")
+      :build()
+  ),
+  onResponse = function(check, _, res)
+    check(
+      res:getProp "parkingBrake" == FSL.PED_PARK_BRAKE_Switch:getPosn(),
+      "Parking brake isn't " .. res:getProp"parkingBrake":lower()
+    )
+    local chocksResponse = res:getProp "chocks"
+    local chocksActual = FlightPhaseProcessor.chocksOn() and "in" or "out"
+    check(chocksResponse == chocksActual, "Chocks aren't " .. chocksResponse)
+  end
 }

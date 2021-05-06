@@ -23,7 +23,7 @@ return {
       {
         name = "con_log_level",
         type = "enum",
-        values = {"0", "1", "2", "3", "4", "5", "6"},
+        values = {0, 1, 2, 3, 4, 5, 6},
         hidden = true
       },
       {
@@ -46,7 +46,7 @@ return {
       },
       {
         name = "button_sleep_mult",
-        default = 1,
+        default = nil,
         type = "number",
         hidden = true
       }
@@ -61,9 +61,41 @@ return {
         type = "bool"
       },
       {
+        name = "device_id", 
+        default = -1, 
+        comment = "-1 is the default device. The list of devices is at the top of the log file.", 
+        type = "int"
+      },
+      {
+        name = "confidence_baseline",
+        default = 0.93,
+        comment = "Baseline confidence threshold for the default voice commands. Some voice commands will have a confidence above or below this value.",
+        type = "number"
+      },
+      {
+        name = "confidence_override",
+        default = nil,
+        comment = "Hard confidence threshold for the default voice commands. If set, ALL default voice commands will have exactly this confidence value.",
+        type = "number"
+      },
+      {
         name = "mute_on_startup",
         default = UserOptions.FALSE,
         type = "bool"
+      }
+    }
+  },
+  {
+    title = "Voice_commands",
+    comment = {
+      "The options in this section are only relevant if you're using voice control"
+    },
+    keys = {
+      {
+        name = "takeoff_FMA_readout",
+        default = UserOptions.ENABLED,
+        type = "bool",
+        comment = "If enabled, the copilot will wait for you to confirm the FMA mode before their 'thrust set' takeoff callout. Example: 'MAN FLEX 68 SRS runway autothrust blue'"
       }
     }
   },
@@ -96,25 +128,31 @@ return {
     title = "Callouts",
     keys = {
       {
-        name = "sound_set", 
-        default = "Hannes", 
-        type = "string"
-      },
-      {
         name = "enable", 
         default = UserOptions.TRUE, 
         type = "bool"
       },
       {
+        name = "sound_set", 
+        default = "Peter", 
+        type = "string"
+      },
+      {
         name = "volume", 
-        default = 60, 
+        default = 100, 
         type = "int",
         comment = "This sets the maximum volume from 0-100. You can also adjust the volume with the INT volume knob in the cockpit",
       },
       {
         name = "device_id", 
         default = -1, 
-        comment = "-1 is the default device", 
+        comment = "-1 is the default device. The list of devices is at the top of the log file.", 
+        type = "int"
+      },
+      {
+        name = "sapi_device_id",
+        default = -1,
+        comment = "this is for text-to-speech if you're using it. -1 is the default device. The list of devices is at the top of the log file.",
         type = "int"
       },
       {
@@ -189,8 +227,18 @@ return {
         type = "bool"
       },
       {
+        name = "parking",
+        default = UserOptions.ENABLED,
+        type = "bool"
+      },
+      {
+        name = "securing_the_aircraft",
+        default = UserOptions.ENABLED,
+        type = "bool"
+      },
+      {
         name = "after_landing_trigger", 
-        default = copilot.AFTER_LANDING_TRIGGER_VOICE, 
+        default = copilot.AFTER_LANDING_TRIGGER_DISARM_SPOILERS, 
         comment = "explained in the manual", 
         type = "enum", 
         values = {copilot.AFTER_LANDING_TRIGGER_VOICE, copilot.AFTER_LANDING_TRIGGER_DISARM_SPOILERS}

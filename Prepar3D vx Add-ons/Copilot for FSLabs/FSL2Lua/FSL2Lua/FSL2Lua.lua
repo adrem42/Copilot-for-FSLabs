@@ -8,6 +8,16 @@ if FSL2LUA_STANDALONE then
   ipc = {readLvar = function() end}
 end
 
+if not _COPILOT then
+  function hideCursor()
+    local x, y = mouse.getpos()
+    mouse.move(x + 1, y + 1)
+    mouse.move(x, y)
+    ipc.sleep(10)
+    ipc.control(1139)
+  end
+end
+
 --- @field CPT table containing controls on the left side
 --- @field FO table containing controls on the right side
 --- @field PF table containing controls on the side of the Pilot Flying

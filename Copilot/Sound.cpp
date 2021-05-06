@@ -17,6 +17,11 @@ Sound::Sound(const std::string& path, int length, double fileRelVolume)
 	:length(length), fileRelVolume(fileRelVolume)
 {
 	stream = BASS_StreamCreateFile(FALSE, path.c_str(), 0, 0, 0);
+	if (!length) {
+		size_t bytes = BASS_ChannelGetLength(stream, BASS_POS_BYTE);
+		this->length = BASS_ChannelBytes2Seconds(stream, bytes) * 1000 + 300;
+	}
+
 	auto err = BASS_ErrorGetCode();
 	if (err != BASS_OK)
 		copilot::logger->error("Error {} initializing sound file {}", err, path.c_str());

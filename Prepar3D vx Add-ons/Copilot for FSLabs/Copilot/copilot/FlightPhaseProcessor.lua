@@ -184,16 +184,16 @@ end
 function flightPhases.takeoff:nextFlightPhase()
   local waitUntilCancel = 10000
   local cancelCountDownStart
+  local commited
   repeat
+    commited = commited or copilot.eng1N1() > 80 and copilot.eng2N1() > 80
     if not FlightPhaseProcessor.takeoffThrustSelected() then
-      if copilot.eng1N1() > 80 and copilot.eng2N1() > 80 then
+      if commited then
         local aborted = copilot.GS() > 10 
           and (FlightPhaseProcessor.idleThrustSelected() or FlightPhaseProcessor.reverseThrustSelected())
         if aborted then
-          cancelCountDownStart = nil
           return flightPhases.taxi, events.takeoffAborted
-        end
-        if not cancelCountDownStart then
+        elseif not cancelCountDownStart then
           cancelCountDownStart = copilot.getTimestamp()
         elseif copilot.getTimestamp() - cancelCountDownStart > waitUntilCancel then
           return flightPhases.taxi, events.takeoffCancelled
@@ -232,7 +232,7 @@ function flightPhases.airborne:nextFlightPhase()
           end
         elseif not touchdownTime then
           touchdownTime = copilot.getTimestamp()
-        elseif copilot.getTimestamp() - touchdownTime > 500 and not landed then
+        elseif not landed and copilot.getTimestamp() - touchdownTime > 500  then
           events.landing:trigger()
           landed = true
         elseif copilot.GS() < 40 then

@@ -52,6 +52,9 @@ void McduWatcher::update(std::function<void(const std::string&, const std::strin
 			vars["Vf"] = toNumber(pfDisp.substr(57, 3));
 			vars["takeoffFlaps"] = toNumber(pfDisp.substr(161, 1));
 			vars["takeoffRwy"] = pfDisp.substr(17, 3);
+			if (isdigit(pfDisp[192])) {
+				vars["transAlt"] = static_cast<double>(atoi(pfDisp.c_str() + 192));
+			}
 			if (vars["V1"] && vars["V2"] && vars["Vr"])
 				isFmgcSetup.takeoff = true;
 		} else if (pfDisp.substr(39, 7) == "FROM/TO") {

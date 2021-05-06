@@ -293,7 +293,15 @@ do
       copilot.suspend(plusminus(2000))
       copilot.sequences.afterTakeoffSequence()
     end, "runAsCoroutine")
-      :setLogMsg "After takeoff"
+      :setLogMsg(Event.NOLOGMSG)
+      :stopOn(copilot.events.landing)
+
+    copilot.actions.afterGoAround = copilot.events.goAround:addAction(function()
+      repeat copilot.suspend(1000) until FSL:getThrustLeversPos() == "CLB"
+      copilot.suspend(plusminus(2000))
+      copilot.sequences.afterGoAround()
+    end, "runAsCoroutine")
+      :setLogMsg(Event.NOLOGMSG)
       :stopOn(copilot.events.landing)
   end
 
@@ -389,12 +397,13 @@ if copilot.isVoiceControlEnabled then
   }
 
   copilot.voiceCommands.afterLandingNoApu = VoiceCommand:new {
-    phrase = {
-      "after landing no apu",
-      "after landing hold apu",
-      "check after landing no apu",
-      "check after landing hold apu"
-    },
+    phrase = PhraseBuilder.new()
+      :appendOptional "check"
+      :append "after landing"
+      :append {"hold", "delay"}
+      :appendOptional "the"
+      :append "apu"
+      :build(),
     action = {function()
       copilot.sequences.afterLanding.noApu = true
       copilot.voiceCommands.startApu:activate()
@@ -404,7 +413,7 @@ if copilot.isVoiceControlEnabled then
   }
 
   copilot.voiceCommands.noApu = VoiceCommand:new {
-    phrase = {"no apu", "hold apu"},
+    phrase = {"hold apu", "delay apu"},
     confidence = 0.95,
     action = function()
       copilot.sequences.afterLanding.noApu = true
@@ -428,4 +437,28 @@ if copilot.isVoiceControlEnabled then
     end
   }
 
+end
+
+if copilot.UserOptions.actions.parking == copilot.UserOptions.ENABLED then
+  copilot.events.engineShutdown:addAction(copilot.sequences.parking, "runAsCoroutine")
+    :stopOn(copilot.events.enginesStarted)
+    :setLogMsg(Event.NOLOGMSG)
+end
+
+if copilot.UserOptions.actions.securingTheAircraft == copilot.UserOptions.ENABLED then
+
+  local function adirsAreOff()
+    return 
+      FSL.OVHD_ADIRS_1_Knob:getPosn() == "OFF" and
+      FSL.OVHD_ADIRS_2_Knob:getPosn() == "OFF" and
+      FSL.OVHD_ADIRS_3_Knob:getPosn() == "OFF"
+  end
+
+  copilot.events.engineShutdown:addAction(function()
+    repeat copilot.suspend(1000) until adirsAreOff()
+    copilot.suspend(1000, 5000)
+    copilot.callOnce(copilot.sequences.securingTheAircraft)
+  end, "runAsCoroutine")
+    :stopOn(copilot.events.enginesStarted)
+    :setLogMsg(Event.NOLOGMSG)
 end

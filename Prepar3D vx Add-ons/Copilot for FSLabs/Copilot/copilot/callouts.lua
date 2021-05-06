@@ -11,7 +11,9 @@ local reverserDoorThreshold = 90
 local spoilersDeployedThreshold = 200
 local reactionTime = 300
 
-copilot.callouts = {}
+copilot.callouts = {
+  takeoffFMAreadoutEnabled = copilot.isVoiceControlEnabled and copilot.UserOptions.voice_commands.takeoff_FMA_readout == copilot.UserOptions.ENABLED
+}
 
 function copilot.callouts:resetFlags()
   self.noReverseTimeRef = nil
@@ -21,9 +23,45 @@ function copilot.callouts:resetFlags()
   self.brakeCheck.brakesChecked = false
   self.flightControlsCheck.checkingFlightControls = false
   self.flightControlsCheck.flightControlsChecked = false
+  self.hasFMABeenRead = not self.takeoffFMAreadoutEnabled
 end
 
-local function getFslV1Option() return tonumber(copilot.getFltSimCfg():match("sdac_v1_call=(%d)")) end
+if copilot.callouts.takeoffFMAreadoutEnabled then
+  copilot.voiceCommands.takeoffFMAreadout = VoiceCommand:new {
+    confidence = 0.85,
+    persistent = true,
+    phrase = PhraseBuilder.new()
+      :append "man"
+      :append {
+        "toga",
+        PhraseBuilder.new()
+          :append "flex"
+          :append(table.init(20, 80, 1, tostring))
+          :build "flex"
+      }
+      :append "ass are ass"
+      :appendOptional "runway"
+      :append "autothrust blue"
+      :build(),
+    action = function() copilot.callouts.hasFMABeenRead = true end 
+  }
+    :deactivateOn(copilot.events.airborne)
+
+  copilot.events.enginesStarted:addAction(function()
+    copilot.voiceCommands.takeoffFMAreadout:activate()
+    copilot.callouts.hasFMABeenRead = false
+    while true do
+      copilot.suspend(1000)
+      if not copilot.thrustLeversSetForTakeoff() then
+        copilot.callouts.hasFMABeenRead = false
+      end
+    end
+  end, Action.COROUTINE)
+    :stopOn(copilot.events.engineShutdown, copilot.events.airborne)
+    :setLogMsg(Event.NOLOGMSG)
+end
+
+local function getFslV1Option() return tonumber(copilot.getFltSimCfg():match"sdac_v1_call=(%d)") end
 
 function copilot.callouts:takeoff()
   local FslV1Option = getFslV1Option()
@@ -68,23 +106,25 @@ function copilot.callouts:waitForThrustSet()
   local eng2_N1_prev = copilot.eng2N1()
   local N1_window = 0.5
   local timeWindow = 1000
+  local thrustSet
   repeat
     copilot.suspend(plusminus(timeWindow,0.2))
     eng1_N1 = copilot.eng1N1()
     eng2_N1 = copilot.eng2N1()
-    local thrustSet = eng1_N1 > 80 and eng2_N1 > 80 and math.abs(eng1_N1 - eng1_N1_prev) < N1_window and math.abs(eng2_N1 - eng2_N1_prev) < N1_window
+    thrustSet = eng1_N1 > 80 and eng2_N1 > 80 and math.abs(eng1_N1 - eng1_N1_prev) < N1_window and math.abs(eng2_N1 - eng2_N1_prev) < N1_window
     local skipThis = not thrustSet and copilot.IAS() > 80
     eng1_N1_prev = eng1_N1
     eng2_N1_prev = eng2_N1
-    if thrustSet then
-      copilot.playCallout("thrustSet")
-    end
   until thrustSet or skipThis
+  if thrustSet then
+    repeat copilot.suspend(100) until self.hasFMABeenRead or copilot.IAS() > 50
+    copilot.playCallout("thrustSet")
+  end
 end
 
 function copilot.callouts:waitForOneHundred()
   while true do
-    if copilot.radALT() < 10 and copilot.IAS() >= 100 then
+    if copilot.IAS() >= 100 then
       copilot.playCallout("oneHundred", PFD_delay)
       return
     end
@@ -94,17 +134,17 @@ end
 
 function copilot.callouts:waitForV1(V1)
   while true do
-    copilot.suspend(100)
-    if copilot.radALT() < 10 and copilot.IAS() >= V1 then
+    if copilot.IAS() >= V1 then
       copilot.playCallout("V1", PFD_delay)
       return
     end
+    copilot.suspend(100)
   end
 end
 
 function copilot.callouts:waitForVr(Vr)
   while true do
-    if copilot.radALT() < 10 and copilot.IAS() >= Vr then
+    if copilot.IAS() >= Vr then
       copilot.playCallout("rotate", PFD_delay)
       return
     end
@@ -235,11 +275,6 @@ local flightControlsCheck = {
 setmetatable(flightControlsCheck, flightControlsCheck)
 copilot.callouts.flightControlsCheck = flightControlsCheck
 
-function copilot.callouts.flightControlsCheck:randomDelay()
-  copilot.sleep(plusminus(150))
-  if prob(0.2) then copilot.sleep(100) end
-end
-
 local ecpButtons = table.map({
   "ENG", "BLEED", "PRESS", "ELEC", "HYD", "FUEL", 
   "APU", "COND", "DOOR", "WHEEL", "STS"
@@ -278,6 +313,15 @@ function copilot.callouts.flightControlsCheck:__call()
   local cycle = 0
   local timeLastAction = ipc.elapsedtime()
 
+  local stickDelay, rudDelay = 700, 400
+
+  local function onChecked(calloutFile, delay)
+    confirmFctlEcamPage() 
+    copilot.playCallout(calloutFile, plusminus(delay))
+    timeLastAction = ipc.elapsedtime()
+    self.checkingFlightControls = true
+  end
+
   repeat
     copilot.suspend(100)
     if copilot.isVoiceControlEnabled then
@@ -290,95 +334,51 @@ function copilot.callouts.flightControlsCheck:__call()
         end
       end
     end
+    
     -- full left aileron
     if not fullLeft and not ((fullUp or fullDown) and not yNeutral) and self:fullLeft() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("fullLeft_1")
+      onChecked( "fullLeft_1", stickDelay)
       fullLeft = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- full right aileron
     if not fullRight and not ((fullUp or fullDown) and not yNeutral) and self:fullRight() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("fullRight_1")
+      onChecked("fullRight_1", stickDelay)
       fullRight = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- neutral after full left and full right aileron
     if fullLeft and fullRight and not xNeutral and self:stickNeutral() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("neutral_1")
+      onChecked("neutral_1", stickDelay)
       xNeutral = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- full up
     if not fullUp and not ((fullLeft or fullRight) and not xNeutral) and self:fullUp() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("fullUp")
+      onChecked("fullUp", stickDelay)
       fullUp = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- full down
     if not fullDown and not ((fullLeft or fullRight) and not xNeutral) and self:fullDown() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("fullDown")
+      onChecked("fullDown", stickDelay)
       fullDown = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- neutral after full up and full down
     if fullUp and fullDown and not yNeutral and self:stickNeutral() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("neutral_3")
+      onChecked("neutral_2", stickDelay)
       yNeutral = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- full left rudder
     if not fullLeftRud and xNeutral and yNeutral and self:fullLeftRud() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("fullLeft_2")
+      onChecked("fullLeft_2", rudDelay)
       fullLeftRud = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- full right rudder
     if not fullRightRud and xNeutral and yNeutral and self:fullRightRud() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("fullRight_2")
+      onChecked("fullRight_2", rudDelay)
       fullRightRud = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
     -- neutral after full left and full right rudder
     if fullLeftRud and fullRightRud and not rudNeutral and self:rudNeutral() then
-      confirmFctlEcamPage() 
-      copilot.sleep(ECAM_delay)
-      self:randomDelay()
-      copilot.playCallout("neutral_2")
+      onChecked("neutral_2", rudDelay)
       rudNeutral = true
-      timeLastAction = ipc.elapsedtime()
-      self.checkingFlightControls = true
     end
 
   until xNeutral and yNeutral and rudNeutral
@@ -476,7 +476,7 @@ end
 
 function copilot.callouts:start()
 
-  copilot.events.chocksSet:addAction(function() self:resetFlags() end)
+  copilot.events.chocksSet:addAction(function() self:resetFlags() end):setLogMsg(Event.NOLOGMSG)
 
   if copilot.UserOptions.callouts.PM_announces_brake_check == 1 then
     if copilot.isVoiceControlEnabled then
@@ -485,7 +485,7 @@ function copilot.callouts:start()
         if not self.brakeCheck.brakesChecked then
           copilot.voiceCommands.brakeCheck:activate()
         end
-      end)
+      end):setLogMsg(Event.NOLOGMSG)
 
       copilot.voiceCommands.brakeCheck
         :activateOn(copilot.events.enginesStarted)
@@ -530,7 +530,7 @@ function copilot.callouts:start()
       copilot.events.takeoffCancelled:addAction(flightControlsCheckAction)
     end
     
-    copilot.events.engineShutdown:addAction(function() self.flightControlsCheck.flightControlsChecked = false end)
+    copilot.events.engineShutdown:addAction(function() self.flightControlsCheck.flightControlsChecked = false end):setLogMsg(Event.NOLOGMSG)
   end
 
   copilot.events.takeoffInitiated:addAction(function() self:takeoff() end, Action.COROUTINE)
@@ -551,7 +551,7 @@ function copilot.callouts:start()
 
   copilot.events.landing:addAction(function()
     self.landedTime = copilot.getTimestamp()
-  end)
+  end):setLogMsg(Event.NOLOGMSG)
 end
 
 copilot.callouts:resetFlags()

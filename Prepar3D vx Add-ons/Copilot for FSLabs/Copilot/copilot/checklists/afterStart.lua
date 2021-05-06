@@ -10,7 +10,7 @@ copilot.checklists.afterStart = afterStart
 afterStart:appendItem {
   label = "antiIce",
   displayLabel = "Anti-Ice",
-  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
+  response = {ON = VoiceCommand:new {"on", "engine anti-ice on"}, OFF = VoiceCommand:new "off"},
   onResponse = function(check, _, label)
     local on1, on2 = FSL.OVHD_AI_Eng_1_Anti_Ice_Button:isDown(), FSL.OVHD_AI_Eng_2_Anti_Ice_Button:isDown()
     if label == "ON" then
@@ -24,17 +24,6 @@ afterStart:appendItem {
 }
 
 afterStart:appendItem {
-  label = "askidNwStrg",
-  displayLabel = "A/SKID & N/W STRG",
-  response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, _, label)
-    if check(label == "ON", "The correct response is 'on'") then
-      check(FSL.MIP_BRAKES_ASKID_Button:getPosn() == "ON", "A/SKID & N/W STRG isn't on")
-    end
-  end
-}
-
-afterStart:appendItem {
   label = "ecamStatus",
   displayLabel = "ECAM Status",
   response = VoiceCommand:new "checked"
@@ -43,8 +32,8 @@ afterStart:appendItem {
 local loadsheetCG
 
 afterStart:appendItem {
-  label = "trim",
-  displayLabel = "Trim",
+  label = "pitchTrim",
+  displayLabel = "Pitch Trim",
   response = VoiceCommand:new(
     PhraseBuilder.new()
       :append {
@@ -52,8 +41,8 @@ afterStart:appendItem {
         asString = "CG value", 
         choices = table.init(200, 380, 1, function(i) return tostring(i / 10) end)
       }
-      :appendOptional {"rudder", "and"}
-      :append "zero"
+      :appendOptional "percent"
+      :appendOptional "set"
       :build()
   ),
   beforeChallenge = function() loadsheetCG = FSL.atsuLog:getMACTOW() end,
@@ -73,4 +62,10 @@ afterStart:appendItem {
       checkCG(copilot.CG(), "SimConnect CG") 
     end
   end
+}
+
+afterStart:appendItem {
+  label = "rudderTrim",
+  displayLabel = "Rudder Trim",
+  response = VoiceCommand:new "zero"
 }

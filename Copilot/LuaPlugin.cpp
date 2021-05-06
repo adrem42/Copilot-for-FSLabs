@@ -117,7 +117,7 @@ void writeStruct(sol::variadic_args va)
 	parseWriteStructArgs(va, 0, 0, 0, TYPE_NONE);
 }
 
-void keypress(SHORT keyCode, std::vector<SHORT>& modifiers)
+void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers)
 {
 	SetFocus(SimInterface::p3dWnd);
 
@@ -215,12 +215,11 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua_settable(lua.lua_state(), LUA_REGISTRYINDEX);
 
 	lua["copilot"].get_or_create<sol::table>();
-	lua["copilot"]["keypress"] = [&](const std::string& s) {
-		sol::unsafe_function f = this->lua["Bind"]["parseKeys"];
-		sol::table keyCodes = f(s);
-		auto keyCode = keyCodes.get<SHORT>("keyCode");
-		auto shifts = keyCodes.get<std::vector<SHORT>>("shifts");
-		keypress(keyCode, shifts);
+	lua["copilot"]["keypress"] = [&](sol::this_state ts, const std::string& s) {
+		sol::state_view lua(ts);
+		sol::unsafe_function f = lua["Bind"]["parseKeys"];
+		sol::unsafe_function_result ufr = f(s);
+		keypress(ufr.get<SHORT>(0), ufr.get<std::vector<SHORT>>(1));
 	};
 	lua["copilot"]["isSimRunning"] = copilot::simRunning();
 
@@ -439,6 +438,9 @@ void LuaPlugin::run()
 {
 	try {
 		initLuaState(lua);
+	}
+	catch (ScriptStartupError& err) {
+		throw err;
 	}
 	catch (std::exception& ex) {
 		throw ScriptStartupError(ex.what());

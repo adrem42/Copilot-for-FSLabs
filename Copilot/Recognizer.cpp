@@ -37,15 +37,19 @@ Recognizer::Phrase::PhraseElement::PhraseElement(std::vector<Choice> choices, st
 	if (choices.size() == 1) {
 		asString += this->choices[0].asString;
 	} else {
+
+		asString += L"{";
 		
 		for (size_t i = 0; i < this->choices.size(); ++i) {
-			asString += L"{";
+			asString += L"(";
 			asString += this->choices[i].asString;
-			asString += L"}";
+			asString += L")";
 			if (i < this->choices.size() - 1) {
 				asString += L"+";
 			}
 		}
+
+		asString += L"}";
 	}
 	if (optional)
 		asString += L"]";
@@ -174,6 +178,14 @@ Recognizer::PhraseBuilder& Recognizer::PhraseBuilder::append(LuaChoiceMap phrase
 {
 	std::vector<Phrase::PhraseElement::Choice> choices;
 
+	auto checkValidElement = [](sol::object&& o) {
+		if (o.is<Phrase::ChoiceValue>()) 
+			return o.as<Phrase::ChoiceValue>();
+		sol::state_view lua(o.lua_state());
+		std::string s = lua["tostring"](o);
+		throw "Invalid element: " + s;
+	};
+
 	for (auto& element : phraseElement) {
 		std::wstring name;
 		Phrase::ChoiceValue varValue;
@@ -181,19 +193,14 @@ Recognizer::PhraseBuilder& Recognizer::PhraseBuilder::append(LuaChoiceMap phrase
 			sol::table t = element;
 			if (t["propVal"].get_type() == sol::type::string)
 				name = t.get<std::wstring>("propVal");
-			if (!static_cast<sol::object>(t["choice"]).is<Phrase::ChoiceValue>()) {
-				sol::state_view lua(element.lua_state());
-				std::string s = lua["tostring"](element);
-				throw "Invalid element: " + s;
-			}
-			varValue = t.get<Phrase::ChoiceValue>("choice");
+			varValue = checkValidElement(t["choice"]);
 		} else {
 			if (!element.is<Phrase::ChoiceValue>()) {
 				sol::state_view lua(element.lua_state());
 				std::string s = lua["tostring"](element);
 				throw "Invalid element: " + s;
 			}
-			varValue = element.as<Phrase::ChoiceValue>();
+			varValue = checkValidElement(std::move(element));
 		}
 		choices.emplace_back(varValue, name);
 	}
@@ -212,7 +219,7 @@ Recognizer::PhraseBuilder& Recognizer::PhraseBuilder::append(std::vector<Phrase:
 	return *this;
 }
 
-Recognizer::Recognizer()
+Recognizer::Recognizer(int deviceId)
 {
 
 	throwOnBadResult("CoInitialize error", CoInitialize(NULL));
@@ -222,11 +229,21 @@ Recognizer::Recognizer()
 		recognizer.CoCreateInstance(CLSID_SpInprocRecognizer)
 	);
 
-	throwOnBadResult(
-		"Error in SpCreateDefaultObjectFromCategoryId",
-		SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio)
-	);
-
+	if (deviceId == DEFAULT_DEVICE_ID) {
+		throwOnBadResult(
+			"Error in SpCreateDefaultObjectFromCategoryId",
+			SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio)
+		);
+	} else {
+		CComPtr<IEnumSpObjectTokens> enumTokens;
+		HRESULT hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
+		CComPtr<ISpObjectToken> objectToken;
+		hr = enumTokens->Item(deviceId, &objectToken);
+		throwOnBadResult("Error setting non-default input device", hr);
+		hr = SpCreateObjectFromToken(objectToken, &audio);
+		throwOnBadResult("Error in SpCreateObjectFromToken", hr);
+	}
+	
 	throwOnBadResult("Error in SetInput", recognizer->SetInput(audio, TRUE));
 
 	throwOnBadResult("Error creating reco context", recognizer->CreateRecoContext(&recoContext));

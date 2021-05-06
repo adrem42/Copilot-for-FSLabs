@@ -2,15 +2,22 @@
 local beforeStart = Checklist:new(
   "beforeStart",
   "Before Start to the Line",
-  VoiceCommand:new({"before start checklist", "before start to the line"}, 0.9)
+  VoiceCommand:new("before start checklist", 0.9)
 )
 
 copilot.checklists.beforeStart = beforeStart
 
 beforeStart:appendItem {
   label = "cockpitPrep",
-  displayLabel = "Cockpit Preparation",
-  response = VoiceCommand:new("completed", 0.9)
+  displayLabel = "Cockpit Prep",
+  response = VoiceCommand:new("completed", 0.9),
+  acknowledge = "cockpitPrepCompleted"
+}
+
+beforeStart:appendItem {
+  label = "gearPinsAndCovers",
+  displayLabel = "Gear Pins and Covers",
+  response = VoiceCommand:new "removed"
 }
 
 beforeStart:appendItem {
@@ -20,6 +27,17 @@ beforeStart:appendItem {
   onResponse = function(check)
     check(FSL.OVHD_SIGNS_NoSmoking_Switch:getPosn() ~= "OFF", "No smoking switch must be ON or AUTO")
     check(FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() == "ON", "Seat belts switch must be ON")
+  end
+}
+
+beforeStart:appendItem {
+  label = "adirs",
+  displayLabel = "ADIRS",
+  response = VoiceCommand:new "nav",
+  onResponse = function(check)
+    check(FSL.OVHD_ADIRS_1_Knob:getPosn() == "NAV", "ADIRS 1 not NAV")
+    check(FSL.OVHD_ADIRS_2_Knob:getPosn() == "NAV", "ADIRS 2 not NAV")
+    check(FSL.OVHD_ADIRS_3_Knob:getPosn() == "NAV", "ADIRS 3 not NAV")
   end
 }
 
@@ -80,66 +98,7 @@ beforeStart:appendItem {
 beforeStart:appendItem {
   label = "toData",
   displayLabel = "TO Data",
-  response = VoiceCommand:new {
-    confidence = 0.9, 
-    phrase = PhraseBuilder.new()
-      :append "V one"
-      :append(PhraseUtils.getPhrase("spelledNumber", 3), "V1")
-      :append "V two"
-      :append(PhraseUtils.getPhrase("spelledNumber", 3), "V2")
-      :append {
-        "TOGA",
-        PhraseBuilder.new()
-          :append "FLEX"
-          :append {
-            propName = "flexTemp",
-            asString = "FLEX temp",
-            choices = table.init(40, 80, 1, tostring)
-          }
-          :build()
-      }
-      :build()
-  },
-  beforeChallenge = FSL.PED_MCDU_KEY_PERF,
-  onResponseCoroutine = true,
-  onResponse = function(check, res)
-    local disp
-    while true do
-      if checkWithTimeout(1000, function()
-        disp = FSL.MCDU:getString()
-        if disp:find "TAKE OFF RWY" then return true end
-        copilot.suspend(100) -- this allows the user to open the menu and skip the checklist item if the loop is stuck for whatever reason
-      end) then break end
-      FSL.PED_MCDU_KEY_PERF()
-    end
-    local selectedV1 = disp:match("^%d%d%d", 49)
-    local selectedV2 = disp:match("^%d%d%d", 145)
-    local selectedFlexTemp = disp:match("^%d%d", 215)
-    if not check(selectedV1 and selectedV2, "No V-Speeds entered") then return end 
-    local responseV1 = PhraseUtils.getPhraseResult("spelledNumber", res, "V1")
-    local responseV2 = PhraseUtils.getPhraseResult("spelledNumber", res, "V2")
-    check(responseV1 == selectedV1, ("MCDU V1 is %s (you said %s)"):format(selectedV1, responseV1))
-    check(responseV2 == selectedV2, ("MCDU V2 is %s (you said %s)"):format(selectedV2, responseV2))
-    local responseFlex = res:getProp "flexTemp"
-    if selectedFlexTemp then
-      check(
-        responseFlex == selectedFlexTemp, 
-        ("MCDU FLEX temp is %s (you said %s)"):format(selectedFlexTemp, responseFlex or "TOGA")
-      )
-    else
-      check(not responseFlex, "No FLEX temp was entered into the MCDU")
-    end
-  end
+  response = VoiceCommand:new "set"
 }
 
-beforeStart:appendItem {
-  label = "baroRef",
-  displayLabel = "Baro REF",
-  response = VoiceCommand:new {
-    confidence = 0.9, 
-    phrase = PhraseBuilder.new()
-      :append(PhraseUtils.getPhrase("spelledNumber", 4))
-      :appendOptional "set"
-      :build()
-  }
-}
+beforeStart:appendItem(require"copilot.checklists.common".baroRefQNH)

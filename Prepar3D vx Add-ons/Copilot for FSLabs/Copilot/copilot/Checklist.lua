@@ -74,12 +74,12 @@ function Checklist:doneEvent()
   return self._doneEvent
 end
 
-function Checklist:_playCallout(fileName)
+function Checklist:_playCallout(fileName, delay)
   local prefix = "checklists."
   if fileName:sub(1, #prefix) == prefix then
-    copilot.playCallout(fileName)
+    copilot.playCallout(fileName, delay)
   else
-    copilot.playCallout(prefix .. self.label .. "." .. fileName)
+    copilot.playCallout(prefix .. self.label .. "." .. fileName, delay)
   end
 end
 
@@ -252,6 +252,12 @@ function Checklist:_executeItem(item)
   if item.beforeChallenge then
     item.beforeChallenge(item)
   end
+  if not copilot.usingTTScallouts then
+    copilot.sleep(200, 700)
+    if prob(0.5) then
+      copilot.sleep(200, 700)
+    end
+  end
   self:_playCallout(item.label)
   item.numRetries = -1
   return self:_awaitResponse(item)
@@ -303,8 +309,11 @@ function Checklist:execute()
   if not copilot.getCallbackStatus(coroutine.running()) then
     error("Checklist.execute() must be called from a coroutine added via a copilot API", 2)
   end
+
   copilot.sleep(500, 3000)
-  self:_playCallout "announce"
+  if copilot.calloutExists("checklists." .. self.label .. ".announce") then
+    self:_playCallout "announce"
+  end
 
   self:_suspendVoiceCommands()
 
@@ -334,6 +343,7 @@ function Checklist:execute()
       break
     elseif res.res == "checklist_continue" then 
       if not res.disableDefault and (res.acknowledge or item.acknowledge) then
+        copilot.sleep(200, 1000)
         self:_playCallout(res.acknowledge or item.acknowledge)
       end
       i = i + 1
