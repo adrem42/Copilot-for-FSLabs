@@ -399,8 +399,8 @@ function copilot.sequences.parking()
     FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftPress"
     copilot.sleep(1000, 2000)
     FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftRelease"
-    FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleDown()
-    FSL.OVHD_APU_Master_Button:toggleDown()
+    FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleUp()
+    FSL.OVHD_APU_Master_Button:toggleUp()
   end
 
 end
@@ -414,8 +414,8 @@ function copilot.sequences.securingTheAircraft()
   FSL.OVHD_EXTLT_Wing_Switch "OFF"
   FSL.OVHD_EXTLT_NavLogo_Switch "OFF"
   FSL.OVHD_EXTLT_RwyTurnoff_Switch "OFF"
-  FSL.OVHD_EXTLT_Land_L_Switch "OFF"
-  FSL.OVHD_EXTLT_Land_R_Switch "OFF"
+  FSL.OVHD_EXTLT_Land_L_Switch "RETR"
+  FSL.OVHD_EXTLT_Land_R_Switch "RETR"
   FSL.OVHD_EXTLT_Nose_Switch "OFF"
 
   FSL.OVHD_SIGNS_EmerExitLight_Switch "OFF"

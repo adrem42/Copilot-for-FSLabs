@@ -13,7 +13,7 @@ afterTakeoff:appendItem {
   response = VoiceCommand:new "up",
   onResponse = function(check)
     local noseGearUp = ipc.readUD(0x0BEC) == 0
-    local rightGearUp = ipc.readZD(0x0BF0) == 0
+    local rightGearUp = ipc.readUD(0x0BF0) == 0
     local leftGearUp = ipc.readUD(0x0BF4) == 0
     check(noseGearUp, "Nose gear not up")
     check(rightGearUp, "Right gear not up")
@@ -37,7 +37,7 @@ afterTakeoff:appendItem {
   label = "packs",
   displayLabel = "Packs",
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     if not check(label == "ON", "The correct response is 'on'") then return end
     check(FSL.OVHD_AC_Pack_1_Button:isDown(), "Left pack is off")
     check(FSL.OVHD_AC_Pack_2_Button:isDown(), "Right pack is off")

@@ -23,7 +23,7 @@ beforeStart:appendItem {
 beforeStart:appendItem {
   label = "signs",
   displayLabel = "Signs",
-  response = VoiceCommand:new({"on auto", "on and auto"}, 0.9),
+  response = VoiceCommand:new({"on auto", "on and auto", "onanauto", "on anauto"}, 0.9),
   onResponse = function(check)
     check(FSL.OVHD_SIGNS_NoSmoking_Switch:getPosn() ~= "OFF", "No smoking switch must be ON or AUTO")
     check(FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() == "ON", "Seat belts switch must be ON")

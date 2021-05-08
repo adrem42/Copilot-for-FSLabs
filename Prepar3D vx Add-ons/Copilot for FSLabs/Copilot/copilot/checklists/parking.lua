@@ -13,7 +13,7 @@ parking:appendItem {
   response = {ON = VoiceCommand:new "on", OFF = VoiceCommand:new "off"},
   onResponse = function(check, _, label)
     if check(label == "ON", "The correct response is 'on'") then
-      check(not FSL.OVHD_AC_Eng_APU_Bleed_Button:isDown(), "APU bleed isn't on")
+      check(FSL.OVHD_AC_Eng_APU_Bleed_Button:isDown(), "APU bleed isn't on")
     end
   end
 }
@@ -43,29 +43,29 @@ parking:appendItem {
   label = "externalLights",
   displayLabel = "External Lights",
   response = {OFF = VoiceCommand:new "off", NAV_LOGO_ON = VoiceCommand:new "nav logo on"},
-  onResponse = function(check, label)
+  onResponse = function(check, _, label)
     local lightSwitches = {
-      FSL.OVHD_EXTLT_Beacon_Switch,
-      FSL.OVHD_EXTLT_Land_L_Switch,
-      FSL.OVHD_EXTLT_Land_R_Switch,
-      FSL.OVHD_EXTLT_Nose_Switch,
-      FSL.OVHD_EXTLT_RwyTurnoff_Switch,
-      FSL.OVHD_EXTLT_Strobe_Switch,
-      FSL.OVHD_EXTLT_Wing_Switch
+      [FSL.OVHD_EXTLT_Beacon_Switch] = "OFF",
+      [FSL.OVHD_EXTLT_Land_L_Switch] = "RETR",
+      [FSL.OVHD_EXTLT_Land_R_Switch] = "RETR",
+      [FSL.OVHD_EXTLT_Nose_Switch] = "OFF",
+      [FSL.OVHD_EXTLT_RwyTurnoff_Switch] = "OFF",
+      [FSL.OVHD_EXTLT_Strobe_Switch] = "OFF",
+      [FSL.OVHD_EXTLT_Wing_Switch] = "OFF"
     }
     local function checkSwitchesOff()
-      for _, switch in ipairs(lightSwitches) do
-        if switch:getPosn() ~= "OFF" then
+      for switch, offPos in pairs(lightSwitches) do
+        if switch:getPosn() ~= offPos then
           check "Not all switches are off"
           return
         end
       end
     end
     if label == "OFF" then
-      lightSwitches[#lightSwitches+1] = FSL.OVHD_EXTLT_NavLogo_Switch
+      lightSwitches[FSL.OVHD_EXTLT_NavLogo_Switch] = "OFF"
       checkSwitchesOff()
     elseif label == "NAV_LOGO_ON" then
-      check(FSL.OVHD_EXTLT_NavLogo_Switch:getPosn() == "OFF", "The nav/logo switch isn't 'on'")
+      check(FSL.OVHD_EXTLT_NavLogo_Switch:getPosn() ~= "OFF", "The nav/logo switch isn't on")
       checkSwitchesOff()
     end
   end
@@ -94,19 +94,19 @@ parking:appendItem  {
 }
 
 parking:appendItem {
-  label = "park",
+  label = "parkingBrakeAndChocks",
   displayLabel = "Park BRK / Chocks",
-  response = VoiceCommand.new(
+  response = VoiceCommand:new(
     PhraseBuilder.new()
-      :append({"ON", "OFF"}, "parkingBrake")
+      :append({"on", "off"}, "parkingBrake")
       :append "and"
       :append({"in", "out"}, "chocks")
       :build()
   ),
-  onResponse = function(check, _, res)
+  onResponse = function(check, res)
     check(
-      res:getProp "parkingBrake" == FSL.PED_PARK_BRAKE_Switch:getPosn(),
-      "Parking brake isn't " .. res:getProp"parkingBrake":lower()
+      res:getProp"parkingBrake" == FSL.PED_PARK_BRAKE_Switch:getPosn():lower(),
+      "Parking brake isn't " .. res:getProp"parkingBrake"
     )
     local chocksResponse = res:getProp "chocks"
     local chocksActual = FlightPhaseProcessor.chocksOn() and "in" or "out"

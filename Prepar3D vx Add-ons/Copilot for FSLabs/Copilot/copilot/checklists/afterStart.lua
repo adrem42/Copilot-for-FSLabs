@@ -7,6 +7,10 @@ local afterStart = Checklist:new(
 
 copilot.checklists.afterStart = afterStart
 
+local function takeoffPerfEAIon()
+  return FSL.atsuLog:get():match ".*A-ICE%s+(%a+)" ~= "OFF"
+end
+
 afterStart:appendItem {
   label = "antiIce",
   displayLabel = "Anti-Ice",
@@ -14,8 +18,10 @@ afterStart:appendItem {
   onResponse = function(check, _, label)
     local on1, on2 = FSL.OVHD_AI_Eng_1_Anti_Ice_Button:isDown(), FSL.OVHD_AI_Eng_2_Anti_Ice_Button:isDown()
     if label == "ON" then
-      check(on1, "ENG 1 anti-ice is off")
-      check(on2, "ENG 2 anti-ice is off")
+      if check(takeoffPerfEAIon(), "The takeoff performance was calculated with EAI off") then 
+        check(on1, "ENG 1 anti-ice is off")
+        check(on2, "ENG 2 anti-ice is off")
+      end
     elseif label == "OFF" then
       check(not on1, "ENG 1 anti-ice is on")
       check(not on2, "ENG 2 anti-ice is on")

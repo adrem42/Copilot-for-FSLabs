@@ -20,10 +20,10 @@
 #include "LuaPlugin.h"
 #include "FSL2LuaScript.h"
 #include "CopilotScript.h"
-#include <filesystem>
 #include <thread>
 #include <sapi.h>
 #include <sphelper.h>
+#include <fstream>
 
 using namespace std::literals::chrono_literals;
 using namespace P3D;
@@ -95,10 +95,16 @@ namespace copilot {
 		return lua;
 	}
 
+	bool fileExists(const std::string& name)
+	{
+		std::ifstream f(name.c_str());
+		return f.good();
+	}
+
 	void launchFSL2LuaScript()
 	{
 		auto path = appDir + (isFslAircraft ? "scripts\\autorun.lua" : "scripts_non_fsl\\autorun.lua");
-		if (std::filesystem::exists(path)) {
+		if (fileExists(path)) {
 			std::thread([=] {
 				LuaPlugin::launchScript<FSL2LuaScript>(path);
 			}).detach();

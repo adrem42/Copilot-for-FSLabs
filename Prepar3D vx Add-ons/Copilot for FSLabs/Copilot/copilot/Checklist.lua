@@ -57,8 +57,8 @@ function Checklist:new(label, displayLabel, trigger)
     trigger = trigger,
     _action = trigger:addAction(function() return checklist:execute() end, Action.COROUTINE)
   }, self)
-  checklist._action:doneEvent():addAction(function(...)
-    if select(1, ...) == copilot.THREAD_REMOVED then
+  checklist._action:doneEvent():addAction(function(_, res)
+    if res == copilot.THREAD_REMOVED then
       resetCurrChecklist()
       if self._doneEvent then self._doneEvent:trigger "error" end
     end

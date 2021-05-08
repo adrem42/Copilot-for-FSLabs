@@ -19,7 +19,7 @@ function Bind.parseKeys(input)
   local extended = false
   for keyString in input:gmatch("[^(%+)]+") do
     keyCount = keyCount + 1
-    keyString = keyString:lower()
+    keyString = keyString:upper()
     if keyString == "extended" then
       extended = true
     else
@@ -30,7 +30,7 @@ function Bind.parseKeys(input)
         local maybeKey = keyCodes.keys[keyString]
         if not maybeKey then
           assert(#keyString == 1, "Invalid key: " .. keyString)
-          maybeKey = assert(string.byte(keyString:upper()), "Invalid key: " .. keyString)
+          maybeKey = assert(string.byte(keyString), "Invalid key: " .. keyString)
         end
         assert(mainKeyCode == nil, "Can't have more than one non-modifier key")
         mainKeyCode = maybeKey

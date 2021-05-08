@@ -32,10 +32,9 @@
 
 <h2>Contents</h2>
 <ul>
-<li><a href="#Checklists_are_text_to_speech_only_for_now">Checklists are text-to-speech only for now </a></li>
 <li><a href="#The_checklist_flow">The checklist flow </a></li>
 <li><a href="#_Checklists__section_in_options_ini">[Checklists] section in options.ini </a></li>
-<li><a href="#List_of_checklists">List of checklists </a></li>
+<li><a href="#List_of_checklists">List of checklists  </a></li>
 <li><a href="#Modifying_and_creating_checklists">Modifying and creating checklists </a></li>
 </ul>
 
@@ -81,17 +80,10 @@
 
 <h1>Checklists</h1>
 
-<p><a name="Checklists_are_text_to_speech_only_for_now"></a></p>
-<h2>Checklists are text-to-speech only for now</h2>
-
-<p>The voice sets haven't been updated with checklist callouts yet. You'll have to enable text-to-speech by setting sound_set=TTS in options.ini. </p>
-
-<p>The volume is controlled with the ACP INT knob, like the regular callouts. The maximum volume is a bit low — I had to reduce my FSLabs volume sliders to 50% for an optimal balance. </p>
-
 <p><a name="The_checklist_flow"></a></p>
 <h2>The checklist flow</h2>
 
-<p>The trigger phrases for the checklists are listed <a href="#List_of_checklists">below</a>.
+<p>To start a checklist, speak its trigger phrase.
 When you start a checklist, all voice commands that aren't associated with it are suspended (their states are restored when the checklist completes).</p>
 
 <p>In addition to the normal response to a challenge, you may say "restart checklist", "say again" or "standby checklist".
@@ -114,35 +106,241 @@ The menu lets you skip the current checklist item as well as cancel or skip the 
 Both cancelling and skipping stop the execution of the current checklist.
 The difference is that cancelling will also reactivate the checklist's trigger voice command.</p>
 
-<p><a name="List_of_checklists"></a></p>
+<p><a name="List_of_checklists_"></a></p>
 <h2>List of checklists</h2>
-
-<h5>"trigger phrase"</h5>
-<p>When the copilot starts listening for the trigger phrase<br><br></p>
-
-<h5>"before start to the line" or "before start checklist"</h5>
-<p>If preflight action enabled: when preflight action is finished, otherwise: when the chocks are set.<br><br></p>
-
-<h5>"before start below the line" or "below the line"</h5>
-<p>When before start to the line is finished.<br><br></p>
-
-<h5>"after start checklist"</h5>
-<p>If after_start action enabled: when after_start action is finished, otherwise: when the engines are started.<br><br></p>
-
-<h5>"before takeoff to the line" or "before takeoff checklist"</h5>
-<p>When after start checklist is finished.<br><br></p>
-
-<h5>"before takeoff below the line" or "below the line"</h5>
-<p>If lineup action enabled: when lineup action is finished and before takeoff to the line is finished, otherwise: when before takeoff to the line is finished.<br><br></p>
-
-<h5>"landing checklist"</h5>
-<p>After you descend below 10000 and IAS is below 200 kts.<br><br></p>
-
-<h5>"parking checklist"</h5>
-<p>On engine shutdown<br><br></p>
-
-<h5>"securing the aircraft checklist"</h5>
-<p>When the parking checklist is finished<br><br></p>
+<h5>Response phrase syntax explanation:</h5>
+<p>Curly brackets denote a multiple choice phrase element, with each choice inside round brackets.<br><br>
+Square brackets denote an optional phrase element.<br><br>
+... means 'match anything'.<br><br></p>
+<hr/>
+<h3>Before Start to the Line</h3>
+<p>Trigger phrases: <strong>"before start checklist"</strong><br><br>
+When it's available: If preflight action enabled: when preflight action is finished, otherwise: when the chocks are set.<br><br></p>
+<h6>Cockpit Prep</h6>
+<p>completed
+<br><br></p>
+<h6>Gear Pins and Covers</h6>
+<p>removed
+<br><br></p>
+<h6>Signs</h6>
+<p>on auto<br><br>
+on and auto<br><br>
+onanauto<br><br>
+on anauto
+<br><br></p>
+<h6>ADIRS</h6>
+<p>nav
+<br><br></p>
+<h6>Fuel Quantity</h6>
+<p>&lt;1-100&gt; {(thousand [&lt;1-9&gt; hundred] [kilograms])+(tonnes)}
+<br><br></p>
+<h6>TO Data</h6>
+<p>set
+<br><br></p>
+<h6>Baro REF</h6>
+<p>[{(cue an h)+(q n h)}] &lt;3-4-digit spelled number&gt; [set]
+<br><br></p>
+<hr/>
+<h3>Before Start below the Line</h3>
+<p>Trigger phrases: <strong>"before start below the line"</strong>, <strong>"below the line"</strong><br><br>
+When it's available: When before start to the line is finished.<br><br></p>
+<h6>Windows / Doors</h6>
+<p>closed
+<br><br></p>
+<h6>Beacon</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<h6>THR Levers</h6>
+<p>idle
+<br><br></p>
+<h6>Parking Brake</h6>
+<p>off<br><br>
+released<br><br>
+on<br><br>
+set
+<br><br></p>
+<hr/>
+<h3>After start</h3>
+<p>Trigger phrases: <strong>"after start checklist"</strong><br><br>
+When it's available: If after_start action enabled: when after_start action is finished, otherwise: when the engines are started.<br><br></p>
+<h6>Anti-Ice</h6>
+<p>off<br><br>
+on<br><br>
+engine anti-ice on
+<br><br></p>
+<h6>ECAM Status</h6>
+<p>checked
+<br><br></p>
+<h6>Pitch Trim</h6>
+<p>&lt;CG value&gt; [percent] [set]
+<br><br></p>
+<h6>Rudder Trim</h6>
+<p>zero
+<br><br></p>
+<hr/>
+<h3>Before Takeoff to the Line</h3>
+<p>Trigger phrases: <strong>"before takeoff checklist"</strong><br><br>
+When it's available: When after start checklist is finished.<br><br></p>
+<h6>Flight Controls</h6>
+<p>checked
+<br><br></p>
+<h6>Flight Instruments</h6>
+<p>checked
+<br><br></p>
+<h6>Briefing</h6>
+<p>confirmed
+<br><br></p>
+<h6>Flap Setting</h6>
+<p>config {(1)+(1 plus f)+(2)+(3)}
+<br><br></p>
+<h6>V1, Vr, V2 / FLEX Temp</h6>
+<p>{(V one &lt;3-digit spelled number&gt; V r &lt;3-digit spelled number&gt; V two &lt;3-digit spelled number&gt;)+(&lt;3-digit spelled number&gt; &lt;3-digit spelled number&gt; &lt;3-digit spelled number&gt;)} {(TOGA)+(no flex [temp])+(FLEX [temp] &lt;FLEX temp&gt;)}
+<br><br></p>
+<h6>ATC</h6>
+<p>set
+<br><br></p>
+<h6>ECAM Memo</h6>
+<p>takeoff no blue
+<br><br></p>
+<hr/>
+<h3>Before Takeoff below the Line</h3>
+<p>Trigger phrases: <strong>"before takeoff below the line"</strong>, <strong>"below the line"</strong><br><br>
+When it's available: If lineup action enabled: when lineup action is finished and before takeoff to the line is finished, otherwise: when before takeoff to the line is finished.<br><br></p>
+<h6>Takeoff RWY</h6>
+<p>[runway] &lt;runway identifier&gt; [confirmed]
+<br><br></p>
+<h6>Cabin Crew</h6>
+<p>advised
+<br><br></p>
+<h6>TCAS</h6>
+<p>t a<br><br>
+t a r a
+<br><br></p>
+<h6>Engine Mode Selector</h6>
+<p>ignition<br><br>
+normal
+<br><br></p>
+<h6>Packs</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<hr/>
+<h3>After Takeoff / Climb</h3>
+<p>Trigger phrases: <strong>"after takeoff climb checklist"</strong><br><br>
+When it's available: If after_takeoff action enabled: when after_takeoff action is finished, otherwise: when you're airborne.<br><br></p>
+<h6>Landing Gear</h6>
+<p>up
+<br><br></p>
+<h6>Flaps</h6>
+<p>retracted
+<br><br></p>
+<h6>Packs</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<hr/>
+<h3>After Takeoff / Climb below the Line</h3>
+<p>Trigger phrases: <strong>"after takeoff climb below the line"</strong>, <strong>"below the line"</strong><br><br>
+When it's available: When the after takeoff climb checklist to the line is finished.<br><br></p>
+<h6>Baro REF</h6>
+<p>standard<br><br>
+standard set
+<br><br></p>
+<hr/>
+<h3>Approach</h3>
+<p>Trigger phrases: <strong>"approach checklist"</strong><br><br>
+When it's available: Below 10'000 feet.<br><br></p>
+<h6>Briefing</h6>
+<p>confirmed
+<br><br></p>
+<h6>ECAM Status</h6>
+<p>checked
+<br><br></p>
+<h6>Seat Belts</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<h6>Baro REF</h6>
+<p>[{(cue an h)+(q n h)}] &lt;3-4-digit spelled number&gt; [set]
+<br><br></p>
+<h6>Minimum</h6>
+<p>... set
+<br><br></p>
+<h6>Engine Mode Selector</h6>
+<p>ignition<br><br>
+normal
+<br><br></p>
+<hr/>
+<h3>Landing</h3>
+<p>Trigger phrases: <strong>"landing checklist"</strong><br><br>
+When it's available: Below 10'000 feet and IAS below 200 kts.<br><br></p>
+<h6>Cabin Crew</h6>
+<p>advised
+<br><br></p>
+<h6>A/THR</h6>
+<p>off<br><br>
+speed
+<br><br></p>
+<h6>Auto-brake</h6>
+<p>low<br><br>
+medium
+<br><br></p>
+<h6>ECAM Memo</h6>
+<p>Landing no blue
+<br><br></p>
+<hr/>
+<h3>Parking</h3>
+<p>Trigger phrases: <strong>"parking checklist"</strong><br><br>
+When it's available: On engine shutdown<br><br></p>
+<h6>APU Bleed</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<h6>Engines</h6>
+<p>off
+<br><br></p>
+<h6>Seat Belts</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<h6>External Lights</h6>
+<p>nav logo on<br><br>
+off
+<br><br></p>
+<h6>Fuel Pumps</h6>
+<p>off
+<br><br></p>
+<h6>Park BRK / Chocks</h6>
+<p>{(on)+(off)} and {(in)+(out)}
+<br><br></p>
+<hr/>
+<h3>Securing the Aircraft</h3>
+<p>Trigger phrases: <strong>"securing the aircraft checklist"</strong><br><br>
+When it's available: When the parking checklist is finished<br><br></p>
+<h6>ADIRS</h6>
+<p>off
+<br><br></p>
+<h6>Oxygen</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<h6>APU Bleed</h6>
+<p>off<br><br>
+on
+<br><br></p>
+<h6>EMER Exit Lights</h6>
+<p>arm<br><br>
+off<br><br>
+on
+<br><br></p>
+<h6>Signs</h6>
+<p>off
+<br><br></p>
+<h6>APU and BAT</h6>
+<p>off
+<br><br></p>
+<hr/>
 
 <p><a name="Modifying_and_creating_checklists"></a></p>
 <h2>Modifying and creating checklists</h2>
@@ -155,9 +353,9 @@ The difference is that cancelling will also reactivate the checklist's trigger v
 
 
 <pre>
-copilot.checklists.beforeStart:replaceItem {
-    label = <span class="string">"toData"</span>,
-    response = VoiceCommand:new <span class="string">"checked"</span>
+copilot.checklists.beforeTakeoff:replaceItem {
+    label = <span class="string">"takeoffSpeedsFlexTemp"</span>,
+    response = VoiceCommand:new <span class="string">"set"</span>,
 }
 
 copilot.checklists.landing:getItem<span class="string">"autoThrust"</span>.response.SPEED:setConfidence(<span class="number">0.8</span>)
@@ -245,7 +443,7 @@ copilot.checklists.beforeStart.trigger:activate()
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-05-06 17:28:18 </i>
+<i style="float:right;">Last updated 2021-05-08 17:30:03 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -134,6 +134,7 @@ return {
       },
       {
         name = "sound_set", 
+        comment = "Name of a folder in copilot/sounds/callouts",
         default = "Peter", 
         type = "string"
       },

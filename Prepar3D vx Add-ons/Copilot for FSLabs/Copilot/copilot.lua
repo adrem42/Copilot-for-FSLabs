@@ -86,7 +86,9 @@ local function wrapSequencesWithLogging()
     afterTakeoffSequence = "After takeoff",
     tenThousandDep = "Above ten thousand",
     tenThousandArr = "Below ten thousand",
-    afterLanding = "After landing"
+    afterLanding = "After landing",
+    parking = "Parking",
+    securingTheAircraft = "Securing the aircraft"
   }
 
   for name, seq in pairs(copilot.sequences) do

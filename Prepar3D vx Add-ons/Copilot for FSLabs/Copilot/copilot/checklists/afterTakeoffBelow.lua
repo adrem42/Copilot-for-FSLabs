@@ -1,11 +1,11 @@
 
 local afterTakeoffBelow = Checklist:new(
-  "afterTakeoff",
+  "afterTakeoffBelow",
   "After Takeoff / Climb below the Line",
   VoiceCommand:new ({"after takeoff climb below the line", "below the line"}, 0.9)
 )
 
-copilot.checklists.afterTakeoff = afterTakeoffBelow
+copilot.checklists.afterTakeoffBelow = afterTakeoffBelow
 
 local standardSet
 
@@ -51,7 +51,7 @@ afterTakeoffBelow:appendItem {
   label = "baroRef",
   displayLabel = "Baro REF",
   response = VoiceCommand:new {"standard", "standard set"},
-  onResponse = function(_, _, res)
+  onResponse = function(_, _, _, res)
     if standardSet then
       res.acknowledge = "standardSet"
     end

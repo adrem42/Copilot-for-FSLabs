@@ -193,9 +193,8 @@ function FSL:getTakeoffFlapsFromMcdu(side)
   side = side or self._pilot
   local sideStr = side == 1 and "CPT" or side == 2 and "FO"
   self[sideStr].PED_MCDU_KEY_PERF()
-  util.sleep(500)
   return withTimeout(5000, function()
-    local disp = self.MCDU:getString()
+    local disp = self[sideStr].MCDU:getString()
     if disp:sub(10,17) == "TAKE OFF" or disp:sub(5,16) == "TAKE OFF RWY" then
       local setting = disp:sub(162,162)
       util.sleep(plusminus(1000))

@@ -297,6 +297,7 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 
 				case EVENT_AIRCRAFT_LOADED:
 				{
+					simStarted = false;
 					aircraftName = std::string(evt->szFileName);
 					break;
 				}

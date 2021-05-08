@@ -46,18 +46,21 @@ end
 ---------------------------------------------------------------
 
 function FlightPhaseProcessor:init()
+  local function initFlightPhaseAndEvent(flightPhase, event)
+    self:setFlightPhase(flightPhase, event, {isInitialEvent = true})
+  end
   if self.initialFlightPhase then
-    self:setFlightPhase(self.initialFlightPhase)
+    initFlightPhaseAndEvent(self.initialFlightPhase)
   elseif not FlightPhaseProcessor.enginesRunning() then
-    self:setFlightPhase(
+    initFlightPhaseAndEvent(
       FlightPhaseProcessor.chocksOn() and 
       flightPhases.onChocks or 
       flightPhases.engineShutdown
     )
   elseif copilot.onGround() then
-    self:setFlightPhase(flightPhases.taxi, events.enginesStarted)
+    initFlightPhaseAndEvent(flightPhases.taxi, events.enginesStarted)
   else
-    self:setFlightPhase(flightPhases.airborne)
+    initFlightPhaseAndEvent(flightPhases.airborne)
   end
 end
 
@@ -79,12 +82,12 @@ events.landing = Event:new{logMsg = "Landing"}
 events.goAround = Event:new{logMsg = "Go around"}
 events.engineShutdown = Event:new{logMsg = "Engine shutdown"}
 
-function FlightPhaseProcessor:setFlightPhase(newFlightPhase, ctxEvent)
+function FlightPhaseProcessor:setFlightPhase(newFlightPhase, ctxEvent, eventPayload)
   self.currFlightPhase = newFlightPhase
   local name = self.currFlightPhase.name
   if name then copilot.logger:info("Flight phase: " .. name) end
   local event = ctxEvent or newFlightPhase.event
-  if event then event:trigger() end
+  if event then event:trigger(eventPayload) end
 end
 
 function FlightPhaseProcessor:setInitialFlightPhase(flightPhase)

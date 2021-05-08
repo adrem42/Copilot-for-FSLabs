@@ -34,7 +34,7 @@ You need to have English as the Windows language in order for the speech recogni
 
 2. Select *English - UK* or *English - US* as the language
 
-3. Select Configure Microphone in the Microphone section
+3. Select Configure Microphone in the Microphone section. **Warning**: during this process, the recognition engine finds the optimal microphone level for its purposes. When an application such as Copilot instantiates a recognition engine, the microphone level will adjusted by the engine if it's not at that optimal setting.
 
 4. Train the profile with the Train Profile wizard <p><img src="../img/recosetup2.jpg" width="400px"></p>
 

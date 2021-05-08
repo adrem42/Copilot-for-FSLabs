@@ -89,6 +89,8 @@ Thrust levers in FLX or TOGA and landing lights on
 ___
 ### Takeoff roll callouts
 
+if *takeoff_FMA_readout=1*, the copilot will wait for your FMA readout before announcing 'thrust set'. Example: "MAN FLEX 64 SRS runway autothrust blue".
+
 * 'Thrust set'
 * 'One hundred'
 * 'V1 (if it's not played by the aircraft itself)
@@ -181,14 +183,42 @@ ___
 
 ##### voice_control = 1:
 >* ###### *after\_landing\_trigger = 1*
-   Say 'After landing' or 'After landing, no APU'.  
-   Saying 'No APU' can be delayed until the PM is just about to start the APU.  
+   Say 'After landing' or 'After landing, delay APU'.  
+   Saying 'delay APU' can be delayed until the PM is just about to start the APU.  
    If you chose not to start the APU during the after landing procedure, you can say 'Start APU' at any time until the engines are shut down.<br><br>
 
 >* ###### *after\_landing\_trigger = 2*
-   Disarm the ground spoilers. After that, you may say 'no APU'.
+   Disarm the ground spoilers. After that, you may say 'delay APU'.
 <br><br>
 
 ##### voice_control = 0:
 
 Disarm the ground spoilers
+
+___
+
+### Parking
+
+* Anti-ice OFF
+* APU bleed ON
+* Fuel pumps OFF
+Wait until external power is available
+* Connect external power
+* APU bleed OFF
+* APU off
+
+#### Trigger:
+
+Engines off
+___
+
+### Securing the Aircraft
+
+* Crew oxygen supply OFF
+* External lights OFF
+* APU and APU bleed OFF
+* Batteries OFF
+
+#### Trigger:
+
+ADIRS off

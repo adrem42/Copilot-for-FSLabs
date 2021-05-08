@@ -66,7 +66,7 @@ beforeTakeoff:appendItem {
   end
 }
 
-beforeStart:appendItem {
+beforeTakeoff:appendItem {
   label = "takeoffSpeedsFlexTemp",
   displayLabel = "V1, Vr, V2 / FLEX Temp",
   response = VoiceCommand:new {

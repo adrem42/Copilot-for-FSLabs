@@ -29,13 +29,13 @@ landing:appendItem {
 
 landing:appendItem {
   label = "autoBrake",
+  displayLabel = "Auto-brake",
   response = VoiceCommand:new {"low", "medium"}
 }
 
 landing:appendItem {
   label = "ecamMemo",
   displayLabel = "ECAM Memo",
-  acknowledge = "landingNoBlue",
   response = VoiceCommand:new "Landing no blue",
   onResponse = function(check)
     check(FSL.OVHD_SIGNS_NoSmoking_Switch:getPosn() ~= "OFF", "No smoking switch must be ON or AUTO")

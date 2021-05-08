@@ -166,12 +166,18 @@ local digitPhrase = makeListPhrase(table.init(10, function(i) return tostring(i-
 
 makePhrase {
   name = "spelledNumber",
-  phrase = makeCached(function(numDigits)
+  phrase = makeCached(function(numDigitsLower, numDigitsUpper)
     local builder = PhraseBuilder.new()
-    for i = 1, numDigits do
+    for i = 1, numDigitsLower do
       builder:append(digitPhrase, tostring(i))
     end
-    return builder:build(numDigits .. "-digit spelled number")
+    if not numDigitsUpper then
+      return builder:build(numDigitsLower .. "-digit spelled number")
+    end
+    for i = numDigitsLower + 1, numDigitsUpper do
+      builder:appendOptional(digitPhrase, tostring(i))
+    end
+    return builder:build(numDigitsLower .. "-" .. numDigitsUpper .. "-digit spelled number")
   end),
   handler = function(res, props)
     local num = ""

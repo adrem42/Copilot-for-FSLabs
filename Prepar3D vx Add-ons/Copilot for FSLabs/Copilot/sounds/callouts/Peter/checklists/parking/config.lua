@@ -4,6 +4,6 @@ return {
   "seatBelts",
   "externalLights",
   "fuelPumps",
-  "parkingBrake",
+  "parkingBrakeAndChocks",
   "completed"
 }

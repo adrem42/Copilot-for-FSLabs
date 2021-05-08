@@ -3,6 +3,10 @@ require "copilot.checklists.beforeStart"
 require "copilot.checklists.beforeStartBelow"
 require "copilot.checklists.afterStart"
 require "copilot.checklists.beforeTakeoff"
+require "copilot.checklists.beforeTakeoffBelow"
+require "copilot.checklists.afterTakeoff"
+require "copilot.checklists.afterTakeoffBelow"
+require "copilot.checklists.approach"
 require "copilot.checklists.landing"
 require "copilot.checklists.parking"
 require "copilot.checklists.securingTheAircraft"
@@ -62,14 +66,14 @@ bindToAction {
 bindToAction {
   "after_takeoff",
   ifEnabled = function ()
-    checklists.afterTakeoff.trigger:activateOn(actions.afterTakeoff.doneEvent(), actions.afterGoAround.doneEvent())    
+    checklists.afterTakeoff.trigger:activateOn(actions.afterTakeoff:doneEvent(), actions.afterGoAround:doneEvent())    
   end,
   ifDisabled = function()
     checklists.afterTakeoff.trigger:activateOn(events.airborne, events.goAround)
   end
 }
 
-checklists.afterTakeoffBelow:activateOn(checklists.afterTakeoff:doneEvent())
+checklists.afterTakeoffBelow.trigger:activateOn(checklists.afterTakeoff:doneEvent())
 
 events.engineShutdown:addAction(function()
   checklists.afterStart.trigger:deactivate()

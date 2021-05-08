@@ -65,6 +65,6 @@ local modifiers = {
 }
 
 return { 
-  keys = table.mapKeys(keys, string.lower), 
-  modifiers = table.mapKeys(modifiers, string.lower)
+  keys = table.mapKeys(keys, string.upper), 
+  modifiers = table.mapKeys(modifiers, string.upper)
 }

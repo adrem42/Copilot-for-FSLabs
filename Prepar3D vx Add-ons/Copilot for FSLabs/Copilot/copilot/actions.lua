@@ -115,7 +115,7 @@ if copilot.isVoiceControlEnabled then
       if copilot.onGround() then return end
       if not copilot.airborneTime then return end
       if copilot.getTimestamp() - copilot.airborneTime > 60000 and not isFlightPhrase "flyingCircuits" then return end
-      VoiceCommand:react()
+      copilot.sleep(0, 500)
       FSL.MIP_GEAR_Lever "UP"
       if isFlightPhrase "flyingCircuits" then
         copilot.voiceCommands.gearDown:activate()
@@ -440,12 +440,18 @@ if copilot.isVoiceControlEnabled then
 end
 
 if copilot.UserOptions.actions.parking == copilot.UserOptions.ENABLED then
-  copilot.events.engineShutdown:addAction(copilot.sequences.parking, "runAsCoroutine")
+
+  copilot.events.engineShutdown:addAction(function(_, payload)
+    if not payload.isInitialEvent then
+      copilot.sequences.parking()
+    end
+  end, "runAsCoroutine")
     :stopOn(copilot.events.enginesStarted)
     :setLogMsg(Event.NOLOGMSG)
+    
 end
 
-if copilot.UserOptions.actions.securingTheAircraft == copilot.UserOptions.ENABLED then
+if copilot.UserOptions.actions.securing_the_aircraft == copilot.UserOptions.ENABLED then
 
   local function adirsAreOff()
     return 
@@ -461,4 +467,5 @@ if copilot.UserOptions.actions.securingTheAircraft == copilot.UserOptions.ENABLE
   end, "runAsCoroutine")
     :stopOn(copilot.events.enginesStarted)
     :setLogMsg(Event.NOLOGMSG)
+
 end

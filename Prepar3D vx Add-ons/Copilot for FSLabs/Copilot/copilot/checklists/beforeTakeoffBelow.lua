@@ -76,10 +76,10 @@ beforeTakeoffBelow:appendItem {
 }
 
 beforeTakeoffBelow:appendItem {
-  label = "TCAS",
+  label = "tcas",
   displayLabel = "TCAS",
-  response = {TA = VoiceCommand:new "TA", TARA = VoiceCommand:new "TARA"},
-  onResponse = function(check, label)
+  response = {TA = VoiceCommand:new "t a", TARA = VoiceCommand:new "t a r a"},
+  onResponse = function(check, _, label)
     check(
       FSL.PED_ATCXPDR_MODE_Switch:getPosn() == label,
       "ATC mode switch position isn't " .. label
