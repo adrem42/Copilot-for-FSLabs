@@ -470,7 +470,11 @@ function copilot.callouts:setup()
   copilot.events.brakesChecked = Event:new{logMsg = "Brakes are checked"}
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.brakeCheck = VoiceCommand:new {phrase = "brake check", persistent = true}
-    copilot.voiceCommands.flightControlsCheck = VoiceCommand:new {phrase = "flight control check", persistent = true}
+    copilot.voiceCommands.flightControlsCheck = VoiceCommand:new {
+      phrase = "flight control check", 
+      persistent = true, 
+      confidence = 0.9
+    }
   end
 end
 

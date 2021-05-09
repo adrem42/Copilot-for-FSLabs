@@ -1,5 +1,4 @@
 return {
   "baroRef",
-  "standardSet",
   "completed"
 }

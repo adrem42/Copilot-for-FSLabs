@@ -25,7 +25,7 @@ return {
         :append(PhraseUtils.getPhrase("spelledNumber", 3, 4))
         :appendOptional "set"
         :build(),
-      0.9
+      0.85
     )
   }
 }

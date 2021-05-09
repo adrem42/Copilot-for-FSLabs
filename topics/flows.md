@@ -202,6 +202,7 @@ ___
 * Anti-ice OFF
 * APU bleed ON
 * Fuel pumps OFF
+If checklists are enabled, wait until the parking checklist is completed.
 Wait until external power is available
 * Connect external power
 * APU bleed OFF

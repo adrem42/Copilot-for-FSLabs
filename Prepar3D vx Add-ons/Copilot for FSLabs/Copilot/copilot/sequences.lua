@@ -339,7 +339,7 @@ function copilot.sequences.afterLanding:__call()
     FSL.OVHD_AC_Pack_2_Button:toggleUp()
   end
 
-  copilot.suspend()
+  copilot.suspend() -- yield to check if the no apu voice command was spoken
 
   if copilot.isVoiceControlEnabled then
     copilot.voiceCommands.noApu:deactivate()
@@ -360,6 +360,8 @@ local function extPwrButtonPressed(rect, action)
 end
 
 function copilot.sequences.parking()
+
+  copilot.suspend(1000, 5000)
 
   local extPwrConnectedByPF
 
@@ -390,6 +392,10 @@ function copilot.sequences.parking()
   end
   FSL.OVHD_FUEL_R_TK_1_PUMP_Button:toggleUp()
   FSL.OVHD_FUEL_R_TK_2_PUMP_Button:toggleUp()
+
+  if copilot.UserOptions.checklists.enable == copilot.UserOptions.TRUE then
+    Event.waitForEvent(copilot.checklists.parking:doneEvent())
+  end
 
   repeat copilot.suspend(1000) until extPwrAvail()
 

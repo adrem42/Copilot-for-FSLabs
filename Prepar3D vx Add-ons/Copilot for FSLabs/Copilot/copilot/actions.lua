@@ -363,7 +363,8 @@ copilot.actions.landing = copilot.events.landing:addAction(function()
       copilot.voiceCommands.afterLanding:activate()
       copilot.voiceCommands.afterLandingNoApu:activate()
     else
-      repeat copilot.suspend(1000) until (copilot.GS() < 30 and FSL.PED_SPD_BRK_LEVER:getPosn() ~= "ARM") or not copilot.enginesRunning()
+      repeat copilot.suspend(1000) 
+      until copilot.GS() < 30 and FSL.PED_SPD_BRK_LEVER:getPosn() ~= "ARM" or not copilot.enginesRunning()
       if copilot.isVoiceControlEnabled then
         copilot.voiceCommands.noApu:activate()
       end
@@ -391,30 +392,37 @@ if copilot.isVoiceControlEnabled then
       copilot.sequences.afterLanding.noApu = false
       copilot.voiceCommands.noApu:activate()
       copilot.voiceCommands.afterLandingNoApu:deactivate()
-      
       copilot.sequences:afterLanding()
     end, "runAsCoroutine"}
   }
+
+  local noApuPhrase = PhraseBuilder.new()
+    :append {
+      "hold aypeeyou", 
+      "delay aypeeyou", 
+      "holdaypeeyou",
+      "delayapeeyou"
+    }
+    :build()
 
   copilot.voiceCommands.afterLandingNoApu = VoiceCommand:new {
     phrase = PhraseBuilder.new()
       :appendOptional "check"
       :append "after landing"
-      :append {"hold", "delay"}
-      :appendOptional "the"
-      :append "apu"
+      :append(noApuPhrase)
       :build(),
     action = {function()
       copilot.sequences.afterLanding.noApu = true
       copilot.voiceCommands.startApu:activate()
       copilot.voiceCommands.afterLanding:deactivate()
       copilot.sequences:afterLanding()
-    end, "runAsCoroutine"}
+    end, "runAsCoroutine"},
+    confidence = 0.9
   }
 
   copilot.voiceCommands.noApu = VoiceCommand:new {
-    phrase = {"hold apu", "delay apu"},
-    confidence = 0.95,
+    phrase = noApuPhrase,
+    confidence = 0.90,
     action = function()
       copilot.sequences.afterLanding.noApu = true
       copilot.voiceCommands.startApu:activate()
@@ -423,10 +431,8 @@ if copilot.isVoiceControlEnabled then
 
   copilot.voiceCommands.startApu = VoiceCommand:new {
     phrase = {
-      "start apu",
-      "start the apu",
       "staraypeeyou",
-      "start the aypeeyou"
+      "start aypeeyou"
     },
     action = function()
       if copilot.sequences.afterLanding.isRunning then
@@ -441,13 +447,15 @@ end
 
 if copilot.UserOptions.actions.parking == copilot.UserOptions.ENABLED then
 
-  copilot.events.engineShutdown:addAction(function(_, payload)
-    if not payload.isInitialEvent then
+  copilot.events.landing:addOneOffAction(function()
+
+    copilot.events.engineShutdown:addAction(function()
       copilot.sequences.parking()
-    end
-  end, "runAsCoroutine")
-    :stopOn(copilot.events.enginesStarted)
-    :setLogMsg(Event.NOLOGMSG)
+    end, "runAsCoroutine")
+      :stopOn(copilot.events.enginesStarted)
+      :setLogMsg(Event.NOLOGMSG)
+
+  end):setLogMsg(Event.NOLOGMSG)
     
 end
 
@@ -460,12 +468,16 @@ if copilot.UserOptions.actions.securing_the_aircraft == copilot.UserOptions.ENAB
       FSL.OVHD_ADIRS_3_Knob:getPosn() == "OFF"
   end
 
-  copilot.events.engineShutdown:addAction(function()
-    repeat copilot.suspend(1000) until adirsAreOff()
-    copilot.suspend(1000, 5000)
-    copilot.callOnce(copilot.sequences.securingTheAircraft)
-  end, "runAsCoroutine")
-    :stopOn(copilot.events.enginesStarted)
-    :setLogMsg(Event.NOLOGMSG)
+  copilot.events.landing:addOneOffAction(function()
+  
+    copilot.events.engineShutdown:addAction(function()
+      repeat copilot.suspend(1000) until adirsAreOff()
+      copilot.suspend(1000, 5000)
+      copilot.callOnce(copilot.sequences.securingTheAircraft)
+    end, "runAsCoroutine")
+      :stopOn(copilot.events.enginesStarted)
+      :setLogMsg(Event.NOLOGMSG)
+
+  end):setLogMsg(Event.NOLOGMSG)
 
 end

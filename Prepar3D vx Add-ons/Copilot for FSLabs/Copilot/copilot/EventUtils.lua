@@ -20,7 +20,7 @@ function EventUtils.makeEventRef(obj, func, refType, ...)
   for _, event in ipairs {...}  do
     local a = event:addAction(func)
     obj.eventRefs[refType][event] = a
-    if event.logMsg ~= Event.NOLOGMSG then
+    if event.logMsg ~= Event.NOLOGMSG and obj.logMsg ~= Event.NOLOGMSG then
       a:setLogMsg(("'%s' '%s' on event '%s'"):format(refType, obj:toString(), event:toString()))
     end
   end

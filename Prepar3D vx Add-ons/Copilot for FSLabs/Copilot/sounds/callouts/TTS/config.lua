@@ -41,78 +41,85 @@ return {
     doubleCheck = "double check that please",
     
     beforeStart = {
-      completed = "down to the line",
-      cockpitPrep = "cockpit preparation",
+      cockpitPrep = "cockpit prep",
+      cockpitPrepCompleted = "completed",
+      gearPinsAndCovers = "gear pins and covers",
       signs = "signs",
+      adirs = "aydirs",
       fuelQuantity = "fuel quantity",
       toData = "takeoff data",
-      baroRef = "baro ref"
+      baroRef = "baro ref",
+      completed = "down to the line"
     },
 
     beforeStartBelow = {
-      completed = "before start checklist complete",
-      windowsDoors = "windows, doors",
-      askidNwStrg = "anti-skid and nosewheel steering",
+      windowsDoors = "windows doors",
+      closed = "closed",
       beacon = "beacon",
       thrustLevers = "thrustLevers",
-      parkingBrake = "parking brake",
-      mobileDevices = "mobile devices"
+      parkingBrake = "parkingBrake",
+      completed = "before start checklist complete"
     },
 
     afterStart = {
-      completed = "after start checklist complete",
       antiIce = "anti ice",
-      askidNwStrg = "anti-skid and nosewheel steering",
       ecamStatus = "ecam status",
-      trim = "trim"
+      pitchTrim = "pitch trim",
+      rudderTrim = "rudder trim",
+      completed = "after start checklist complete"
     },
 
     beforeTakeoff = {
-      completed = "down to the line",
-      conf1 = "config 1",
+      flightControls = "flight controls",
+      checked1 = "checked",
+      checked2 = "checked",
+      flightInstruments = "flight instruments",
+      briefing = "briefing",
+      flapSetting = "flap setting",
+      conf1 = "config 1 plus f",
       conf2 = "config 2",
       conf3 = "config 3",
-      takeoffNoBlue = "takeoff no blue",
-      flightControls = "flight controls",
-      flapSetting = "flap setting",
-      briefingAndPerf = "briefing and performance",
-      ecamMemo = "ecam memo"
+      takeoffSpeedsFlexTemp = "takeoff speeds flex temp",
+      ATC = "atc",
+      ecamMemo = "ecam memo",
+      completed = "down to the line"
     },
 
     beforeTakeoffBelow = {
-      completed = "before takeoff checklist complete",
       takeoffRwy = "takeoff runway",
+      cabinCrew = "cabin crew",
+      tcas = "tcas",
+      engModeSelector = "engine mode selector",
       packs = "packs",
-      checked = "checked"
+      completed = "before takeoff checklist complete"
     },
 
     landing = {
-      completed = "landing checklist complete",
-      ecamMemo = "ecam memo",
+      cabinCrew = "cabin crew",
       autoThrust = "auto thrust",
-      landingNoBlue = "landing no blue"
+      autoBrake = "auto brake",
+      ecamMemo = "ecam memo",
+      completed = "landing checklist complete"
     },
 
     parking = {
-      completed = "parking checklist complete",
-      radarAndPws = "radar and predictive windshear",
+      apuBleed = "APU bleed",
       engines = "engines",
       seatBelts = "seat belts",
-      brakeTemp = "brake temperature",
       externalLights = "external lights",
       fuelPumps = "fuel pumps",
-      adirs = "aydirs",
-      park = "parking brake, chocks"
+      parkingBrakeAndChocks = "parking brake chocks",
+      completed = "parking checklsit complete"
     },
 
     securingTheAircraft = {
-      completed = "securing the aircraft checklist complete",
       adirs = "aydirs",
       oxygen = "oxygen",
       apuBleed = "apu bleed",
       emerExitLights = "emergency exit lights",
       signs = "signs",
-      apuAndBat = "apu and battery"
+      apuAndBat = "apu and battery",
+      completed = "securing the aircraft checklist complete"
     }
   }
 }

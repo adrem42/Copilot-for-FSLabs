@@ -20,10 +20,10 @@ local function checkOption(option, iniValue)
   elseif option.type == "enum" then
     for _, enumVal in ipairs(option.values) do
       if type(enumVal) == "number" then
-        iniValue = tonumber(enumVal)
+        iniValue = tonumber(iniValue)
       elseif type(enumVal) ~= "string" then error "wtf" end
       if iniValue == enumVal then
-        val = enumVal
+        val = iniValue
         break
       end
     end
