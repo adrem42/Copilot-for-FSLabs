@@ -7,7 +7,7 @@ local util = require "FSL2Lua.FSL2Lua.util"
 
 Checklist = {}
 
-Checklist.voiceCommands = setmetatable({}, {__mode = "k"})
+Checklist.voiceCommands = {}
 
 local function addVoiceCommand(...)
   local vc = VoiceCommand:new(...)
@@ -64,6 +64,17 @@ function Checklist:new(label, displayLabel, trigger)
     end
   end)
   return checklist
+end
+
+function Checklist:_incVcCount(vc)
+  self.voiceCommands[vc] = (self.voiceCommands[vc] or 0) + 1
+end
+
+function Checklist:_decVcCount(vc)
+  self.voiceCommands[vc] = (self.voiceCommands[vc] or 0) - 1
+  if self.voiceCommands[vc] <= 0 then
+    self.voiceCommands[vc] = nil
+  end
 end
 
 function Checklist:doneEvent()
@@ -375,15 +386,17 @@ function Checklist:_insertItem(pos, item, replace)
     error("Not allowed to add items while executing checklist", 3)
   end
   if replace then
+    self:_removeItem(self.items[pos])
     self.items[pos] = item
   else
+    assert(not self:getItem(item.label), "An item with this label already exists: " .. item.label)
     table.insert(self.items, pos, item)
   end
   if util.isType(item.response, VoiceCommand) then
     item.response = {response = item.response}
   end
   for _, vc in pairs(item.response) do
-    self.voiceCommands[vc] = true
+    self:_incVcCount(vc)
   end
 end
 
@@ -436,7 +449,11 @@ end
 --- @param item Same as in `Checklist:appendItem`
 ---@return self
 function Checklist:replaceItem(item)
-  self:_insertItem(select(2, assert(self:getItem(item.label), "No such item: " .. item.label)), item, true)
+  self:_insertItem(
+    assert(select(2, self:getItem(item.label)), "No such item: " .. item.label), 
+    item,
+    true
+  )
   return self
 end
 
@@ -445,24 +462,31 @@ end
 ---@param item Same as in `Checklist:appendItem`
 ---@return self
 function Checklist:insertItem(label, item)
-  self:_insertItem(select(2, assert(self:getItem(label), "No such item: " .. label)), item)
+  self:_insertItem(
+    assert(select(2, self:getItem(label)), "No such item: " .. label) + 1, 
+    item
+  )
   return self
+end
+
+function Checklist:_removeItem(item)
+  if self._currChecklist == self then
+    error("Not allowed to remove items while executing checklist", 2)
+  end
+  for _, vc in pairs(item.response) do
+    self:_decVcCount(vc)
+  end
 end
 
 --- Removes the item with the given label
 --- @string label 
 ---@return self
 function Checklist:removeItem(label)
-  if self._currChecklist == self then
-    error("Not allowed to remove items while executing checklist", 2)
-  end
-  for i, item in ipairs(self.label) do
+  for i, item in ipairs(self.items) do
     if item.label == label then
+      self:_removeItem(item)
       table.remove(self.items, i)
-      for _, vc in ipairs(item.responseVc) do
-        self.voiceCommands[vc] = nil
-      end
-      return
+      break
     end
   end
   return self
