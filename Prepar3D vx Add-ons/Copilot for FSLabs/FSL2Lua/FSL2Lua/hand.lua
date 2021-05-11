@@ -63,7 +63,7 @@ function hand:moveTo(newpos)
     local startTime = ipc.elapsedtime()
     local now = startTime
     local time = dist / self:getSpeed(dist)
-    if coroutine.running() and time > 100 then 
+    if time > 100 and copilot.getCallbackStatus and copilot.getCallbackStatus(coroutine.running()) then
       coroutine.yield()
       now = ipc.elapsedtime()
     end

@@ -8,6 +8,8 @@
 
 using namespace SimConnect;
 
+bool firstAircraft = true;
+
 std::string aircraftName;
 
 size_t  currEventId = EVENT_CUSTOM_EVENT_MIN;
@@ -234,7 +236,8 @@ void SimConnect::setupFSL2LuaMenu()
 void onFlightLoaded()
 {
 	bool isFslAircraft = aircraftName.find("FSLabs") != std::string::npos;
-	copilot::onFlightLoaded(isFslAircraft, aircraftName);
+	copilot::onFlightLoaded(isFslAircraft, aircraftName, firstAircraft);
+	firstAircraft = false;
 }
 
 void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)

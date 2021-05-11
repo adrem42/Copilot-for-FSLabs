@@ -23,7 +23,7 @@ namespace copilot {
 	void stopCopilotScript();
 	void onSimEvent(SimConnect::EVENT_ID event);
 	void onMuteKey(bool);
-	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName);
+	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName, bool first);
 	void onWindowClose();
 	bool simRunning();
 	bool isMuted();

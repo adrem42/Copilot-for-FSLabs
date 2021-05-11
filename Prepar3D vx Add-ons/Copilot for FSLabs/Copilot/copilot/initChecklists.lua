@@ -63,15 +63,14 @@ bindToAction {
   end
 }
 
-bindToAction {
-  "after_takeoff",
-  ifEnabled = function ()
-    checklists.afterTakeoff.trigger:activateOn(actions.afterTakeoff:doneEvent(), actions.afterGoAround:doneEvent())    
-  end,
-  ifDisabled = function()
-    checklists.afterTakeoff.trigger:activateOn(events.airborne, events.goAround)
-  end
-}
+copilot.events.airborne:addAction(function()
+  local airfieldAlt = ipc.readUD(0x0020) / 256 * 3.28084
+  repeat copilot.suspend(5000)
+  until copilot.ALT() > airfieldAlt + 1000
+  checklists.afterTakeoff.trigger:activate()
+end, "runAsCoroutine")
+  :setLogMsg(Event.NOLOGMSG)
+  :stopOn(copilot.events.landing)
 
 checklists.afterTakeoffBelow.trigger:activateOn(checklists.afterTakeoff:doneEvent())
 

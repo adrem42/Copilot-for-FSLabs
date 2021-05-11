@@ -35,9 +35,11 @@ function trimwheel:getInd()
   return CG_ind
 end
 
-function trimwheel:_set(CG, step)
+function trimwheel:_set(CG, step, sleepFunc)
+
+  sleepFunc = sleepFunc or util.sleep
   
-  util.sleep(plusminus(1000))
+  sleepFunc(plusminus(1000))
 
   repeat
 
@@ -60,18 +62,18 @@ function trimwheel:_set(CG, step)
 
     if CG > CG_ind then
       if dist > 3.1 then 
-        self:_set(CG_ind + 3, true) 
-        util.sleep(plusminus(350,0.2)) 
+        self:_set(CG_ind + 3, true, sleepFunc) 
+        sleepFunc(plusminus(350,0.2)) 
       end
       ipc.control(self.control.inc)
-      util.sleep(time - 5)
+      sleepFunc(time - 5)
     elseif CG < CG_ind then
       if dist > 3.1 then 
-        self:_set(CG_ind - 3, true) 
-        util.sleep(plusminus(350,0.2)) 
+        self:_set(CG_ind - 3, true, sleepFunc) 
+        sleepFunc(plusminus(350,0.2)) 
       end
       ipc.control(self.control.dec)
-      util.sleep(time - 5)
+      sleepFunc(time - 5)
     end
 
     local trimIsSet = math.abs(CG - CG_ind) <= (step and 0.5 or 0.2)
@@ -93,9 +95,16 @@ function trimwheel:set(CG)
 
   util.log("Setting the trim. CG: " .. CG, true)
 
+  local sleepFunc = util.sleep
+
+  if copilot.getCallbackStatus and copilot.getCallbackStatus(coroutine.running()) then
+    sleepFunc = copilot.suspend
+  end
+
   if FSL.areSequencesEnabled then
+
     if not CG_man and prob(0.1) then 
-      util.sleep(plusminus(10000, 0.5)) 
+      sleepFunc(plusminus(10000, 0.5)) 
     end
     local reachtime = hand:moveTo(self.pos)
     util.log(
@@ -105,7 +114,7 @@ function trimwheel:set(CG)
     util.log("Trim wheel reached in " .. math.floor(reachtime) .. " ms")
   end
 
-  self:_set(CG)
+  self:_set(CG, nil, sleepFunc)
 
   return CG
 end

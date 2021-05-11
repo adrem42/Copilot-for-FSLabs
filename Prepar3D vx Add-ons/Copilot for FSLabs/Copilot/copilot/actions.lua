@@ -223,8 +223,13 @@ end, "runAsCoroutine")
   
 
 if copilot.UserOptions.actions.after_start == copilot.UserOptions.ENABLED then
-  copilot.actions.afterStart = copilot.events.enginesStarted:addAction(function() copilot.sequences:afterStart() end, "runAsCoroutine")
+  copilot.actions.afterStart = copilot.events.enginesStarted:addAction(function(_, payload)
+    if not payload.isInitialEvent then 
+      copilot.sequences:afterStart()
+    end
+  end, "runAsCoroutine")
     :setLogMsg "After start"
+    :stopOn(copilot.events.engineShutdown)
 end
 
 if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
@@ -232,7 +237,9 @@ if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
   copilot.actions.taxi = copilot.events.enginesStarted:addAction(function()
     Event.waitForEvents({copilot.events.brakesChecked, copilot.events.flightControlsChecked}, true)
     copilot.suspend(plusminus(5000))
-    copilot.callOnce(copilot.sequences.taxiSequence)
+    copilot.callOnce(function() 
+      copilot.sequences.taxiSequence()
+    end)
   end, "runAsCoroutine")
     :setLogMsg "Taxi"
     :stopOn(copilot.events.chocksSet, copilot.events.takeoffInitiated2)
@@ -240,7 +247,10 @@ if copilot.UserOptions.actions.during_taxi == copilot.UserOptions.ENABLED then
 end
 
 if copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
-  if copilot.isVoiceControlEnabled then
+
+  if copilot.isVoiceControlEnabled 
+    and copilot.UserOptions.actions.lineup_trigger == copilot.LINEUP_TRIGGER_VOICE then
+
     copilot.voiceCommands.lineup = VoiceCommand:new {
       phrase = "lineup procedure",
       persistent = "ignore",
@@ -248,18 +258,27 @@ if copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
     }
       :activateOn(copilot.events.enginesStarted)
       :deactivateOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
+      
     copilot.actions.lineup = copilot.voiceCommands.lineup:addAction(function()
       if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
         copilot.voiceCommands.takeoff:activate()
       end
       copilot.sequences.lineUpSequence()
     end)
+
   else
+
     copilot.actions.lineup = copilot.events.enginesStarted:addAction(function()
       copilot.sequences:waitForLineup()
-      copilot.callOnce(copilot.sequences.lineUpSequence)
+      if copilot.isVoiceControlEnabled 
+        and copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
+        copilot.voiceCommands.takeoff:activate()
+      end
+      copilot.callOnce(function() 
+        copilot.sequences.lineUpSequence() 
+      end)
     end, "runAsCoroutine")
-      :setLogMsg "Lineup"
+      :setLogMsg "Wait for lineup"
       :stopOn(copilot.events.takeoffInitiated2, copilot.events.engineShutdown)
   end
 end
@@ -279,7 +298,7 @@ do
   end
 
   copilot.actions.takeoff = copilot.events.takeoffInitiated2:addAction(function()
-    if copilot.isVoiceControlEnabled and copilot.UserOptions.actions.lineup == copilot.UserOptions.ENABLED then
+    if copilot.voiceCommands.lineup then
       copilot.voiceCommands.lineup:deactivate()
     end
     if copilot.UserOptions.actions.takeoff_sequence == copilot.UserOptions.ENABLED then
@@ -450,6 +469,7 @@ if copilot.UserOptions.actions.parking == copilot.UserOptions.ENABLED then
   copilot.events.landing:addOneOffAction(function()
 
     copilot.events.engineShutdown:addAction(function()
+      copilot.suspend(3000, 15000)
       copilot.sequences.parking()
     end, "runAsCoroutine")
       :stopOn(copilot.events.enginesStarted)
@@ -473,7 +493,9 @@ if copilot.UserOptions.actions.securing_the_aircraft == copilot.UserOptions.ENAB
     copilot.events.engineShutdown:addAction(function()
       repeat copilot.suspend(1000) until adirsAreOff()
       copilot.suspend(1000, 5000)
-      copilot.callOnce(copilot.sequences.securingTheAircraft)
+      copilot.callOnce(function()
+        copilot.sequences.securingTheAircraft()
+      end)
     end, "runAsCoroutine")
       :stopOn(copilot.events.enginesStarted)
       :setLogMsg(Event.NOLOGMSG)

@@ -23,7 +23,7 @@ local checklists = {
   },
   {
     name = "afterTakeoff",
-    activationTrigger = [[If after\_takeoff action enabled: when after\_takeoff action is finished, otherwise: when you're airborne.<br><br>]]
+    activationTrigger = "1000 feet above airfield elevation.<br><br>"
   },
   {
     name = "afterTakeoffBelow",

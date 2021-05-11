@@ -87,7 +87,9 @@ function FlightPhaseProcessor:setFlightPhase(newFlightPhase, ctxEvent, eventPayl
   local name = self.currFlightPhase.name
   if name then copilot.logger:info("Flight phase: " .. name) end
   local event = ctxEvent or newFlightPhase.event
-  if event then event:trigger(eventPayload) end
+  if event then 
+    event:trigger(eventPayload or {}) 
+  end
 end
 
 function FlightPhaseProcessor:setInitialFlightPhase(flightPhase)

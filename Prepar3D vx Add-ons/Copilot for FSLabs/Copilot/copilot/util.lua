@@ -66,7 +66,10 @@ function copilot.suspend(time1, time2)
     return
   end
   local timeoutEnd = copilot.getTimestamp() + timeout
-  repeat coroutine.yield() until copilot.getTimestamp() > timeoutEnd
+  repeat 
+    coroutine.yield() 
+    ipc.sleep(1)
+  until copilot.getTimestamp() > timeoutEnd
 end
 
 function copilot.GSX_pushback() 
@@ -102,8 +105,8 @@ function copilot.eng2N1() return ipc.readDBL(0x2110) end
 --- Returns true if the engines are running.
 --- @bool both If true, will return true if both engines are running. If omitted or false, returns true if either engine is running.
 function copilot.enginesRunning(both)
-  local eng1_running = copilot.eng1N1() > 15
-  local eng2_running = copilot.eng2N1() > 15
+  local eng1_running = ipc.readDBL(0x2020) > 0 -- fuel flow
+  local eng2_running = ipc.readDBL(0x2120) > 0
   if both then return eng1_running and eng2_running end
   return eng1_running or eng2_running
 end

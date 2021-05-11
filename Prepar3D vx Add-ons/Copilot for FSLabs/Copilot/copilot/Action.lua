@@ -60,12 +60,15 @@ function Action:log(msg, logLevel, event)
   copilot.logger[logLevel or "debug"](copilot.logger, msg)
 end
 
+local xpcall = require "Copilot.libs.coxpcall".xpcall
+
 function Action:_runFuncCallback(e, payload)
   self:log("Action: " .. self:toString(), "debug", e)
   local ret = table.pack(
     xpcall(
-      function() self.callback(e, table.unpack(payload)) end, 
-      debug.traceback
+      self.callback,
+      debug.traceback,
+      e, table.unpack(payload)
     )
   )
   local status = ret[1]

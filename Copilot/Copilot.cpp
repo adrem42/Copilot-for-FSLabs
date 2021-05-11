@@ -313,22 +313,28 @@ namespace copilot {
 
 	std::thread launchThread;
 
-	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName)
+	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName, bool first)
 	{
 		copilot::isFslAircraft = isFslAircraft;
-		DWORD res = FSUIPC::connect();
-		if (res != FSUIPC_ERR_OK) {
-			logger->error("Failed to connect to FSUIPC: {}", FSUIPC::errorString(res));
-		}
-		initConsoleSink();
-		SimInterface::init();
-		launchThread = std::thread([] {
+		if (first) {
+			DWORD res = FSUIPC::connect();
+			if (res != FSUIPC_ERR_OK && res != FSUIPC_ERR_OPEN) {
+				logger->error("Failed to connect to FSUIPC: {}", FSUIPC::errorString(res));
+			}
+			initConsoleSink();
+			SimInterface::init();
+		} else if (launchThread.joinable())
+			launchThread.join();
+		launchThread = std::thread([=] {
 			Sleep(10000);
 			launchFSL2LuaScript();
-			SimConnect::setupFSL2LuaMenu();
+			if (first)
+				SimConnect::setupFSL2LuaMenu();
 			if (isCopilotEnabled()) {
-				SimConnect::setupCopilotMenu();
-				SimConnect::setupMuteControls();
+				if (first) {
+					SimConnect::setupCopilotMenu();
+					SimConnect::setupMuteControls();
+				}
 				startCopilotScript();
 			}
 		});

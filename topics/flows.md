@@ -69,7 +69,13 @@ ___
 #### Trigger:
 
 ##### voice_control = 1:
-Say 'Lineup procedure'<br><br>
+>* ###### *lineup\_trigger = 1*
+   Say 'lineup procedure'
+   <br><br>
+
+>* ###### *lineup\_trigger = 2*
+   Cycle the seat belts sign switch twice within two seconds.
+<br><br>
 ##### voice_control = 0:
 Cycle the seat belts sign switch twice within two seconds  
 ___

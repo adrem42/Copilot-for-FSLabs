@@ -145,7 +145,7 @@ on
 ___
 ### After Takeoff / Climb
 Trigger phrases: **"after takeoff climb checklist"**<br><br>
-When it's available: If after\_takeoff action enabled: when after\_takeoff action is finished, otherwise: when you're airborne.<br><br>
+When it's available: 1000 feet above airfield elevation.<br><br>
 ###### Landing Gear
 up
 <br><br>

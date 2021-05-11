@@ -1,6 +1,11 @@
 local UserOptions = copilot.UserOptions
+
+copilot.LINEUP_TRIGGER_VOICE = 1
+copilot.LINEUP_TRIGGER_SEAT_BELTS_SWITCH = 2
+
 copilot.AFTER_LANDING_TRIGGER_VOICE = 1
 copilot.AFTER_LANDING_TRIGGER_DISARM_SPOILERS = 2
+
 copilot.TAKEOFF_PACKS_TURN_OFF = 0
 copilot.TAKEOFF_PACKS_LEAVE_ALONE = 1
 
@@ -114,7 +119,7 @@ return {
       },
       {
         name = "display_fail",
-        default = UserOptions.FALSE,
+        default = UserOptions.TRUE,
         type = "bool"
       },
       {
@@ -236,6 +241,13 @@ return {
         name = "securing_the_aircraft",
         default = UserOptions.ENABLED,
         type = "bool"
+      },
+      {
+        name = "lineup_trigger",
+        default = copilot.LINEUP_TRIGGER_SEAT_BELTS_SWITCH,
+        comment = "explained in the manual",
+        type = "enum",
+        values = {copilot.LINEUP_TRIGGER_VOICE, copilot.LINEUP_TRIGGER_SEAT_BELTS_SWITCH}
       },
       {
         name = "after_landing_trigger", 

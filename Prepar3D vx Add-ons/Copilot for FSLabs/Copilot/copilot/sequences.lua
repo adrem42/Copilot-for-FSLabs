@@ -361,8 +361,6 @@ end
 
 function copilot.sequences.parking()
 
-  copilot.suspend(1000, 5000)
-
   local extPwrConnectedByPF
 
   local extPwrButtMonitor = copilot.mouseMacroEvent():addAction(function(_, rect, action)
@@ -393,7 +391,7 @@ function copilot.sequences.parking()
   FSL.OVHD_FUEL_R_TK_1_PUMP_Button:toggleUp()
   FSL.OVHD_FUEL_R_TK_2_PUMP_Button:toggleUp()
 
-  if copilot.UserOptions.checklists.enable == copilot.UserOptions.TRUE then
+  if copilot.checklists and copilot.checklists.parking then
     Event.waitForEvent(copilot.checklists.parking:doneEvent())
   end
 

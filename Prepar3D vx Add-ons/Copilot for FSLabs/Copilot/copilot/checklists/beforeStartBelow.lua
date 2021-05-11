@@ -14,7 +14,13 @@ local ecpButtons = table.map({
   return FSL["PED_ECP_" .. page .. "_Button"]
 end)
 
+local doorButtWasPressed
+
 local function confirmDoorEcamPage()
+  if FSL.OVHD_APU_Master_Button:isDown() then
+    doorButtWasPressed = true
+    FSL.PED_ECP_DOOR_Button:pressIfNotLit()
+  end
   if FSL.PED_ECP_DOOR_Button:isLit() then return end
   for _, butt in ipairs(ecpButtons) do
     if butt:isLit() then 
@@ -28,9 +34,12 @@ beforeStartBelow:appendItem {
   label = "windowsDoors",
   displayLabel = "Windows / Doors",
   response = VoiceCommand:new "closed",
-  beforeChallenge = confirmDoorEcamPage,
+  beforeChallenge = function()
+    doorButtWasPressed = false
+    confirmDoorEcamPage()
+  end,
   acknowledge = "closed",
-  onResponse = function(check)
+  onResponse = function(check, _, _, res)
     confirmDoorEcamPage()
     check(ipc.readLvar("VC_WINDOW_CPT") == 0, "CPT window is open")
     check(ipc.readLvar("VC_WINDOW_FO") == 0, "FO window is open")
@@ -48,6 +57,9 @@ beforeStartBelow:appendItem {
     checkDoor("FSLA320_pax_door6", "FSLA320_pax_door6")
     checkDoor("FSLA320_pax_door7", "FSLA320_pax_door7")
     checkDoor("FSLA320_pax_door8", "FSLA320_pax_door8")
+    if not res.didFail() and doorButtWasPressed then
+      FSL.PED_ECP_DOOR_Button:pressIfLit()
+    end
   end
 }
 
