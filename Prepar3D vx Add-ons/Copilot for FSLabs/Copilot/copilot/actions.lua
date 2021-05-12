@@ -16,6 +16,15 @@ if copilot.isVoiceControlEnabled then
     return isFlightPhrase "climbout" or isFlightPhrase "flyingCircuits"
   end
 
+  local function executeFlapsCommand(pos, callout)
+    FSL:skipHand()
+    copilot.sleep(0, 1000)
+    copilot.playCallout(callout .. "_speedChecked")
+    copilot.sleep(0, 700)
+    FSL.PED_FLAP_LEVER(pos)
+    copilot.playCallout(callout, math.random(0, 1000))
+  end
+
   copilot.voiceCommands.flapsUp = VoiceCommand:new {
     phrase = {"flaps up", "flaps zero"},
     confidence = 0.94,
@@ -25,11 +34,9 @@ if copilot.isVoiceControlEnabled then
       local Vs = copilot.mcduWatcher:getVar("Vs")
       if Vs and copilot.IAS() < Vs then 
         copilot.playCallout "speedTooLow"
-        return 
+        return
       end
-      VoiceCommand:react(500)
-      copilot.playCallout "flapsZero"
-      FSL.PED_FLAP_LEVER "0"
+      executeFlapsCommand("0", "flapsZero")
     end,
     persistent = true
   }
@@ -51,9 +58,7 @@ if copilot.isVoiceControlEnabled then
           return
         end
       else return end
-      VoiceCommand:react(500)
-      copilot.playCallout("flapsOne")
-      FSL.PED_FLAP_LEVER("1")
+      executeFlapsCommand("1", "flapsOne")
     end,
     persistent = true
   }
@@ -68,9 +73,7 @@ if copilot.isVoiceControlEnabled then
         copilot.playCallout "speedTooHigh"
         return
       end
-      VoiceCommand:react(500)
-      copilot.playCallout "flapsTwo"
-      FSL.PED_FLAP_LEVER "2"
+      executeFlapsCommand("2", "flapsTwo")
     end,
     persistent = true
   }
@@ -85,9 +88,7 @@ if copilot.isVoiceControlEnabled then
         copilot.playCallout "speedTooHigh"
         return
       end
-      VoiceCommand:react(500)
-      copilot.playCallout "flapsThree"
-      FSL.PED_FLAP_LEVER "3"
+      executeFlapsCommand("3", "flapsThree")
     end,
     persistent = true
   }
@@ -102,9 +103,7 @@ if copilot.isVoiceControlEnabled then
         copilot.playCallout "speedTooHigh"
         return
       end
-      VoiceCommand:react(500)
-      copilot.playCallout "flapsFull"
-      FSL.PED_FLAP_LEVER "FULL"
+      executeFlapsCommand("FULL", "flapsFull")
     end,
     persistent = true
   }

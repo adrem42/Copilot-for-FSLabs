@@ -9,6 +9,7 @@ local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
 local Control = {}
 Control.__index = Control
+Control._skipHand = false
 
 local timeoutMsg = "\nControl %s isn't responding to mouse macro commands\r\n"
 
@@ -55,6 +56,10 @@ end
 
 function Control:_moveHandHere()
   if not FSL.areSequencesEnabled then return end
+  if Control._skipHand then
+    Control._skipHand = false
+    return
+  end
   local reachtime = hand:moveTo(self.pos)
   util.log(
     ("Position of control %s : x = %s, y = %s, z = %s")
@@ -62,6 +67,10 @@ function Control:_moveHandHere()
     true
   )
   util.log("Control reached in " .. math.floor(reachtime) .. " ms")
+end
+
+function Control.skipHand()
+  Control._skipHand = true
 end
 
 local function noop() end

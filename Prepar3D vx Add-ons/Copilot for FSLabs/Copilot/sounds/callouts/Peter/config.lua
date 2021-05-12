@@ -30,8 +30,13 @@ return {
   "neutral_3",
 
   "flapsOne",
+  "flapsOne_speedChecked",
   "flapsTwo",
+  "flapsTwo_speedChecked",
   "flapsThree",
+  "flapsThree_speedChecked",
   "flapsFull",
-  "flapsZero"
+  "flapsFull_speedChecked",
+  "flapsZero",
+  "flapsZero_speedChecked"
 }

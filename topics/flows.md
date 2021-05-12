@@ -114,9 +114,10 @@ ___
 * Select the packs back on if they were turned off for takeoff
 
 * Voice commands *(if voice\_control=1)*:
->* *'Flaps two'*
 >* *'Flaps one'*
->* *'Flaps up' or 'flaps zero'*
+>* *'Flaps zero'*
+
+If you're taking off with flaps 3, the correct procedure is to retract the flaps to 1 as the first step.
 
 Once the flaps are retracted:
 

@@ -69,6 +69,8 @@ FSL.trimwheel = trimwheel
 
 FSL.CheckMacros = require "FSL2Lua.FSL2Lua.CheckMacros"
 
+function FSL:skipHand() Control.skipHand() end
+
 function FSL._uncheckedControls()
   local t = {}
   local count = 0
