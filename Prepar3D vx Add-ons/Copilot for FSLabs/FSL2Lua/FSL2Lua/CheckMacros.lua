@@ -135,7 +135,6 @@ local acType = FSL.acType
 local checkFilePath = util.FSL2LuaDir .. "\\checked_macros.lua"
 
 local checkFile = {}
-if file.exists(checkFilePath) then checkFile = dofile(checkFilePath) end
 
 local function collectkMissingMacros()
   local missing = {}
@@ -243,6 +242,21 @@ local function manualCheck()
 end
 
 local function CheckMacros()
+
+  if file.exists(checkFilePath) then checkFile = dofile(checkFilePath) end
+
+  local VHFswitches = {
+    FSL.CPT.PED_COMM_VHF2_Switch,
+    FSL.CPT.PED_COMM_VHF1_Switch,
+    FSL.FO.PED_COMM_VHF2_Switch,
+    FSL.FO.PED_COMM_VHF1_Switch,
+    FSL.OVHD_COMM3_VHF2_Switch,
+    FSL.OVHD_COMM3_VHF1_Switch
+  }
+
+  for _, switch in  ipairs(VHFswitches) do
+    assert(not switch:isDown(), "All 6 VHF1 and VHF2 knobs be pulled out")
+  end
 
   FSL.ignoreFaultyLvars()
 
