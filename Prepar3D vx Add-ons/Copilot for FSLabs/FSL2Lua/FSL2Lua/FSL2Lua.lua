@@ -9,14 +9,10 @@ if FSL2LUA_STANDALONE then
 end
 
 if not _COPILOT then
-  function hideCursor()
-    local x, y = mouse.getpos()
-    mouse.move(x + 1, y + 1)
-    mouse.move(x, y)
-    ipc.sleep(10)
-    ipc.control(1139)
-  end
+  function suppressCursor() end
 end
+
+function hideCursor() end
 
 --- @field CPT table containing controls on the left side
 --- @field FO table containing controls on the right side
@@ -26,8 +22,6 @@ end
 --- @usage FSL.GSLD_EFIS_VORADF_1_Switch("VOR")
 --- @table FSL
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
-
-local config = require "FSL2Lua.config"
 
 if ipc.readLvar "AIRCRAFT_A319" == 1 then FSL.acType = "A319"
 elseif ipc.readLvar "AIRCRAFT_A320" == 1 then FSL.acType = "A320"
@@ -441,17 +435,8 @@ local function initControls()
 
   for varname, control in pairs(rawControls) do
 
-    if config.A319_IS_A320 then control.A319 = control.A320 end
-
-    for _, _type in ipairs(FSL.AC_TYPES) do control[_type] = control[_type] or {} end
-
-    if FSL:getAcType() then
-      control.rectangle = control[FSL:getAcType()].rectangle
-      control.macroFile = control[FSL:getAcType()].macroFile
-      if control.rectangle or control.FSControl then
-        initControl(control, varname, guards, buttons)
-        control.manual = control[FSL:getAcType()].manual
-      end
+    if FSL:getAcType() and control.name then
+      initControl(control, varname, guards, buttons)
     elseif FSL2LUA_MAKE_CONTROL_LIST and FSL._checkControl(control) then
       tableOfControls[#tableOfControls+1] = initControl(control, varname, guards, buttons)
     end
@@ -460,7 +445,6 @@ local function initControls()
   mapGuardsToButtons(guards, buttons)
 
   if FSL._pilot then FSL:setPilot(FSL._pilot) end
-
 end
 
 initControls()

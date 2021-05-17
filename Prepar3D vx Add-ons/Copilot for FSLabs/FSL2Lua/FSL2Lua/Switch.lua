@@ -18,11 +18,11 @@ function Switch:new(control)
   control.toggle = nil
 
   if control.reversedOrientation == true then
-    control.incClickType = self.clickTypes.leftPress
-    control.decClickType = self.clickTypes.rightPress
+    control.incClickType = "leftPress"
+    control.decClickType = "rightPress"
   else
-    control.incClickType = self.clickTypes.rightPress
-    control.decClickType = self.clickTypes.leftPress
+    control.incClickType = "rightPress"
+    control.decClickType = "leftPress"
   end
 
   util.assert(type(control.posn) == "table", "Failed to create control " .. control.name or control.LVar)
@@ -87,7 +87,6 @@ function Switch:_setPositionToLvar(targetPos, initPos, twoSwitches)
     elseif currPos > targetPos then self:decrease()
     else
       if self.springLoaded[targetPos] then self.letGo = true end
-      hideCursor()
       break
     end
     endInteract()
@@ -108,7 +107,7 @@ function Switch:decrease()
     self:macro "rightRelease"
     self.letGo = false
   else
-    self:_macro(self.decClickType)
+    self:macro(self.decClickType)
   end
 end
 
@@ -120,7 +119,7 @@ function Switch:increase()
     self:macro "rightRelease"
     self.letGo = false
   else
-    self:_macro(self.incClickType)
+    self:macro(self.incClickType)
   end
 end
 

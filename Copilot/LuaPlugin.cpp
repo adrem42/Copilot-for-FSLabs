@@ -12,6 +12,7 @@
 #include "lua.hpp"
 #include <optional>
 #include <string_view>
+#include "FSL2LuaControls/FSL2LuaControls.h"
 
 const char* REG_KEY_JMP_BUFF = "JMPBUFF";
 const char* REG_KEY_IS_RUNNING = "IS_RUNNING";
@@ -279,7 +280,7 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 		copilot::logger->info(str);
 	};
 
-	lua["hideCursor"] = SimInterface::hideCursor;
+	lua["suppressCursor"] = SimInterface::suppressCursor;
 	auto ipc = lua.create_table();
 
 
@@ -388,11 +389,15 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	ipc["control"] = sol::overload(
 		[](size_t id, size_t param) { SimInterface::sendFSControl(id, param); },
 		[](size_t id) { SimInterface::sendFSControl(id); }
-	); 
+	);
 
 	lua["ipc"] = ipc;
-	lua["package"]["path"] = copilot::appDir + "?.lua;" + copilot::appDir + "\\lua\\?.lua";
+	lua["package"]["path"] = copilot::appDir + "?.lua;" + copilot::appDir + "\\lua\\?.lua;" + copilot::appDir + "\\Copilot\\?.lua";
 	lua["package"]["cpath"] = copilot::appDir + "?.dll;" + copilot::appDir + "\\lua\\?.dll";
+
+	lua["APPDIR"] = copilot::appDir;
+
+	lua["Event"] = lua["require"]("copilot.Event");
 
 	lua["_COPILOT"] = true;
 
@@ -412,6 +417,8 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	McduSessionType["getString"] = &MCDU::getString;
 	McduSessionType["getRaw"] = &MCDU::getRaw;
 	McduSessionType["lastError"] = &MCDU::lastError;
+
+	lua["package"]["preload"]["FSL2Lua.FSL2Lua.invokeControl"] = [] {return FSL2LuaControls::invokeControl; };
 
 	sol::protected_function_result res = lua.safe_script(R"(FSL = require "FSL2Lua.FSL2Lua.FSL2Lua")");
 	if (!res.valid()) 

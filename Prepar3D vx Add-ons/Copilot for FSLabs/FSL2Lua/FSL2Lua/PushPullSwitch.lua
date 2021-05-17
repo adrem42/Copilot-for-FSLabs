@@ -9,12 +9,12 @@ function ButtonImpl:_hasBeenPressed() return self:getLvarValue() == self._target
 
 function ButtonImpl:push()
   self._targetLvarVal = 10
-  self:_pressAndRelease(false, self.clickTypes.leftPress, self.clickTypes.leftRelease) 
+  self:_pressAndRelease(false, "leftPress", "leftRelease") 
 end
  
 function ButtonImpl:pull()
   self._targetLvarVal = 20
-  self:_pressAndRelease(false, self.clickTypes.rightPress, self.clickTypes.rightRelease) 
+  self:_pressAndRelease(false, "rightPress", "rightRelease") 
 end
 
 ---<span>

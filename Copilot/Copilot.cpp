@@ -24,6 +24,7 @@
 #include <sapi.h>
 #include <sphelper.h>
 #include <fstream>
+#include "FSL2LuaControls/FSL2LuaControls.h"
 
 using namespace std::literals::chrono_literals;
 using namespace P3D;
@@ -323,6 +324,7 @@ namespace copilot {
 			}
 			initConsoleSink();
 			SimInterface::init();
+			FSL2LuaControls::init();
 		} else if (launchThread.joinable())
 			launchThread.join();
 		launchThread = std::thread([=] {

@@ -231,8 +231,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	std::string packagePath = lua["package"]["path"];
 
-	lua["package"]["path"] = copilot::appDir + "\\Copilot\\?.lua;" + packagePath;
-	lua["APPDIR"] = copilot::appDir;
+	
 	lua.registry()["asyncCallbacks"] = lua.create_table();
 
 	sol::protected_function_result res = lua.script(R"(require "copilot.LoadCopilotOptions")");

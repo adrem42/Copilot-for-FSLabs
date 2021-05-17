@@ -99,6 +99,9 @@
     <ClInclude Include="LuaSocket\timeout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FSL2LuaControls\FSL2LuaControls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Copilot.cpp">
@@ -183,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CallbackRunner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FSL2LuaControls\FSL2LuaControls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

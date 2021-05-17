@@ -24,6 +24,7 @@
     <ClInclude Include="Copilot.h" />
     <ClInclude Include="CopilotScript.h" />
     <ClInclude Include="Exceptions.h" />
+    <ClInclude Include="FSL2LuaControls\FSL2LuaControls.h" />
     <ClInclude Include="FSL2LuaScript.h" />
     <ClInclude Include="FSUIPC.h" />
     <ClInclude Include="FSUIPC_User64.h" />
@@ -52,6 +53,7 @@
     <ClCompile Include="CallbackRunner.cpp" />
     <ClCompile Include="Copilot.cpp" />
     <ClCompile Include="CopilotScript.cpp" />
+    <ClCompile Include="FSL2LuaControls\FSL2LuaControls.cpp" />
     <ClCompile Include="FSL2LuaScript.cpp" />
     <ClCompile Include="FSUIPC.cpp" />
     <ClCompile Include="HttpSession.cpp" />
@@ -159,6 +161,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK\Helpers;$(solutiondir)lua51\include;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.13.32097\inc\PDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

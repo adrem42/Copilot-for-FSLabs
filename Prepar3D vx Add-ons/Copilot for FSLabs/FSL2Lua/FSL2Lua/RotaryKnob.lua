@@ -26,10 +26,10 @@ function RotaryKnob:_rotateLeft() self:macro "wheelDown" end
 function RotaryKnob:_rotateRight() self:macro "wheelUp" end
 
 --- Rotates the knob left by 1 tick.
-function RotaryKnob:rotateLeft() self:_rotateLeft() hideCursor() end
+function RotaryKnob:rotateLeft() self:_rotateLeft() end
 
 --- Rotates the knob right by 1 tick.
-function RotaryKnob:rotateRight() self:_rotateRight() hideCursor() end
+function RotaryKnob:rotateRight() self:_rotateRight() end
 
 function RotaryKnob:_getTargetLvarVal(targetPos)
   if type(targetPos) ~= "number" then 
@@ -75,7 +75,6 @@ function RotaryKnob:_setPositionToLvar(targetPos, initPos)
   self.prevTargetPos = targetPos
   self.wasLower = wasLower
   self.wasGreater = wasGreater
-  hideCursor()
   endInteract()
   return currPos / self.range * 100
 end
@@ -110,7 +109,6 @@ function RotaryKnob:rotateBy(ticks, pause)
     end
   end
   endInteract()
-  hideCursor()
 end
 
 --- Sets the knob to random position between lower and upper.

@@ -21,8 +21,8 @@ end
 
 function Button:_pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   
-  pressClickType = pressClickType or self.clickTypes.leftPress
-  releaseClickType = releaseClickType or self.clickTypes.leftRelease
+  pressClickType = pressClickType or "leftPress"
+  releaseClickType = releaseClickType or "leftRelease"
 
   if not twoSwitches then self:_moveHandHere() end
 
@@ -34,7 +34,7 @@ end
 function Button:_hasBeenPressed() return self:isDown() end
 
 function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
-  self:_macro(pressClickType)
+  self:macro(pressClickType)
   -- For the press to register, the button needs to be held down
   -- for a certain amount of time that depends on the framerate.
   local FPS = util.frameRate()
@@ -50,7 +50,7 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
     checkWithTimeout(timeout, self._hasBeenPressed, self)
     util.sleep(sleepAfterPress)
   end
-  self:_macro(releaseClickType)
+  self:macro(releaseClickType)
 end
 
 --- Presses the button.
@@ -63,7 +63,7 @@ function Button:__call() self:_pressAndRelease() end
 --- has a special function if you click on it with the right mouse button. 
 --- I don't think it's useful for anything else.
 function Button:rightClick() 
-  self:_pressAndRelease(false, self.clickTypes.rightPress, self.clickTypes.rightRelease) 
+  self:_pressAndRelease(false, "rightPress", "rightRelease") 
 end
 
 --- @treturn bool True if the button is depressed.

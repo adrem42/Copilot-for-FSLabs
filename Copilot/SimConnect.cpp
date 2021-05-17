@@ -210,6 +210,12 @@ void SimConnect::setupMuteControls()
 
 	hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_MUTE_CONTROL, "SMOKE_TOGGLE");
 	hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_MUTE_CONTROL);
+
+	hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_MUTE_NAMED_EVENT, "adrem42.Copilot.Mute");
+	hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_MUTE_NAMED_EVENT);
+	hr = SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_UNMUTE_NAMED_EVENT, "adrem42.Copilot.Unmute");
+	hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_UNMUTE_NAMED_EVENT);
+
 }
 
 void SimConnect::setupCopilotMenu()
@@ -259,6 +265,14 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 				case EVENT_MUTE_CONTROL:
 
 					onMuteControlEvent(evt->dwData);
+					break;
+
+				case EVENT_MUTE_NAMED_EVENT:
+					copilot::onMuteKey(true);
+					break;
+					
+				case EVENT_UNMUTE_NAMED_EVENT:
+					copilot::onMuteKey(false);
 					break;
 
 				case EVENT_SIM_START:

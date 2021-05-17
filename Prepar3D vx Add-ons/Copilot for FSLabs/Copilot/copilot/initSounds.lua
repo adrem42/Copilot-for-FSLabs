@@ -73,32 +73,32 @@ local isTTS
 loadFolder = function(dir, prefix)
   if prefix ~= "" then prefix = prefix .. "." end
   local cfg = loadfile(dir .. "\\config.lua") or loadfile(dir .. "\\sounds.lua")
-  if cfg then
-    cfg = cfg()
-    if type(cfg) == "table" then
-      if isTTS ~= nil and isTTS ~= (cfg.isTTS and true or false) then
-        error "You can't mix TTS and non-TTS configs"
+  if not cfg then return false end
+  cfg = cfg()
+  if type(cfg) == "table" then
+    if isTTS ~= nil and isTTS ~= (cfg.isTTS and true or false) then
+      error "You can't mix TTS and non-TTS configs"
+    end
+    isTTS = cfg.isTTS and true or false
+    cfg.isTTS = nil
+    if isTTS then
+      copilot.usingTTScallouts = true
+      loadTtsConfig(cfg)
+    else
+      function copilot.calloutExists(fileName)
+        return callouts[fileName] ~= nil
       end
-      isTTS = cfg.isTTS and true or false
-      cfg.isTTS = nil
-      if isTTS then
-        copilot.usingTTScallouts = true
-        loadTtsConfig(cfg)
-      else
-        function copilot.calloutExists(fileName)
-          return callouts[fileName] ~= nil
+      function copilot.playCallout(fileName, delay)
+        if callouts[fileName] then
+          callouts[fileName]:play(delay or 0)
+        else
+          copilot.logger:warn("Callout " .. fileName .. " not found")
         end
-        function copilot.playCallout(fileName, delay)
-          if callouts[fileName] then
-            callouts[fileName]:play(delay or 0)
-          else
-            copilot.logger:warn("Callout " .. fileName .. " not found")
-          end
-        end
-        loadNormalConfig(dir, prefix, cfg)
       end
+      loadNormalConfig(dir, prefix, cfg)
     end
   end
+  return true
 end
 
 function copilot.addCallout(fileName, ...)
@@ -112,4 +112,4 @@ function copilot.addCallout(fileName, ...)
   callouts[fileName] = Sound:new(string.format("%s\\%s.%s", calloutDir, fileName, ext), length or 0, volume or 1)
 end
 
-loadFolder(calloutDir, "")
+assert(loadFolder(calloutDir, ""), "No such voice set found: " .. copilot.UserOptions.callouts.sound_set)

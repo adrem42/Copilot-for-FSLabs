@@ -9,34 +9,17 @@
 #include "KeyBindManager.h"
 #include <memory>
 
-HHOOK mouseHook = 0;
 HWND SimInterface::p3dWnd;
 HWND copilotWnd;
 using namespace P3D;
 
-LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    while (ShowCursor(true) < 0);
-    UnhookWindowsHookEx(mouseHook);
-    mouseHook = 0;
-    return CallNextHookEx(0, nCode, wParam, lParam);
-}
-
-void hideCursor()
-{
-    CURSORINFO cursorInfo = {};
-    cursorInfo.cbSize = sizeof(CURSORINFO);
-    GetCursorInfo(&cursorInfo);
-    if (!cursorInfo.flags) return;
-    while (ShowCursor(false) > -1);
-    if (!mouseHook)
-        mouseHook = SetWindowsHookEx(WH_MOUSE_LL, LowLevelMouseProc, 0, 0);
-}
-
 const size_t MSG_FIRE_MOUSE_RECTANGLE = WM_APP + 0;
-const size_t MSG_HIDE_CURSOR = WM_APP + 1;
 
 bool _firingMouseMacro = false;
+
+std::mutex suppressCursorMutex;
+bool cursorSuppressed = false;
+size_t suppressCursorTimeout = 0;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -46,15 +29,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             _firingMouseMacro = true;
             copilot::GetWindowPluginSystem()->FireMouseRectClick(wParam, (MOUSE_CLICK_TYPE)lParam);
             _firingMouseMacro = false;
-            
             break;
 
-        case MSG_HIDE_CURSOR:
-            hideCursor();
-            break;
-
+        case WM_TIMER: {
+            std::unique_lock<std::mutex> lock(suppressCursorMutex);
+            if (cursorSuppressed) {
+                if (GetTickCount64() > suppressCursorTimeout) {
+                    cursorSuppressed = false;
+                    lock.unlock();
+                    SimInterface::sendFSControl(66587, 79001);
+                }
+            }
+        }
+        break;
     }
-
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
@@ -81,6 +69,7 @@ void createWindow()
         0, wcex.lpszClassName, TEXT("Copilot"), WS_CHILD,
         0, 0, 0, 0, SimInterface::p3dWnd, NULL, hInst, NULL
     );
+    SetTimer(copilotWnd, NULL, 1000, NULL);
 }
 
 LRESULT Subclassproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -124,9 +113,15 @@ namespace SimInterface {
         SendMessage(copilotWnd, MSG_FIRE_MOUSE_RECTANGLE, rectId, clickType);
     }
 
-    void hideCursor()
+    void suppressCursor()
     {
-        SendMessage(copilotWnd, MSG_HIDE_CURSOR, 0, 0);
+        std::unique_lock<std::mutex> lock(suppressCursorMutex);
+        suppressCursorTimeout = GetTickCount64() + 3000;
+        if (!cursorSuppressed) {
+            cursorSuppressed = true;
+            lock.unlock();
+            SimInterface::sendFSControl(66587, 79000);
+        }
     }
 
     std::optional<double> readLvar(const std::string& name)
@@ -160,5 +155,4 @@ namespace SimInterface {
         uint16_t winEvent = e == KeyEvent::Press ? WM_KEYDOWN : WM_KEYUP;
         SendMessage(p3dWnd, winEvent, keyCode, 0);
     }
-
 }

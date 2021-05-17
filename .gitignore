@@ -5,6 +5,7 @@
 
 *.zip
 Modules/FSLabs Copilot/Manual/
+Copilot/FSL2LuaControls
 
 # User-specific files
 *.rsuser

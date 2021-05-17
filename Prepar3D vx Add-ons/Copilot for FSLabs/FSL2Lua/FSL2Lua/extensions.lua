@@ -74,3 +74,11 @@ end
 function table.unpack(t, i, j)
   return unpack(t, i or 1, j or t.n)
 end
+
+function table.size(t)
+  local n = 0
+  for _ in pairs(t) do
+    n = n + 1
+  end
+  return n
+end

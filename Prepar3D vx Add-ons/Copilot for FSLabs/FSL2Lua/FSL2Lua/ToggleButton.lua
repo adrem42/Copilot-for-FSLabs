@@ -12,8 +12,8 @@ ToggleButton.__call = Button.__call
 ToggleButton.__class = "ToggleButton"
 
 function ToggleButton:__pressAndRelease(_, pressClickType, releaseClickType)
-  self:_macro(pressClickType)
-  self:_macro(releaseClickType)
+  self:macro(pressClickType)
+  self:macro(releaseClickType)
 end
 
 --- Sets the toggle state of the button

@@ -1,5 +1,0 @@
-LIBRARY "FSLSerialize"
-EXPORTS
-Panels DATA
-DLLStart
-DLLStop

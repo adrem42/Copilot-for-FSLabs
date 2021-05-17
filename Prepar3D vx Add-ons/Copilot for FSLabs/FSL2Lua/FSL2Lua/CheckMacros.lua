@@ -126,34 +126,27 @@ function RotaryKnob:_checkMacro()
 end
 
 local manual = {}
-local manualCheckCoroutine
 local invalid = {}
 local invalidManual = {}
 
-local acType = FSL.acType
+local function numManual()
+  local n = 0
+  for _ in pairs(manual) do
+    n = n + 1
+  end
+  return n
+end
 
 local checkFilePath = util.FSL2LuaDir .. "\\checked_macros.lua"
 
 local checkFile = {}
 
-local function collectkMissingMacros()
-  local missing = {}
-  for _, v in pairs(require "FSL2Lua.FSL2Lua.FSL") do
-    if not v.ignore and not v.FSControl and not v[acType].rectangle and v[acType].available ~= false  then
-      table.insert(missing, v)
-    end
-  end
-  return missing
-end
-
 local function printSummary()
   local function comp(a, b) return a.name > b.name end
   table.sort(invalid, comp)
   table.sort(invalidManual, comp)
-  print "Finished checking macros!"
+  print "Finished checking controls!"
 
-  local missing = collectkMissingMacros()
-  
   if #invalid > 0 or #invalidManual > 0 then
     if #invalid > 0 then
       print "------------------------------------------"
@@ -172,90 +165,61 @@ local function printSummary()
   end
   if #invalid == 0 and #invalidManual == 0 then
     print "------------------------------------------"
-    print "All recorded macros are valid!"
-  end
-  if #missing > 0 then
-    print "------------------------------------------"
-    print "The macros for the following controls are missing:"
-    for _, v in ipairs(missing) do print(v.LVar) end
-  else 
-    print "------------------------------------------"
-    print "No missing macros!"
+    print "All controls are valid!"
   end
   file.write(checkFilePath, "return " .. serpent.block(checkFile, {comment = false, sparse = false}),"w")
 end
 
 local function confirmControlIsValid(control)
-  checkFile[control.LVar] = checkFile[control.LVar] or {}
-  checkFile[control.LVar][acType] = "0x" .. string.format("%x", control.rectangle)
+  checkFile[control.LVar] = true
 end
 
 local function manualCheck()
 
-  local timerStart
-  local Apressed = false
-  local Dpressed = false
+  local titleFmt = "Manual control check - %d of %d"
+  local i = 1
+  for control in pairs(manual) do
 
-  Bind {
-    key = "A",
-    onPress = function()
-      if Dpressed then return end
-      Apressed = true
-      timerStart = ipc.elapsedtime()
-    end,
-    onRelease = function() Apressed = false end
-  }
-  Bind {
-    key = "D",
-    onPress = function()
-      if Apressed then return end
-      Dpressed = true
-      timerStart = ipc.elapsedtime()
-    end,
-    onRelease = function() Dpressed = false end
-  }
+    local title = titleFmt:format(i, numManual())
+    local prompt = control.name
+    local checkCoro = copilot.addCoroutine(function()
+      control:_checkMacroManual()
+    end)
 
-  print("Starting manual check for " .. #manual .. " controls.")
-  print "Hold 'A' for success or 'D' for failure."
-  for _, control in ipairs(manual) do
-    print(string.format("Checking control %s, rectangle = 0x%x", control.name, control.rectangle))
-    local check = coroutine.wrap(function() control:_checkMacroManual() end)
-    while true do 
-      check()
-      coroutine.yield()
-      if (Apressed or Dpressed) and timerStart and ipc.elapsedtime() - timerStart > 1000 then
-        if Apressed then
-          print "Success!"
+    while true do
+      local status, res = Event.waitForEvent(Event.fromTextMenu(title, prompt, {"Control is working", "Control is not working"}))
+      if status == TextMenuResult.OK then
+        if res == 1 then
           confirmControlIsValid(control)
-        else 
-          print "Failure :("
+        else
           table.insert(invalidManual, control)
-          end
-        timerStart = nil
+        end
         break
       end
     end
-  end
 
-  printSummary()
+    i = i + 1
+
+    copilot.removeCallback(checkCoro)
+  end
 
 end
 
 local function CheckMacros()
 
-  if file.exists(checkFilePath) then checkFile = dofile(checkFilePath) end
+  manual = {}
+  invalid = {}
+  invalidManual = {}
 
-  local VHFswitches = {
-    FSL.CPT.PED_COMM_VHF2_Switch,
-    FSL.CPT.PED_COMM_VHF1_Switch,
-    FSL.FO.PED_COMM_VHF2_Switch,
-    FSL.FO.PED_COMM_VHF1_Switch,
-    FSL.OVHD_COMM3_VHF2_Switch,
-    FSL.OVHD_COMM3_VHF1_Switch
-  }
+  package.loaded["FSL2Lua.FLS2Lua.FSL2Lua"] = nil
+  package.loaded["FSL2Lua.FSL2Lua.FSL"] = nil
+  _G.FSL = require "FSL2Lua.FSL2Lua.FSL2Lua"
+  _G.FSL:disableSequences()
 
-  for _, switch in  ipairs(VHFswitches) do
-    assert(not switch:isDown(), "All 6 VHF1 and VHF2 knobs be pulled out")
+  FSL = _G.FSL
+
+  if file.exists(checkFilePath) then 
+    checkFile = dofile(checkFilePath) 
   end
 
   FSL.ignoreFaultyLvars()
@@ -268,23 +232,21 @@ local function CheckMacros()
   local function checkControl(control)
 
     if util.isType(control, Control) and control._checkMacro and not control.FSControl then
-      if checkFile[control.LVar] then
-        if tonumber(checkFile[control.LVar][acType]) == control.rectangle then
-          return
-        end
+      if checkFile[control.LVar] == true then
+        return
       end
 
-      if control.rectangle then
+      if control.name then
         if not control:_checkMacro() then
-          if control[acType].manual and control._checkMacroManual then
-            table.insert(manual, control)
+          if control.manual and control._checkMacroManual then
+            manual[control] = true
           else
-            print("The macro of control " .. control.name .. " appears to be invalid")
+            print("The control " .. control.name .. " appears to not be working")
             table.insert(invalid, control)
           end
         else
           confirmControlIsValid(control)
-          if control[acType].manual then
+          if control.manual then
             table.insert(notManual, control)
           end
         end
@@ -301,14 +263,12 @@ local function CheckMacros()
     end
 
     for _, control in pairs(table) do
-      if not checked[control] then checkControl(control) end
+      if not checked[control] and not manual[control] then checkControl(control) end
     end
   end
   print"\n"
   print "-----------------------------------------------------------"
   print "--- Checking macros! --------------------------------------"
-  print ("--- A/C type: " .. acType .. " ----------------------------------------")
-  print "--- Delete FSL2Lua\\checked_macros.lua to reset the check --"
   print "-----------------------------------------------------------"
   print"\n"
   for _, button in ipairs {FSL.OVHD_FIRE_ENG1_PUSH_Button, FSL.OVHD_FIRE_ENG2_PUSH_Button, FSL.OVHD_FIRE_APU_PUSH_Button} do
@@ -322,17 +282,21 @@ local function CheckMacros()
   checkMacros(FSL.FO)
 
   if #notManual > 0 then
-    print("The following controls are no longer manual for this type (" .. acType .. "):\n")
+    print("The following controls are no longer manual:\n")
     for _, control in ipairs(notManual) do
       print(control.name)
     end
   end
 
-  if #manual == 0 then
-    printSummary()
-  else
-    copilot.addCoroutine(manualCheck)
+  if numManual() > 0 then
+    if copilot.getCallbackStatus(coroutine.running()) then
+      manualCheck()
+    else
+      copilot.addCoroutine(manualCheck)
+    end
   end
+
+  printSummary()
 
 end
 

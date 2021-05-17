@@ -9,7 +9,7 @@
 
 namespace SimConnect {
 
-	size_t getUniqueEventID();
+	extern __declspec(dllexport) size_t getUniqueEventID();
 
 	class SimConnectEvent : public std::enable_shared_from_this<SimConnectEvent> {
 	public:
@@ -60,11 +60,15 @@ namespace SimConnect {
 
 	extern bool fslAircraftLoaded, simStarted;
 
-	extern HANDLE hSimConnect;
+	extern __declspec(dllexport) HANDLE hSimConnect;
 
 	enum EVENT_ID {
 
 		EVENT_MUTE_CONTROL,
+
+		EVENT_MUTE_NAMED_EVENT,
+		EVENT_UNMUTE_NAMED_EVENT,
+
 		EVENT_AIRCRAFT_LOADED,
 		EVENT_SIM_START,
 		EVENT_SIM_STOP,

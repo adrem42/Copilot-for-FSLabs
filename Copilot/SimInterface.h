@@ -18,7 +18,7 @@ namespace SimInterface {
     void fireMouseMacro(size_t rectId, unsigned short clickType);
     bool firingMouseMacro();
 
-    void hideCursor();
+    void suppressCursor();
 
     std::optional<double> readLvar(const std::string&);
 
@@ -26,7 +26,7 @@ namespace SimInterface {
 
     void createLvar(const std::string&, double = 0);
 
-    void sendFSControl(size_t, size_t = 0);
+    __declspec(dllexport) void sendFSControl(size_t, size_t = 0);
 
     enum class KeyEvent {
         Press, Release
