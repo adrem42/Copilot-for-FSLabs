@@ -400,6 +400,7 @@ function copilot.sequences.parking()
   copilot.suspend(1000, 10000)
 
   if not extPwrConnectedByPF then
+    FSL.OVHD_ELEC_EXT_PWR_Button:_moveHandHere()
     FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftPress"
     copilot.sleep(1000, 2000)
     FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftRelease"
