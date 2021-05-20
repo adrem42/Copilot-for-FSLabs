@@ -1,1 +1,0 @@
-Copy Copilot.evt to your FSUIPC folder. This will make FSUIPC create mute and unmute controls in its drop-down controls list.

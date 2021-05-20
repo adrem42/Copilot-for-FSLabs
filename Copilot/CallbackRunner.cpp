@@ -5,6 +5,7 @@
 #include "CallbackRunner.h"
 #include <Windows.h>
 #include "Copilot.h"
+#include "LuaPlugin.h"
 
 CallbackRunner::Interval CallbackRunner::validateInputInterval(std::optional<Interval>& input)
 {
@@ -15,8 +16,7 @@ CallbackRunner::Interval CallbackRunner::validateInputInterval(std::optional<Int
 
 void CallbackRunner::maybeAwaken(Timestamp deadline)
 {
-	if (activeCallbacks.empty()
-		|| activeCallbacks.begin()->second->deadline > deadline)
+	if (activeCallbacks.empty() || activeCallbacks.begin()->second->deadline > deadline)
 		onCallbackAwake();
 }
 
@@ -76,14 +76,18 @@ CallbackRunner::ActiveCallbackIter CallbackRunner::findActiveCallback(std::share
 	return activeCallbacks.end();
 }
 
-CallbackRunner::CallbackRunner(
-	sol::state_view& lua,
-	std::function<void()> onCallbackAwake, 
-	std::function<Timestamp()> elapsedTime, 
-	std::function<void(sol::error&)> onError)
-	: onCallbackAwake(onCallbackAwake), elapsedTime(elapsedTime), onError(onError)
+void CallbackRunner::onCallbackAwake()
 {
-	lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE] = lua.create_table();
+	nextUpdate = plugin->elapsedTime();
+}
+
+CallbackRunner::CallbackRunner(LuaPlugin* plugin)
+	:plugin(plugin)
+{
+	plugin->lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE] = plugin->lua.create_table();
+	sol::table coxpcall = plugin->lua["require"]("Copilot.libs.coxpcall");
+	sol::stack::push(plugin->lua.lua_state(), coxpcall["running"]);
+	coRunningRegistryRef = luaL_ref(plugin->lua.lua_state(), LUA_REGISTRYINDEX);
 }
 
 /***
@@ -117,7 +121,7 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 	if (type != sol::type::function && type != sol::type::thread)
 		throw std::runtime_error("Bad callback parameter");
 
-	size_t now = elapsedTime();
+	size_t now = plugin->elapsedTime();
 
 	if (auto alreadyAdded = checkAlreadyAdded(callable, name)) {
 		if (delay.has_value() && *delay > 0) {
@@ -161,7 +165,7 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 		callback = std::shared_ptr<Callback>(new Callback{ name, _interval, th, co, deadline, makeThreadEvent(), th.thread_state() });
 	} 
 
-	debug("Adding new callback...");
+	debug("Adding new callback");
 	maybeAwaken(deadline);
 	activeCallbacks.emplace(deadline, callback);
 	sol::state_view lua(callable.lua_state());
@@ -224,7 +228,7 @@ void CallbackRunner::removeCallback(sol::object key)
 bool CallbackRunner::setCallbackTimeout(sol::object key, Timestamp timeout)
 {
 	return setCallbackTimeout(key, [this, timeout](std::shared_ptr<Callback>& callback) {
-		auto now = elapsedTime();
+		auto now = plugin->elapsedTime();
 		auto newDeadline = now + timeout;
 		if (currentCallback != callback.get()) {
 			auto it = findActiveCallback(callback);
@@ -259,7 +263,7 @@ void CallbackRunner::cancelCallbackTimeout(sol::object key)
 
 	if (callback->status != Callback::Status::Suspended)
 		return;
-	auto newDeadline = elapsedTime();
+	auto newDeadline = plugin->elapsedTime();
 
 	if (callback->deadline == INDEFINITE) {
 		callback->deadline = newDeadline;
@@ -361,7 +365,7 @@ CallbackRunner::Timestamp CallbackRunner::update()
 			break;
 
 		const size_t deadline = it->first;
-		const size_t timestamp = elapsedTime();
+		const size_t timestamp = plugin->elapsedTime();
 
 		if (deadline > timestamp) {
 			break;
@@ -410,14 +414,16 @@ CallbackRunner::Timestamp CallbackRunner::update()
 
 	currentCallback = nullptr;
 
-	auto nextUpdate = activeCallbacks.empty() ? INDEFINITE : activeCallbacks.begin()->first;
+	nextUpdate = activeCallbacks.empty() ? INDEFINITE : activeCallbacks.begin()->first;
 
+#ifdef DEBUG
 	debug(
 		"End of update pass, next update: {}, wait: {}",
 		nextUpdate == INDEFINITE ? "INDEFINITE" : std::to_string(nextUpdate),
-		nextUpdate == INDEFINITE ? "-" : std::to_string(nextUpdate > elapsedTime() ? nextUpdate - elapsedTime() : 0)
+		nextUpdate == INDEFINITE ? "-" : std::to_string(nextUpdate > plugin->elapsedTime() ? nextUpdate - plugin->elapsedTime() : 0)
 	);
 	debug("------------------------------------------");
+#endif
 
 	return nextUpdate;
 }

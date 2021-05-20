@@ -8,7 +8,11 @@
 #include <setjmp.h>
 #include <atomic>
 
+class LuaTextMenu;
+
 class LuaPlugin {
+
+	friend class CallbackRunner;
 
 	LuaPlugin(const std::string&, std::shared_ptr<std::recursive_mutex>);
 
@@ -29,19 +33,14 @@ class LuaPlugin {
 	static std::vector<ScriptInst> scripts;
 
 	using SessionVariable = std::variant<sol::nil_t, double, std::string, bool>;
-
 	static std::mutex sessionVariableMutex;
-
 	static SessionVariable getSessionVariable(const std::string&);
-
 	static void setSessionVariable(const std::string&, SessionVariable);
-
 	static std::unordered_map<std::string, SessionVariable> sessionVariables;
-
 
 protected:
 
-	std::atomic<DWORD> luaThreadId = 0;
+	virtual void onLuaStateInitialized();
 
 	const std::shared_ptr<std::recursive_mutex> scriptMutex;
 
@@ -54,8 +53,6 @@ protected:
 	};
 
 	const size_t SHUTDOWN_TIMEOUT = 10000;
-
-	
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now();
 
@@ -71,8 +68,8 @@ protected:
 
 	void yeetLuaThread();
 
-	void onError(sol::error&);
-	void onError(const ScriptStartupError&);
+	static void onError(sol::error&);
+	static void onError(const ScriptStartupError&);
 
 	virtual void run();
 
@@ -107,10 +104,10 @@ public:
 		}
 	}
 
-	size_t elapsedTime();
+	size_t elapsedTime() const;
 
 	template<typename F, typename... Args>
-	void callProtectedFunction(F&& onValid, sol::protected_function func, Args&&... args)
+	static void callProtectedFunction(F&& onValid, sol::protected_function func, Args&&... args)
 	{
 		sol::protected_function_result pfr = func(std::forward<Args>(args)...);
 		if (!pfr.valid()) {
@@ -122,7 +119,7 @@ public:
 	}
 
 	template<typename... Args>
-	sol::protected_function_result callProtectedFunction(sol::protected_function func, Args&&... args)
+	static sol::protected_function_result callProtectedFunction(sol::protected_function func, Args&&... args)
 	{
 		sol::protected_function_result pfr = func(std::forward<Args>(args)...);
 		if (!pfr.valid()) {

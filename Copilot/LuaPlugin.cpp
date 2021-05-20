@@ -174,6 +174,10 @@ void LuaPlugin::setSessionVariable(const std::string& name, SessionVariable valu
 	sessionVariables[name] = value;
 }
 
+void LuaPlugin::onLuaStateInitialized()
+{
+}
+
 int readSTR(lua_State* L)
 {
 	std::lock_guard<std::mutex> lock(FSUIPC::mutex);
@@ -298,6 +302,40 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 		);
 	};
 
+	lua["Logic"] = lua.create_table();
+
+	lua["Logic"]["And"] = [](uint32_t y, uint32_t z) {
+		return y & z;
+	};
+
+	lua["Logic"]["Nand"] = [](uint32_t y, uint32_t z) {
+		return (~y) | (~z);
+	};
+
+	lua["Logic"]["Nor"] = [](uint32_t y, uint32_t z) {
+		return (~y) & (~z);
+	};
+
+	lua["Logic"]["Not"] = [](uint32_t y) {
+		return ~y;
+	};
+
+	lua["Logic"]["Or"] = [](uint32_t y, uint32_t z) {
+		return y | z;
+	};
+	
+	lua["Logic"]["Shl"] = [](uint32_t y, uint32_t n) {
+		return y << n;
+	};
+
+	lua["Logic"]["Shr"] = [](uint32_t y, uint32_t n) {
+		return y >> n;
+	};
+
+	lua["Logic"]["Xor"] = [](uint32_t y, uint32_t z) {
+		return y xor z;
+	};
+
 	using namespace FSUIPC;
 
 	ipc["exit"] = [&] { yeetLuaThread(); };
@@ -397,8 +435,6 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 
 	lua["APPDIR"] = copilot::appDir;
 
-	lua["Event"] = lua["require"]("copilot.Event");
-
 	lua["_COPILOT"] = true;
 
 	luaopen_lfs(lua.lua_state());
@@ -455,6 +491,7 @@ void LuaPlugin::run()
 	auto res = lua.do_file(path);
 	if (!res.valid()) 
 		throw ScriptStartupError(res);
+	onLuaStateInitialized();
 }
 
 void LuaPlugin::stopScript(const std::string& path)
@@ -507,7 +544,6 @@ void LuaPlugin::launchThread()
 	thread = std::thread([this] {
 		copilot::logger->info("### '{}': Launching new thread!", logName);
 		try {
-			luaThreadId = GetCurrentThreadId();
 			running = true;
 			if (!setjmp(jumpBuff)) run();
 		}
@@ -520,12 +556,11 @@ void LuaPlugin::launchThread()
 		catch (...) {
 			copilot::logger->error("Caught (...) exception");
 		};
-		luaThreadId = 0;
 		copilot::logger->info("### '{}': Thread finished!", logName);
 	});
 }
 
-size_t LuaPlugin::elapsedTime()
+size_t LuaPlugin::elapsedTime() const
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(
 		std::chrono::high_resolution_clock::now() - startTime

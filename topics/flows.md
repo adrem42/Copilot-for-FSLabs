@@ -26,6 +26,10 @@ ___
 * PM will announce 'full left', 'full right', 'neutral' etc.
 The aileron and elevator checks need to be performed before the rudder check.
 
+* Your side flight control check is followed by a silent PM side check (sidestick only).
+
+The flight control check will time out if you don't do anything for 10 seconds.
+
 #### Trigger:
 
 ##### voice_control = 1:

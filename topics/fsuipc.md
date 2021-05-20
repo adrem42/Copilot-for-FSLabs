@@ -2,6 +2,8 @@
 
 Copilot used to be a Lua plugin launched within the FSUIPC Lua environment. For backwards compatibility, the following functions from the FSUIPC Lua library have been implemented:
 
+Logic library
+
 ipc.writeUB<br>
 ipc.writeSB<br>
 ipc.writeUW<br>

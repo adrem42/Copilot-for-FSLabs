@@ -31,6 +31,7 @@ file = {
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/Copilot.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/Copilot/IniUtils.lua',
   'Copilot/CallbackRunner.cpp',
+  'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/common.lua',
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/util.lua',
 
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Action.lua',

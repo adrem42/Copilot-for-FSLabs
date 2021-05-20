@@ -40,11 +40,7 @@ You need to have English as the Windows language in order for the speech recogni
 
 5. If you fly online, you'll want to bind your PTT key or button to mute Copilot. There are two ways of doing it:<br><br>
 
-> 1. Create a separate script as described @{standalonescripts.md|here} and bind a key or button to the muteCopilot and unmuteCopilot functions, for example:
+> 1. Copy *Copilot.evt* from *Copilot for FSLabs\FSUIPC* into your FSUIPC install folder. This will make FSUIPC create mute and unmute controls in the top section of its drop-down controls list.
 
+> 2. Create a separate script as described @{standalonescripts.md|here} and bind a key or button to the muteCopilot and unmuteCopilot functions, for example:
 	Bind { key = "A", onPress = muteCopilot, onRelease = unmuteCopilot }
-
-> 2. 
-
-> <p><img src="../img/mutekey.png" width="500px"></p> <p><img src="../img/mutebutton.png" width="500px"></p>
-

@@ -13,13 +13,6 @@ end
 copilot.getTimestamp = ipc.elapsedtime
 copilot.__dummy = function() end
 
-local setCallbackTimeout = copilot.setCallbackTimeout
-function copilot.setCallbackTimeout(...)
-  if setCallbackTimeout(...) then
-    coroutine.yield()
-  end
-end
-
 function copilot.await(thread, event) 
   return Event.waitForEvent(event or copilot.getThreadEvent(thread)) 
 end
@@ -124,6 +117,8 @@ local function setup()
     require "copilot.sequences"
     require "copilot.ScratchpadClearer"
 
+    copilot.scratchpadClearer.setMessages {"GPS PRIMARY", "ENTER DEST DATA"}
+
     if options.callouts.enable == options.TRUE  then
       require "copilot.callouts"
       copilot.callouts:setup()
@@ -197,10 +192,9 @@ local function setup()
     if options.failures.enable == options.TRUE and not debugging then 
       require "copilot.failures"
     end
-    copilot.scratchpadClearer.setMessages {"GPS PRIMARY", "ENTER DEST DATA"}
     wrapSequencesWithLogging()
   elseif not hasPlugins then
-    return false
+    ipc.exit()
   end
 
   if copilot.isVoiceControlEnabled then
@@ -216,12 +210,9 @@ local function setup()
     end
   end
 
-  return true
-  
 end
 
-if setup() then 
-  print ">>>>>> Setup finished"
-  print(">>>>>> Voice control is " .. (copilot.isVoiceControlEnabled and "enabled" or "disabled"))
-  startUpdating()
-end
+setup() 
+print ">>>>>> Setup finished"
+print(">>>>>> Voice control is " .. (copilot.isVoiceControlEnabled and "enabled" or "disabled"))
+

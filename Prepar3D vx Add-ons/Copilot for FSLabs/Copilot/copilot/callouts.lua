@@ -292,6 +292,34 @@ local function confirmFctlEcamPage()
   end
 end
 
+local sidestick = require "copilot.Sidestick"
+
+sidestick.moveRaw {x = 0, y = 0}
+
+local pmFlightControlCheckTimeout = {}
+
+function copilot.callouts.flightControlsCheck:pmTestSidestickAxis(axis, first, second)
+  local function move(to, check)
+    sidestick.move {[axis] = to}
+    if not checkWithTimeout(500, function()
+      copilot.suspend(100)
+      confirmFctlEcamPage()
+      return self[check](self) 
+    end) then error(pmFlightControlCheckTimeout) end
+    copilot.suspend(700, 1200)
+  end
+  move(1, first)
+  move(-1, second)
+  move(0, "stickNeutral")
+end
+
+function copilot.callouts.flightControlsCheck:pmSideCheck()
+  self:pmTestSidestickAxis("y", "fullUp", "fullDown")
+  self:pmTestSidestickAxis("x", "fullRight", "fullLeft")
+end
+
+local brakeCheckEnabledByUser = copilot.UserOptions.callouts.PM_announces_brake_check == 1
+
 function copilot.callouts.flightControlsCheck:__call()
 
   if self.flightControlsChecked then return end
@@ -303,14 +331,20 @@ function copilot.callouts.flightControlsCheck:__call()
     self.fullLeftRudderTravel = 1499
     self.fullRightRudderTravel = 3000
   end
+
+  local brakeCheckVcWasActive
   
   if not copilot.isVoiceControlEnabled then
     copilot.suspend(30000)
+  else
+    brakeCheckVcWasActive = copilot.voiceCommands.brakeCheck:getState() == RuleState.Active
+    if brakeCheckVcWasActive then
+      copilot.voiceCommands.brakeCheck:ignore()
+    end
   end
   local fullLeft, fullRight, fullLeftRud, fullRightRud, fullUp, fullDown, xNeutral, yNeutral, rudNeutral
 
   self.checkingFlightControls = false
-  local cycle = 0
   local timeLastAction = ipc.elapsedtime()
 
   local stickDelay, rudDelay = 700, 400
@@ -324,15 +358,12 @@ function copilot.callouts.flightControlsCheck:__call()
 
   repeat
     copilot.suspend(100)
-    if copilot.isVoiceControlEnabled then
-      cycle = cycle + 1
-      if cycle % 10 == 0 then 
-        confirmFctlEcamPage() 
-        if ipc.elapsedtime() - timeLastAction > 10000 then 
-          self.checkingFlightControls = false
-          return 
-        end
-      end
+    confirmFctlEcamPage() 
+
+    if ipc.elapsedtime() - timeLastAction > 10000 then 
+      self.checkingFlightControls = false
+      print "Flight control check timed out"
+      return 
     end
     
     -- full left aileron
@@ -383,10 +414,33 @@ function copilot.callouts.flightControlsCheck:__call()
 
   until xNeutral and yNeutral and rudNeutral
 
+  copilot.suspend(2000, 5000)
+
+  local pmCheckOk, pmCheckErr = pcall(self.pmSideCheck, self)
+
   self.checkingFlightControls = false
-  self.flightControlsChecked = true
-  copilot.events.flightControlsChecked:trigger()
-  return true
+
+  if copilot.isVoiceControlEnabled then
+    if brakeCheckVcWasActive then
+      copilot.voiceCommands.brakeCheck:activate()
+    end
+  end
+
+  if not pmCheckOk then
+    sidestick.move {x = 0, y = 0}
+    if pmCheckErr == pmFlightControlCheckTimeout then
+      copilot.displayText("Pilot Monitoring: 'Oh no, my sidestick isn't working!'", 10, "print_yellow")
+    else
+      error(pmCheckErr)
+    end
+  else
+    if copilot.isVoiceControlEnabled then
+      copilot.voiceCommands.flightControlsCheck:deactivate()
+    end
+    self.flightControlsChecked = true
+    copilot.events.flightControlsChecked:trigger()
+    return true
+  end
 end
 
 function copilot.callouts.flightControlsCheck:fullLeft()
@@ -482,7 +536,7 @@ function copilot.callouts:start()
 
   copilot.events.chocksSet:addAction(function() self:resetFlags() end):setLogMsg(Event.NOLOGMSG)
 
-  if copilot.UserOptions.callouts.PM_announces_brake_check == 1 then
+  if brakeCheckEnabledByUser then
     if copilot.isVoiceControlEnabled then
 
       copilot.events.takeoffCancelled:addAction(function()

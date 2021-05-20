@@ -26,7 +26,7 @@ namespace SimInterface {
 
     void createLvar(const std::string&, double = 0);
 
-    __declspec(dllexport) void sendFSControl(size_t, size_t = 0);
+    void sendFSControl(size_t, size_t = 0);
 
     enum class KeyEvent {
         Press, Release

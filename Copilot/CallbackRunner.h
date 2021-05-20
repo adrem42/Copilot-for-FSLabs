@@ -10,6 +10,9 @@
 
 class CallbackRunner {
 
+private:
+	LuaPlugin* const plugin;
+
 public:
 
 	using Timestamp = size_t;
@@ -17,18 +20,18 @@ public:
 
 	static const Timestamp INDEFINITE = -1;
 
-	std::function<void()> onCallbackAwake;
-	std::function<Timestamp()> elapsedTime;
-	std::function<void(sol::error&)> onError;
 	std::function<std::optional<sol::table>()> makeThreadEvent;
 
+	size_t nextUpdate = plugin->elapsedTime();
+
 private:
+
 
 #ifdef _DEBUG
 	template <typename... Args>
 	static void debug(Args&&... args)
 	{
-		//copilot::logger->trace(std::forward<Args>(args)...);
+		copilot::logger->trace(std::forward<Args>(args)...);
 	}
 #else
 	static void debug(...) {}
@@ -45,6 +48,8 @@ private:
 	sol::table LUA_THREAD_REMOVED;
 
 	using coroutine_t = sol::main_coroutine;
+
+	int coRunningRegistryRef;
 
 	struct Callback {
 		enum class Status {
@@ -78,7 +83,7 @@ private:
 		sol::protected_function_result pfr = runnable(std::forward<Args>(args)...);
 		if (!pfr.valid()) {
 			sol::error err = pfr;
-			onError(err);
+			LuaPlugin::onError(err);
 		}
 		return pfr;
 	}
@@ -98,7 +103,6 @@ private:
 				} else {
 					threadEvent["trigger"](threadEvent, LUA_THREAD_REMOVED);
 				}
-				
 			}
 		}
 	}
@@ -110,7 +114,6 @@ private:
 	}
 
 	std::shared_ptr<CallbackRunner::Callback> checkAlreadyAdded(sol::object& o, std::optional<std::string>& name);
-
 	sol::unsafe_function createCoroutine;
 
 	void actuallyRemoveCallback(sol::state_view&, std::shared_ptr<Callback>&, ActiveCallbackIter& iter);
@@ -143,7 +146,10 @@ private:
 		if (auto callback = findCallback(lua, key)) {
 			if (!block(callback)) return false;
 			callback->status = Callback::Status::Suspended;
-			if (lua.lua_state() == callback->threadState) {
+			lua_rawgeti(key.lua_state(), LUA_REGISTRYINDEX, coRunningRegistryRef);
+			lua_pushthread(key.lua_state());
+			lua_call(key.lua_state(), 1, 1);
+			if (lua_tothread(key.lua_state(), -1) == callback->threadState) {
 				return true;
 			}
 		}
@@ -152,9 +158,11 @@ private:
 
 	ActiveCallbackIter findActiveCallback(std::shared_ptr<Callback>&);
 
+	void onCallbackAwake();
+
 public:
 
-	CallbackRunner(sol::state_view&, std::function<void()>, std::function<Timestamp()>, std::function<void(sol::error&)>);
+	CallbackRunner(LuaPlugin*);
 	CallbackReturn addCallback(sol::object callable, std::optional<std::string> name, std::optional<Interval> interval, std::optional<Interval> delay);
 	CallbackReturn addCoroutine(sol::object callable, std::optional<std::string> name, std::optional<Interval> delay);
 	CallbackReturn callOnce(sol::object callable, std::optional<Interval> delay);

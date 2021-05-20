@@ -8,9 +8,6 @@
 #include "functional"
 
 class RecoResultFetcher : ISpNotifyCallback {
-public:
-	using UserNotifyCallback = std::function<void()>;
-private:
 	const std::shared_ptr<Recognizer> recognizer;
 	std::vector<RecoResult> recoResults;
 	std::mutex mutex;

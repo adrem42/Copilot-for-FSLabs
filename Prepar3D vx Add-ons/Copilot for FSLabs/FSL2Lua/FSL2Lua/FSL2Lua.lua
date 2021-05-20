@@ -8,10 +8,6 @@ if FSL2LUA_STANDALONE then
   ipc = {readLvar = function() end}
 end
 
-if not _COPILOT then
-  function suppressCursor() end
-end
-
 function hideCursor() end
 
 --- @field CPT table containing controls on the left side
@@ -126,7 +122,13 @@ function FSL:setPilot(pilot)
   hand:init()
 end
 
-function FSL:getPilot() return self._pilot end
+function FSL:getPilot()
+  if self._pilot == 1 then
+    return 1, "CPT"
+  else
+    return 2, "FO"
+  end
+end
 
 function FSL:enableLogging(startNewLog) return util.enableLogging(startNewLog) end
 

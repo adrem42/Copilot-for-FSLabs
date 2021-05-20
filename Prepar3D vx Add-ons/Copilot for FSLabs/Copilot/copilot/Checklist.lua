@@ -62,6 +62,10 @@ function Checklist:new(label, displayLabel, trigger)
       resetCurrChecklist()
       if self._doneEvent then self._doneEvent:trigger "error" end
     end
+    self.sayAgainVoiceCommand:deactivate()
+    self.standbyVoiceCommand:deactivate()
+    self.resumeVoiceCommand:deactivate()
+    self.restartVoiceCommand:deactivate()
   end)
   return checklist
 end
@@ -374,6 +378,11 @@ function Checklist:execute()
   if self.didShowText then
     copilot.displayText ""
   end
+
+  self.sayAgainVoiceCommand:deactivate()
+  self.standbyVoiceCommand:deactivate()
+  self.resumeVoiceCommand:deactivate()
+  self.restartVoiceCommand:deactivate()
 
   self:_resumeVoiceCommands()
 

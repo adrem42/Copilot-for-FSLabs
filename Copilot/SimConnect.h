@@ -9,15 +9,29 @@
 
 namespace SimConnect {
 
-	extern __declspec(dllexport) size_t getUniqueEventID();
+	size_t getUniqueEventID();
 
 	class SimConnectEvent : public std::enable_shared_from_this<SimConnectEvent> {
+	protected:
+		using Callback = std::function<void(DWORD)>;
+		const Callback callback;
 	public:
 		SimConnectEvent(const SimConnectEvent&) = delete;
-		SimConnectEvent() :eventId(getUniqueEventID()) {}
-		const size_t eventId;
-		virtual bool dispatch(DWORD) = 0;
+		SimConnectEvent() = default;
+		SimConnectEvent(Callback callback) :callback(callback) {};
+		const size_t eventId = getUniqueEventID();
+		virtual bool dispatch(DWORD);
 		virtual ~SimConnectEvent();
+	};
+
+	class NamedSimConnectEvent : public SimConnectEvent {
+	public:
+		const std::string name;
+		NamedSimConnectEvent(const std::string& name, Callback cb);
+		void subscribe();
+		void unsubscribe();
+		void transmit(DWORD);
+		virtual ~NamedSimConnectEvent();
 	};
 
 	class TextMenuEvent : public SimConnectEvent {
@@ -44,7 +58,6 @@ namespace SimConnect {
 
 		void invalidateBuffer();
 
-
 	public:
 
 		TextMenuEvent(const std::string&, const std::string& ,std::vector<std::string>, size_t, Callback);
@@ -60,11 +73,9 @@ namespace SimConnect {
 
 	extern bool fslAircraftLoaded, simStarted;
 
-	extern __declspec(dllexport) HANDLE hSimConnect;
+	extern HANDLE hSimConnect;
 
 	enum EVENT_ID {
-
-		EVENT_MUTE_CONTROL,
 
 		EVENT_MUTE_NAMED_EVENT,
 		EVENT_UNMUTE_NAMED_EVENT,
