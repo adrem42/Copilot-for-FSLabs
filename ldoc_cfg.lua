@@ -44,7 +44,7 @@ file = {
   
   'Prepar3D vx Add-ons/Copilot for FSLabs/Copilot/copilot/Checklist.lua',
   'Copilot/Joystick.h',
-  'Copilot/CopilotScript.cpp'
+  'Copilot/FSL2LuaScript.cpp'
  
 }
 
