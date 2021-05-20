@@ -301,7 +301,7 @@ local pmFlightControlCheckTimeout = {}
 function copilot.callouts.flightControlsCheck:pmTestSidestickAxis(axis, first, second)
   local function move(to, check)
     sidestick.move {[axis] = to}
-    if not checkWithTimeout(500, function()
+    if not checkWithTimeout(5000, function()
       copilot.suspend(100)
       confirmFctlEcamPage()
       return self[check](self) 
