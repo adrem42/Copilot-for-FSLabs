@@ -355,23 +355,8 @@ function copilot.sequences.afterLanding:__call()
 end
 
 local function extPwrAvail() return ipc.readLvar "FSLA320_GndPwr" == 1 end
-local function extPwrButtonPressed(rect, action)
-  return rect == FSL.OVHD_ELEC_EXT_PWR_Button.rectangle and action == "leftPress"
-end
 
 function copilot.sequences.parking()
-
-  local extPwrConnectedByPF
-
-  local extPwrButtMonitor = copilot.mouseMacroEvent():addAction(function(_, rect, action)
-    if extPwrAvail() and extPwrButtonPressed(rect, action) then
-      extPwrConnectedByPF = true
-    end
-  end)
-
-  copilot.events.enginesStarted:addOneOffAction(function()
-    copilot.mouseMacroEvent():removeAction(extPwrButtMonitor)
-  end)
 
   FSL.OVHD_AI_Eng_1_Anti_Ice_Button:toggleUp()
   FSL.OVHD_AI_Eng_2_Anti_Ice_Button:toggleUp()
@@ -399,14 +384,10 @@ function copilot.sequences.parking()
 
   copilot.suspend(1000, 10000)
 
-  if not extPwrConnectedByPF then
-    FSL.OVHD_ELEC_EXT_PWR_Button:_moveHandHere()
-    FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftPress"
-    copilot.sleep(1000, 2000)
-    FSL.OVHD_ELEC_EXT_PWR_Button:macro "leftRelease"
-    FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleUp()
-    FSL.OVHD_APU_Master_Button:toggleUp()
-  end
+  FSL.OVHD_ELEC_EXT_PWR_Button()
+  copilot.sleep(300, 700)
+  FSL.OVHD_AC_Eng_APU_Bleed_Button:toggleUp()
+  FSL.OVHD_APU_Master_Button:toggleUp()
 
 end
 

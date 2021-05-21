@@ -5,8 +5,8 @@ local sidestickLvarFmt = "VC_FLTSTICK_%s_" .. select(2, FSL:getPilot())
 local sidestick = {
   evtX = copilot.simConnectEvent(sidestickEventFmt:format "Roll"),
   evtY = copilot.simConnectEvent(sidestickEventFmt:format "Pitch"),
-  lvarX = sidestickLvarFmt:format("L_R"),
-  lvarY = sidestickLvarFmt:format("F_B")
+  lvarX = sidestickLvarFmt:format "L_R",
+  lvarY = sidestickLvarFmt:format "F_B"
 }
 
 local function moveSidestick(args)
@@ -33,7 +33,7 @@ local function smoothMoveSidestick(args)
   vec:normalize()
   local step = 0.05
   local scale = 0
-  while math.abs(len - scale) >= step do
+  while len - scale >= step do
     scale = scale + step
     moveSidestick {
       x = fromX + vec.x * scale, 

@@ -51,6 +51,9 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
     util.sleep(sleepAfterPress)
   end
   self:macro(releaseClickType)
+  checkWithTimeout(2000, 10, function()
+    return not self:_hasBeenPressed()
+  end)
 end
 
 --- Presses the button.

@@ -60,6 +60,8 @@ ___
 * AUTO BRK MAX
 * Press TO CONFIG button
 
+Note that it's not possible to read the state of the auto-brake button light. Copilot has to assume that it's off.
+
 #### Trigger:
 
 As soon as the brake and flight controls checks are completed
@@ -218,6 +220,8 @@ Wait until external power is available
 * Connect external power
 * APU bleed OFF
 * APU off
+
+Note that it's not possible to read the state of EXT PWR button light. Copilot has to assume that it's off.
 
 #### Trigger:
 

@@ -5,7 +5,7 @@ if FSL2LUA_MAKE_CONTROL_LIST then
 end
 
 if FSL2LUA_STANDALONE then
-  ipc = {readLvar = function() end}
+  ipc = {readLvar = function(lvar) end}
 end
 
 function hideCursor() end

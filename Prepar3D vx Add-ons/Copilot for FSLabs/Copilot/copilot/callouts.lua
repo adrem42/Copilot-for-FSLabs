@@ -21,8 +21,8 @@ function copilot.callouts:resetFlags()
   self.reverseFuncEndedTime = nil
   self.landedTime = nil
   self.brakeCheck.brakesChecked = false
-  self.flightControlsCheck.checkingFlightControls = false
-  self.flightControlsCheck.flightControlsChecked = false
+  self.checkingFlightControls = false
+  self.flightControlsChecked = false
   self.hasFMABeenRead = not self.takeoffFMAreadoutEnabled
 end
 
@@ -249,7 +249,7 @@ function copilot.callouts.brakeCheck:brakeCheckConditions()
 end
 
 function copilot.callouts.brakeCheck:__call()
-  if self.flightControlsCheck.checkingFlightControls then return end
+  if self.checkingFlightControls then return end
   if self:brakeCheckConditions() then
     local leftPressure = ipc.readLvar("VC_MIP_BrkPress_L")
     local rightPressure = ipc.readLvar("VC_MIP_BrkPress_R")
@@ -264,259 +264,49 @@ function copilot.callouts.brakeCheck:__call()
   end
 end
 
-local flightControlsCheck = {
-  __index = callouts,
-  elevatorTolerance = 200,
-  aileronTolerance = 300,
-  spoilerTolerance = 100,
-  rudderTolerance = 100,
-  spoilerLimit = 1500
-}
-setmetatable(flightControlsCheck, flightControlsCheck)
-copilot.callouts.flightControlsCheck = flightControlsCheck
+local FlightControlCheck = require "copilot.FlightControlCheck"
 
-local ecpButtons = table.map({
-  "ENG", "BLEED", "PRESS", "ELEC", "HYD", "FUEL", 
-  "APU", "COND", "DOOR", "WHEEL", "STS"
-}, function(page)
-  return FSL["PED_ECP_" .. page .. "_Button"]
-end)
-
-local function confirmFctlEcamPage()
-  if FSL.PED_ECP_FCTL_Button:isLit() then return end
-  for _, butt in ipairs(ecpButtons) do
-    if butt:isLit() then 
-      copilot.suspend(1000, 2000)
-      butt:pressIfLit() 
-    end
-  end
-end
-
-local sidestick = require "copilot.Sidestick"
-
-sidestick.moveRaw {x = 0, y = 0}
-
-local pmFlightControlCheckTimeout = {}
-
-function copilot.callouts.flightControlsCheck:pmTestSidestickAxis(axis, first, second)
-  local function move(to, check)
-    sidestick.move {[axis] = to}
-    if not checkWithTimeout(5000, function()
-      copilot.suspend(100)
-      confirmFctlEcamPage()
-      return self[check](self) 
-    end) then error(pmFlightControlCheckTimeout) end
-    copilot.suspend(700, 1200)
-  end
-  move(1, first)
-  move(-1, second)
-  move(0, "stickNeutral")
-end
-
-function copilot.callouts.flightControlsCheck:pmSideCheck()
-  self:pmTestSidestickAxis("y", "fullUp", "fullDown")
-  self:pmTestSidestickAxis("x", "fullRight", "fullLeft")
-end
-
-local brakeCheckEnabledByUser = copilot.UserOptions.callouts.PM_announces_brake_check == 1
-
-function copilot.callouts.flightControlsCheck:__call()
+function copilot.callouts:flightControlsCheck()
 
   if self.flightControlsChecked then return end
 
-  if FSL:getAcType() == "A319" then
-    self.fullLeftRudderTravel = 1243
-    self.fullRightRudderTravel = 2743
-  else
-    self.fullLeftRudderTravel = 1499
-    self.fullRightRudderTravel = 3000
-  end
-
   local brakeCheckVcWasActive
-  
-  if not copilot.isVoiceControlEnabled then
-    copilot.suspend(30000)
-  else
+
+  if copilot.isVoiceControlEnabled then
     brakeCheckVcWasActive = copilot.voiceCommands.brakeCheck:getState() == RuleState.Active
     if brakeCheckVcWasActive then
       copilot.voiceCommands.brakeCheck:ignore()
     end
   end
-  local fullLeft, fullRight, fullLeftRud, fullRightRud, fullUp, fullDown, xNeutral, yNeutral, rudNeutral
 
-  self.checkingFlightControls = false
-  local timeLastAction = ipc.elapsedtime()
-
-  local stickDelay, rudDelay = 700, 400
-
-  local function onChecked(calloutFile, delay)
-    confirmFctlEcamPage() 
-    copilot.playCallout(calloutFile, plusminus(delay))
-    timeLastAction = ipc.elapsedtime()
-    self.checkingFlightControls = true
-  end
-
-  repeat
-    copilot.suspend(100)
-    confirmFctlEcamPage() 
-
-    if ipc.elapsedtime() - timeLastAction > 10000 then 
-      self.checkingFlightControls = false
-      print "Flight control check timed out"
-      return 
-    end
-    
-    -- full left aileron
-    if not fullLeft and not ((fullUp or fullDown) and not yNeutral) and self:fullLeft() then
-      onChecked( "fullLeft_1", stickDelay)
-      fullLeft = true
-    end
-    -- full right aileron
-    if not fullRight and not ((fullUp or fullDown) and not yNeutral) and self:fullRight() then
-      onChecked("fullRight_1", stickDelay)
-      fullRight = true
-    end
-    -- neutral after full left and full right aileron
-    if fullLeft and fullRight and not xNeutral and self:stickNeutral() then
-      onChecked("neutral_1", stickDelay)
-      xNeutral = true
-    end
-    -- full up
-    if not fullUp and not ((fullLeft or fullRight) and not xNeutral) and self:fullUp() then
-      onChecked("fullUp", stickDelay)
-      fullUp = true
-    end
-    -- full down
-    if not fullDown and not ((fullLeft or fullRight) and not xNeutral) and self:fullDown() then
-      onChecked("fullDown", stickDelay)
-      fullDown = true
-    end
-    -- neutral after full up and full down
-    if fullUp and fullDown and not yNeutral and self:stickNeutral() then
-      onChecked("neutral_2", stickDelay)
-      yNeutral = true
-    end
-    -- full left rudder
-    if not fullLeftRud and xNeutral and yNeutral and self:fullLeftRud() then
-      onChecked("fullLeft_2", rudDelay)
-      fullLeftRud = true
-    end
-    -- full right rudder
-    if not fullRightRud and xNeutral and yNeutral and self:fullRightRud() then
-      onChecked("fullRight_2", rudDelay)
-      fullRightRud = true
-    end
-    -- neutral after full left and full right rudder
-    if fullLeftRud and fullRightRud and not rudNeutral and self:rudNeutral() then
-      onChecked("neutral_2", rudDelay)
-      rudNeutral = true
-    end
-
-  until xNeutral and yNeutral and rudNeutral
-
-  copilot.suspend(2000, 5000)
-
-  local pmCheckOk, pmCheckErr = pcall(self.pmSideCheck, self)
-
-  self.checkingFlightControls = false
-
+  self.checkingFlightControls = true
+  local check
   if copilot.isVoiceControlEnabled then
-    if brakeCheckVcWasActive then
-      copilot.voiceCommands.brakeCheck:activate()
-    end
+    check = FlightControlCheck:new(FlightControlCheck.MODE_ACTIVE_IMMEDIATE)
+  else
+    check = FlightControlCheck:new(FlightControlCheck.MODE_ACTIVE_AFTER_FIRST_CHECK)
+  end
+  local res, err = check()
+  self.checkingFlightControls = false
+
+  if brakeCheckVcWasActive then
+    copilot.voiceCommands.brakeCheck:activate()
   end
 
-  if not pmCheckOk then
-    sidestick.move {x = 0, y = 0}
-    if pmCheckErr == pmFlightControlCheckTimeout then
-      copilot.displayText("Pilot Monitoring: 'Oh no, my sidestick isn't working!'", 10, "print_yellow")
-    else
-      error(pmCheckErr)
-    end
-  else
+  if res == true then
     if copilot.isVoiceControlEnabled then
       copilot.voiceCommands.flightControlsCheck:deactivate()
     end
     self.flightControlsChecked = true
     copilot.events.flightControlsChecked:trigger()
     return true
+  elseif err == FlightControlCheck.ERROR_PM_CHECK_TIMEOUT then
+    copilot.displayText("Pilot Monitoring: 'Oh no, my sidestick isn't working!'", 10, "print_yellow")
+  elseif err == "timeout" then
+    print "Flight control check timed out"
   end
-end
 
-function copilot.callouts.flightControlsCheck:fullLeft()
-  local aileronLeft
-  if ipc.readLvar("FSLA320_flap_l_1") == 0 then
-    aileronLeft = ipc.readLvar("FSLA320_aileron_l") <= 1499 and 1499 - ipc.readLvar("FSLA320_aileron_l") < self.aileronTolerance
-  elseif ipc.readLvar("FSLA320_flap_l_1") > 0 then
-    aileronLeft = ipc.readLvar("FSLA320_aileron_l") <= 1199 and 1199 - ipc.readLvar("FSLA320_aileron_l") < self.aileronTolerance
-  end
-  return
-  aileronLeft --and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_l_2") < self.spoilerTolerance and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_l_3") < self.spoilerTolerance and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_l_4") < self.spoilerTolerance and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_l_5") < self.spoilerTolerance
-end
-
-function copilot.callouts.flightControlsCheck:fullRight()
-  local aileronRight
-  if ipc.readLvar("FSLA320_flap_l_1") == 0 then
-    aileronRight = 3000 - ipc.readLvar("FSLA320_aileron_r") < self.aileronTolerance
-  elseif ipc.readLvar("FSLA320_flap_l_1") > 0 then
-    aileronRight = 2700 - ipc.readLvar("FSLA320_aileron_r") < self.aileronTolerance
-  end
-  return
-  aileronRight -- and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_r_2") < self.spoilerTolerance and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_r_3") < self.spoilerTolerance and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_r_4") < self.spoilerTolerance and
-  --self.spoilerLimit - ipc.readLvar("FSLA320_spoiler_r_5") < self.spoilerTolerance
-end
-
-function copilot.callouts.flightControlsCheck:fullUp()
-  return
-  ipc.readLvar("FSLA320_elevator_l") <= 1499 and 1499 - ipc.readLvar("FSLA320_elevator_l") < self.elevatorTolerance and
-  ipc.readLvar("FSLA320_elevator_r") <= 1499 and 1499 - ipc.readLvar("FSLA320_elevator_r") < self.elevatorTolerance
-end
-
-function copilot.callouts.flightControlsCheck:fullDown()
-  return
-  3000 - ipc.readLvar("FSLA320_elevator_l") < self.elevatorTolerance and
-  3000 - ipc.readLvar("FSLA320_elevator_r") < self.elevatorTolerance
-end
-
-function copilot.callouts.flightControlsCheck:fullLeftRud()
-  return ipc.readLvar("FSLA320_rudder") <= self.fullLeftRudderTravel and self.fullLeftRudderTravel - ipc.readLvar("FSLA320_rudder") < self.rudderTolerance
-end
-
-function copilot.callouts.flightControlsCheck:fullRightRud()
-  return self.fullRightRudderTravel - ipc.readLvar("FSLA320_rudder") < self.rudderTolerance
-end
-
-function copilot.callouts.flightControlsCheck:stickNeutral()
-  local aileronsNeutral
-  if ipc.readLvar("FSLA320_flap_l_1") == 0 then
-    aileronsNeutral = (ipc.readLvar("FSLA320_aileron_l") < self.aileronTolerance or (ipc.readLvar("FSLA320_aileron_l") >= 1500 and ipc.readLvar("FSLA320_aileron_l") - 1500 < self.aileronTolerance)) and
-                (ipc.readLvar("FSLA320_aileron_r") < self.aileronTolerance or (ipc.readLvar("FSLA320_aileron_r") >= 1500 and ipc.readLvar("FSLA320_aileron_r") - 1500 < self.aileronTolerance))
-  elseif ipc.readLvar("FSLA320_flap_l_1") > 0 then
-    aileronsNeutral = math.abs(ipc.readLvar("FSLA320_aileron_l") - 1980) < self.aileronTolerance and math.abs(ipc.readLvar("FSLA320_aileron_r") - 480) < self.aileronTolerance
-  end
-  return
-  aileronsNeutral and
-  --ipc.readLvar("FSLA320_spoiler_l_2") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_l_3") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_l_4") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_l_5") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_r_2") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_r_3") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_r_4") < self.spoilerTolerance and
-  --ipc.readLvar("FSLA320_spoiler_r_5") < self.spoilerTolerance and
-  (ipc.readLvar("FSLA320_elevator_l") < self.elevatorTolerance or (ipc.readLvar("FSLA320_elevator_l") >= 1500 and ipc.readLvar("FSLA320_elevator_l") - 1500 < self.elevatorTolerance)) and
-  (ipc.readLvar("FSLA320_elevator_r") < self.elevatorTolerance or (ipc.readLvar("FSLA320_elevator_r") >= 1500 and ipc.readLvar("FSLA320_elevator_r") - 1500 < self.elevatorTolerance))
-end
-
-function copilot.callouts.flightControlsCheck:rudNeutral()
-  return (ipc.readLvar("FSLA320_rudder") < self.rudderTolerance or (ipc.readLvar("FSLA320_rudder") >= 1500 and ipc.readLvar("FSLA320_rudder") - 1500 < self.rudderTolerance))
+  return res
 end
 
 function copilot.callouts:setup()
@@ -536,7 +326,7 @@ function copilot.callouts:start()
 
   copilot.events.chocksSet:addAction(function() self:resetFlags() end):setLogMsg(Event.NOLOGMSG)
 
-  if brakeCheckEnabledByUser then
+  if copilot.UserOptions.callouts.PM_announces_brake_check == 1 then
     if copilot.isVoiceControlEnabled then
 
       copilot.events.takeoffCancelled:addAction(function()
@@ -552,7 +342,10 @@ function copilot.callouts:start()
           if not checkWithTimeout(5000, function()
             copilot.suspend(100)
             return self.brakeCheck:brakeCheckConditions()
-          end) then return end
+          end) then
+            print "Brake check timed out"
+            return 
+          end
           if self:brakeCheck() then
             copilot.voiceCommands.brakeCheck:ignore()
           end
@@ -569,26 +362,39 @@ function copilot.callouts:start()
 
   if copilot.UserOptions.callouts.PM_announces_flightcontrol_check == 1 then
 
-    local flightControlsCheckAction = Action:new(function() self:flightControlsCheck() end, Action.COROUTINE)
-      :setLogMsg "Flight control check"
-      :stopOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
+    local function flightControlCheckAction(cb)
+      local a = Action:new(cb, Action.COROUTINE)
+        :setLogMsg "Flight control check"
+        :stopOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
+      return a
+    end
 
     if copilot.isVoiceControlEnabled then
       copilot.events.takeoffCancelled:addAction(function()
-        if not self.flightControlsCheck.flightControlsChecked then
+        if not self.flightControlsChecked then
           copilot.voiceCommands.flightControlsCheck:activate()
         end
       end)
       copilot.voiceCommands.flightControlsCheck
         :activateOn(copilot.events.enginesStarted)
         :deactivateOn(copilot.events.engineShutdown, copilot.events.takeoffInitiated)
-      copilot.voiceCommands.flightControlsCheck:addAction(flightControlsCheckAction)
+      copilot.voiceCommands.flightControlsCheck:addAction(
+        flightControlCheckAction(function() 
+          self:flightControlsCheck() 
+        end)
+      )  
     else
-      copilot.events.enginesStarted:addAction(flightControlsCheckAction)
-      copilot.events.takeoffCancelled:addAction(flightControlsCheckAction)
+      local action = flightControlCheckAction(function()
+        copilot.suspend(30000)
+        repeat until self:flightControlsCheck()
+      end)
+      copilot.events.enginesStarted:addAction(action)
+      copilot.events.takeoffCancelled:addAction(action)
     end
     
-    copilot.events.engineShutdown:addAction(function() self.flightControlsCheck.flightControlsChecked = false end):setLogMsg(Event.NOLOGMSG)
+    copilot.events.engineShutdown:addAction(function() 
+      self.flightControlsChecked = false 
+    end):setLogMsg(Event.NOLOGMSG)
   end
 
   copilot.events.takeoffInitiated:addAction(function() self:takeoff() end, Action.COROUTINE)
@@ -596,7 +402,7 @@ function copilot.callouts:start()
     :stopOn(copilot.events.takeoffAborted, copilot.events.takeoffCancelled)
 
   copilot.events.takeoffAborted:addAction(function()
-    self.flightControlsCheck.flightControlsChecked = true
+    self.flightControlsChecked = true
     self.brakeCheck.brakesChecked = true
     if copilot.GS() > 60 then
       self:rollout(true)

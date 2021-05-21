@@ -190,60 +190,34 @@ namespace copilot {
 		appDir = appDir.substr(0, appDir.find("Copilot.dll"));
 	}
 
-	void enumInputDevices(int lineWidth)
+	void enumSAPIDDevices(int lineWidth, const std::string& title, const WCHAR* category)
 	{
-		::CoInitialize(NULL);
-		HRESULT hr;
+
+		HRESULT hr = ::CoInitialize(NULL);
 		CComPtr<IEnumSpObjectTokens> enumTokens;
 
 		CComPtr<ISpObjectToken> defaultToken;
-		hr = SpGetDefaultTokenFromCategoryId(SPCAT_AUDIOIN, &defaultToken);
+		hr = SpGetDefaultTokenFromCategoryId(category, &defaultToken);
 		CSpDynamicString defaultDeviceId;
-		defaultToken->GetStringValue(L"DeviceId", &defaultDeviceId);
-
-		hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
-		ULONG count;
-		hr = enumTokens->GetCount(&count);
-		copilot::logger->info("{:*^{}}", " Input devices: ", lineWidth);
-		copilot::logger->info("");
-		for (size_t i = 0; i < count; ++i) {
-			CComPtr<ISpObjectToken> token;
-			CSpDynamicString deviceName, deviceId;
-			hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
-			hr = token->GetStringValue(L"DeviceName", &deviceName);
-			hr = token->GetStringValue(L"DeviceId", &deviceId);
-			copilot::logger->info(
-				L"{}={} {}", 
-				i + 1, 
-				deviceName, 
-				!(wcscmp(deviceId, defaultDeviceId)) ? L"(Default)" : L""
-			);
+		if (SUCCEEDED(hr)) {
+			defaultToken->GetStringValue(L"DeviceId", &defaultDeviceId);
 		}
-		
-	}
-
-	void enumOutputSapiDevices(int lineWidth)
-	{
-		::CoInitialize(NULL);
-		HRESULT hr;
-		CComPtr<IEnumSpObjectTokens> enumTokens;
-
-		CComPtr<ISpObjectToken> defaultToken;
-		hr = SpGetDefaultTokenFromCategoryId(SPCAT_AUDIOOUT, &defaultToken);
-		CSpDynamicString defaultDeviceId;
-		defaultToken->GetStringValue(L"DeviceId", &defaultDeviceId);
-
-		hr = SpEnumTokens(SPCAT_AUDIOOUT, NULL, NULL, &enumTokens);
+		hr = SpEnumTokens(category, NULL, NULL, &enumTokens);
+		if (FAILED(hr)) return;
 		ULONG count;
 		hr = enumTokens->GetCount(&count);
-		copilot::logger->info("{:*^{}}", " SAPI output devices: ", lineWidth);
+		if (FAILED(hr)) return;
+		copilot::logger->info("{:*^{}}", title, lineWidth);
 		copilot::logger->info("");
 		for (size_t i = 0; i < count; ++i) {
 			CComPtr<ISpObjectToken> token;
 			CSpDynamicString deviceName, deviceId;
 			hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
+			if (FAILED(hr)) continue;
 			hr = token->GetStringValue(L"DeviceName", &deviceName);
+			if (FAILED(hr)) continue;
 			hr = token->GetStringValue(L"DeviceId", &deviceId);
+			if (FAILED(hr)) continue;
 			copilot::logger->info(
 				L"{}={} {}",
 				i + 1,
@@ -251,7 +225,16 @@ namespace copilot {
 				!(wcscmp(deviceId, defaultDeviceId)) ? L"(Default)" : L""
 			);
 		}
+	}
 
+	void enumInputDevices(int lineWidth)
+	{
+		enumSAPIDDevices(lineWidth, " Input devices: ", SPCAT_AUDIOIN);
+	}
+
+	void enumOutputSapiDevices(int lineWidth)
+	{
+		enumSAPIDDevices(lineWidth, " SAPI output devices: ", SPCAT_AUDIOOUT);
 	}
 
 	void enumOutputDevices(int lineWidth)
