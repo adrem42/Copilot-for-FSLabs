@@ -20,6 +20,7 @@ end
 
 local function getAxisPos(axis)
   local lvarVal = ipc.readLvar(sidestick["lvar" .. axis:upper()])
+  if lvarVal == 0 then return 0 end
   return (lvarVal - 500) / 500
 end
 
