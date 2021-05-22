@@ -465,17 +465,20 @@ end
 
 if copilot.UserOptions.actions.parking == copilot.UserOptions.ENABLED then
 
-  copilot.events.landing:addOneOffAction(function()
+  if FSL:getAcType() ~= "A321" then
 
-    copilot.events.engineShutdown:addAction(function()
-      copilot.suspend(3000, 15000)
-      copilot.sequences.parking()
-    end, "runAsCoroutine")
-      :stopOn(copilot.events.enginesStarted)
-      :setLogMsg(Event.NOLOGMSG)
+    copilot.events.landing:addOneOffAction(function()
 
-  end):setLogMsg(Event.NOLOGMSG)
+      copilot.events.engineShutdown:addAction(function()
+        copilot.suspend(3000, 15000)
+        copilot.sequences.parking()
+      end, "runAsCoroutine")
+        :stopOn(copilot.events.enginesStarted)
+        :setLogMsg(Event.NOLOGMSG)
+
+    end):setLogMsg(Event.NOLOGMSG)
     
+  end
 end
 
 if copilot.UserOptions.actions.securing_the_aircraft == copilot.UserOptions.ENABLED then

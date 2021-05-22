@@ -222,6 +222,7 @@ Wait until external power is available
 * APU off
 
 Note that it's not possible to read the state of EXT PWR button light. Copilot has to assume that it's off.
+This procedure isn't available for the A321 because Copilot doesn't know how to press the CTR TK XFR buttons :(
 
 #### Trigger:
 
