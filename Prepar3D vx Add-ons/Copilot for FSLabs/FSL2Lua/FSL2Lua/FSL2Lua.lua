@@ -23,6 +23,15 @@ if ipc.readLvar "AIRCRAFT_A319" == 1 then FSL.acType = "A319"
 elseif ipc.readLvar "AIRCRAFT_A320" == 1 then FSL.acType = "A320"
 elseif ipc.readLvar "AIRCRAFT_A321" == 1 then FSL.acType = "A321" end
 
+if FSL.acType then
+  FSL.fullAcType = FSL.acType
+  if ipc.readSTR(0x3C00, 256):find("--SL.air") then
+    FSL.fullAcType = FSL.fullAcType .. "-SL"
+  end
+  FSL.FSLabsPath = ipc.readSTR(0x3C00, 256):gsub("FSLabs\\SimObjects.+", "FSLabs\\")
+  FSL.FSLabsAcSpecificPath = FSL.FSLabsPath .. FSL.fullAcType .. "\\" 
+end
+
 function FSL:getAcType() return self.acType end
 
 local util = require "FSL2Lua.FSL2Lua.util"
@@ -243,37 +252,6 @@ function pressTwoButtons(butt1, butt2, chance)
     butt1()
     butt2()
   end
-end
-
-if getmetatable(Joystick) then
-
-  getmetatable(Joystick).printDeviceInfo = function()
-    print "------------------------------------"
-    print "-------  HID device info  ----------"
-    print "------------------------------------"
-    for _, device in ipairs(Joystick.enumerateDevices()) do
-      print("Manufacturer: " .. device.manufacturer)
-      print("Product: " .. device.product)
-      print(string.format("Vendor ID: 0x%04X", device.vendorId))
-      print(string.format("Product ID: 0x%04X", device.productId))
-      print "------------------------------------"
-    end
-  end
-
-  getmetatable(Joystick).simAxis = function(controlNum)
-    local mult = 1 / 50 * 0x4000
-    return function(value)
-      ipc.control(controlNum, (value - 50) * mult)
-    end
-  end 
-
-  getmetatable(Joystick).unsignedSimAxis = function(controlNum)
-    local mult = 0x4000 / 100
-    return function(value)
-      ipc.control(controlNum, value * mult)
-    end
-  end 
-
 end
 
 --------------------------------------------------------------------------------------

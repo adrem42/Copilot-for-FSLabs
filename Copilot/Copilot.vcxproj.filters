@@ -193,11 +193,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Copilot.def">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="Copilot.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>

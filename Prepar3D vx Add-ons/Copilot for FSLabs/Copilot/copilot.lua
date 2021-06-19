@@ -25,7 +25,7 @@ if copilot.UserOptions.general.button_sleep_mult then
   FSL:setButtonSleepMult(copilot.UserOptions.general.button_sleep_mult)
 end
 
-copilot.IS_FSL_AIRCRAFT = FSL:getAcType() ~= nil
+copilot.IS_FSL_AIRCRAFT = FSL.fullAcType ~= nil
 
 local util = require "FSL2Lua.FSL2Lua.util"
 
@@ -113,6 +113,8 @@ local function setup()
   end
 
   if copilot.IS_FSL_AIRCRAFT then
+
+    print("Aircraft type: " .. FSL.fullAcType)
 
     require "copilot.sequences"
     require "copilot.ScratchpadClearer"

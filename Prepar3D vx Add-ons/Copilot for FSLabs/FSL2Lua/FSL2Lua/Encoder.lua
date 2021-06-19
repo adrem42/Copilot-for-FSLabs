@@ -7,26 +7,6 @@ Encoder = {
   DIR_CCW = 1
 }
 
-if Joystick then
-  getmetatable(Joystick).gottaGoFast = function(howFast, ...)
-
-    local func = Bind.makeSingleFunc {...}
-
-    local prevTimestamp = 0
-
-    local callback = function(_, _, timestamp)
-      local diff = timestamp - prevTimestamp
-      prevTimestamp = timestamp
-      local numTicks = howFast(diff)
-      for _ = 1, numTicks do
-        func()
-      end
-    end
-
-    return callback, Joystick.sendEventDetails
-  end
-end
-
 function Encoder.new(joy, data)
 
   if type(data[1]) ~= "number" or type(data[2]) ~= "number" then
@@ -80,11 +60,23 @@ function Encoder:setTickCalculator(tickCalculator)
 end
 
 function Encoder:_makeCallback(...)
+
   if not self._calculateTicks then
     local func = Bind.makeSingleFunc {...}
     return function() func() end
   end
-  return Joystick.gottaGoFast(self._calculateTicks, ...)
+
+  local func = Bind.makeSingleFunc {...}
+  local prevTimestamp = 0
+  local callback = function(_, _, timestamp)
+    local diff = timestamp - prevTimestamp
+    prevTimestamp = timestamp
+    local numTicks = self._calculateTicks(diff)
+    for _ = 1, numTicks do
+      func()
+    end
+  end
+  return callback, Joystick.sendEventDetails
 end
 
 function Encoder:onCW(...)

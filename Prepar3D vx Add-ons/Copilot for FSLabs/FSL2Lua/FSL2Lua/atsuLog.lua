@@ -4,9 +4,7 @@ local file = require "FSL2Lua.FSL2Lua.file"
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
 
 local atsuLog = {
-  path = FSL:getAcType()
-    and ipc.readSTR(0x3C00, 256)
-      :gsub("FSLabs\\SimObjects.+", "FSLabs\\" .. FSL:getAcType() .. "\\Data\\ATSU\\ATSU.log")
+  path =  FSL.FSLabsAcSpecificPath and  FSL.FSLabsAcSpecificPath .. "Data\\ATSU\\ATSU.log"
 }
 
 function atsuLog:get()
@@ -24,10 +22,6 @@ end
 
 function atsuLog:getTakeoffFlaps()
   return self:get():match(".+%(F/L%).-FLAPS.-(%d)\n")
-end
-
-function atsuLog:test()
-  self.path = self.path:gsub("ATSU.log", "test.log")
 end
 
 return atsuLog

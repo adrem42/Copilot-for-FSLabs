@@ -1,5 +1,0 @@
-LIBRARY "Copilot"
-EXPORTS
-DLLStart
-DLLStop
-Panels DATA

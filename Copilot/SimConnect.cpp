@@ -256,7 +256,11 @@ void SimConnect::setupFSL2LuaMenu()
 
 void onFlightLoaded()
 {
-	bool isFslAircraft = aircraftName.find("FSLabs") != std::string::npos;
+	bool isFslAircraft = 
+		aircraftName.find("FSLabs") != std::string::npos &&
+			(aircraftName.find("A320") != std::string::npos ||
+			aircraftName.find("A319") != std::string::npos ||
+			aircraftName.find("A321") != std::string::npos);
 	copilot::onFlightLoaded(isFslAircraft, aircraftName, firstAircraft);
 	firstAircraft = false;
 }

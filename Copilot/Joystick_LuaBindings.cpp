@@ -27,6 +27,40 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		)
 	);
 
+	JoystickType["printDeviceInfo"] = lua.script(R"(
+		return function()
+			print "------------------------------------"
+			print "-------  HID device info  ----------"
+			print "------------------------------------"
+			for _, device in ipairs(Joystick.enumerateDevices()) do
+			  print("Manufacturer: " .. device.manufacturer)
+			  print("Product: " .. device.product)
+			  print(string.format("Vendor ID: 0x%04X", device.vendorId))
+			  print(string.format("Product ID: 0x%04X", device.productId))
+			  print "------------------------------------"
+			end
+		  end
+	)").get<sol::unsafe_function>();
+
+	JoystickType["simAxis"] = lua.script(R"(
+		return function(controlNum)
+			local mult = 1 / 50 * 0x4000
+			return function(value)
+			  ipc.control(controlNum, (value - 50) * mult)
+			end
+		  end 
+	)").get<sol::unsafe_function>();
+
+	JoystickType["unsignedSimAxis"] = lua.script(R"(
+		return function(controlNum)
+			local mult = 0x4000 / 100
+			return function(value)
+			  ipc.control(controlNum, value * mult)
+			end
+		  end 
+	)").get<sol::unsafe_function>();
+
+
 	JoystickType["BUTTON_EVENT_PRESS"] = sol::var(Joystick::Button::EVENT_TYPE_PRESS);
 	JoystickType["BUTTON_EVENT_REPEATED_PRESS"] = sol::var(Joystick::Button::EVENT_TYPE_REPEATED_PRESS);
 	JoystickType["BUTTON_EVENT_RELEASE"] = sol::var(Joystick::Button::EVENT_TYPE_RELEASE);

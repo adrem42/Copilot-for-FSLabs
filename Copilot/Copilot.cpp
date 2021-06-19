@@ -33,7 +33,7 @@ GAUGESIMPORT ImportTable = {
 { 0x0000000F, (PPANELS)NULL },
 { 0x00000000, NULL }
 };
-PPANELS Panels = NULL;
+extern "C" __declspec(dllexport) PPANELS Panels = NULL;
 
 namespace copilot {
 
@@ -338,7 +338,7 @@ namespace copilot {
 	}
 }
 
-void DLLStart(P3D::IPdk* pPdk)
+extern "C" __declspec(dllexport) void __stdcall DLLStart(__in __notnull IPdk * pPdk)
 {
 	if (Panels != NULL)
 		ImportTable.PANELSentry.fnptr = (PPANELS)Panels;
@@ -351,7 +351,7 @@ void DLLStart(P3D::IPdk* pPdk)
 	copilot::init();
 }
 
-void DLLStop()
+extern "C" __declspec(dllexport) void __stdcall DLLStop(void)
 {
 	copilot::launchThread.join();
 	copilot::logger->debug("Shutting down...");
