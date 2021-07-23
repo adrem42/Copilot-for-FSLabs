@@ -175,6 +175,12 @@ void LuaPlugin::setSessionVariable(const std::string& name, SessionVariable valu
 	sessionVariables[name] = value;
 }
 
+bool LuaPlugin::arePathsEqual(const std::filesystem::path& lhs, const std::filesystem::path& rhs)
+{
+	std::error_code ec;
+	return std::filesystem::equivalent(lhs, rhs, ec);
+}
+
 void LuaPlugin::onLuaStateInitialized()
 {
 }
@@ -508,7 +514,7 @@ void LuaPlugin::stopScript(const std::string& path)
 	}
 
 	auto it = std::find_if(scripts.begin(), scripts.end(), [&](ScriptInst& s) {
-		return std::filesystem::equivalent(s.script->path, _path);
+		return arePathsEqual(s.script->path, _path);
 	});
 	if (it == scripts.end()) return;
 

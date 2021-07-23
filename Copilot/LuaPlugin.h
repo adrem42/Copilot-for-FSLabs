@@ -42,6 +42,8 @@ class LuaPlugin {
 
 	bool loggingEnabled = true;
 
+	static bool arePathsEqual(const std::filesystem::path& lhs, const std::filesystem::path& rhs);
+
 protected:
 
 	virtual void onLuaStateInitialized();
@@ -96,7 +98,7 @@ public:
 		}
 
 		auto it = std::find_if(scripts.begin(), scripts.end(), [&] (ScriptInst& s) {
-			return std::filesystem::equivalent(s.script->path, _path);
+			return arePathsEqual(s.script->path, _path);
 		});
 
 		auto launch = [&](ScriptInst& s) {
