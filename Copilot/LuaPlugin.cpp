@@ -1,5 +1,6 @@
 
 #include "LuaPlugin.h"
+#include <filesystem>
 #include "SimInterface.h"
 #include "Copilot.h"
 #include "FSUIPC.h"
@@ -446,6 +447,7 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 														 sol::constructors<HttpSession(const std::wstring&, unsigned int)>());
 	HttpSessionType["get"] = &HttpSession::makeRequest;
 	HttpSessionType["lastError"] = &HttpSession::lastError;
+	HttpSessionType["setPath"] = &HttpSession::setPath;
 
 	auto McduSessionType = lua.new_usertype<MCDU>("MCDUsession",
 										   sol::constructors<MCDU(unsigned int, unsigned int, unsigned int)>());
@@ -497,14 +499,29 @@ void LuaPlugin::run()
 void LuaPlugin::stopScript(const std::string& path)
 {
 	std::unique_lock<std::mutex> globalLock(globalMutex);
+
+	std::string _path = path;
+
+	std::filesystem::path fsp(path);
+	if (fsp.is_relative()) {
+		_path = copilot::appDir + "scripts\\" + path;
+	}
+
 	auto it = std::find_if(scripts.begin(), scripts.end(), [&](ScriptInst& s) {
-		return s.path == path;
+		return std::filesystem::equivalent(s.script->path, _path);
 	});
+	if (it == scripts.end()) return;
+
 	auto& inst = *it;
-	std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
+	std::unique_lock<std::recursive_mutex> lock(*inst.mutex);
+	inst.alive = false;
 	globalLock.unlock();
+
 	delete inst.script;
-	inst.script = nullptr;
+	globalLock.lock();
+	lock.unlock();
+	if (!inst.alive)
+		scripts.erase(it);
 }
 
 void LuaPlugin::stopAllScripts()
@@ -542,7 +559,8 @@ void LuaPlugin::launchThread()
 		stopThread();
 
 	thread = std::thread([this] {
-		copilot::logger->info("### '{}': Launching new thread!", logName);
+		if (loggingEnabled)
+			copilot::logger->info("### '{}': Launching new thread!", logName);
 		try {
 			running = true;
 			if (!setjmp(jumpBuff)) run();
@@ -556,8 +574,14 @@ void LuaPlugin::launchThread()
 		catch (...) {
 			copilot::logger->error("Caught (...) exception");
 		};
-		copilot::logger->info("### '{}': Thread finished!", logName);
+		if (loggingEnabled)
+			copilot::logger->info("### '{}': Thread finished!", logName);
 	});
+}
+
+void LuaPlugin::disableLogging()
+{
+	loggingEnabled = false;
 }
 
 size_t LuaPlugin::elapsedTime() const

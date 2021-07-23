@@ -16,7 +16,13 @@ return {
     file:close()
   end,
 
-  create = function(path) io.open(path,"w"):close() end,
+  create = function(path, content) 
+    local file = io.open(path,"w")
+    if content then
+      file:write(content)
+    end
+    file:close()
+  end,
 
   exists = function(path)
     local file = io.open(path)

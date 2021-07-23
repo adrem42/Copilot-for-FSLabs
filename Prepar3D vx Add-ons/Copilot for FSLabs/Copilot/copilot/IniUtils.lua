@@ -1,65 +1,128 @@
 if false then module "copilot" end
 
-copilot = copilot or {}
 local UserOptions = {TRUE = 1, FALSE = 0, ENABLED = 1, DISABLED = 0}
 copilot.UserOptions = UserOptions
 local file = require "FSL2Lua.FSL2Lua.file"
 
-local function checkOption(option, iniValue)
-  local val
-  if option.type == "bool" or option.type == "boolean" then
-    val = tonumber(iniValue) == UserOptions.FALSE 
-      and UserOptions.FALSE 
-      or UserOptions.TRUE
-  elseif option.type == "number" or option.type == "double" then
-    val = tonumber(iniValue)
-  elseif option.type == "int" then
-    val = tonumber(iniValue) and math.floor(tonumber(iniValue))
-  elseif option.type == "string" then
-    val = tostring(iniValue)
-  elseif option.type == "enum" then
-    for _, enumVal in ipairs(option.values) do
-      if type(enumVal) == "number" then
-        iniValue = tonumber(iniValue)
-      elseif type(enumVal) ~= "string" then error "wtf" end
-      if iniValue == enumVal then
-        val = iniValue
-        break
-      end
+local typeConverters = {}
+
+function typeConverters.bool(val)
+  local _val = tonumber(val)
+  if _val ~= UserOptions.FALSE and _val ~= UserOptions.TRUE then 
+    return
+  end
+  return _val
+end
+
+typeConverters.boolean = typeConverters.bool
+
+function typeConverters.number(val)
+  return tonumber(val)
+end
+
+function typeConverters.int(val)
+  local _val = tonumber(val)
+  return _val and math.floor(_val)
+end
+
+function typeConverters.string(val)
+  return tostring(val)
+end
+
+function typeConverters.enum(val, option)
+  local found = false
+  for _, enumVal in ipairs(option.values) do
+    if type(enumVal) == "number" then
+      val = tonumber(val)
+    elseif type(enumVal) ~= "string" then 
+      error "wtf" 
     end
-    if val == nil and option.required then
-      error(string.format(
-        "Invalid value for option %s: %s. Only the following values are accepted: %s.",
-        option.name, iniValue, table.concat(option.values, ", ")
-      ))
+    if val == enumVal then
+      found = true
+      val = val
+      break
     end
-  else 
-    error(string.format("wtf: %s, %s, %s", option.name or "nil", option.type or "nil", iniValue or "nil"))
+  end
+  if not found then val = nil end
+  if not found and option.required then
+    error(string.format(
+      "Invalid value for option %s: %s. Only the following values are accepted: %s.",
+      option.name, val, table.concat(option.values, ", ")
+    ))
   end
   return val
 end
 
-local function load(options, path, optionsTable)
+typeConverters.double = typeConverters.number
+
+local function checkOption(option, iniValue)
+  local val
+  local missingType = true
+  for _type in option.type:gmatch("[^(%|)]+") do
+    if typeConverters[_type] then
+      missingType = false
+      val = typeConverters[_type](iniValue, option)
+      if val then break end
+    end
+  end
+  if missingType then
+    error(string.format("Invalid ini format: %s, %s, %s", option.name or "nil", option.type or "nil", iniValue or "nil"))
+  end
+  return val
+end
+
+local function load(cfg, path, optionsTable)
   local iniFile = file.read(path)
+  local cfgTable = type(cfg) == "table" and cfg or {}
   if iniFile then
     for sectionTitle, iniSection in iniFile:gmatch("%[(.-)%]([^%[%]]+)") do
-      for _, section in ipairs(options) do
-        if section.title == sectionTitle then
-          local pattern = "([%w _]+)=([%w_%.%+]+)"
-          for iniKey, iniValue in iniSection:gmatch(pattern) do
-            for _, option in ipairs(section.keys) do
-              if option.name == iniKey then
-                option.value = checkOption(option, iniValue)
+      local section
+      if type(cfg) == "table" then
+        for _, _section in ipairs(cfg) do
+          if _section.title == sectionTitle then
+            section = _section
+          end
+        end
+      elseif type(cfg) == "function" then
+        section = cfg(sectionTitle)
+        cfgTable[#cfgTable+1] = section
+      end
+      if section then
+        section.keys = section.keys or {}
+        local pattern = "([%w _%.]+)=([^$^\n^;]+)"
+        for iniKey, iniValue in iniSection:gmatch(pattern) do
+          iniValue = iniValue:gsub("%s*$", "")
+          local option
+          for _, opt in ipairs(section.keys) do
+            if opt.name == iniKey then
+              option = opt
+              break
+            end
+          end
+          if not option and section.arrayKeys then
+            for _, arrayKey in ipairs(section.arrayKeys) do
+              if iniKey:sub(1, #arrayKey.prefix) == arrayKey.prefix then
+                option = {
+                  name = iniKey,
+                  type = arrayKey.type
+                }
+                section.keys[#section.keys+1] = option
                 break
               end
             end
+          end
+          if option then
+            option.value = checkOption(option, iniValue)
           end
         end
       end
     end
   end
-  for _, section in ipairs(options) do
-    local sectionTitle = section.title:lower()
+  for _, section in ipairs(cfgTable) do
+    local sectionTitle = section.title
+    if not section.preserveTitleCase then
+      sectionTitle = section.title:lower()
+    end
     optionsTable[sectionTitle] = optionsTable[sectionTitle] or {}
     for _, option in ipairs(section.keys) do
       option.value = option.value ~= nil and option.value or option.default
@@ -68,7 +131,7 @@ local function load(options, path, optionsTable)
       optionsTable[sectionTitle][key] = value
     end
   end
-  return optionsTable
+  return optionsTable, cfgTable
 end
 
 local function save(options, path)
@@ -134,7 +197,7 @@ end
 ---    :format(options.section1.enable, options.section2.fruit)
 ---)
 function copilot.loadIniFile(path, cfg, init)
-  local optionsTable = load(cfg, path, init or {})
-  save(cfg, path)
+  local optionsTable, cfgTable = load(cfg, path, init or {})
+  save(cfgTable, path)
   return optionsTable
 end

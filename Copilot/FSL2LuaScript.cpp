@@ -369,6 +369,14 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	};
 	lua["copilot"]["logger"] = copilot::logger;
 
+	lua["copilot"]["newLuaThread"] = [](const std::string& path) {
+		LuaPlugin::launchScript<FSL2LuaScript>(path);
+	};
+
+	lua["copilot"]["killLuaThread"] = [](const std::string& path) {
+		LuaPlugin::stopScript(path);
+	};
+
 	keyBindManager = std::make_shared<KeyBindManager>();
 	Keyboard::addKeyBindManager(keyBindManager);
 	KeyBindManager::makeLuaBindings(lua, keyBindManager);
@@ -407,6 +415,7 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	callbackRunner->makeLuaBindings(lua, "copilot");
 
 	lua["require"]("copilot.common");
+	lua["require"]("copilot.fsuipc_compat.event");
 	
 }
 
@@ -480,6 +489,9 @@ void FSL2LuaScript::run()
 			if (callbackRunner->nextUpdate > elapsed)
 				timeout = callbackRunner->nextUpdate - elapsed;
 		}
+
+		if (timeout == INFINITE && !events->numEvents)
+			break;
 
 		DWORD res = WaitForMultipleObjects(events->numEvents, events->events, false, timeout);
 		if (res == events->SHUTDOWN_EVENT) {

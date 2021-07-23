@@ -107,13 +107,16 @@ function copilot.enginesRunning(both)
   return eng1_running or eng2_running
 end
 
-local title = ipc.readSTR(0x3D00,256)
-copilot.aircraftTitle = title:sub(1, title:find("\0") - 1)
+function copilot.trimIpcString(offset, length)
+  local s = ipc.readSTR(offset, length or 256)
+  return s:sub(1, s:find "\0" - 1)
+end
 
-local aicraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
-local aircraftCfg = file.read(aicraftDir .. "aircraft.cfg")
+copilot.aircraftTitle = copilot.trimIpcString(0x3D00)
+local aircraftDir = ipc.readSTR(0x3C00,256):match("(.+\\).+")
+local aircraftCfg = file.read(aircraftDir .. "aircraft.cfg")
 local textureDir = aircraftCfg:match("texture=(.-)\n", aircraftCfg:find(copilot.aircraftTitle, nil, true))
-local fltsimCfgPath = string.format("%s\\Texture.%s\\fltsim.cfg", aicraftDir, textureDir)
+local fltsimCfgPath = string.format("%s\\Texture.%s\\fltsim.cfg", aircraftDir, textureDir)
 
 --- Reads the fltsim.cfg (the FSLabs airframe config file) and returns it as a string
 --- @treturn string The content of the file. An empty string is returned if the file couldn't be read.

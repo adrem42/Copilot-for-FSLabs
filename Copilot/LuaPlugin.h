@@ -1,11 +1,13 @@
 #pragma once
 #include <sol/sol.hpp>
+#include "Copilot.h"
 #include <thread>
 #include "KeyBindManager.h"
 #include "JoystickManager.h"
 #include <unordered_map>
 #include <variant>
 #include <setjmp.h>
+#include <filesystem>
 #include <atomic>
 
 class LuaTextMenu;
@@ -19,9 +21,9 @@ class LuaPlugin {
 	static std::mutex globalMutex;
 
 	struct ScriptInst {
-		std::string path;
 		LuaPlugin* script = nullptr;
 		std::shared_ptr<std::recursive_mutex> mutex = std::make_shared<std::recursive_mutex>();
+		bool alive = true;
 	};
 
 	jmp_buf jumpBuff;
@@ -37,6 +39,8 @@ class LuaPlugin {
 	static SessionVariable getSessionVariable(const std::string&);
 	static void setSessionVariable(const std::string&, SessionVariable);
 	static std::unordered_map<std::string, SessionVariable> sessionVariables;
+
+	bool loggingEnabled = true;
 
 protected:
 
@@ -57,7 +61,6 @@ protected:
 	std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now();
 
 	std::thread thread;
-	sol::state lua;
 
 	std::string path;
 	std::string logName;
@@ -75,34 +78,49 @@ protected:
 
 	virtual void stopThread();
 
-	void launchThread();
-
 public:
 
+	void launchThread();
+	sol::state lua;
+
 	template<typename T>
-	static void launchScript(const std::string& path)
+	static T* launchScript(const std::string& path, bool doLaunch = true)
 	{
 		std::unique_lock<std::mutex> globalLock(globalMutex);
+		
+		std::string _path = path;
+
+		std::filesystem::path fsp(path);
+		if (fsp.is_relative()) {
+			_path = copilot::appDir + "scripts\\" + path;
+		}
+
 		auto it = std::find_if(scripts.begin(), scripts.end(), [&] (ScriptInst& s) {
-			return s.path == path;
+			return std::filesystem::equivalent(s.script->path, _path);
 		});
 
 		auto launch = [&](ScriptInst& s) {
 			std::lock_guard<std::recursive_mutex> lock(*s.mutex);
+			s.alive = true;
 			globalLock.unlock();
 			try {
 				delete s.script;
 			} catch (...) {}
-			s.script = new T(path, s.mutex);
-			s.script->launchThread();
+			auto script = new T(_path, s.mutex);
+			s.script = script;
+			if (doLaunch)
+				s.script->launchThread();
+			return script;
 		};
 
 		if (it == scripts.end()) {
-			launch(scripts.emplace_back(ScriptInst{ path }));
+			return launch(scripts.emplace_back(ScriptInst()));
 		} else {
-			launch(*it);
+			return launch(*it);
 		}
 	}
+
+	void disableLogging();
 
 	size_t elapsedTime() const;
 
@@ -148,7 +166,7 @@ public:
 	template<typename T>
 	static void withScript(const std::string& path, std::function<void(T&)> block)
 	{
-		withScript<T>(block, [&](ScriptInst& s) {return s.path == path;});
+		withScript<T>(block, [&](ScriptInst& s) {return s.script->path == path;});
 	}
 
 	template<typename T>

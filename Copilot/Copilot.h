@@ -23,12 +23,13 @@ namespace copilot {
 	void stopCopilotScript();
 	void onSimEvent(SimConnect::EVENT_ID event);
 	void onMuteKey(bool);
-	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName, bool first);
+	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName, int airfileCount);
 	void onWindowClose();
 	bool simRunning();
 	bool isMuted();
 
-	void launchFSL2LuaScript();
+	void launchAutorunLua();
+	void loadScriptsIni(bool firstRun);
 
 	P3D::IWindowPluginSystemV440* GetWindowPluginSystem();
 

@@ -22,6 +22,7 @@ public:
 
     DWORD lastError;
     HttpSession(const std::wstring& url, unsigned int receiveTimeout = 1000);
+    void setPath(const std::wstring& path);
     ~HttpSession();
     std::string makeRequest();
 };

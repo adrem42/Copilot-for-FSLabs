@@ -12,27 +12,28 @@ local trimwheel = {
 
 function trimwheel:getInd()
   util.sleep(1)
-  local CG_ind = ipc.readLvar(self.LVar)
-  if FSL:getAcType()  == "A320" then
-    if CG_ind <= 1800 and CG_ind > 460 then
-      CG_ind = CG_ind * 0.0482226 - 58.19543
+  local lvarVal = ipc.readLvar(self.LVar)
+  local cgInd
+  if FSL:getAcType() == "A320" then
+    if lvarVal <= 1800 and lvarVal > 460 then
+      cgInd = lvarVal * 0.0482226 - 58.19543
     else
-      CG_ind = CG_ind * 0.1086252 + 28.50924
+      cgInd = lvarVal * 0.1086252 + 28.50924
     end
   elseif FSL:getAcType() == "A319" then
-    if CG_ind <= 1800 and CG_ind > 460 then
-      CG_ind = CG_ind * 0.04687107 - 53.76288
+    if lvarVal <= 1800 and lvarVal > 460 then
+      cgInd = lvarVal * 0.04687107 - 53.76288
     else
-      CG_ind = CG_ind * 0.09844237 + 30.46262
+      cgInd = lvarVal * 0.09844237 + 30.46262
     end
   elseif FSL:getAcType()  == "A321" then
-    if CG_ind <= 1800 and CG_ind > 460 then
-      CG_ind = CG_ind * 0.04228 - 48.11
+    if lvarVal <= 1800 and lvarVal > 460 then
+      cgInd = lvarVal * 0.04228 - 48.11
     else
-      CG_ind = CG_ind * 0.09516 + 27.97
+      cgInd = lvarVal * 0.09516 + 27.97
     end
   end
-  return CG_ind
+  return cgInd
 end
 
 function trimwheel:_set(CG, step, sleepFunc)

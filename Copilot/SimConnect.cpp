@@ -8,9 +8,9 @@
 
 using namespace SimConnect;
 
-bool firstAircraft = true;
+int flightLoadedCount = 0;
 
-std::string aircraftName;
+std::string airfileName;
 
 std::atomic<size_t>  currEventId = EVENT_CUSTOM_EVENT_MIN;
 
@@ -242,6 +242,7 @@ void SimConnect::setupMuteControls()
 void SimConnect::setupCopilotMenu()
 {
 	HRESULT hr;
+	hr = SimConnect_MenuDeleteItem(hSimConnect, EVENT_COPILOT_MENU);
 	hr = SimConnect_MenuAddItem(hSimConnect, "Copilot for FSLabs", EVENT_COPILOT_MENU, 0);
 	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_COPILOT_MENU, "Restart", EVENT_COPILOT_MENU_ITEM_START, 0);
 	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_COPILOT_MENU, "Stop", EVENT_COPILOT_MENU_ITEM_STOP, 0);
@@ -250,19 +251,23 @@ void SimConnect::setupCopilotMenu()
 void SimConnect::setupFSL2LuaMenu()
 {
 	HRESULT hr;
+	hr = SimConnect_MenuDeleteItem(hSimConnect, EVENT_FSL2LUA_MENU);
 	hr = SimConnect_MenuAddItem(hSimConnect, "FSL2Lua", EVENT_FSL2LUA_MENU, 0);
-	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_FSL2LUA_MENU, "Restart script", EVENT_FSL2LUA_MENU_ITEM_RESTART_SCRIPT, 0);
+	if (fslAircraftLoaded)
+		hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_FSL2LUA_MENU, "Restart autorun.lua", EVENT_FSL2LUA_MENU_ITEM_RESTART_AUTORUN_LUA, 0);
+	hr = SimConnect_MenuAddSubItem(hSimConnect, EVENT_FSL2LUA_MENU, "Reload scripts.ini", EVENT_FSL2LUA_MENU_ITEM_RELOAD_SCRIPTS_INI, 0);
 }
 
 void onFlightLoaded()
 {
 	bool isFslAircraft = 
-		aircraftName.find("FSLabs") != std::string::npos &&
-			(aircraftName.find("A320") != std::string::npos ||
-			aircraftName.find("A319") != std::string::npos ||
-			aircraftName.find("A321") != std::string::npos);
-	copilot::onFlightLoaded(isFslAircraft, aircraftName, firstAircraft);
-	firstAircraft = false;
+		airfileName.find("FSLabs") != std::string::npos &&
+			(airfileName.find("A320") != std::string::npos ||
+			airfileName.find("A319") != std::string::npos ||
+			airfileName.find("A321") != std::string::npos);
+	fslAircraftLoaded = isFslAircraft;
+	flightLoadedCount++;
+	copilot::onFlightLoaded(isFslAircraft, airfileName, flightLoadedCount);
 }
 
 void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
@@ -314,8 +319,12 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 					copilot::stopCopilotScript();
 					break;
 
-				case EVENT_FSL2LUA_MENU_ITEM_RESTART_SCRIPT:
-					copilot::launchFSL2LuaScript();
+				case EVENT_FSL2LUA_MENU_ITEM_RESTART_AUTORUN_LUA:
+					copilot::launchAutorunLua();
+					break;
+
+				case EVENT_FSL2LUA_MENU_ITEM_RELOAD_SCRIPTS_INI:
+					copilot::loadScriptsIni(false);
 					break;
 
 			}
@@ -330,7 +339,7 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 				case EVENT_AIRCRAFT_LOADED:
 				{
 					simStarted = false;
-					aircraftName = std::string(evt->szFileName);
+					airfileName = std::string(evt->szFileName);
 					break;
 				}
 				default:

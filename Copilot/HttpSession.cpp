@@ -40,6 +40,16 @@ void HttpSession::initRequest()
                                       NULL);
 }
 
+void HttpSession::setPath(const std::wstring& path)
+{
+    if (hRequest) WinHttpCloseHandle(hRequest);
+    if (hConnect)
+        hRequest = WinHttpOpenRequest(hConnect, TEXT("GET"), path.c_str(),
+                                      NULL, WINHTTP_NO_REFERER,
+                                      WINHTTP_DEFAULT_ACCEPT_TYPES,
+                                      NULL);
+}
+
 HttpSession::~HttpSession()
 {
     if (hRequest) WinHttpCloseHandle(hRequest);

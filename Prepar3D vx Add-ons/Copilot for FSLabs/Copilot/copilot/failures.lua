@@ -7,13 +7,7 @@ local debugging = copilot.UserOptions.failures.debug == copilot.UserOptions.ENAB
 local failureStates
 local function sleep(time) ipc.sleep(time or 100) end
 
-local aircraftReg
-if copilot.UserOptions.failures.per_airframe == 1 then
-  aircraftReg = ipc.readSTR(0x313C, 12)
-  aircraftReg = aircraftReg:sub(1, aircraftReg:find("\0") - 1)
-else
-  aircraftReg = "common"
-end
+local aircraftReg = copilot.UserOptions.failures.per_airframe == 1 and copilot.trimIpcString(0x313C) or "common"
 local aircraftRegDir = APPDIR .. "Copilot\\failures\\" .. aircraftReg
 local stateFilePath = aircraftRegDir .. "\\state.lua"
 

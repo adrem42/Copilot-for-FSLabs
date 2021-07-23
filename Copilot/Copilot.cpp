@@ -102,14 +102,24 @@ namespace copilot {
 		return f.good();
 	}
 
-	void launchFSL2LuaScript()
+	void launchAutorunLua()
 	{
-		auto path = appDir + (isFslAircraft ? "scripts\\autorun.lua" : "scripts_non_fsl\\autorun.lua");
+		auto path = appDir + "scripts\\autorun.lua";
 		if (fileExists(path)) {
 			std::thread([=] {
 				LuaPlugin::launchScript<FSL2LuaScript>(path);
 			}).detach();
 		}
+	}
+
+	void loadScriptsIni(bool acReload)
+	{
+		std::thread([=] {
+			auto script = LuaPlugin::launchScript<FSL2LuaScript>(appDir + "copilot\\scriptLauncher.lua", false);
+			script->disableLogging();
+			script->lua["SCRIPT_LAUNCHER_AIRCRAFT_RELOAD"] = acReload;
+			script->launchThread();
+		}).detach();
 	}
 
 	bool isCopilotEnabled()
@@ -297,10 +307,10 @@ namespace copilot {
 
 	std::thread launchThread;
 
-	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName, bool first)
+	void onFlightLoaded(bool isFslAircraft, const std::string& aircraftName, int flightLoadedCount)
 	{
 		copilot::isFslAircraft = isFslAircraft;
-		if (first) {
+		if (flightLoadedCount == 1) {
 			DWORD res = FSUIPC::connect();
 			if (res != FSUIPC_ERR_OK && res != FSUIPC_ERR_OPEN) {
 				logger->error("Failed to connect to FSUIPC: {}", FSUIPC::errorString(res));
@@ -312,12 +322,11 @@ namespace copilot {
 			launchThread.join();
 		launchThread = std::thread([=] {
 			Sleep(10000);
-			launchFSL2LuaScript();
-			if (first)
-				SimConnect::setupFSL2LuaMenu();
+			loadScriptsIni(true);
+			SimConnect::setupFSL2LuaMenu();
 			if (isCopilotEnabled()) {
-				if (first) {
-					SimConnect::setupCopilotMenu();
+				SimConnect::setupCopilotMenu();
+				if (flightLoadedCount == 1) {
 					SimConnect::setupMuteControls();
 				}
 				startCopilotScript();

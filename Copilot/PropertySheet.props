@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <P3dSdkPath>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.12.30293</P3dSdkPath>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="P3dSdkPath">
+      <Value>$(P3dSdkPath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

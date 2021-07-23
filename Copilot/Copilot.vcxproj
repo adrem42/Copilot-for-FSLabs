@@ -124,15 +124,19 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -159,7 +163,7 @@
       <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;SOL_NO_CHECK_NUMBER_PRECISION=1;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_DEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(solutiondir);C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\PDK\Helpers;$(solutiondir)lua51\include;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\PDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(solutiondir);$(P3dSdkPath)\inc\SimConnect;$(P3dSdkPath)\inc\Gauges;$(P3dSdkPath)\inc\PDK\Helpers;$(solutiondir)lua51\include;$(P3dSdkPath)\inc\PDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -167,7 +171,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\lib\SimConnect;$(projectdir)\FSUIPC\lib;$(solutiondir)lua51;$(projectdir)bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(P3dSdkPath)\lib\SimConnect;$(projectdir)\FSUIPC\lib;$(solutiondir)lua51;$(projectdir)bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>$(solutiondir)lua51\lua5.1.lib;Comctl32.lib;Setupapi.lib;hid.lib;bass.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;SimConnectDebug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
@@ -224,7 +228,7 @@ cd $(solutiondir) &amp;&amp; copytosim</Command>
       <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;SPDLOG_WCHAR_TO_UTF8_SUPPORT;SOL_NO_CHECK_NUMBER_PRECISION=1;_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;NDEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(solutiondir);C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\SimConnect;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\Gauges;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\PDK\Helpers;$(solutiondir)lua51\include;C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\inc\PDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(solutiondir);$(P3dSdkPath)\inc\SimConnect;$(P3dSdkPath)\inc\Gauges;$(P3dSdkPath)\inc\PDK\Helpers;$(solutiondir)lua51\include;$(P3dSdkPath)\inc\PDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
@@ -233,7 +237,7 @@ cd $(solutiondir) &amp;&amp; copytosim</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalLibraryDirectories>C:\Program Files\Lockheed Martin\Prepar3D v4 SDK 4.5.14.34698\lib\SimConnect;$(projectdir)\FSUIPC\lib;$(solutiondir)lua51;$(projectdir)bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(P3dSdkPath)\lib\SimConnect;$(projectdir)\FSUIPC\lib;$(solutiondir)lua51;$(projectdir)bass;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <AdditionalDependencies>$(solutiondir)lua51\lua5.1.lib;Comctl32.lib;Setupapi.lib;hid.lib;bass.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;SimConnect.lib;%(AdditionalDependencies)</AdditionalDependencies>
