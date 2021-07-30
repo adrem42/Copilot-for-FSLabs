@@ -14,8 +14,9 @@ namespace SimConnect {
 	size_t getUniqueEventID();
 
 	class SimConnectEvent : public std::enable_shared_from_this<SimConnectEvent> {
-	protected:
+	public:
 		using Callback = std::function<void(DWORD)>;
+	protected:
 		const Callback callback;
 	public:
 		SimConnectEvent(const SimConnectEvent&) = delete;
@@ -27,15 +28,22 @@ namespace SimConnect {
 	};
 
 	class NamedSimConnectEvent : public SimConnectEvent {
-		std::vector<Callback> callbacks;
-	public:
-		const std::string name;
-		NamedSimConnectEvent(const std::string& name, Callback cb);
+		std::unordered_map<size_t, Callback> callbacks;
+		static std::atomic<size_t> currCallbackId;
 		void subscribe();
 		void unsubscribe();
+		bool subscribed = false;
+	public:
+		const std::string name;
+		size_t addCallback(Callback);
+		void removeCallback(size_t);
+		NamedSimConnectEvent(const std::string& name);
+		virtual bool dispatch(DWORD);
 		void transmit(DWORD);
 		virtual ~NamedSimConnectEvent();
 	};
+
+	std::shared_ptr<NamedSimConnectEvent> getNamedEvent(const std::string& name);
 
 	class TextMenuEvent : public SimConnectEvent {
 

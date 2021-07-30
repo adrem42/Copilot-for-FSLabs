@@ -39,12 +39,11 @@ void FSL2LuaScript::MouseRectListenerCallback::MouseRectListenerProc(UINT rect, 
 	}
 }
 
-void systemEvent(std::string eventName)
-{
 
-}
+using namespace SimConnect;
 
-class LuaNamedSimConnectEvent : public SimConnect::NamedSimConnectEvent {
+class LuaNamedSimConnectEvent  {
+
 	FSL2LuaScript* pScript;
 	int eventID;
 	static constexpr const char* REGISTRY_KEY = "SIMCONNECT_EVENTS";
@@ -56,10 +55,19 @@ class LuaNamedSimConnectEvent : public SimConnect::NamedSimConnectEvent {
 
 public:
 
-	using SimConnect::NamedSimConnectEvent::NamedSimConnectEvent;
+	std::shared_ptr<NamedSimConnectEvent> event;
+	SimConnectEvent::Callback cb;
+	size_t callbackID = -1;
+
+	LuaNamedSimConnectEvent(const std::string& name, SimConnectEvent::Callback cb)
+	{
+		event = getNamedEvent(name);
+		this->cb = cb;
+	}
 
 	virtual ~LuaNamedSimConnectEvent()
 	{
+		event->removeCallback(callbackID);
 		LuaPlugin::withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& s) {
 			s.enqueueCallback([=, &s](sol::state_view& lua) {
 				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, eventID);
@@ -71,15 +79,18 @@ public:
 	{
 		auto& lua = script.lua;
 		lua.registry()[REGISTRY_KEY] = lua.create_table();
-		//auto mt = lua.create_table();
-		//mt["__mode"] = "v";
-		//lua.registry()[REGISTRY_KEY][sol::metatable_key] = mt;
 
 		auto LuaType = lua.new_usertype<LuaNamedSimConnectEvent>("SimConnectEvent");
 
-		LuaType["transmit"] = &LuaNamedSimConnectEvent::transmit;
-		LuaType["subscribe"] = &LuaNamedSimConnectEvent::subscribe;
-		LuaType["unsubscribe"] = &LuaNamedSimConnectEvent::unsubscribe;
+		LuaType["transmit"] = [](LuaNamedSimConnectEvent& e, sol::optional<DWORD> param) {
+			e.event->transmit(param.value_or(0));
+		};
+		LuaType["subscribe"] = [](LuaNamedSimConnectEvent& e) {
+			e.callbackID = e.event->addCallback(e.cb);
+		};
+		LuaType["unsubscribe"] = [](LuaNamedSimConnectEvent& e) {
+			e.event->removeCallback(e.callbackID);
+		};
 
 		LuaType["event"] = sol::readonly_property([](LuaNamedSimConnectEvent& e, sol::this_state ts) -> sol::table {
 			sol::state_view lua(ts);

@@ -6,6 +6,8 @@
 #include <numeric>
 #include <unordered_map>
 #include "SystemEventLuaManager.h"
+#include <cctype>
+#include <algorithm>
 
 
 using namespace SimConnect;
@@ -15,6 +17,7 @@ int flightLoadedCount = 0;
 std::string airfileName;
 
 std::atomic<size_t>  currEventId = EVENT_CUSTOM_EVENT_MIN;
+std::unordered_map<std::string, std::weak_ptr<NamedSimConnectEvent>> namedEvents;
 
 size_t SimConnect::getUniqueEventID()
 {
@@ -24,11 +27,31 @@ size_t SimConnect::getUniqueEventID()
 std::mutex eventsMutex;
 std::unordered_map<size_t, std::weak_ptr<SimConnectEvent>> events;
 
+std::string toLower(const std::string& s)
+{
+	auto copy = s;
+	std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) { return std::tolower(c); });
+	return copy;
+}
+
+std::shared_ptr<NamedSimConnectEvent> SimConnect::getNamedEvent(const std::string& name)
+{
+	
+	std::lock_guard<std::mutex> lock(eventsMutex);
+	auto it = namedEvents.find(toLower(name));
+	if (it != namedEvents.end()) return it->second.lock();
+	auto event = std::make_shared<NamedSimConnectEvent>(name);
+	namedEvents[toLower(name)] = event;
+	return event;
+}
+
 bool SimConnect::SimConnectEvent::dispatch(DWORD param)
 {
 	if (callback) callback(param);
 	return false;
 }
+
+std::atomic<size_t> NamedSimConnectEvent::currCallbackId = 0;
 
 SimConnectEvent::~SimConnectEvent()
 {
@@ -39,24 +62,58 @@ SimConnectEvent::~SimConnectEvent()
 	events.erase(eventId);
 }
 
-NamedSimConnectEvent::NamedSimConnectEvent(const std::string& name, SimConnectEvent::Callback cb)
-	:name(name), SimConnectEvent::SimConnectEvent(cb)
+size_t SimConnect::NamedSimConnectEvent::addCallback(Callback cb)
 {
-	HRESULT hr = SimConnect_MapClientEventToSimEvent(hSimConnect, eventId, name.c_str());
+	auto callbackID = currCallbackId++;
+	{
+		std::lock_guard<std::mutex> lock(eventsMutex);
+		callbacks[callbackID] = cb;
+	}
+	subscribe();
+	return callbackID;
+}
+
+void SimConnect::NamedSimConnectEvent::removeCallback(size_t id)
+{
+	{
+		std::lock_guard<std::mutex> lock(eventsMutex);
+		callbacks.erase(id);
+	}
+	if (callbacks.empty())
+		unsubscribe();
+}
+
+NamedSimConnectEvent::NamedSimConnectEvent(const std::string& name)
+	:name(toLower(name))
+{
+	HRESULT hr = SimConnect_MapClientEventToSimEvent(hSimConnect, eventId, this->name.c_str());
+}
+
+bool SimConnect::NamedSimConnectEvent::dispatch(DWORD param)
+{
+	std::lock_guard <std::mutex> lock(eventsMutex);
+	for (auto& [_, cb] : callbacks)
+		cb(param);
+	return false;
 }
 
 void SimConnect::NamedSimConnectEvent::subscribe()
 {
+	if (subscribed) return;
 	HRESULT hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, eventId);
 	std::lock_guard<std::mutex> lock(eventsMutex);
 	events.emplace(eventId, shared_from_this());
+	subscribed = true;
 }
 
 void SimConnect::NamedSimConnectEvent::unsubscribe()
 {
-	//HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
 	std::lock_guard<std::mutex> lock(eventsMutex);
+	if (!callbacks.empty()) return;
+	copilot::logger->info("unsubscribe called, eventID: {}, name :'{}'", eventId, name);
+	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
 	events.erase(eventId);
+	subscribed = false;
 }
 
 void SimConnect::NamedSimConnectEvent::transmit(DWORD data)
@@ -71,7 +128,9 @@ void SimConnect::NamedSimConnectEvent::transmit(DWORD data)
 
 SimConnect::NamedSimConnectEvent::~NamedSimConnectEvent()
 {
+	std::lock_guard<std::mutex> lock(eventsMutex);
 	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
+	namedEvents.erase(toLower(name));
 }
 
 TextMenuEvent::TextMenuEvent(
