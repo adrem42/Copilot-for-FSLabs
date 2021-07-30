@@ -14,7 +14,7 @@ class Joystick::Button {
 	static const uint8_t EVENT_TYPE_RELEASE = 2;
 
 	enum class ButtonState {
-		Pressed, Released
+		Pressed, Released, Unknown
 	};
 
 	const std::shared_ptr<JoystickManager> manager;
@@ -51,5 +51,7 @@ public:
 	void maybeRelease(size_t);
 
 	void onPressRepeatTimer(size_t);
+
+	void setStateUnknown();
 
 };

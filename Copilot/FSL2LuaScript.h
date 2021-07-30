@@ -37,7 +37,6 @@ protected:
 	std::mutex luaCallbackQueueMutex;
 	std::queue<LuaCallback> luaCallbacks;
 	HANDLE luaCallbackEvent = CreateEvent(0, 0, 0, 0);
-	void enqueueCallback(LuaCallback);
 
 	struct Events {
 		HANDLE * events;
@@ -57,6 +56,7 @@ protected:
 
 public:
 
+	void enqueueCallback(LuaCallback);
 	using LuaPlugin::LuaPlugin;
 	virtual void run() override;
 	virtual void stopThread() override;

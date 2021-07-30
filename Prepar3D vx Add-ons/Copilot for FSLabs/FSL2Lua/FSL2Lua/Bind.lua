@@ -110,7 +110,7 @@ local function checkCallable(elem, nextElem)
   local _, callableType = util.isCallable(elem)
   if callableType == "function" then
     return "function"
-  elseif type(elem) == "table" then
+  elseif type(elem) == "table" or type(elem) == "userdata" then
     if type(elem[nextElem]) == "function" then
       return "method"
     elseif callableType == "funcTable" then
@@ -194,10 +194,12 @@ end
 
 function Bind.makeSingleFunc(args)
   if type(args) == "function" then return args end
-  if type(args) ~= "table" then 
+  if type(args) ~= "table" and type(args) ~= "userdata" then 
     error("Invalid callback arguments", 4) 
   end
-  if util.isFuncTable(args) then args = {args} end
+  if util.isFuncTable(args) then 
+    args = {args} 
+  end
   local funcs = parseCallableArgs(1, args)
   if #funcs == 0 then
     error("There needs to be at least one callable object", 4)

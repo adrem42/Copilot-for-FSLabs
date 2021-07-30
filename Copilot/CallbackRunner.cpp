@@ -4,8 +4,6 @@
 
 #include "CallbackRunner.h"
 #include <Windows.h>
-#include "Copilot.h"
-#include "LuaPlugin.h"
 
 CallbackRunner::Interval CallbackRunner::validateInputInterval(std::optional<Interval>& input)
 {

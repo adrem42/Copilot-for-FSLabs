@@ -1,6 +1,7 @@
 #include "Joystick.h"
 #include "Button.h"
 #include <numeric>
+#include "Copilot.h"
 #include "JoystickManager.h"
 
 std::vector<std::shared_ptr<JoystickManager>> joystickManagers;
@@ -132,10 +133,10 @@ void Joystick::getData()
 void Joystick::readFile()
 {
 	buff = new char[buffSize]();
-	bool readResult = ReadFile(device, buff, buffSize, NULL, &readOverlapped);
+	ReadFile(device, buff, buffSize, NULL, &readOverlapped);
 }
 
-void Joystick::saveBuffer()
+void Joystick::saveBuffer(char* buff)
 {
 	std::lock_guard<std::mutex> lock(bufferMutex);
 	if (bufferQueue.size() + 1 > MAX_NUM_BUFFERS) {
@@ -179,7 +180,7 @@ void Joystick::readBuffers()
 			break;
 
 		auto& joystick = joysticks.at(eventIdx);
-		joystick->saveBuffer();
+		joystick->saveBuffer(joystick->buff);
 		joystick->readFile();
 	}
 

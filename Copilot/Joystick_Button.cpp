@@ -7,7 +7,7 @@ Joystick::Button::Button(uint16_t buttonNum, uint16_t dataIndex, std::shared_ptr
 
 bool Joystick::Button::maybePress(size_t timestamp)
 {
-	if (state == ButtonState::Released) {
+	if (state != ButtonState::Pressed) {
 		onPress(timestamp);
 		return !onPressRepeatCallbacks.empty();
 	}
@@ -16,7 +16,7 @@ bool Joystick::Button::maybePress(size_t timestamp)
 
 void Joystick::Button::maybeRelease(size_t timestamp)
 {
-	if (state == ButtonState::Pressed)
+	if (state != ButtonState::Released)
 		onRelease(timestamp);
 }
 
@@ -65,4 +65,9 @@ void Joystick::Button::onPressRepeatTimer(size_t timestamp)
 {
 	if (state == ButtonState::Pressed && !onPressRepeatCallbacks.empty()) 
 		onPressRepeat(timestamp);
+}
+
+void Joystick::Button::setStateUnknown()
+{
+	state = ButtonState::Unknown;
 }

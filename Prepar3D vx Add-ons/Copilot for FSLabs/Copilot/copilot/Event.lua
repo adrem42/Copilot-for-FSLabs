@@ -502,5 +502,64 @@ function Event.fromTextMenu(title, prompt, items, timeout)
   return e
 end
 
+function Event.awaitMenuAction(arg1, arg2)
+  local timeout, action
+  if type(arg1) == "function" then
+    action = arg1
+    timeout = Event.INFINITE
+  else
+    action = arg2
+    timeout = arg1
+  end
+  local e = SingleEvent:new {logMsg = Event.NOLOGMSG}
+  local textEventCreated = copilot.simConnectSystemEvent "TextEventCreated"
+  local a = textEventCreated:addAction(function(_, menu)
+    if menu.type == "menu" then 
+      local res = table.pack(action(menu))
+      if res[1] ~= nil then
+        e:trigger(table.unpack(res))
+      end
+    end
+  end)
+  local res = Event.waitForEventWithTimeout(timeout, e)
+  textEventCreated:removeAction(a)
+  return res == true
+end
+
+function Event.dataPollEvent(userParam, hasValueChanged)
+
+  local currValue
+
+  hasValueChanged = hasValueChanged or function(newValue, oldValue)
+    return newValue ~= oldValue
+  end
+
+  local e = Event:new()
+
+  local function pollData(value)
+    if hasValueChanged(value, currValue) then
+      local oldValue = currValue
+      currValue = value
+      e:trigger(userParam, currValue, oldValue)
+    end
+    return value
+  end
+
+  local function getValue() return currValue end
+
+  return e, pollData, getValue
+end
+
+function Event.lvarEvent(lvar)
+  local e, poll = Event.dataPollEvent(lvar)
+  return e, function() poll(ipc.readLvar(lvar)) end
+end
+
+function Event.offsetEvent(type, offset)
+  local e, poll = Event.dataPollEvent(offset)
+  local readFunc = ipc["read" .. type]
+  return e, function() poll(readFunc(offset)) end
+end
+
 require "copilot.ActionOrderSetter"
 return Event

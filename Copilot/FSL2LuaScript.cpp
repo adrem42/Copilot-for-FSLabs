@@ -13,6 +13,7 @@
 #include "Copilot.h"
 #include "CallbackRunner.h"
 #include "SimInterface.h"
+#include "SystemEventLuaManager.h"
 
 std::unordered_map< P3D::MOUSE_CLICK_TYPE, std::string> clickTypes{
 	{P3D::MOUSE_CLICK_LEFT_SINGLE,		"leftPress"},
@@ -38,6 +39,11 @@ void FSL2LuaScript::MouseRectListenerCallback::MouseRectListenerProc(UINT rect, 
 	}
 }
 
+void systemEvent(std::string eventName)
+{
+
+}
+
 class LuaNamedSimConnectEvent : public SimConnect::NamedSimConnectEvent {
 	FSL2LuaScript* pScript;
 	int eventID;
@@ -52,15 +58,28 @@ public:
 
 	using SimConnect::NamedSimConnectEvent::NamedSimConnectEvent;
 
+	virtual ~LuaNamedSimConnectEvent()
+	{
+		LuaPlugin::withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& s) {
+			s.enqueueCallback([=, &s](sol::state_view& lua) {
+				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, eventID);
+			});
+		});
+	}
+
 	static void makeLuaBindings(FSL2LuaScript& script)
 	{
 		auto& lua = script.lua;
 		lua.registry()[REGISTRY_KEY] = lua.create_table();
+		//auto mt = lua.create_table();
+		//mt["__mode"] = "v";
+		//lua.registry()[REGISTRY_KEY][sol::metatable_key] = mt;
 
 		auto LuaType = lua.new_usertype<LuaNamedSimConnectEvent>("SimConnectEvent");
 
 		LuaType["transmit"] = &LuaNamedSimConnectEvent::transmit;
 		LuaType["subscribe"] = &LuaNamedSimConnectEvent::subscribe;
+		LuaType["unsubscribe"] = &LuaNamedSimConnectEvent::unsubscribe;
 
 		LuaType["event"] = sol::readonly_property([](LuaNamedSimConnectEvent& e, sol::this_state ts) -> sol::table {
 			sol::state_view lua(ts);
@@ -115,8 +134,7 @@ public:
 			const std::string& prompt,
 			std::vector<std::string> items,
 			size_t timeout,
-			sol::function callback
-			) {
+			sol::function callback) {
 			return std::make_shared<LuaTextMenu>(title, prompt, items, timeout, callback, *pScript);
 		};
 
@@ -124,8 +142,7 @@ public:
 			const std::string& title,
 			const std::string& prompt,
 			std::vector<std::string> items,
-			sol::function callback
-			) {
+			sol::function callback) {
 			return std::make_shared<LuaTextMenu>(title, prompt, items, 0, callback, *pScript);
 		};
 
@@ -235,7 +252,7 @@ public:
 		using namespace SimConnect;
 		this->callback = [=, &script](Result res, MenuItem item, const std::string& str, std::shared_ptr<TextMenuEvent> e)
 		{
-			LuaPlugin::withScript<FSL2LuaScript>(&script, [=](FSL2LuaScript& s) {
+			LuaPlugin::withScript<::FSL2LuaScript>(&script, [=](::FSL2LuaScript& s) {
 				s.enqueueCallback([=, &s](sol::state_view& lua) {
 					auto f = lua.registry().raw_get<sol::protected_function>(callbackID);
 					auto event = lua.registry().raw_get<sol::table>(eventID);
@@ -345,10 +362,14 @@ public:
 
 	~LuaTextMenu()
 	{
-		luaL_unref(pScript->lua.lua_state(), LUA_REGISTRYINDEX, callbackID);
-		luaL_unref(pScript->lua.lua_state(), LUA_REGISTRYINDEX, eventID);
+		auto pLua = pScript->lua.lua_state();
+		LuaPlugin::withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& s) {
+			s.enqueueCallback([=, &s](sol::state_view& lua) {
+				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, callbackID);
+				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, eventID);
+			});
+		});
 	}
-
 };
 
 void FSL2LuaScript::initLuaState(sol::state_view lua)
@@ -375,6 +396,13 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 
 	lua["copilot"]["killLuaThread"] = [](const std::string& path) {
 		LuaPlugin::stopScript(path);
+	};
+
+	SystemEventLuaManager<int>::createRegistryTable(lua);
+
+	lua["copilot"]["simConnectSystemEvent"] = [this](sol::this_state ts, const std::string& evtName) {
+		sol::state_view lua(ts);
+		return SimConnect::subscribeToSystemEventLua(evtName, lua, this);
 	};
 
 	keyBindManager = std::make_shared<KeyBindManager>();

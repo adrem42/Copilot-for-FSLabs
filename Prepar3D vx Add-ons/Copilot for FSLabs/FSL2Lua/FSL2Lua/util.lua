@@ -104,14 +104,22 @@ local util = {
 local logFilePath = util.FSL2LuaDir .. "\\FSL2Lua.log"
 
 function util.isFuncTable(obj)
-  if type(obj) ~= "table" then return false end
-  if getmetatable(obj) == nil then return false end
+  if type(obj) ~= "table" and type(obj) ~= "userdata" then 
+    return false 
+  end
+  if getmetatable(obj) == nil then 
+    return false 
+  end
   return type(getmetatable(obj).__call) == "function"
 end
 
 function util.isCallable(obj)
-  if type(obj) == "function" then return true, "function" end
-  if util.isFuncTable(obj) then return true, "funcTable" end
+  if type(obj) == "function" then 
+    return true, "function" 
+    end
+  if util.isFuncTable(obj) then 
+    return true, "funcTable" 
+  end
   return false
 end
 

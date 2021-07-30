@@ -27,6 +27,8 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		)
 	);
 
+	JoystickType["setButtonStatesUnknown"] = &Joystick::setButtonStatesUnknown;
+
 	JoystickType["printDeviceInfo"] = lua.script(R"(
 		return function()
 			print "------------------------------------"
@@ -115,19 +117,26 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 				sol::unsafe_function f = va[0];
 				return [f](size_t, size_t, unsigned short) { f(); };
 			}
-			if (va[0].get_type() == sol::type::table) {
-				sol::table obj = va[0];
-				if (obj[sol::metatable_key].get_type() == sol::type::table) {
-					sol::table mt = obj[sol::metatable_key];
-					if (mt["__call"].get_type() == sol::type::function) {
-						sol::unsafe_function __call = mt["__call"];
-						return [__call, obj](size_t, size_t, unsigned short) { return __call(obj); };
-					}
+			sol::table mt;
+			auto checkMt = [&mt](auto obj) {
+				if (obj[sol::metatable_key].get_type() == sol::type::table) 
+					mt = obj[sol::metatable_key];
+			};
+			if (va[0].is<sol::table>()) 
+				checkMt(va[0].as<sol::table>());
+			 else if (va[0].is<sol::userdata>()) 
+				checkMt(va[0].as<sol::userdata>());
+			if (mt.valid()) {
+				if (mt["__call"].get_type() == sol::type::function) {
+					sol::unsafe_function __call = mt["__call"];
+					sol::object obj = va[0];
+					return [__call, obj](size_t, size_t, unsigned short) { return __call(obj); };
 				}
 			}
 		}
 		auto args = std::vector<sol::object>(va.begin(), va.end());
-		return lua["Bind"]["makeSingleFunc"](sol::as_table(args));
+		sol::unsafe_function makeSingleFunc = lua["Bind"]["makeSingleFunc"];
+		return makeSingleFunc(sol::as_table(args));
 	};
 
 	JoystickType["onPress"] = [parseCallbackArgs](Joystick& joy, int buttonNum, sol::variadic_args va) {
@@ -136,6 +145,19 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 
 	JoystickType["onRelease"] = [parseCallbackArgs](Joystick& joy, int buttonNum, sol::variadic_args va) {
 		joy.onRelease(buttonNum, parseCallbackArgs(va));
+	};
+
+	JoystickType["bind"] = [](Joystick& joy, sol::table args) {
+		sol::state_view lua(args.lua_state());
+		sol::unsafe_function prepareBind = lua["Bind"]["prepareBind"];
+		sol::table bindData = prepareBind(lua["Bind"], args);
+		int buttonNum = args.get<int>("button");
+		if (bindData["onPress"].get_type() == sol::type::function)
+			joy.onPress(buttonNum, bindData.get<sol::unsafe_function>("onPress"));
+		if (bindData["onRelease"].get_type() == sol::type::function)
+			joy.onRelease(buttonNum, bindData.get<sol::unsafe_function>("onRelease"));
+		if (bindData["onPressRepeat"].get_type() == sol::type::function)
+			joy.onPress(buttonNum, bindData.get<sol::unsafe_function>("onPressRepeat"));
 	};
 
 	JoystickType["onPressRepeat"] = sol::overload(
@@ -151,7 +173,8 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		sol::function onPress;
 		sol::function onRelease;
 		auto lua = sol::state_view(o.lua_state());
-		sol::tie(onPress, onRelease) = lua["Bind"][methodName](o);
+		sol::unsafe_function makeCallbacks = lua["Bind"][methodName];
+		sol::tie(onPress, onRelease) = makeCallbacks(o);
 		joy.onPress(buttonNum, onPress);
 		joy.onRelease(buttonNum, onRelease);
 	};

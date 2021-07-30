@@ -17,7 +17,7 @@ return {
   end,
 
   create = function(path, content) 
-    local file = io.open(path,"w")
+    local file = io.open(path, "w")
     if content then
       file:write(content)
     end

@@ -19,7 +19,7 @@ const char* REG_KEY_JMP_BUFF = "JMPBUFF";
 const char* REG_KEY_IS_RUNNING = "IS_RUNNING";
 
 std::vector<LuaPlugin::ScriptInst> LuaPlugin::scripts;
-std::mutex LuaPlugin::globalMutex;
+std::recursive_mutex LuaPlugin::globalMutex;
 
 std::mutex LuaPlugin::sessionVariableMutex;
 std::unordered_map<std::string, LuaPlugin::SessionVariable> LuaPlugin::sessionVariables;
@@ -226,12 +226,22 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 
 	lua_settable(lua.lua_state(), LUA_REGISTRYINDEX);
 
+	lua["SCRIPT_PATH"] = path;
+	lua["SCRIPT_DIR"] = std::filesystem::path(path).parent_path().string() + "\\";
 	lua["copilot"].get_or_create<sol::table>();
 	lua["copilot"]["keypress"] = [&](sol::this_state ts, const std::string& s) {
 		sol::state_view lua(ts);
 		sol::unsafe_function f = lua["Bind"]["parseKeys"];
 		sol::unsafe_function_result ufr = f(s);
 		keypress(ufr.get<SHORT>(0), ufr.get<std::vector<SHORT>>(1));
+	};
+	lua["copilot"]["sendKeyToFsWindow"] = [&](sol::this_state ts, const std::string& s, sol::optional<SimInterface::KeyEvent> event) {
+		sol::state_view lua(ts);
+		sol::unsafe_function f = lua["Bind"]["parseKeys"];
+		sol::unsafe_function_result ufr = f(s);
+		if (!ufr.get<std::vector<SHORT>>(1).empty())
+			throw "No modifiers allowed";
+		SimInterface::sendKeyToSimWindow(ufr.get<SHORT>(0), event.value_or(SimInterface::KeyEvent::Press));
 	};
 	lua["copilot"]["isSimRunning"] = copilot::simRunning();
 
@@ -504,7 +514,7 @@ void LuaPlugin::run()
 
 void LuaPlugin::stopScript(const std::string& path)
 {
-	std::unique_lock<std::mutex> globalLock(globalMutex);
+	std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 
 	std::string _path = path;
 
@@ -532,7 +542,7 @@ void LuaPlugin::stopScript(const std::string& path)
 
 void LuaPlugin::stopAllScripts()
 {
-	std::unique_lock<std::mutex> globalLock(globalMutex);
+	std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 	for (auto& s : scripts) {
 		std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 		delete s.script;
@@ -542,7 +552,7 @@ void LuaPlugin::stopAllScripts()
 
 void LuaPlugin::sendShutDownEvents()
 {
-	std::unique_lock<std::mutex> globalLock(globalMutex);
+	std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 	for (auto& s : scripts) {
 		std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 		s.script->running = false;

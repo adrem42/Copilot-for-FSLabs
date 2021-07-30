@@ -5,6 +5,8 @@
 #include <sstream>
 #include <numeric>
 #include <unordered_map>
+#include "SystemEventLuaManager.h"
+
 
 using namespace SimConnect;
 
@@ -52,7 +54,7 @@ void SimConnect::NamedSimConnectEvent::subscribe()
 
 void SimConnect::NamedSimConnectEvent::unsubscribe()
 {
-	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
+	//HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
 	std::lock_guard<std::mutex> lock(eventsMutex);
 	events.erase(eventId);
 }
@@ -70,7 +72,6 @@ void SimConnect::NamedSimConnectEvent::transmit(DWORD data)
 SimConnect::NamedSimConnectEvent::~NamedSimConnectEvent()
 {
 	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
-	hr = SimConnect_MapClientEventToSimEvent(hSimConnect, eventId);
 }
 
 TextMenuEvent::TextMenuEvent(
@@ -218,6 +219,35 @@ namespace SimConnect {
 	bool fslAircraftLoaded, simStarted;
 	std::atomic_bool simPaused;
 	HANDLE hSimConnect;
+
+	TextMenuCreatedEvent::TextMenuCreatedEvent()
+	{
+		messages.reserve(12);
+	}
+	sol::table TextMenuCreatedEvent::get(sol::state_view& lua)
+	{
+		auto t = lua.create_table();
+		if (isMenu) {
+			t["title"] = !messages.empty() ? messages[0] : "";
+			t["prompt"] = messages.size() >= 2 ? messages[1] : "";
+			t["type"] = "menu";
+			t["items"] = lua.create_table(messages.size() > 2 ? messages.size() - 2 : 0);
+			if (messages.size() > 2) {
+				t["items"] = lua.create_table(messages.size() - 2);
+				for (size_t i = 2; i < messages.size(); ++i) {
+					t["items"][i - 1] = messages[i];
+				}
+			} else {
+				t["items"] = lua.create_table(0);
+			}
+			
+		} else {
+			t["type"] = "message";
+			if (!messages.empty())
+				t["message"] = messages[0];
+		}
+		return t;
+	}
 }
 
 void onCustomEvent(size_t id, DWORD param)
@@ -268,6 +298,16 @@ void onFlightLoaded()
 	fslAircraftLoaded = isFslAircraft;
 	flightLoadedCount++;
 	copilot::onFlightLoaded(isFslAircraft, airfileName, flightLoadedCount);
+}
+
+SystemEventLuaManager<TextMenuCreatedEvent> textMenuCreatedEventMgr("TextEventCreated");
+
+sol::table SimConnect::subscribeToSystemEventLua(const std::string& evtName, sol::state_view& lua, FSL2LuaScript* script)
+{
+	if (evtName == "TextEventCreated") {
+		return textMenuCreatedEventMgr.registerScript(lua, script);
+	}
+	throw "No such event: " + evtName;
 }
 
 void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
@@ -331,6 +371,35 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 			break;
 		}
 
+		case SIMCONNECT_RECV_ID_EVENT_TEXT:
+		{
+			SIMCONNECT_RECV_EVENT_TEXT* textData = (SIMCONNECT_RECV_EVENT_TEXT*)pData;
+			TextMenuCreatedEvent evt;
+
+			evt.isMenu = textData->eTextType == SIMCONNECT_TEXT_TYPE_MENU;
+				
+			auto message = reinterpret_cast<char*>(textData->rgMessage);
+
+			int remainingSize = textData->dwUnitSize;
+
+			for (int itemPosition = 0; remainingSize > 0; ++itemPosition) {
+				int itemLength = strnlen(message, remainingSize) + sizeof(char);
+
+				if (itemLength <= sizeof(char)) {
+					break;
+				}
+
+				remainingSize -= itemLength;
+
+				evt.messages.push_back(message);
+
+				message = message + itemLength;
+			}
+
+			textMenuCreatedEventMgr.onEvent(evt);
+
+		}
+
 		case SIMCONNECT_RECV_ID_EVENT_FILENAME:
 		{
 			SIMCONNECT_RECV_EVENT_FILENAME* evt = (SIMCONNECT_RECV_EVENT_FILENAME*)pData;
@@ -350,6 +419,8 @@ void SimConnectCallback(SIMCONNECT_RECV* pData, DWORD cbData, void*)
 		}
 	}
 }
+
+
 
 bool SimConnect::init()
 {

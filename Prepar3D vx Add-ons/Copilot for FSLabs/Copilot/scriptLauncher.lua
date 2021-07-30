@@ -8,87 +8,116 @@ if not file.exists(iniPath) then
   file.create(iniPath, "[autorun.lua]\nautorun=A32X")
 end
 
-local function isScriptSection(sectionTitle)
-  return sectionTitle:find "%.lua$"
+local folderScripts = {}
+
+local function makeScriptSection(sectionTitle)
+  return {
+    title = sectionTitle,
+    preserveTitleCase = true,
+    keys = {
+      {
+        name = "autorun",
+        default = false,
+        values = {"A32X"},
+        type =  "enum|bool"
+      },
+      {
+        name = "launch_key",
+        default = nil,
+        type = "string"
+      },
+      {
+        name = "kill_key",
+        default = nil,
+        type = "string"
+      }
+    }
+  }
 end
 
-local function isProfileSection(sectionTitle)
-  return sectionTitle:find "^Profile%."
+local function makeProfileSection(sectionTitle)
+  return {
+    title = sectionTitle,
+    preserveTitleCase = true,
+    arrayKeys = {
+      {
+        prefix = "",
+        type = "string"
+      }
+    },
+  }
+end
+
+local scriptPaths = {}
+local fsuipcProfiles = {}
+local autorunScripts = {}
+
+local function splitEntry(entry)
+  local first, second = entry:match "([^:]*):?(.*)"
+  if second == "" then return nil, first end
+  return first, second
+end
+
+local function absoluteScriptPath(prefix, path)
+  local scriptDir = prefix == "copilot" and "scripts_copilot\\" or "scripts\\"
+  local absoluteScriptFilePath = APPDIR .. scriptDir
+  if path:find "%.lua$" then
+    absoluteScriptFilePath = absoluteScriptFilePath .. path
+  else
+    absoluteScriptFilePath = absoluteScriptFilePath .. path .. "\\init.lua"
+  end
+  return absoluteScriptFilePath
 end
 
 local ini = copilot.loadIniFile(iniPath, function(sectionTitle)
-  if isScriptSection(sectionTitle) then
+  if not sectionTitle then
     return {
-      title = sectionTitle,
-      keys = {
-        {
-          name = "autorun",
-          default = copilot.UserOptions.FALSE,
-          values = {"A32X", copilot.UserOptions.TRUE, copilot.UserOptions.FALSE},
-          type =  "enum"
-        },
-        {
-          name = "launch_key",
-          default = nil,
-          type = "string"
-        },
-        {
-          name = "kill_key",
-          default = nil,
-          type = "string"
-        }
-      }
+      boolCompat = false
     }
-  elseif isProfileSection(sectionTitle) then
-    return {
-      title = sectionTitle,
-      preserveTitleCase = true,
-      arrayKeys = {
-        {
-          prefix = "",
-          type = "string"
-        }
-      },
-    }
+  end
+  local prefix, body = splitEntry(sectionTitle)
+  if prefix then
+    sectionTitle = prefix:lower() .. ":" .. body
+  end
+  if prefix == "profile" then
+    fsuipcProfiles[sectionTitle] = body
+    return makeProfileSection(sectionTitle)
+  else
+    scriptPaths[sectionTitle] = absoluteScriptPath(prefix, body)
+    return makeScriptSection(sectionTitle)
   end
 end)
 
-local autorunScripts = {}
-
-local function scriptPath(path)
-  return path:lower():find "%.lua$" and path or (path .. ".lua")
-end
-
-local function processScriptSection(path, script)
-  if not firstRun and (script.autorun == copilot.UserOptions.TRUE or (script.autorun == "A32X" and FSL.acType)) then
+local function processScriptSection(path, opt)
+  if opt.autorun == true or opt.autorun == "A32X" and FSL.acType then
     autorunScripts[path] = true
   end
-  if script.launch_key then
-    pcall(Bind, {key = script.launch_key, onPress = function() copilot.newLuaThread(scriptPath(path)) end})
+  if opt.launch_key then
+    pcall(Bind, {key = opt.launch_key, onPress = function() copilot.newLuaThread(path) end})
   end
-  if script.kill_key then
-    pcall(Bind, {key = script.kill_key, onPress = function() copilot.killLuaThread(scriptPath(path)) end})
+  if opt.kill_key then
+    pcall(Bind, {key = opt.kill_key, onPress = function() copilot.killLuaThread(path) end})
   end
 end
 
 local function autorunProfileScripts(scripts)
-  for _, path in pairsByKeys(scripts) do
-    autorunScripts[path] = true
+  for _, entry in pairs(scripts) do
+    autorunScripts[absoluteScriptPath(splitEntry(entry))] = true
   end
 end
 
-local fsuipcProfileName = copilot.trimIpcString(0x9540)
+local currentFsuipcProfile = copilot.trimIpcString(0x9540)
 
 for title, section in pairs(ini) do
-  if isProfileSection(title) and title:match "Profile.(.+)" == fsuipcProfileName then
+  if fsuipcProfiles[title] == currentFsuipcProfile then
     autorunProfileScripts(section)
   else
-    processScriptSection(title, section)
+    processScriptSection(scriptPaths[title], section)
   end
 end
 
 if SCRIPT_LAUNCHER_AIRCRAFT_RELOAD then
   for path in pairsByKeys(autorunScripts) do
-    copilot.newLuaThread(scriptPath(path))
+    copilot.newLuaThread(path)
   end
 end

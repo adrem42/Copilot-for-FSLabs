@@ -437,9 +437,18 @@ function FSL.ignoreFaultyLvars()
   end
 end
 
-FSL.MIP_GEAR_Lever = FSL.GEAR_Lever
+if FSL:getAcType() then
+  local ctrTkType = "PUMP"
+  if FSL:getAcType() == "A321" or FSL.fullAcType:find "SL" then
+    ctrTkType = "VALVE"
+  end
+  for i = 1, 2 do
+    FSL["OVHD_FUEL_CTR_TK_" .. i .. "_COMPAT_Button"] = FSL["OVHD_FUEL_CTR_TK_" .. i .. "_" .. ctrTkType .. " _Button"]
+  end
+end
 
-collectgarbage "collect"
+
+FSL.MIP_GEAR_Lever = FSL.GEAR_Lever
 
 if FSL2LUA_MAKE_CONTROL_LIST then return tableOfControls end
 

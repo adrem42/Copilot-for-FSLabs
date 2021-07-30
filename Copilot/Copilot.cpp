@@ -1,4 +1,5 @@
 
+#include "FSL2LuaScript.h"
 #include "lua.hpp"
 #include <sol/sol.hpp>
 #include <Windows.h>
@@ -17,8 +18,6 @@
 #include <initpdk.h>
 #include "FSUIPC.h"
 #include "SimInterface.h"
-#include "LuaPlugin.h"
-#include "FSL2LuaScript.h"
 #include "CopilotScript.h"
 #include <thread>
 #include <sapi.h>

@@ -15,34 +15,21 @@ function event.cancel(funcName)
   copilot.removeCallback(pollFunc)
 end
 
-local function registerPollFunc(pollRate, funcName, readFunc, readFuncArg, callback)
-  local val
-  local function poll()
-    local newVal = readFunc(readFuncArg)
-    if newVal ~= val then
-      val = newVal
-      callback(val)
-    end
-  end
+local function registerPollFunc(pollRate, funcName, poll)
   callbackRegistry[funcName] = poll 
-  poll()
   copilot.addCallback(poll, nil, pollRate)
 end
 
 function event.offset(offset, offsetType, funcName)
-  local readFunc = ipc["read" .. offsetType]
-  if not readFunc then
-    error("Invalid offset type: " .. offsetType, 2)
-  end
-  local callback = _G[funcName]
-  registerPollFunc(offsetPollRate, funcName, readFunc, offset, function(val)
-    callback(offset, val)
-  end)
+  local event, poll = Event.offsetEvent(offsetType, offset)
+  local cb = _G[funcName]
+  event:addAction(function(_, _, value) cb(offset, value) end)
+  registerPollFunc(offsetPollRate, funcName, poll)
 end
 
-function event.lvar(lvarName, pollRate, funcName)
-  local callback = _G[funcName]
-  registerPollFunc(pollRate, funcName, ipc.readLvar, lvarName, function(val)
-    callback(lvarName, val)
-  end)
+function event.lvar(lvar, pollRate, funcName)
+  local event, poll = Event.lvarEvent(lvar)
+  local cb = _G[funcName]
+  event:addAction(function(_, _, value) cb(lvar, value) end)
+  registerPollFunc(pollRate, funcName, poll)
 end

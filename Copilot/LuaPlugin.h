@@ -18,7 +18,7 @@ class LuaPlugin {
 
 	LuaPlugin(const std::string&, std::shared_ptr<std::recursive_mutex>);
 
-	static std::mutex globalMutex;
+	static std::recursive_mutex globalMutex;
 
 	struct ScriptInst {
 		LuaPlugin* script = nullptr;
@@ -88,7 +88,7 @@ public:
 	template<typename T>
 	static T* launchScript(const std::string& path, bool doLaunch = true)
 	{
-		std::unique_lock<std::mutex> globalLock(globalMutex);
+		std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 		
 		std::string _path = path;
 
@@ -105,9 +105,9 @@ public:
 			std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 			s.alive = true;
 			globalLock.unlock();
-			try {
-				delete s.script;
-			} catch (...) {}
+			auto oldScript = s.script;
+			s.script = nullptr;
+			delete oldScript;
 			auto script = new T(_path, s.mutex);
 			s.script = script;
 			if (doLaunch)
@@ -150,31 +150,33 @@ public:
 	}
 
 	template<typename T, typename Pred>
-	static void withScript(std::function<void(T&)> block, Pred pred)
+	static bool withScript(std::function<void(T&)> block, Pred pred)
 	{
-		std::unique_lock<std::mutex> globalLock(globalMutex);
+		std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 		auto it = std::find_if(scripts.begin(), scripts.end(), pred);
-		if (it == scripts.end()) return;
+		if (it == scripts.end()) return false;
 		auto& inst = *it;
 		std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
 		globalLock.unlock();
-		if (inst.script) {
+		if (inst.script && pred(inst)) {
 			if (T* script = dynamic_cast<T*>(inst.script)) {
 				block(*script);
+				return true;
 			}
 		}
+		return false;
 	}
 
 	template<typename T>
-	static void withScript(const std::string& path, std::function<void(T&)> block)
+	static bool withScript(const std::string& path, std::function<void(T&)> block)
 	{
-		withScript<T>(block, [&](ScriptInst& s) {return s.script->path == path;});
+		return withScript<T>(block, [&](ScriptInst& s) {return arePathsEqual(path, s.script->path);});
 	}
 
 	template<typename T>
-	static void withScript(T* pScript, std::function<void(T&)> block)
+	static bool withScript(T* pScript, std::function<void(T&)> block)
 	{
-		withScript<T>(block, [&](ScriptInst& s) {return s.script == pScript; });
+		return withScript<T>(block, [&](ScriptInst& s) {return s.script == pScript; });
 	}
 
 	static void stopScript(const std::string& path);

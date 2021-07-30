@@ -21,7 +21,7 @@ function Control:new(control)
     control.rectangle = tonumber(control.rectangle)
   end
   if not FSL2LUA_STANDALONE and control.manual then
-    control.getLvarValue = self._getLvarValueErr
+    --control.getLvarValue = self._getLvarValueErr
   end
   return setmetatable(control, self)
 end

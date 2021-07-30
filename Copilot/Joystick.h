@@ -190,7 +190,7 @@ class Joystick {
 	HIDP_DATA* dataList;
 	ULONG dataListSize = 0;
 
-	
+	void initializeState();
 
 	static void startBufferThread();
 
@@ -210,7 +210,7 @@ class Joystick {
 
 	void readFile();
 
-	void saveBuffer();
+	void saveBuffer(char*);
 
 	static HANDLE eventStopReadingBuffers;
 
@@ -245,6 +245,8 @@ public:
 	std::shared_ptr<DeviceInfo> deviceInfo;
 
 	void useZeroIndexedButtons();
+
+	void setButtonStatesUnknown();
 
 	/*** @type Joystick */
 

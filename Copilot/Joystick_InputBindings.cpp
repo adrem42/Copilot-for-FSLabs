@@ -32,6 +32,12 @@ void Joystick::useZeroIndexedButtons()
 	zeroIndexedButtons = true;
 }
 
+void Joystick::setButtonStatesUnknown()
+{
+	for (auto& [_, button] : buttons)
+		button.setStateUnknown();
+}
+
 Joystick::AxisCallback& Joystick::onAxis(std::string axisName, std::function<void(double)> callback)
 {
 	return onAxis(axisName, 0, callback);

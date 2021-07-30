@@ -7,6 +7,8 @@
 #include <functional>
 #include <sol/sol.hpp>
 
+class FSL2LuaScript;
+
 namespace SimConnect {
 
 	size_t getUniqueEventID();
@@ -25,6 +27,7 @@ namespace SimConnect {
 	};
 
 	class NamedSimConnectEvent : public SimConnectEvent {
+		std::vector<Callback> callbacks;
 	public:
 		const std::string name;
 		NamedSimConnectEvent(const std::string& name, Callback cb);
@@ -101,6 +104,16 @@ namespace SimConnect {
 	void setupMuteControls();
 	void setupCopilotMenu();
 	void setupFSL2LuaMenu();
+
+	struct TextMenuCreatedEvent {
+		std::vector<std::string> messages;
+		bool isMenu = false;
+		static void makeLuaBindings(sol::state_view& lua);
+		TextMenuCreatedEvent();
+		sol::table get(sol::state_view& lua);
+	};
+
+	sol::table subscribeToSystemEventLua(const std::string& evtName, sol::state_view& lua, FSL2LuaScript* script);
 
 	extern std::atomic_bool simPaused;
 

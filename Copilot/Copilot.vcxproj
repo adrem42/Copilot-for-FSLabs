@@ -46,6 +46,7 @@
     <ClInclude Include="SimConnect.h" />
     <ClInclude Include="SimInterface.h" />
     <ClInclude Include="Sound.h" />
+    <ClInclude Include="SystemEventLuaManager.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="versioninfo.h" />
   </ItemGroup>
