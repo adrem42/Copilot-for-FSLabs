@@ -21,9 +21,8 @@ return {
       },
       {
         name = "http_port", 
-        default = 8080,
-        comment = "The port of the web MCDU - leave it at default unless you changed it in the FSLabs settings", 
-        type = "string"
+        hidden = true,
+        type = "int"
       },
       {
         name = "con_log_level",
@@ -33,11 +32,17 @@ return {
       },
       {
         name = "PM_seat", 
-        default = "right", 
-        comment = "Where the Pilot Monitoring sits in the cockpit - left or right", 
         type = "enum", 
-        values = {"left", "right"}, 
-        required = true
+        values = {"left", "right", 1, 2}, 
+        required = true,
+        hidden = true
+      },
+      {
+        name = "PF_seat", 
+        type = "enum", 
+        values = {"left", "right", 1, 2}, 
+        required = true,
+        hidden = true
       },
       {
         name = "debugger", 

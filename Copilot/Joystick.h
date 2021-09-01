@@ -190,13 +190,14 @@ class Joystick {
 	HIDP_DATA* dataList;
 	ULONG dataListSize = 0;
 
-	void initializeState();
-
 	static void startBufferThread();
 
 	void processAxisData(ULONG listSize);
 
 	void processButtonData(ULONG listSize, size_t timestamp);
+
+	DWORD  getInputReport(size_t reportID);
+
 
 	void onButtonRepeatTimer();
 
@@ -247,6 +248,8 @@ public:
 	void useZeroIndexedButtons();
 
 	void setButtonStatesUnknown();
+
+	void setButtonStateUnknown(int button);
 
 	/*** @type Joystick */
 

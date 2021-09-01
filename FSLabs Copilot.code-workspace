@@ -16,6 +16,7 @@
 			"**/*.dll": true
 		},
 		"emeraldwalk.runonsave": {
+		
 			"commands": [
 				{
 					"match": ".*",

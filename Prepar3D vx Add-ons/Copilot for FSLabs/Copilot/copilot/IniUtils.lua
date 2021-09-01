@@ -57,7 +57,7 @@ function typeConverters.enum(val, option)
     end
   end
   if not found then val = nil end
-  if not found and option.required then
+  if not found and option.required and not option.hidden then
     error(string.format(
       "Invalid value for option %s: %s. Only the following values are accepted: %s.",
       option.name, val, table.concat(option.values, ", ")
@@ -155,6 +155,7 @@ local function serializeIniOption(option, optionIdx, section, serializedIniTable
 end
 
 local function beginOutputMapSection(outputMap, section)
+  
   local sectionTitle = section.title
   if not section.preserveTitleCase then
     sectionTitle = section.title:lower()
@@ -192,8 +193,6 @@ local function processIniSection(sectionTitle, sectionString, iniFormat, outputA
   for iniKey, iniValue in sectionString:gmatch(pattern) do
     processKeyValue(iniKey, iniValue, section)
   end
-
-  
 end
 
 

@@ -100,7 +100,7 @@ bool SimConnect::NamedSimConnectEvent::dispatch(DWORD param)
 void SimConnect::NamedSimConnectEvent::subscribe()
 {
 	if (subscribed) return;
-	HRESULT hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, eventId);
+	HRESULT hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 1, eventId);
 	std::lock_guard<std::mutex> lock(eventsMutex);
 	events.emplace(eventId, shared_from_this());
 	subscribed = true;
@@ -110,8 +110,7 @@ void SimConnect::NamedSimConnectEvent::unsubscribe()
 {
 	std::lock_guard<std::mutex> lock(eventsMutex);
 	if (!callbacks.empty()) return;
-	copilot::logger->info("unsubscribe called, eventID: {}, name :'{}'", eventId, name);
-	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
+	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 1, eventId);
 	events.erase(eventId);
 	subscribed = false;
 }
@@ -129,7 +128,7 @@ void SimConnect::NamedSimConnectEvent::transmit(DWORD data)
 SimConnect::NamedSimConnectEvent::~NamedSimConnectEvent()
 {
 	std::lock_guard<std::mutex> lock(eventsMutex);
-	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 0, eventId);
+	HRESULT hr = SimConnect_RemoveClientEvent(hSimConnect, 1, eventId);
 	namedEvents.erase(toLower(name));
 }
 
@@ -361,10 +360,10 @@ void onFlightLoaded()
 
 SystemEventLuaManager<TextMenuCreatedEvent> textMenuCreatedEventMgr("TextEventCreated");
 
-sol::table SimConnect::subscribeToSystemEventLua(const std::string& evtName, sol::state_view& lua, FSL2LuaScript* script)
+sol::table SimConnect::subscribeToSystemEventLua(const std::string& evtName, sol::state_view& lua, size_t scriptID)
 {
 	if (evtName == "TextEventCreated") {
-		return textMenuCreatedEventMgr.registerScript(lua, script);
+		return textMenuCreatedEventMgr.registerScript(lua, scriptID);
 	}
 	throw "No such event: " + evtName;
 }
@@ -498,6 +497,7 @@ bool SimConnect::init()
 		hr = SimConnect_AddClientEventToNotificationGroup(hSimConnect, 0, EVENT_ABORT);
 
 		hr = SimConnect_SetNotificationGroupPriority(hSimConnect, 0, SIMCONNECT_GROUP_PRIORITY_HIGHEST);
+		hr = SimConnect_SetNotificationGroupPriority(hSimConnect, 1, SIMCONNECT_GROUP_PRIORITY_LOWEST);
 
 		hr = SimConnect_CallDispatch(hSimConnect, SimConnectCallback, nullptr);
 

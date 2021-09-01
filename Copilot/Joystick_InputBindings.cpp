@@ -38,6 +38,14 @@ void Joystick::setButtonStatesUnknown()
 		button.setStateUnknown();
 }
 
+void Joystick::setButtonStateUnknown(int buttonNum)
+{
+	for (auto& [_, button] : buttons) {
+		if (button.buttonNum == buttonNum)
+			button.setStateUnknown();
+	}
+}
+
 Joystick::AxisCallback& Joystick::onAxis(std::string axisName, std::function<void(double)> callback)
 {
 	return onAxis(axisName, 0, callback);

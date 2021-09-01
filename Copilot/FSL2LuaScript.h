@@ -18,9 +18,9 @@ protected:
 	class MouseRectListenerCallback : public P3D::IMouseRectListenerCallback {
 		DEFAULT_REFCOUNT_INLINE_IMPL()
 			DEFAULT_IUNKNOWN_QI_INLINE_IMPL(MouseRectListenerCallback, IID_IUnknown)
-			FSL2LuaScript* pScript;
+			const size_t scriptID;
 	public:
-		MouseRectListenerCallback(FSL2LuaScript* pScript) :pScript(pScript), m_RefCount(1) {}
+		MouseRectListenerCallback(size_t scriptID) :scriptID(scriptID), m_RefCount(1) {}
 		virtual void MouseRectListenerProc(UINT, P3D::MOUSE_CLICK_TYPE) override;
 	};
 

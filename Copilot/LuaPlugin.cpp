@@ -18,6 +18,8 @@
 const char* REG_KEY_JMP_BUFF = "JMPBUFF";
 const char* REG_KEY_IS_RUNNING = "IS_RUNNING";
 
+static std::atomic<size_t> currscriptID = 0;
+
 std::vector<LuaPlugin::ScriptInst> LuaPlugin::scripts;
 std::recursive_mutex LuaPlugin::globalMutex;
 
@@ -119,7 +121,11 @@ void writeStruct(sol::variadic_args va)
 	parseWriteStructArgs(va, 0, 0, 0, TYPE_NONE);
 }
 
-void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers)
+int KEYPRESS_TYPE_PRESS = 0;
+int KEYPRESS_TYPE_RELEASE = 1;
+int KEYPRESS_TYPE_PRESSRELEASE = 2;
+
+void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers, int type)
 {
 	SetFocus(SimInterface::p3dWnd);
 
@@ -137,19 +143,19 @@ void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers)
 	i.ki.wVk = keyCode;
 	i.type = INPUT_KEYBOARD;
 
-	SendInput(numInputs, inputs, sizeof(INPUT));
-
-	for (size_t i = 0; i < numInputs; ++i) {
-		inputs[i].ki.dwFlags = KEYEVENTF_KEYUP;
+	if (type == KEYPRESS_TYPE_PRESS || type == KEYPRESS_TYPE_PRESSRELEASE) 
+		SendInput(numInputs, inputs, sizeof(INPUT));
+	
+	if (type == KEYPRESS_TYPE_RELEASE || type == KEYPRESS_TYPE_PRESSRELEASE) {
+		for (size_t i = 0; i < numInputs; ++i) 
+			inputs[i].ki.dwFlags = KEYEVENTF_KEYUP;
+		SendInput(1, inputs + numInputs - 1, sizeof(INPUT));
+		SendInput(numInputs - 1, inputs, sizeof(INPUT));
 	}
-
-	SendInput(1, inputs + numInputs - 1, sizeof(INPUT));
-	SendInput(numInputs - 1, inputs, sizeof(INPUT));
-
 }
 
 LuaPlugin::LuaPlugin(const std::string& path, std::shared_ptr<std::recursive_mutex> mutex)
-	: path(path), scriptMutex(mutex)
+	: path(path), scriptMutex(mutex), scriptID(currscriptID++)
 {
 	if (path.find(copilot::appDir) == 0) 
 		logName = path.substr(path.find("Copilot for FSLabs"));
@@ -226,14 +232,16 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 
 	lua_settable(lua.lua_state(), LUA_REGISTRYINDEX);
 
+	auto scriptDir = std::filesystem::path(path).parent_path().string() + "\\";
+
 	lua["SCRIPT_PATH"] = path;
-	lua["SCRIPT_DIR"] = std::filesystem::path(path).parent_path().string() + "\\";
+	lua["SCRIPT_DIR"] = scriptDir;
 	lua["copilot"].get_or_create<sol::table>();
-	lua["copilot"]["keypress"] = [&](sol::this_state ts, const std::string& s) {
+	lua["copilot"]["keypress"] = [&](sol::this_state ts, const std::string& s, sol::optional<int> type) {
 		sol::state_view lua(ts);
 		sol::unsafe_function f = lua["Bind"]["parseKeys"];
 		sol::unsafe_function_result ufr = f(s);
-		keypress(ufr.get<SHORT>(0), ufr.get<std::vector<SHORT>>(1));
+		keypress(ufr.get<SHORT>(0), ufr.get<std::vector<SHORT>>(1), type.value_or(KEYPRESS_TYPE_PRESSRELEASE));
 	};
 	lua["copilot"]["sendKeyToFsWindow"] = [&](sol::this_state ts, const std::string& s, sol::optional<SimInterface::KeyEvent> event) {
 		sol::state_view lua(ts);
@@ -243,7 +251,7 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 			throw "No modifiers allowed";
 		SimInterface::sendKeyToSimWindow(ufr.get<SHORT>(0), event.value_or(SimInterface::KeyEvent::Press));
 	};
-	lua["copilot"]["isSimRunning"] = copilot::simRunning();
+	lua["copilot"]["isSimRunning"] = &copilot::simRunning;
 
 	std::unordered_map<std::string, SIMCONNECT_TEXT_TYPE>  textColors = {
 
@@ -298,7 +306,7 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 				str += " ";
 			}
 		}
-		copilot::logger->info(str);
+		printLogger->info(str);
 	};
 
 	lua["suppressCursor"] = SimInterface::suppressCursor;
@@ -447,7 +455,11 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	);
 
 	lua["ipc"] = ipc;
-	lua["package"]["path"] = copilot::appDir + "?.lua;" + copilot::appDir + "\\lua\\?.lua;" + copilot::appDir + "\\Copilot\\?.lua";
+	lua["package"]["path"] = 
+		copilot::appDir + "?.lua;" + 
+		copilot::appDir + "\\lua\\?.lua;" + 
+		copilot::appDir + "\\Copilot\\?.lua;" +
+		scriptDir + "?.lua";
 	lua["package"]["cpath"] = copilot::appDir + "?.dll;" + copilot::appDir + "\\lua\\?.dll";
 
 	lua["APPDIR"] = copilot::appDir;
@@ -524,20 +536,16 @@ void LuaPlugin::stopScript(const std::string& path)
 	}
 
 	auto it = std::find_if(scripts.begin(), scripts.end(), [&](ScriptInst& s) {
-		return arePathsEqual(s.script->path, _path);
+		return arePathsEqual(s.path, _path);
 	});
 	if (it == scripts.end()) return;
 
 	auto& inst = *it;
-	std::unique_lock<std::recursive_mutex> lock(*inst.mutex);
-	inst.alive = false;
+	std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
 	globalLock.unlock();
-
 	delete inst.script;
-	globalLock.lock();
-	lock.unlock();
-	if (!inst.alive)
-		scripts.erase(it);
+	inst.script = nullptr;
+
 }
 
 void LuaPlugin::stopAllScripts()

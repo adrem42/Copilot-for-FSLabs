@@ -19,11 +19,12 @@ class LuaPlugin {
 	LuaPlugin(const std::string&, std::shared_ptr<std::recursive_mutex>);
 
 	static std::recursive_mutex globalMutex;
-
+	
 	struct ScriptInst {
+		std::string path;
 		LuaPlugin* script = nullptr;
+		size_t scriptID;
 		std::shared_ptr<std::recursive_mutex> mutex = std::make_shared<std::recursive_mutex>();
-		bool alive = true;
 	};
 
 	jmp_buf jumpBuff;
@@ -40,11 +41,13 @@ class LuaPlugin {
 	static void setSessionVariable(const std::string&, SessionVariable);
 	static std::unordered_map<std::string, SessionVariable> sessionVariables;
 
+
 	bool loggingEnabled = true;
 
 	static bool arePathsEqual(const std::filesystem::path& lhs, const std::filesystem::path& rhs);
 
 protected:
+	std::shared_ptr<spdlog::logger> printLogger = copilot::logger;
 
 	virtual void onLuaStateInitialized();
 
@@ -82,6 +85,7 @@ protected:
 
 public:
 
+	const size_t scriptID;
 	void launchThread();
 	sol::state lua;
 
@@ -98,25 +102,27 @@ public:
 		}
 
 		auto it = std::find_if(scripts.begin(), scripts.end(), [&] (ScriptInst& s) {
-			return arePathsEqual(s.script->path, _path);
+			return arePathsEqual(s.path, _path);
 		});
 
 		auto launch = [&](ScriptInst& s) {
 			std::lock_guard<std::recursive_mutex> lock(*s.mutex);
-			s.alive = true;
-			globalLock.unlock();
 			auto oldScript = s.script;
 			s.script = nullptr;
+			globalLock.unlock();
 			delete oldScript;
 			auto script = new T(_path, s.mutex);
 			s.script = script;
+			s.scriptID = script->scriptID;
 			if (doLaunch)
 				s.script->launchThread();
 			return script;
 		};
 
 		if (it == scripts.end()) {
-			return launch(scripts.emplace_back(ScriptInst()));
+			auto path = std::filesystem::path(_path).parent_path().string() + "\\";
+			AddDllDirectory(std::wstring(path.begin(), path.end()).c_str());
+			return launch(scripts.emplace_back(ScriptInst{_path}));
 		} else {
 			return launch(*it);
 		}
@@ -170,13 +176,13 @@ public:
 	template<typename T>
 	static bool withScript(const std::string& path, std::function<void(T&)> block)
 	{
-		return withScript<T>(block, [&](ScriptInst& s) {return arePathsEqual(path, s.script->path);});
+		return withScript<T>(block, [&](ScriptInst& s) {return arePathsEqual(path, s.path);});
 	}
 
 	template<typename T>
-	static bool withScript(T* pScript, std::function<void(T&)> block)
+	static bool withScript(size_t scriptID, std::function<void(T&)> block)
 	{
-		return withScript<T>(block, [&](ScriptInst& s) {return s.script == pScript; });
+		return withScript<T>(block, [&](ScriptInst& s) {return s.scriptID == scriptID; });
 	}
 
 	static void stopScript(const std::string& path);

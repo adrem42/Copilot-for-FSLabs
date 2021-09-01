@@ -116,12 +116,11 @@ namespace SimConnect {
 	struct TextMenuCreatedEvent {
 		std::vector<std::string> messages;
 		bool isMenu = false;
-		static void makeLuaBindings(sol::state_view& lua);
 		TextMenuCreatedEvent();
 		sol::table get(sol::state_view& lua);
 	};
 
-	sol::table subscribeToSystemEventLua(const std::string& evtName, sol::state_view& lua, FSL2LuaScript* script);
+	sol::table subscribeToSystemEventLua(const std::string& evtName, sol::state_view& lua, size_t scriptID);
 
 	extern std::atomic_bool simPaused;
 

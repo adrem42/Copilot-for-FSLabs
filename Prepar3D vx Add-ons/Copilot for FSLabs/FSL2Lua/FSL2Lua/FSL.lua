@@ -3637,7 +3637,7 @@ return {
       y = "438",
       z = ""
     },
-    toggle = true,
+    toggle = false,
     type = ""
   },
   OVHD_INTLT_AnnLt_Switch = {
@@ -4687,7 +4687,7 @@ return {
   },
   PED_COMM_1_HF2_Button = {
     LVar = "VC_PED_COMM_1_HF2_Button",
-    Lt = "VC_PED_COMM_1_HF2_Lt",
+    Lt = "VC_PED_COMM_1_HF2_HW_Lt",
     name = "FSL.CPT.PED_COMM_HF2_Button",
     pos = {
       x = "27",
@@ -4699,7 +4699,7 @@ return {
   },
   PED_COMM_1_HF2_Knob = {
     LVar = "VC_PED_COMM_1_HF2_Knob",
-    Lt = "VC_PED_COMM_1_HF2_Lt",
+    Lt = "VC_PED_COMM_1_HF2_HW_Lt",
     name = "FSL.CPT.PED_COMM_HF2_Knob",
     pos = {
       x = "25",
@@ -4711,7 +4711,7 @@ return {
   },
   PED_COMM_1_HF2_Switch = {
     LVar = "VC_PED_COMM_1_HF2_Switch",
-    Lt = "VC_PED_COMM_1_HF2_Lt",
+    Lt = "VC_PED_COMM_1_HF2_HW_Lt",
     name = "FSL.CPT.PED_COMM_HF2_Switch",
     pos = {
       x = "25",
@@ -4723,7 +4723,7 @@ return {
   },
   PED_COMM_1_INOP_Knob = {
     LVar = "VC_PED_COMM_1_INOP_Knob",
-    Lt = "VC_PED_COMM_1_INOP_Lt",
+    Lt = "VC_PED_COMM_1_INOP_HW_Lt",
     ignore = true,
     pos = {
       x = "",
@@ -4735,7 +4735,7 @@ return {
   },
   PED_COMM_1_INOP_Switch = {
     LVar = "VC_PED_COMM_1_INOP_Switch",
-    Lt = "VC_PED_COMM_1_INOP_Lt",
+    Lt = "VC_PED_COMM_1_INOP_HW_Lt",
     ignore = true,
     pos = {
       x = "",
@@ -4747,7 +4747,7 @@ return {
   },
   PED_COMM_1_INT_Button = {
     LVar = "VC_PED_COMM_1_INT_Button",
-    Lt = "VC_PED_COMM_1_INT_Lt",
+    Lt = "VC_PED_COMM_1_INT_HW_Lt",
     name = "FSL.CPT.PED_COMM_INT_Button",
     pos = {
       x = "44",
@@ -4759,7 +4759,7 @@ return {
   },
   PED_COMM_1_INT_Knob = {
     LVar = "VC_PED_COMM_1_INT_Knob",
-    Lt = "VC_PED_COMM_1_INT_Lt",
+    Lt = "VC_PED_COMM_1_INT_HW_Lt",
     name = "FSL.CPT.PED_COMM_INT_Knob",
     pos = {
       x = "43",
@@ -4824,7 +4824,7 @@ return {
   },
   PED_COMM_1_MKR_Knob = {
     LVar = "VC_PED_COMM_1_MKR_Knob",
-    Lt = "VC_PED_COMM_1_MKR_Lt",
+    Lt = "VC_PED_COMM_1_MKR_HW_Lt",
     name = "FSL.CPT.PED_COMM_MKR_Knob",
     pos = {
       x = "-10",
@@ -4836,7 +4836,7 @@ return {
   },
   PED_COMM_1_MKR_Switch = {
     LVar = "VC_PED_COMM_1_MKR_Switch",
-    Lt = "VC_PED_COMM_1_MKR_Lt",
+    Lt = "VC_PED_COMM_1_MKR_HW_Lt",
     name = "FSL.CPT.PED_COMM_MKR_Switch",
     pos = {
       x = "-10",
@@ -4848,7 +4848,7 @@ return {
   },
   PED_COMM_1_PA_Button = {
     LVar = "VC_PED_COMM_1_PA_Button",
-    Lt = "VC_PED_COMM_1_PA_Lt",
+    Lt = "VC_PED_COMM_1_PA_HW_Lt",
     name = "FSL.CPT.PED_COMM_PA_Button",
     pos = {
       x = "63",
@@ -4860,7 +4860,7 @@ return {
   },
   PED_COMM_1_PA_Knob = {
     LVar = "VC_PED_COMM_1_PA_Knob",
-    Lt = "VC_PED_COMM_1_PA_Lt",
+    Lt = "VC_PED_COMM_1_PA_HW_Lt",
     name = "FSL.CPT.PED_COMM_PA_Knob",
     pos = {
       x = "34",
@@ -4872,7 +4872,7 @@ return {
   },
   PED_COMM_1_PA_Switch = {
     LVar = "VC_PED_COMM_1_PA_Switch",
-    Lt = "VC_PED_COMM_1_PA_Lt",
+    Lt = "VC_PED_COMM_1_PA_HW_Lt",
     name = "FSL.CPT.PED_COMM_PA_Switch",
     pos = {
       x = "34",
@@ -4895,7 +4895,7 @@ return {
   },
   PED_COMM_1_VHF1_Button = {
     LVar = "VC_PED_COMM_1_VHF1_Button",
-    Lt = "VC_PED_COMM_1_VHF1_Lt",
+    Lt = "VC_PED_COMM_1_VHF1_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF1_Button",
     pos = {
       x = "-43",
@@ -4907,7 +4907,7 @@ return {
   },
   PED_COMM_1_VHF1_Knob = {
     LVar = "VC_PED_COMM_1_VHF1_Knob",
-    Lt = "VC_PED_COMM_1_VHF1_Lt",
+    Lt = "VC_PED_COMM_1_VHF1_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF1_Knob",
     pos = {
       x = "-45",
@@ -4919,7 +4919,7 @@ return {
   },
   PED_COMM_1_VHF1_Switch = {
     LVar = "VC_PED_COMM_1_VHF1_Switch",
-    Lt = "VC_PED_COMM_1_VHF1_Lt",
+    Lt = "VC_PED_COMM_1_VHF1_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF1_Switch",
     pos = {
       x = "-44",
@@ -4931,7 +4931,7 @@ return {
   },
   PED_COMM_1_VHF2_Button = {
     LVar = "VC_PED_COMM_1_VHF2_Button",
-    Lt = "VC_PED_COMM_1_VHF2_Lt",
+    Lt = "VC_PED_COMM_1_VHF2_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF2_Button",
     pos = {
       x = "-26",
@@ -4943,7 +4943,7 @@ return {
   },
   PED_COMM_1_VHF2_Knob = {
     LVar = "VC_PED_COMM_1_VHF2_Knob",
-    Lt = "VC_PED_COMM_1_VHF2_Lt",
+    Lt = "VC_PED_COMM_1_VHF2_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF2_Knob",
     pos = {
       x = "-27",
@@ -4955,7 +4955,7 @@ return {
   },
   PED_COMM_1_VHF2_Switch = {
     LVar = "VC_PED_COMM_1_VHF2_Switch",
-    Lt = "VC_PED_COMM_1_VHF2_Lt",
+    Lt = "VC_PED_COMM_1_VHF2_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF2_Switch",
     pos = {
       x = "-27",
@@ -4967,7 +4967,7 @@ return {
   },
   PED_COMM_1_VHF3_Button = {
     LVar = "VC_PED_COMM_1_VHF3_Button",
-    Lt = "VC_PED_COMM_1_VHF3_Lt",
+    Lt = "VC_PED_COMM_1_VHF3_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF3_Button",
     pos = {
       x = "-8",
@@ -4979,7 +4979,7 @@ return {
   },
   PED_COMM_1_VHF3_Knob = {
     LVar = "VC_PED_COMM_1_VHF3_Knob",
-    Lt = "VC_PED_COMM_1_VHF3_Lt",
+    Lt = "VC_PED_COMM_1_VHF3_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF3_Knob",
     pos = {
       x = "-10",
@@ -4991,7 +4991,7 @@ return {
   },
   PED_COMM_1_VHF3_Switch = {
     LVar = "VC_PED_COMM_1_VHF3_Switch",
-    Lt = "VC_PED_COMM_1_VHF3_Lt",
+    Lt = "VC_PED_COMM_1_VHF3_HW_Lt",
     name = "FSL.CPT.PED_COMM_VHF3_Switch",
     pos = {
       x = "-10",
@@ -5014,7 +5014,7 @@ return {
   },
   PED_COMM_1_VOR1_Knob = {
     LVar = "VC_PED_COMM_1_VOR1_Knob",
-    Lt = "VC_PED_COMM_1_VOR1_Lt",
+    Lt = "VC_PED_COMM_1_VOR1_HW_Lt",
     name = "FSL.CPT.PED_COMM_VOR1_Knob",
     pos = {
       x = "-45",
@@ -5026,7 +5026,7 @@ return {
   },
   PED_COMM_1_VOR1_Switch = {
     LVar = "VC_PED_COMM_1_VOR1_Switch",
-    Lt = "VC_PED_COMM_1_VOR1_Lt",
+    Lt = "VC_PED_COMM_1_VOR1_HW_Lt",
     name = "FSL.CPT.PED_COMM_VOR1_Switch",
     pos = {
       x = "-27",
@@ -5038,7 +5038,7 @@ return {
   },
   PED_COMM_1_VOR2_Knob = {
     LVar = "VC_PED_COMM_1_VOR2_Knob",
-    Lt = "VC_PED_COMM_1_VOR2_Lt",
+    Lt = "VC_PED_COMM_1_VOR2_HW_Lt",
     name = "FSL.CPT.PED_COMM_VOR2_Knob",
     pos = {
       x = "",
@@ -5050,7 +5050,7 @@ return {
   },
   PED_COMM_1_VOR2_Switch = {
     LVar = "VC_PED_COMM_1_VOR2_Switch",
-    Lt = "VC_PED_COMM_1_VOR2_Lt",
+    Lt = "VC_PED_COMM_1_VOR2_HW_Lt",
     name = "FSL.CPT.PED_COMM_VOR2_Switch",
     pos = {
       x = "",

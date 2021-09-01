@@ -27,7 +27,7 @@ std::unordered_map< P3D::MOUSE_CLICK_TYPE, std::string> clickTypes{
 void FSL2LuaScript::MouseRectListenerCallback::MouseRectListenerProc(UINT rect, P3D::MOUSE_CLICK_TYPE clickType)
 {
 	if (!SimInterface::firingMouseMacro()) {
-		withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& script) {
+		withScript<FSL2LuaScript>(scriptID, [=](FSL2LuaScript& script) {
 			script.enqueueCallback([=, &script](sol::state_view& lua) {
 				auto it = clickTypes.find(clickType);
 				if (it != clickTypes.end()) {
@@ -44,7 +44,7 @@ using namespace SimConnect;
 
 class LuaNamedSimConnectEvent  {
 
-	FSL2LuaScript* pScript;
+	const size_t scriptID;
 	int eventID;
 	static constexpr const char* REGISTRY_KEY = "SIMCONNECT_EVENTS";
 
@@ -59,7 +59,8 @@ public:
 	SimConnectEvent::Callback cb;
 	size_t callbackID = -1;
 
-	LuaNamedSimConnectEvent(const std::string& name, SimConnectEvent::Callback cb)
+	LuaNamedSimConnectEvent(size_t scriptID, const std::string& name, SimConnectEvent::Callback cb)
+		:scriptID(scriptID)
 	{
 		event = getNamedEvent(name);
 		this->cb = cb;
@@ -68,16 +69,15 @@ public:
 	virtual ~LuaNamedSimConnectEvent()
 	{
 		event->removeCallback(callbackID);
-		LuaPlugin::withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& s) {
+		LuaPlugin::withScript<FSL2LuaScript>(scriptID, [=](FSL2LuaScript& s) {
 			s.enqueueCallback([=, &s](sol::state_view& lua) {
 				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, eventID);
 			});
 		});
 	}
 
-	static void makeLuaBindings(FSL2LuaScript& script)
+	static void makeLuaBindings(sol::state_view& lua, size_t scriptID)
 	{
-		auto& lua = script.lua;
 		lua.registry()[REGISTRY_KEY] = lua.create_table();
 
 		auto LuaType = lua.new_usertype<LuaNamedSimConnectEvent>("SimConnectEvent");
@@ -97,15 +97,16 @@ public:
 			return getLuaEvent(lua, e);
 		});
 
-		lua["copilot"]["simConnectEvent"] = [pScript = &script](sol::this_state ts, const std::string& name) {
+		lua["copilot"]["simConnectEvent"] = [scriptID](sol::this_state ts, const std::string& name) {
+
 			sol::state_view lua(ts);
 			sol::object maybeEvent = lua.registry()[REGISTRY_KEY][name];
 			if (maybeEvent.is<std::shared_ptr<LuaNamedSimConnectEvent>>()) {
 				return maybeEvent.as<std::shared_ptr<LuaNamedSimConnectEvent>>();
 			}
 
-			auto callback = [pScript, name](DWORD data) {
-				LuaPlugin::withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& s) {
+			auto callback = [scriptID, name](DWORD data) {
+				LuaPlugin::withScript<FSL2LuaScript>(scriptID, [=](FSL2LuaScript& s) {
 					s.enqueueCallback([=, &s](sol::state_view& lua) {
 						sol::table regT = lua.registry()[REGISTRY_KEY];
 						auto& event = regT.get<std::shared_ptr<LuaNamedSimConnectEvent>>(name);
@@ -116,7 +117,7 @@ public:
 				});
 			};
 
-			auto event = std::make_shared<LuaNamedSimConnectEvent>(name, callback);
+			auto event = std::make_shared<LuaNamedSimConnectEvent>(scriptID, name, callback);
 			lua.registry()[REGISTRY_KEY][name] = event;
 
 			sol::table luaEvent = lua["Event"]["new"](lua["Event"]);
@@ -130,48 +131,52 @@ public:
 /*** @type TextMenu */
 class LuaTextMenu : public SimConnect::TextMenuEvent {
 
-	FSL2LuaScript* pScript;
+	const size_t scriptID;
 	int callbackID, eventID;
 
 public:
 
-	static void makeLuaBindings(FSL2LuaScript& script)
+	static void makeLuaBindings(sol::state_view& lua, size_t scriptID)
 	{
 
-		auto pScript = &script;
-
-		auto factory1 = [pScript](
+		auto factory1 = [scriptID](
+			sol::this_state ts,
 			const std::string& title,
 			const std::string& prompt,
 			std::vector<std::string> items,
 			size_t timeout,
 			sol::function callback) {
-			return std::make_shared<LuaTextMenu>(title, prompt, items, timeout, callback, *pScript);
+			sol::state_view lua(ts);
+			return std::make_shared<LuaTextMenu>(title, prompt, items, timeout, callback, lua, scriptID);
 		};
 
-		auto factory2 = [pScript](
+		auto factory2 = [scriptID](
+			sol::this_state ts,
 			const std::string& title,
 			const std::string& prompt,
 			std::vector<std::string> items,
 			sol::function callback) {
-			return std::make_shared<LuaTextMenu>(title, prompt, items, 0, callback, *pScript);
+			sol::state_view lua(ts);
+			return std::make_shared<LuaTextMenu>(title, prompt, items, 0, callback, lua, scriptID);
 		};
 
-		auto factory3 = [pScript](size_t timeout, sol::function callback) {
-			return std::make_shared<LuaTextMenu>(timeout, callback, *pScript);
+		auto factory3 = [scriptID](sol::this_state ts, size_t timeout, sol::function callback) {
+			sol::state_view lua(ts);
+			return std::make_shared<LuaTextMenu>(timeout, callback, lua, scriptID);
 		};
 
-		auto factory4 = [pScript](sol::function callback) {
-			return std::make_shared<LuaTextMenu>(0, callback, *pScript);
+		auto factory4 = [scriptID](sol::this_state ts, sol::function callback) {
+			sol::state_view lua(ts);
+			return std::make_shared<LuaTextMenu>(0, callback, lua, scriptID);
 		};
 
-		auto factory5 = [pScript](sol::this_state ts) {
+		auto factory5 = [scriptID](sol::this_state ts) {
 			auto lua = sol::state_view(ts);
 			sol::function f = lua["copilot"]["__dummy"];
-			return std::make_shared<LuaTextMenu>(0, f, *pScript);
+			return std::make_shared<LuaTextMenu>(0, f, lua, scriptID);
 		};
 
-		auto TextMenuType = script.lua.new_usertype<LuaTextMenu>("TextMenu", sol::factories(factory1, factory2, factory3, factory4, factory5));
+		auto TextMenuType = lua.new_usertype<LuaTextMenu>("TextMenu", sol::factories(factory1, factory2, factory3, factory4, factory5));
 		TextMenuType["show"] = &LuaTextMenu::show;
 		TextMenuType["cancel"] = &LuaTextMenu::cancel;
 		TextMenuType["setMenu"] = &LuaTextMenu::setMenu;
@@ -182,11 +187,11 @@ public:
 		TextMenuType["setTitle"] = &LuaTextMenu::setTitle;
 		TextMenuType["setPrompt"] = &LuaTextMenu::setPrompt;
 		TextMenuType["setTimeout"] = &LuaTextMenu::setTimeout;
-		TextMenuType["event"] = sol::readonly_property([](LuaTextMenu& m) {
-			return m.getEvent();
+		TextMenuType["event"] = sol::readonly_property([](sol::this_state ts, LuaTextMenu& m) {
+			return m.getEvent(ts);
 		});
 
-		script.lua.new_enum<LuaTextMenu::Result>(
+		lua.new_enum<LuaTextMenu::Result>(
 			"TextMenuResult",
 			{
 				{"OK", LuaTextMenu::Result::OK},
@@ -221,8 +226,9 @@ public:
 		std::vector<std::string> items,
 		size_t timeout,
 		sol::function callback,
-		FSL2LuaScript& script
-	) : LuaTextMenu(timeout, callback, script)
+		sol::state_view& lua,
+		size_t scriptID
+	) : LuaTextMenu(timeout, callback, lua, scriptID)
 	{
 		this->title = title;
 		this->prompt = prompt;
@@ -246,10 +252,9 @@ public:
 	* @int timeout Timeout in seconds. 0 means infinite.
 	* @tparam function callback Same as above
 	*/
-	LuaTextMenu(size_t timeout, sol::function callback, FSL2LuaScript& script)
-		: pScript(&script)
+	LuaTextMenu(size_t timeout, sol::function callback, sol::state_view& lua, size_t scriptID)
+		: scriptID(scriptID)
 	{
-		auto& lua = script.lua;
 
 		sol::stack::push<sol::unsafe_function>(lua.lua_state(), callback);
 		callbackID = luaL_ref(lua.lua_state(), LUA_REGISTRYINDEX);
@@ -261,9 +266,9 @@ public:
 		this->timeout = timeout;
 		
 		using namespace SimConnect;
-		this->callback = [=, &script](Result res, MenuItem item, const std::string& str, std::shared_ptr<TextMenuEvent> e)
+		this->callback = [=](Result res, MenuItem item, const std::string& str, std::shared_ptr<TextMenuEvent> e)
 		{
-			LuaPlugin::withScript<::FSL2LuaScript>(&script, [=](::FSL2LuaScript& s) {
+			LuaPlugin::withScript<::FSL2LuaScript>(scriptID, [=](::FSL2LuaScript& s) {
 				s.enqueueCallback([=, &s](sol::state_view& lua) {
 					auto f = lua.registry().raw_get<sol::protected_function>(callbackID);
 					auto event = lua.registry().raw_get<sol::table>(eventID);
@@ -282,9 +287,10 @@ public:
 		};
 	}
 
-	sol::table getEvent()
+	sol::table getEvent(sol::this_state ts)
 	{
-		return pScript->lua.get<sol::table>(eventID);
+		sol::state_view lua(ts);
+		return lua.get<sol::table>(eventID);
 	}
 
 	/***
@@ -373,8 +379,7 @@ public:
 
 	~LuaTextMenu()
 	{
-		auto pLua = pScript->lua.lua_state();
-		LuaPlugin::withScript<FSL2LuaScript>(pScript, [=](FSL2LuaScript& s) {
+		LuaPlugin::withScript<FSL2LuaScript>(scriptID, [=](FSL2LuaScript& s) {
 			s.enqueueCallback([=, &s](sol::state_view& lua) {
 				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, callbackID);
 				luaL_unref(lua.lua_state(), LUA_REGISTRYINDEX, eventID);
@@ -396,8 +401,8 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	LoggerType["info"] = static_cast<void (logger::*)(const std::string&)>(&logger::info);
 	LoggerType["warn"] = static_cast<void (logger::*)(const std::string&)>(&logger::warn);
 	LoggerType["error"] = static_cast<void (logger::*)(const std::string&)>(&logger::error);
-	LoggerType["setLevel"] = [](spdlog::logger& _, unsigned int level) {
-		copilot::consoleSink->set_level(static_cast<spdlog::level::level_enum>(level));
+	LoggerType["setLevel"] = [](spdlog::logger& logger, unsigned int level) {
+		logger.sinks().back()->set_level(static_cast<spdlog::level::level_enum>(level));
 	};
 	lua["copilot"]["logger"] = copilot::logger;
 
@@ -409,11 +414,37 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 		LuaPlugin::stopScript(path);
 	};
 
+	lua["copilot"]["createLogger"] = [&](const std::string& name, bool redirectPrint, sol::object _path) {
+
+		auto logger = std::make_shared<spdlog::logger>(name);
+		logger->flush_on(spdlog::level::trace);
+		logger->set_level(spdlog::level::trace);
+		if (!(_path.get_type() == sol::type::boolean && !_path.as<bool>())) {
+			std::string path = _path.get_type() == sol::type::string
+				? _path.as<std::string>()
+				: std::filesystem::path(this->path).parent_path().string() + "\\" + name + ".log";
+			auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(path, 1048576 * 5, 0, true);
+			fileSink->set_pattern("[%T] [%l] %v");
+			fileSink->set_level(spdlog::level::debug);
+			logger->sinks().push_back(fileSink);
+		}
+
+		if (redirectPrint) {
+			printLogger = logger;
+		}
+		
+		auto consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+		consoleSink->set_pattern("[%T] [%n] [%l] %v");
+		logger->sinks().push_back(consoleSink);
+		consoleSink->set_level(spdlog::level::info);
+		return logger;
+	};
+
 	SystemEventLuaManager<int>::createRegistryTable(lua);
 
-	lua["copilot"]["simConnectSystemEvent"] = [this](sol::this_state ts, const std::string& evtName) {
+	lua["copilot"]["simConnectSystemEvent"] = [scriptID = scriptID](sol::this_state ts, const std::string& evtName) {
 		sol::state_view lua(ts);
-		return SimConnect::subscribeToSystemEventLua(evtName, lua, this);
+		return SimConnect::subscribeToSystemEventLua(evtName, lua, scriptID);
 	};
 
 	keyBindManager = std::make_shared<KeyBindManager>();
@@ -436,12 +467,12 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 		joystickManager->dispatchEvents();
 	};
 
-	LuaTextMenu::makeLuaBindings(*this);
-	LuaNamedSimConnectEvent::makeLuaBindings(*this);
+	LuaTextMenu::makeLuaBindings(lua, scriptID);
+	LuaNamedSimConnectEvent::makeLuaBindings(lua, scriptID);
 
-	lua["copilot"]["mouseMacroEvent"] = [&](sol::this_state ts) {
+	lua["copilot"]["mouseMacroEvent"] = [this](sol::this_state ts) {
 		if (!mouseMacroCallback) {
-			mouseMacroCallback = std::make_unique<MouseRectListenerCallback>(this);
+			mouseMacroCallback = std::make_unique<MouseRectListenerCallback>(this->scriptID);
 			copilot::GetWindowPluginSystem()->RegisterMouseRectListenerCallback(mouseMacroCallback.get());
 			sol::state_view lua(ts);
 			mouseMacroEvent = lua["Event"]["new"](lua["Event"]);

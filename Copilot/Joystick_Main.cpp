@@ -57,6 +57,18 @@ void Joystick::processButtonData(ULONG listSize, size_t timestamp)
 
 }
 
+DWORD Joystick::getInputReport(size_t reportID)
+{
+	auto buff = new char[buffSize]();
+	buff[0] = reportID;
+	bool res = HidD_GetInputReport(device, buff, buffSize);
+	if (res) {
+		saveBuffer(buff);
+		return ERROR_SUCCESS;
+	}
+	return GetLastError();
+}
+
 void Joystick::processAxisData(ULONG listSize)
 {
 	for (int i = 0; i < listSize; ++i) {

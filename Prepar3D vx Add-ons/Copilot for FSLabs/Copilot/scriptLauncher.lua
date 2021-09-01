@@ -8,8 +8,6 @@ if not file.exists(iniPath) then
   file.create(iniPath, "[autorun.lua]\nautorun=A32X")
 end
 
-local folderScripts = {}
-
 local function makeScriptSection(sectionTitle)
   return {
     title = sectionTitle,
@@ -118,6 +116,9 @@ end
 
 if SCRIPT_LAUNCHER_AIRCRAFT_RELOAD then
   for path in pairsByKeys(autorunScripts) do
-    copilot.newLuaThread(path)
+    local autorunPath = absoluteScriptPath(nil, "autorun.lua"):lower()
+    if path:lower() ~= autorunPath or file.exists(autorunPath) then
+      copilot.newLuaThread(path)
+    end
   end
 end

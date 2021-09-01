@@ -48,7 +48,7 @@ local function selectJetways(menu)
   end
 end
 
-function handleMenu(menu)
+local function handleMenu(menu)
 
   local items = menu.items
 
@@ -151,7 +151,7 @@ if options.debug then
     print("GSX autopilot - " .. msg)
   end
 
-  function lvarMonitor(lvar, value)
+  local function lvarMonitor(_, lvar, value)
     debug(
       "Lvar event:" .. 
       "\n\n\tName: " .. lvar ..
@@ -171,8 +171,8 @@ if options.debug then
     "JETWAY_AIR",
   }
 
-  for _, var in ipairs(gsxVars) do
-    event.lvar("FSDT_GSX" .. var, 100, "lvarMonitor")
+  for _, lvar in ipairs(gsxVars) do
+    Event.fromLvar(lvar):addAction(lvarMonitor)
   end
 
   for i = 0, 9 do
@@ -230,8 +230,6 @@ if options.auto_dock_default_jetways then
   end
 
   for _, lvar in ipairs(vars) do
-    local event, poll = Event.lvarEvent(lvar)
-    event:addAction(onLvarChanged)
-    copilot.addCallback(poll, nil, 1000)
+    Event.fromLvar(lvar, 1000):addAction(onLvarChanged)
   end
 end

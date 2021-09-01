@@ -502,63 +502,76 @@ function Event.fromTextMenu(title, prompt, items, timeout)
   return e
 end
 
-function Event.awaitMenuAction(arg1, arg2)
-  local timeout, action
-  if type(arg1) == "function" then
-    action = arg1
-    timeout = Event.INFINITE
-  else
-    action = arg2
-    timeout = arg1
+function Event.awaitMenuAction(...)
+  local timeout, filterEmpty = Event.INFINITE, true
+  local action
+  local numArgs = select("#", ...)
+  if numArgs == 1 then
+    action = ...
+  elseif numArgs == 2 then
+    timeout, action = ...
+  elseif numArgs == 3 then
+    timeout, filterEmpty, action = ...
   end
   local e = SingleEvent:new {logMsg = Event.NOLOGMSG}
   local textEventCreated = copilot.simConnectSystemEvent "TextEventCreated"
+
   local a = textEventCreated:addAction(function(_, menu)
-    if menu.type == "menu" then 
-      local res = table.pack(action(menu))
-      if res[1] ~= nil then
-        e:trigger(table.unpack(res))
-      end
+
+    if menu.type ~= "menu" then return end
+    local isEmpty = #menu.items > 0
+    if filterEmpty and isEmpty then return end
+
+    local res = table.pack(action(menu))
+    if res[1] ~= nil then
+      e:trigger(table.unpack(res))
     end
   end)
-  local res = Event.waitForEventWithTimeout(timeout, e)
+
+  local res, getPayload = Event.waitForEventWithTimeout(timeout, e)
   textEventCreated:removeAction(a)
-  return res == true
+  if timeout == Event.INFINITE then
+    return getPayload()
+  end
+  return res, getPayload
 end
 
-function Event.dataPollEvent(userParam, hasValueChanged)
+local subs = {}
 
+function Event.fromLvar(lvar, pollRate)
+  pollRate = pollRate or 100
   local currValue
-
-  hasValueChanged = hasValueChanged or function(newValue, oldValue)
-    return newValue ~= oldValue
-  end
-
   local e = Event:new()
-
-  local function pollData(value)
-    if hasValueChanged(value, currValue) then
-      local oldValue = currValue
+  local function poll()
+    local value = ipc.readLvar(lvar)
+    if value ~= currValue then
+      e:trigger(lvar, value)
       currValue = value
-      e:trigger(userParam, currValue, oldValue)
     end
-    return value
   end
-
-  local function getValue() return currValue end
-
-  return e, pollData, getValue
+  subs[e] = copilot.addCallback(poll, nil, pollRate)
+  return e
 end
 
-function Event.lvarEvent(lvar)
-  local e, poll = Event.dataPollEvent(lvar)
-  return e, function() poll(ipc.readLvar(lvar)) end
-end
-
-function Event.offsetEvent(type, offset)
-  local e, poll = Event.dataPollEvent(offset)
+function Event.fromOffset(type, offset, pollRate)
+  pollRate = pollRate or 100
   local readFunc = ipc["read" .. type]
-  return e, function() poll(readFunc(offset)) end
+  local currValue
+  local e = Event:new()
+  local function poll() 
+    local value = readFunc(offset)
+    if value ~= currValue then
+      e:trigger(offset, value)
+      currValue = value
+    end
+  end
+  subs[e] = copilot.addCallback(poll, nil, pollRate)
+  return e
+end
+
+function Event.cancelPollEvent(e)
+  copilot.removeCallback(subs[e])
+  subs[e] = nil
 end
 
 require "copilot.ActionOrderSetter"

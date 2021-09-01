@@ -161,8 +161,8 @@ void CopilotScript::initLuaState(sol::state_view lua)
 		recoResultFetcher = std::make_shared<RecoResultFetcher>(recognizer);
 	}
 
-	std::string port = options["general"]["http_port"];
-	mcduWatcher = std::make_unique<McduWatcher>(pmSide, std::stoi(port));
+	int port = options["general"]["http_port"];
+	mcduWatcher = std::make_unique<McduWatcher>(pmSide, port);
 	recognizer->makeLuaBindings(lua);
 	copilot["recognizer"] = recognizer;
 	copilot["recoResultFetcher"] = recoResultFetcher;

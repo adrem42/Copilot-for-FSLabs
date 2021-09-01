@@ -533,10 +533,7 @@ local function showMenu()
 
   local prompt = itemInfo(checklist, item, itemIdx)
 
-  local menuItems = {}
-  for _, menuItem in ipairs(checklistMenu) do
-    menuItems[#menuItems+1] = menuItem.text
-  end
+  local menuItems = table.map(checklistMenu, function(menuItem) return menuItem.text end)
   local repeatPrevAvailable = itemIdx > 1
 
   if not repeatPrevAvailable then
