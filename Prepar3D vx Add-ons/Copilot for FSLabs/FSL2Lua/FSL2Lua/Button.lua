@@ -56,6 +56,19 @@ function Button:__pressAndRelease(twoSwitches, pressClickType, releaseClickType)
   end)
 end
 
+function Button:_pressAndHold(timeToHold, pressType, releaseType)
+  repeatWithTimeout(timeToHold, 10, self.macro, self, pressType)
+  self:macro(releaseType)
+end
+
+function Button:pressAndHold(timeToHold)
+  self:_pressAndHold(timeToHold, "leftPress", "leftRelease")
+end
+
+function Button:pressAndHoldRight(timeToHold)
+  self:_pressAndHold(timeToHold, "rightPress", "rightRelease")
+end
+
 --- Presses the button.
 --- @function __call
 --- @usage FSL.OVHD_ELEC_BAT_1_Button()

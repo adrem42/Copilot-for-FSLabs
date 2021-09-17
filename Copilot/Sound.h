@@ -3,6 +3,7 @@
 #include <queue>
 #include <chrono>
 #include <mutex>
+#include <optional>
 #include <memory>
 #include <sapi.h>
 #include "bass/bass.h"
@@ -29,14 +30,16 @@ class Sound {
 	void playNow();
 
 	static ISpVoice* voice;
+	static bool volumeControl;
 
 public:
 	Sound(const std::string& path, int length, double fileRelVolume);
 	Sound(const std::string& path, int length);
 	Sound(const std::string& path);
+	static std::string getDeviceName();
 	void enqueue(int delay);
 	void enqueue();
-	static void init(int devNum, int side, double userVolume, ISpVoice* voice);
+	static void init(std::optional<std::string> device, int side, double userVolume, bool volumeControl, ISpVoice* voice);
 	static void update(bool);
 	static void onVolumeChanged(double newVolume);
 };

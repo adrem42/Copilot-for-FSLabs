@@ -513,6 +513,7 @@ local checklistMenu = {
 
 local textMenu = TextMenu.new()
 textMenu:setTimeout(10)
+local textMenuCoro
 
 local function showMenu()
 
@@ -564,5 +565,8 @@ end
 
 Bind {
   key = copilot.UserOptions.checklists.menu_keybind,
-  onPress = function() copilot.addCoroutine(showMenu) end
+  onPress = function() 
+    copilot.removeCallback(textMenuCoro)
+    textMenuCoro = copilot.addCoroutine(showMenu) 
+  end
 }

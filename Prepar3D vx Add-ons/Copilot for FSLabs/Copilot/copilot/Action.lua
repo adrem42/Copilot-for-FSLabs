@@ -63,14 +63,14 @@ end
 function Action:_runFuncCallback(e, payload)
   self:log("Action: " .. self:toString(), "debug", e)
   local ret = table.pack(
-    xpcall(self.callback, debug.traceback, e, table.unpack(payload))
+    xpcall(self.callback, debug.traceback, e, table.unpack(payload, 1, payload.n))
   )
   local status = ret[1]
   if status == false then
     local err = ret[2]
     copilot.logger:error(err)
   elseif self._doneEvent then 
-    self._doneEvent:trigger(table.unpack(ret, 2)) 
+    self._doneEvent:trigger(table.unpack(ret, 2, ret.n)) 
   end
 end
 
@@ -108,7 +108,7 @@ function Action:_initNewThread(dependencies, e, payload)
 
   local _, threadEvent = copilot.addCallback(self.currentThread)
   threadEvent:addOneOffAction(function(_, ...) self:_onThreadFinished(...) end)
-  copilot._initActionThread(self.currentThread, e, table.unpack(payload))
+  copilot._initActionThread(self.currentThread, e, table.unpack(payload, 1, payload.n))
 end
 
 --- Use this you want to disable the effect of @{stopOn} for one of the predefined actions in @{copilot.actions}

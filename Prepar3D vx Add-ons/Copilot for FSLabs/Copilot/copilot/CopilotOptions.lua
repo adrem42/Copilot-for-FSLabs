@@ -71,10 +71,10 @@ return {
         type = "bool"
       },
       {
-        name = "device_id", 
-        default = -1, 
-        comment = "-1 is the default device. The list of devices is at the top of the log file.", 
-        type = "int"
+        name = "device", 
+        default = nil, 
+        comment = "Leave blank for default device. The list of devices is at the top of the log file.", 
+        type = "string"
       },
       {
         name = "confidence_baseline",
@@ -149,22 +149,28 @@ return {
         type = "string"
       },
       {
-        name = "volume", 
+        name = "volume",
         default = 100, 
         type = "int",
         comment = "This sets the maximum volume from 0-100. You can also adjust the volume with the INT volume knob in the cockpit",
       },
       {
-        name = "device_id", 
-        default = -1, 
-        comment = "-1 is the default device. The list of devices is at the top of the log file.", 
-        type = "int"
+        name = "ACP_volume_control",
+        type = "bool",
+        default = nil,
+        hidden = true
       },
       {
-        name = "sapi_device_id",
-        default = -1,
-        comment = "this is for text-to-speech if you're using it. -1 is the default device. The list of devices is at the top of the log file.",
-        type = "int"
+        name = "device", 
+        default = nil, 
+        comment = "Leave blank for default device. The list of devices is at the top of the log file.", 
+        type = "string"
+      },
+      {
+        name = "sapi_device",
+        default = nil,
+        comment = "This is for text-to-speech if you're using it. Leave blank for default device. The list of devices is at the top of the log file.",
+        type = "string"
       },
       {
         name = "PM_announces_flightcontrol_check", 

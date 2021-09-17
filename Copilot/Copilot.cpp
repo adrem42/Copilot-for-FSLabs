@@ -228,8 +228,7 @@ namespace copilot {
 			hr = token->GetStringValue(L"DeviceId", &deviceId);
 			if (FAILED(hr)) continue;
 			copilot::logger->info(
-				L"{}={} {}",
-				i + 1,
+				L"{} {}",
 				deviceName,
 				!(wcscmp(deviceId, defaultDeviceId)) ? L"(Default)" : L""
 			);
@@ -241,23 +240,16 @@ namespace copilot {
 		enumSAPIDDevices(lineWidth, " Input devices: ", SPCAT_AUDIOIN);
 	}
 
-	void enumOutputSapiDevices(int lineWidth)
-	{
-		enumSAPIDDevices(lineWidth, " SAPI output devices: ", SPCAT_AUDIOOUT);
-	}
-
 	void enumOutputDevices(int lineWidth)
 	{
-		
+		BASS_SetConfig(BASS_CONFIG_DEV_DEFAULT, false);
 		BASS_SetConfig(BASS_CONFIG_UNICODE, true);
 
 		BASS_DEVICEINFO info;
 		copilot::logger->info("{:*^{}}", " Output devices: ", lineWidth);
 		copilot::logger->info("");
 		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++)
-			copilot::logger->info(
-				"{}={} {}",i, info.name,info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : ""
-			);
+			copilot::logger->info("{} {}", info.name,info.flags & BASS_DEVICE_DEFAULT ? "(Default)" : "");
 	}
 
 	void init()
@@ -272,8 +264,6 @@ namespace copilot {
 			copilot::logger->info("{:*^{}}", fmt::format(" {} {} ", "Copilot for FSLabs", COPILOT_VERSION), lineWidth);
 			copilot::logger->info("");
 			enumOutputDevices(lineWidth);
-			copilot::logger->info("");
-			enumOutputSapiDevices(lineWidth);
 			copilot::logger->info("");
 			enumInputDevices(lineWidth);
 			copilot::logger->info("");

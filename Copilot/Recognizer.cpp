@@ -3,6 +3,7 @@
 #include <sstream>
 #include <map>
 #include <vector>
+#include <boost\algorithm\string.hpp>
 
 const int IDX_STRING = 0;
 
@@ -219,7 +220,7 @@ Recognizer::PhraseBuilder& Recognizer::PhraseBuilder::append(std::vector<Phrase:
 	return *this;
 }
 
-Recognizer::Recognizer(int deviceId)
+Recognizer::Recognizer(std::optional<std::string> device)
 {
 
 	throwOnBadResult("CoInitialize error", CoInitialize(NULL));
@@ -229,20 +230,48 @@ Recognizer::Recognizer(int deviceId)
 		recognizer.CoCreateInstance(CLSID_SpInprocRecognizer)
 	);
 
-	if (deviceId == DEFAULT_DEVICE_ID) {
-		throwOnBadResult(
-			"Error in SpCreateDefaultObjectFromCategoryId",
-			SpCreateDefaultObjectFromCategoryId(SPCAT_AUDIOIN, &audio)
-		);
+	CComPtr<ISpObjectToken> recoObjectToken = nullptr;
+
+	HRESULT hr;
+
+	if (!device) {
+
+		hr = SpGetDefaultTokenFromCategoryId(SPCAT_AUDIOIN, &recoObjectToken, 0);
+		
 	} else {
 		CComPtr<IEnumSpObjectTokens> enumTokens;
-		HRESULT hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
-		CComPtr<ISpObjectToken> objectToken;
-		hr = enumTokens->Item(deviceId, &objectToken);
-		throwOnBadResult("Error setting non-default input device", hr);
-		hr = SpCreateObjectFromToken(objectToken, &audio);
-		throwOnBadResult("Error in SpCreateObjectFromToken", hr);
+		hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
+		
+
+		ULONG count;
+		hr = enumTokens->GetCount(&count);
+		if (SUCCEEDED(hr)) {
+			for (size_t i = 0; i < count; ++i) {
+				CComPtr<ISpObjectToken> token;
+				CSpDynamicString deviceName, deviceId;
+				
+				hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
+				if (FAILED(hr)) continue;
+				hr = token->GetStringValue(L"DeviceName", &deviceName);
+				if (FAILED(hr)) continue;
+				if (boost::trim_right_copy(std::string(deviceName.CopyToChar())) == boost::trim_right_copy(device.value())) {
+					recoObjectToken = token;
+					break;
+				}
+			}
+		}
 	}
+
+	if (FAILED(hr) || !recoObjectToken) {
+		throw std::runtime_error("Couldn't find SAPI input device" + device.value());
+	}
+	hr = SpCreateObjectFromToken(recoObjectToken, &audio);
+	throwOnBadResult("Error in SpCreateObjectFromToken", hr);
+
+	CSpDynamicString deviceName;
+	hr = recoObjectToken->GetStringValue(L"DeviceName", &deviceName);
+
+	this->deviceName = deviceName.CopyToChar();
 	
 	throwOnBadResult("Error in SetInput", recognizer->SetInput(audio, TRUE));
 
@@ -254,11 +283,16 @@ Recognizer::Recognizer(int deviceId)
 
 	throwOnBadResult("Error creating grammar", recoContext->CreateGrammar(0, &recoGrammar));
 
-	HRESULT hr = recoGrammar->ResetGrammar(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
+	hr = recoGrammar->ResetGrammar(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 	if (FAILED(hr)) {
 		throwOnBadResult("Error in ResetGrammar", recoGrammar->ResetGrammar(MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_UK)));
 	}
 
+}
+
+std::string Recognizer::getDeviceName()
+{
+	return deviceName;
 }
 
 Recognizer::~Recognizer()
@@ -531,7 +565,7 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 				 "Persistent", Recognizer::RulePersistenceMode::Persistent,
 				 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
 
-	
+	RecognizerType["deviceName"] = &Recognizer::getDeviceName;
 
 	auto PhraseBuilderType = lua.new_usertype<PhraseBuilder>(
 		"PhraseBuilder",

@@ -1,6 +1,7 @@
 #include "Sound.h"
 #include "Copilot.h"
 #include <cmath>
+#include <boost/algorithm/string.hpp>
 
 
 TimePoint Sound::nextFreeSlot = std::chrono::system_clock::now();
@@ -9,6 +10,8 @@ Sound* Sound::prevSound;
 ISpVoice* Sound::voice = nullptr;
 std::mutex Sound::mtx;
 double Sound::userVolume = 1, Sound::globalVolume = 0, Sound::volKnobPos = -1;
+bool Sound::volumeControl = true;
+std::string outputDevice;
 
 std::string Sound::knobLvar;
 std::string Sound::switchLvar;
@@ -73,7 +76,7 @@ void Sound::playNow()
 	prevSound = this;
 }
 
-void Sound::init(int devNum, int pmSide, double userVolume, ISpVoice* voice)
+void Sound::init(std::optional<std::string> device, int pmSide, double userVolume, bool volumeControl, ISpVoice* voice)
 {
 	if (pmSide == 1) {
 		knobLvar = "VC_PED_COMM_2_INT_Knob";
@@ -84,11 +87,35 @@ void Sound::init(int devNum, int pmSide, double userVolume, ISpVoice* voice)
 	}
 
 	Sound::voice = voice;
+	Sound::volumeControl = volumeControl;
+
+	if (!volumeControl) {
+		globalVolume = userVolume;
+	}
 
 	nextFreeSlot = std::chrono::system_clock::now();
 	Sound::userVolume = userVolume;
 	volKnobPos = -1; // to force a volume update
-	BASS_Init(devNum, 44100, BASS_DEVICE_STEREO, 0, NULL);
+	int deviceId = -1;
+	BASS_DEVICEINFO info;
+	if (device) {
+		std::string devTrimmed = boost::trim_right_copy(device.value());
+		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) {
+			if (devTrimmed == boost::trim_right_copy(std::string(info.name))) {
+				deviceId = i;
+				break;
+			}
+		}
+		if (deviceId == -1)
+			throw std::runtime_error("Couldn't find device: '" + device.value() + "'");
+	}
+	BASS_Init(deviceId, 44100, BASS_DEVICE_STEREO, 0, NULL);
+	BASS_GetDeviceInfo(BASS_GetDevice(), &info);
+	outputDevice = info.name;
+}
+
+std::string Sound::getDeviceName() {
+	return outputDevice;
 }
 
 void Sound::update(bool isFslAircraft)
@@ -114,6 +141,8 @@ void Sound::update(bool isFslAircraft)
 
 void Sound::onVolumeChanged(double volKnobPos)
 {
+	if (!volumeControl)
+		return;
 	globalVolume = 3.1623e-3 * exp(((1 - zeroVolumeThreshold) * volKnobPos + zeroVolumeThreshold) * 5.757) * userVolume;
 	if (!soundQueue.empty())
 		soundQueue.front().first->adjustVolumeFromGlobal();

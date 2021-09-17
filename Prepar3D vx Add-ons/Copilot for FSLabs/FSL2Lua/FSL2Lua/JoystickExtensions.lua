@@ -18,7 +18,7 @@ end
 
 local function parseAxisArgs(...)
   if select("#", ...) == 2 then
-    return select(...)
+    return ...
   else
     return 1, ...
   end

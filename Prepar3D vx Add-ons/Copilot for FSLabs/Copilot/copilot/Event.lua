@@ -14,6 +14,7 @@ Event = {
   NOLOGMSG = ""
 }
 Action = Action or require "copilot.Action"
+Event.__index = Event
 
 --- @type Event
 
@@ -38,7 +39,6 @@ Action = Action or require "copilot.Action"
 -- }
 
 function Event:new(args)
-  self.__index = self
   local event = setmetatable(args or {}, self)
   event.actions = Ouroboros.new()
   event.sortedActions = {}
@@ -265,7 +265,7 @@ function Event.waitForEvent(event, returnFunction)
 
   local a = event:addOneOffAction(function(_, ...) 
     local payload = table.pack(...)
-    getPayload = function() return table.unpack(payload) end
+    getPayload = function() return table.unpack(payload, 1, payload.n) end
   end)
 
   a:setLogMsg(Event.NOLOGMSG)
@@ -301,7 +301,7 @@ function Event.waitForEventWithTimeout(timeout, event)
   local getPayload
   local action = event:addOneOffAction(function(_, ...) 
     local payload = table.pack(...)
-    getPayload = function() return table.unpack(payload) end
+    getPayload = function() return table.unpack(payload, 1, payload.n) end
     copilot.cancelCallbackTimeout(callingThread)
   end)
 
@@ -361,7 +361,7 @@ function Event.waitForEvents(events, waitForAll, returnFunction)
     payloadGetters[event] = NO_PAYLOAD
     actions[event] = event:addOneOffAction(function(_, ...)
       local payload = table.pack(...)
-      payloadGetters[event] = function() return table.unpack(payload) end
+      payloadGetters[event] = function() return table.unpack(payload, 1, payload.n) end
     end)
     actions[event]:setLogMsg(Event.NOLOGMSG)
   end
@@ -424,7 +424,7 @@ function Event.waitForEventsWithTimeout(timeout, events, waitForAll)
 
     actions[event] = event:addOneOffAction(function(_, ...)
       local payload = table.pack(...)
-      payloadGetters[event] = function() return table.unpack(payload) end
+      payloadGetters[event] = function() return table.unpack(payload, 1, payload.n) end
       numSignaled = numSignaled + 1
       if not waitForAll or numSignaled == numEvents then
         copilot.cancelCallbackTimeout(callingThread)
@@ -524,7 +524,7 @@ function Event.awaitMenuAction(...)
 
     local res = table.pack(action(menu))
     if res[1] ~= nil then
-      e:trigger(table.unpack(res))
+      e:trigger(table.unpack(res, 1, res.n))
     end
   end)
 

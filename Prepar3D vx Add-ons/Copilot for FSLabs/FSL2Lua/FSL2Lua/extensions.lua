@@ -40,6 +40,22 @@ function table.mapKeys(t, transform)
   return out
 end
 
+function table.keys(t)
+  local out = {}
+  for k in pairs(t) do
+    out[#out+1] = k
+  end
+  return out
+end
+
+function table.values(t)
+  local out = {}
+  for _, v in pairs(t) do
+    out[#out+1] = v
+  end
+  return out
+end
+
 function table.mapValues(t, transform)
   local out = {}
   for k, v in pairs(t) do
@@ -71,9 +87,7 @@ function table.pack(...)
   return {n = select("#", ...), ...}
 end
 
-function table.unpack(t, i, j)
-  return unpack(t, i or 1, j or t.n)
-end
+table.unpack = unpack
 
 function table.size(t)
   local n = 0
@@ -81,6 +95,14 @@ function table.size(t)
     n = n + 1
   end
   return n
+end
+
+function table.find(t, value)
+  for i, val in ipairs(t) do
+    if val == value then
+      return i
+    end
+  end
 end
 
 function pairsByKeys (t, f)

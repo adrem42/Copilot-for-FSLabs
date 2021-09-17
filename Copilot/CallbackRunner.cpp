@@ -155,7 +155,9 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 			sol::object maybeSingleEvent = lua["SingleEvent"];
 			if (maybeSingleEvent.get_type() == sol::type::table) {
 				sol::table SingleEvent = lua["SingleEvent"];
-				makeThreadEvent = [SingleEvent] {return SingleEvent["new"](SingleEvent); };
+				makeThreadEvent = [SingleEvent] {
+					return SingleEvent["new"](SingleEvent);
+				};
 			} else {
 				makeThreadEvent = [] () -> std::optional<sol::table> {return {}; };
 			}
@@ -163,7 +165,7 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 		callback = std::shared_ptr<Callback>(new Callback{ name, _interval, th, co, deadline, makeThreadEvent(), th.thread_state() });
 	} 
 
-	debug("Adding new callback");
+	//debug("Adding new callback");
 	maybeAwaken(deadline);
 	activeCallbacks.emplace(deadline, callback);
 	sol::state_view lua(callable.lua_state());

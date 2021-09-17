@@ -155,7 +155,7 @@ function FSL:disableSequences() self.areSequencesEnabled = false end
 function FSL:setHttpPort(port)
   port = tonumber(port)
   self.CPT.MCDU = MCDU:new(1, port)
-  self.CPT.MCDU = MCDU:new(2, port)
+  self.FO.MCDU = MCDU:new(2, port)
   FCU.init(port)
 end
 

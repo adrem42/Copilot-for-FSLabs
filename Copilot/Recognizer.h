@@ -292,10 +292,11 @@ private:
 	void logRuleStatus(std::string& prefix, const Rule& rule);
 	std::unordered_map<RuleID, Rule> rules;
 	std::recursive_mutex mtx;
+	std::string deviceName;
 public:
-	static const int DEFAULT_DEVICE_ID = -1;
 	void markGrammarDirty();
-	Recognizer(int deviceId = DEFAULT_DEVICE_ID);
+	Recognizer(std::optional<std::string> device);
+	std::string getDeviceName();
 	~Recognizer();
 	void registerCallback(ISpNotifyCallback* callback);
 	RuleID addRule(std::vector<std::shared_ptr<Phrase>> phrases, float confidence, RulePersistenceMode persistenceMode);

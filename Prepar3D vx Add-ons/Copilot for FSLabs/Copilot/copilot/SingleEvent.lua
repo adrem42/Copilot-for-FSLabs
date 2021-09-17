@@ -1,7 +1,6 @@
 if false then module "Event" end
 
 local Event = Event or require "copilot.Event"
-
 --- An Event that can be signaled only once
 --- @type SingleEvent 
 SingleEvent = setmetatable({}, Event)

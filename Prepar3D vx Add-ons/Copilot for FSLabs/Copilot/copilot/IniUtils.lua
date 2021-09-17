@@ -39,7 +39,10 @@ end
 
 function typeConverters.string(val)
   if val == nil then return nil end
-  return tostring(val)
+  if not val:find("%S") then
+    return nil
+  end
+  return val
 end
 
 function typeConverters.enum(val, option)

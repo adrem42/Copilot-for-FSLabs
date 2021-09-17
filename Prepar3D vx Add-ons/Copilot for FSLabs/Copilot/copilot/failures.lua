@@ -30,13 +30,7 @@ local function waitForDisplay(substring, disappear)
 end
 
 local function dimDisplay()
-  repeatWithTimeout(7000, function()
-    FSL.PED_MCDU_KEY_BRT:macro "leftPress"
-    ipc.sleep(100)
-  end)
-  FSL.PED_MCDU_KEY_BRT:macro "leftRelease"
-  ipc.sleep(1000)
-  for _=1, 30 do 
+  for _ = 1, 30 do 
     FSL.PED_MCDU_KEY_DIM() 
     repeat sleep() until not FSL.PED_MCDU_KEY_DIM:isDown() 
   end
@@ -65,7 +59,7 @@ local function saveStates()
 end
 
 local function setupFailures()
-
+  
   repeat
     FSL.PED_MCDU_KEY_MENU()
     sleep()
@@ -250,18 +244,25 @@ end
 init()
 loadStates()
 
-if not ipc.get("FSLC_failures") then
+if not ipc.get("FSLC_failures") or debugging then
   FSL:disableSequences()
   local pilotBefore = FSL:getPilot()
-  FSL:setPilot(coldAndDark and 1 or 2)
+  if coldAndDark then
+    FSL:setPilot(1)
+    ipc.sleep(10000) -- to make sure the display is off
+  end
   copilot.logger:info("Setting up failures")
-  if not debugging then 
+  FSL.PED_MCDU_KEY_BRT:pressAndHold(7000)
+  if not debugging then
     dimDisplay() 
-    ipc.set("FSLC_failures", 1)
   end
   setupFailures()
-  if not coldAndDark then restoreBrightness()
-  else turnOffDisplay() end
+  if not coldAndDark then 
+    restoreBrightness()
+  else
+    turnOffDisplay() 
+  end
+  ipc.set("FSLC_failures", 1)
   copilot.logger:info("Finished setting up failures")
   FSL:setPilot(pilotBefore)
   FSL:enableSequences()

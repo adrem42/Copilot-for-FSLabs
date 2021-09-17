@@ -211,6 +211,7 @@ cd $(solutiondir) &amp;&amp; copytosim</Command>
       <PreprocessorDefinitions>WIN32;NDEBUG;COPILOT_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -231,6 +232,7 @@ cd $(solutiondir) &amp;&amp; copytosim</Command>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(solutiondir);$(P3dSdkPath)\inc\SimConnect;$(P3dSdkPath)\inc\Gauges;$(P3dSdkPath)\inc\PDK\Helpers;$(solutiondir)lua51\include;$(P3dSdkPath)\inc\PDK;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

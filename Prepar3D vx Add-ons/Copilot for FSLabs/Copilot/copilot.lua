@@ -217,4 +217,7 @@ end
 setup() 
 print ">>>>>> Setup finished"
 print(">>>>>> Voice control is " .. (copilot.isVoiceControlEnabled and "enabled" or "disabled"))
-
+if copilot.isVoiceControlEnabled then
+  print(">>>>>> Input device: " .. copilot.recognizer:deviceName())
+end
+print(">>>>>> Output device: " .. copilot.getOutputDeviceName())

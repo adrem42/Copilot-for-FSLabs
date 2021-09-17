@@ -10,6 +10,7 @@
 #include "SimInterface.h"
 #include <sapi.h>
 #include <sphelper.h>
+#include <boost/algorithm/string.hpp>
 
 void CopilotScript::initLuaState(sol::state_view lua)
 {
@@ -28,30 +29,52 @@ void CopilotScript::initLuaState(sol::state_view lua)
 
 	auto options = lua["copilot"]["UserOptions"];
 
-	int devNum = options["callouts"]["device_id"];
+	std::optional<std::string> outputDevice = options["callouts"]["device"];
+	bool volumeControl = options["callouts"]["ACP_volume_control"].get_or(true);
 	int pmSide = options["general"]["PM_seat"];
 	double volume = options["callouts"]["volume"];
 
 	if (SUCCEEDED(CoInitialize(NULL))) {
 		HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, reinterpret_cast<void**>(&voice));
-		int deviceId = options["callouts"]["sapi_device_id"];
-		if (deviceId != -1) {
+		std::optional<std::string> device = options["callouts"]["sapi_device"];
+		if (device) {
 			CComPtr<IEnumSpObjectTokens> enumTokens;
-			HRESULT hr = SpEnumTokens(SPCAT_AUDIOIN, NULL, NULL, &enumTokens);
-			CComPtr<ISpObjectToken> objectToken;
-			if (SUCCEEDED(hr))
-				hr = enumTokens->Item(deviceId - 1, &objectToken);
-			if (SUCCEEDED(hr))
-				hr = SpCreateObjectFromToken(objectToken, &voice);
+			HRESULT hr = SpEnumTokens(SPCAT_AUDIOOUT, NULL, NULL, &enumTokens);
+			CComPtr<ISpObjectToken> voiceObjectToken = nullptr;
+
+			ULONG count;
+			hr = enumTokens->GetCount(&count);
+			if (SUCCEEDED(hr)) {
+				for (size_t i = 0; i < count; ++i) {
+					CComPtr<ISpObjectToken> token;
+					CSpDynamicString deviceName, deviceId;
+					hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
+					if (FAILED(hr)) continue;
+					hr = token->GetStringValue(L"DeviceName", &deviceName);
+					if (FAILED(hr)) continue;
+					if (boost::trim_right_copy(std::string(deviceName.CopyToChar())) == boost::trim_right_copy(device.value())) {
+						voiceObjectToken = token;
+						break;
+					}
+				}
+			}
+
+			if (FAILED(hr) || !voiceObjectToken) {
+				throw std::runtime_error("Couldn't find SAPI output device: " + device.value());
+			}
+
+			hr = SpCreateObjectFromToken(voiceObjectToken, &voice);
 			if (FAILED(hr)) {
-				throw ScriptStartupError("Error setting non-default output device");
+				throw std::runtime_error("SpCreateObjectFromToken failed");
 			}
 		}
 	}
 
-	Sound::init(devNum, pmSide, volume * 0.01, voice);
+	Sound::init(outputDevice, pmSide, volume * 0.01, volumeControl, voice);
 
 	auto copilot = lua["copilot"];
+
+	copilot["getOutputDeviceName"] = Sound::getDeviceName;
 
 	copilot["onVolKnobPosChanged"] = Sound::onVolumeChanged;
 
@@ -150,10 +173,8 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	bool voiceControl = options["voice_control"]["enable"] == 1;
 	if (voiceControl) {
 		try {
-			int deviceId = options["voice_control"]["device_id"];
-			if (deviceId != Recognizer::DEFAULT_DEVICE_ID)
-				deviceId--;
-			recognizer = std::make_shared<Recognizer>(deviceId);
+			std::optional<std::string> device = options["voice_control"]["device"];
+			recognizer = std::make_shared<Recognizer>(device);
 		} 		catch (std::exception& ex) {
 			throw ScriptStartupError("Failed to create recognizer: " + std::string(ex.what()));
 		}
