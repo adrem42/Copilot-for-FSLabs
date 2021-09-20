@@ -1,3 +1,4 @@
+
 if false then module "copilot" end
 
 local UserOptions = {TRUE = 1, FALSE = 0, ENABLED = 1, DISABLED = 0}
@@ -91,6 +92,9 @@ local function parseValue(option, cfgTable)
   end
   if val == nil then
     option.value = option.default
+    if option.hidden then
+      option.serialize = false
+    end
     option.type = nil
     for _, _type in ipairs(reverseTypes) do
       val = reverseTypeConverters[_type](option.value, option, cfgTable)
@@ -141,7 +145,7 @@ end
 
 local function serializeIniOption(option, optionIdx, section, serializedIniTable, outputArray)
   local key, value = option.name, option.value
-  if not (option.hidden and not value) then
+  if option.serialize ~= false then
     if option.format == "hex" then
       value = "0x" .. string.format("%x", value):upper()
     end

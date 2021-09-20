@@ -20,7 +20,7 @@ function Bind.parseKeys(input)
   for keyString in input:gmatch("[^(%+)]+") do
     keyCount = keyCount + 1
     keyString = keyString:upper()
-    if keyString == "extended" then
+    if keyString == "EXTENDED" then
       extended = true
     else
       local maybeShift = keyCodes.modifiers[keyString]

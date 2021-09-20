@@ -150,9 +150,9 @@ namespace SimInterface {
         SendMessage(p3dWnd, WM_COMMAND, id, param);
     }
 
-    void sendKeyToSimWindow(SHORT keyCode, KeyEvent e)
+    void sendKeyToSimWindow(SHORT keyCode, KeyEvent e, int flags)
     {
         uint16_t winEvent = e == KeyEvent::Press ? WM_KEYDOWN : WM_KEYUP;
-        SendMessage(p3dWnd, winEvent, keyCode, 0);
+        SendMessage(p3dWnd, winEvent, keyCode, flags);
     }
 }

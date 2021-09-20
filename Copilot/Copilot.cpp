@@ -104,11 +104,9 @@ namespace copilot {
 	void launchAutorunLua()
 	{
 		auto path = appDir + "scripts\\autorun.lua";
-		if (fileExists(path)) {
-			std::thread([=] {
-				LuaPlugin::launchScript<FSL2LuaScript>(path);
-			}).detach();
-		}
+		std::thread([=] {
+			LuaPlugin::launchScript<FSL2LuaScript>(path);
+		}).detach();
 	}
 
 	void loadScriptsIni(bool acReload)
@@ -135,7 +133,7 @@ namespace copilot {
 	void startCopilotScript()
 	{
 		std::thread([] {
-			LuaPlugin::launchScript<CopilotScript>(copilotScriptPath());
+			LuaPlugin::launchScript<CopilotScript>(copilotScriptPath(), true, copilot::logger);
 		}).detach();
 	}
 
@@ -182,7 +180,7 @@ namespace copilot {
 	void initConsoleSink()
 	{
 		consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-		consoleSink->set_pattern("[%T] [Copilot] [%l] %v");
+		consoleSink->set_pattern("[%T %L] [%n] %v");
 		logger->sinks().push_back(consoleSink);
 		consoleSink->set_level(spdlog::level::info);
 #ifdef _DEBUG

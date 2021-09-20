@@ -16,18 +16,22 @@ class LuaPlugin {
 
 	friend class CallbackRunner;
 
-	LuaPlugin(const std::string&, std::shared_ptr<std::recursive_mutex>);
+	LuaPlugin(const std::string&, std::shared_ptr<std::recursive_mutex>, std::shared_ptr<spdlog::logger>&, size_t);
 
 	static std::recursive_mutex globalMutex;
 	
 	struct ScriptInst {
 		std::string path;
+		std::shared_ptr<spdlog::logger> logger;
 		LuaPlugin* script = nullptr;
 		size_t scriptID;
+		size_t launchCount = 1;
 		std::shared_ptr<std::recursive_mutex> mutex = std::make_shared<std::recursive_mutex>();
 	};
 
 	jmp_buf jumpBuff;
+
+	const size_t launchCount;
 
 	std::atomic_bool running = true;
 
@@ -41,13 +45,12 @@ class LuaPlugin {
 	static void setSessionVariable(const std::string&, SessionVariable);
 	static std::unordered_map<std::string, SessionVariable> sessionVariables;
 
-
 	bool loggingEnabled = true;
 
 	static bool arePathsEqual(const std::filesystem::path& lhs, const std::filesystem::path& rhs);
 
 protected:
-	std::shared_ptr<spdlog::logger> printLogger = copilot::logger;
+	const std::shared_ptr<spdlog::logger> logger;
 
 	virtual void onLuaStateInitialized();
 
@@ -76,8 +79,8 @@ protected:
 
 	void yeetLuaThread();
 
-	static void onError(sol::error&);
-	static void onError(const ScriptStartupError&);
+	void onError(sol::error&);
+	void onError(const ScriptStartupError&);
 
 	virtual void run();
 
@@ -90,19 +93,23 @@ public:
 	sol::state lua;
 
 	template<typename T>
-	static T* launchScript(const std::string& path, bool doLaunch = true)
+	static T* launchScript(std::filesystem::path path, bool doLaunch = true, std::shared_ptr<spdlog::logger> logger = nullptr)
 	{
 		std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 		
-		std::string _path = path;
+		if (path.is_relative()) {
+			path = (copilot::appDir + "scripts\\") / path;
+		}
 
-		std::filesystem::path fsp(path);
-		if (fsp.is_relative()) {
-			_path = copilot::appDir + "scripts\\" + path;
+		bool isDirectoryScript = false;
+
+		if (!path.has_extension()) {
+			path /= "init.lua";
+			isDirectoryScript = true;
 		}
 
 		auto it = std::find_if(scripts.begin(), scripts.end(), [&] (ScriptInst& s) {
-			return arePathsEqual(s.path, _path);
+			return arePathsEqual(s.path, path);
 		});
 
 		auto launch = [&](ScriptInst& s) {
@@ -111,7 +118,7 @@ public:
 			s.script = nullptr;
 			globalLock.unlock();
 			delete oldScript;
-			auto script = new T(_path, s.mutex);
+			auto script = new T(s.path, s.mutex, s.logger, s.launchCount);
 			s.script = script;
 			s.scriptID = script->scriptID;
 			if (doLaunch)
@@ -120,10 +127,43 @@ public:
 		};
 
 		if (it == scripts.end()) {
-			auto path = std::filesystem::path(_path).parent_path().string() + "\\";
-			AddDllDirectory(std::wstring(path.begin(), path.end()).c_str());
-			return launch(scripts.emplace_back(ScriptInst{_path}));
+			std::shared_ptr<spdlog::logger> _logger = nullptr;
+			if (logger) {
+				_logger = logger;
+			} else {
+				std::string logName = (isDirectoryScript ? path.parent_path() : path).stem().string();
+				_logger = std::make_shared<spdlog::logger>(logName);
+				_logger->flush_on(spdlog::level::trace);
+				_logger->set_level(spdlog::level::trace);
+				auto logFilePath = path.parent_path() /= (logName + ".log");
+				auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logFilePath.string(), 1048576 * 5, 0, true);
+				fileSink->set_pattern("[%T] [%l] %v");
+				fileSink->set_level(spdlog::level::debug);
+				_logger->sinks().push_back(fileSink);
+#ifdef _DEBUG
+				fileSink->set_level(spdlog::level::trace);
+#endif
+				auto consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+				int logNameCount = 0;
+				for (auto& inst : scripts) {
+					if (inst.logger->name() == logName) {
+						logNameCount++;
+					}
+				}
+				if (logNameCount) {
+					consoleSink->set_pattern("[%T %L] [%n (" + std::to_string(logNameCount) + ")] %v");
+				} else {
+					consoleSink->set_pattern("[%T %L] [%n] %v");
+				}
+				_logger->sinks().push_back(consoleSink);
+				consoleSink->set_level(spdlog::level::info);
+#ifdef _DEBUG
+				consoleSink->set_level(spdlog::level::trace);
+#endif
+			}
+			return launch(scripts.emplace_back(ScriptInst{path.string(), _logger}));
 		} else {
+			it->launchCount++;
 			return launch(*it);
 		}
 	}
@@ -133,7 +173,7 @@ public:
 	size_t elapsedTime() const;
 
 	template<typename F, typename... Args>
-	static void callProtectedFunction(F&& onValid, sol::protected_function func, Args&&... args)
+	void callProtectedFunction(F&& onValid, sol::protected_function func, Args&&... args)
 	{
 		sol::protected_function_result pfr = func(std::forward<Args>(args)...);
 		if (!pfr.valid()) {
@@ -145,7 +185,7 @@ public:
 	}
 
 	template<typename... Args>
-	static sol::protected_function_result callProtectedFunction(sol::protected_function func, Args&&... args)
+	sol::protected_function_result callProtectedFunction(sol::protected_function func, Args&&... args)
 	{
 		sol::protected_function_result pfr = func(std::forward<Args>(args)...);
 		if (!pfr.valid()) {

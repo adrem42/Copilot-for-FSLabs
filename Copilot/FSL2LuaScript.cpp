@@ -187,7 +187,7 @@ public:
 		TextMenuType["setTitle"] = &LuaTextMenu::setTitle;
 		TextMenuType["setPrompt"] = &LuaTextMenu::setPrompt;
 		TextMenuType["setTimeout"] = &LuaTextMenu::setTimeout;
-		TextMenuType["event"] = sol::readonly_property([](sol::this_state ts, LuaTextMenu& m) {
+		TextMenuType["event"] = sol::readonly_property([](LuaTextMenu& m, sol::this_state ts) {
 			return m.getEvent(ts);
 		});
 
@@ -290,7 +290,7 @@ public:
 	sol::table getEvent(sol::this_state ts)
 	{
 		sol::state_view lua(ts);
-		return lua.get<sol::table>(eventID);
+		return lua.registry().raw_get<sol::table>(eventID);
 	}
 
 	/***
@@ -404,7 +404,7 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	LoggerType["setLevel"] = [](spdlog::logger& logger, unsigned int level) {
 		logger.sinks().back()->set_level(static_cast<spdlog::level::level_enum>(level));
 	};
-	lua["copilot"]["logger"] = copilot::logger;
+	lua["copilot"]["logger"] = this->logger;
 
 	lua["copilot"]["newLuaThread"] = [](const std::string& path) {
 		LuaPlugin::launchScript<FSL2LuaScript>(path);
@@ -414,31 +414,6 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 		LuaPlugin::stopScript(path);
 	};
 
-	lua["copilot"]["createLogger"] = [&](const std::string& name, bool redirectPrint, sol::object _path) {
-
-		auto logger = std::make_shared<spdlog::logger>(name);
-		logger->flush_on(spdlog::level::trace);
-		logger->set_level(spdlog::level::trace);
-		if (!(_path.get_type() == sol::type::boolean && !_path.as<bool>())) {
-			std::string path = _path.get_type() == sol::type::string
-				? _path.as<std::string>()
-				: std::filesystem::path(this->path).parent_path().string() + "\\" + name + ".log";
-			auto fileSink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(path, 1048576 * 5, 0, true);
-			fileSink->set_pattern("[%T] [%l] %v");
-			fileSink->set_level(spdlog::level::debug);
-			logger->sinks().push_back(fileSink);
-		}
-
-		if (redirectPrint) {
-			printLogger = logger;
-		}
-		
-		auto consoleSink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-		consoleSink->set_pattern("[%T] [%n] [%l] %v");
-		logger->sinks().push_back(consoleSink);
-		consoleSink->set_level(spdlog::level::info);
-		return logger;
-	};
 
 	SystemEventLuaManager<int>::createRegistryTable(lua);
 

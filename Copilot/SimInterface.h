@@ -32,6 +32,6 @@ namespace SimInterface {
         Press, Release
     };
 
-    void sendKeyToSimWindow(SHORT keyCode, KeyEvent e);
+    void sendKeyToSimWindow(SHORT keyCode, KeyEvent e, int flags = 0);
 
 }

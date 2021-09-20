@@ -83,7 +83,7 @@ private:
 		sol::protected_function_result pfr = runnable(std::forward<Args>(args)...);
 		if (!pfr.valid()) {
 			sol::error err = pfr;
-			LuaPlugin::onError(err);
+			plugin->onError(err);
 		}
 		return pfr;
 	}

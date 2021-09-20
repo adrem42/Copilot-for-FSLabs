@@ -14,6 +14,45 @@ if false then
   function copilot.displayText(text, duration, color) end
 end
 
+local keyMappingIniPath = os.getenv("APPDATA") .. "\\Virtuali\\KeyMapping.ini"
+
+local gsxKeyToCopilotKey = {
+  Caps_Lock = "CapsLock",
+  Escape = "Esc",
+  Num_0 = "Ins",
+  Num_1 = "End",
+  Num_2 = "DownArrow",
+  Num_3 = "PageDown",
+  Num_4 = "LeftArrow",
+  Num_5 = "Clear",
+  Num_6 = "RightArrow",
+  Num_7 = "Home",
+  Num_8 = "UpArrow",
+  Num_9 = "PageUp"
+}
+
+local function getGsxKeymapping()
+  local file = require "FSL2Lua.FSL2Lua.file"
+  local iniContent = file.read(keyMappingIniPath)
+  local shortcut = iniContent:match("shortcut=(%C*)")
+  local keys = {}
+  for key in shortcut:gmatch("[^(%+)]+") do
+    keys[#keys+1] = key
+  end
+  keys[#keys] = gsxKeyToCopilotKey[keys[#keys]] or keys[#keys]
+  return keys
+end
+
+function copilot.toggleGsxMenu()
+  local keys = getGsxKeymapping()
+  local concat = table.concat(keys, "+")
+  if #keys == 1 then
+    copilot.sendKeyToFsWindow(concat)
+  else
+    copilot.keypress(concat)
+  end
+end
+
 local coxpcall = require "Copilot.libs.coxpcall"
 
 pcall = coxpcall.pcall

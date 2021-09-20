@@ -125,7 +125,7 @@ int KEYPRESS_TYPE_PRESS = 0;
 int KEYPRESS_TYPE_RELEASE = 1;
 int KEYPRESS_TYPE_PRESSRELEASE = 2;
 
-void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers, int type)
+void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers, int type, bool extended)
 {
 	SetFocus(SimInterface::p3dWnd);
 
@@ -141,6 +141,9 @@ void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers, int type)
 	auto& i = inputs[numInputs - 1];
 
 	i.ki.wVk = keyCode;
+	if (extended) {
+		i.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+	}
 	i.type = INPUT_KEYBOARD;
 
 	if (type == KEYPRESS_TYPE_PRESS || type == KEYPRESS_TYPE_PRESSRELEASE) 
@@ -148,14 +151,14 @@ void keypress(SHORT keyCode, std::vector<SHORT>&& modifiers, int type)
 	
 	if (type == KEYPRESS_TYPE_RELEASE || type == KEYPRESS_TYPE_PRESSRELEASE) {
 		for (size_t i = 0; i < numInputs; ++i) 
-			inputs[i].ki.dwFlags = KEYEVENTF_KEYUP;
+			inputs[i].ki.dwFlags |= KEYEVENTF_KEYUP;
 		SendInput(1, inputs + numInputs - 1, sizeof(INPUT));
 		SendInput(numInputs - 1, inputs, sizeof(INPUT));
 	}
 }
 
-LuaPlugin::LuaPlugin(const std::string& path, std::shared_ptr<std::recursive_mutex> mutex)
-	: path(path), scriptMutex(mutex), scriptID(currscriptID++)
+LuaPlugin::LuaPlugin(const std::string& path, std::shared_ptr<std::recursive_mutex> mutex, std::shared_ptr<spdlog::logger>& logger, size_t launchCount)
+	: path(path), scriptMutex(mutex), scriptID(currscriptID++), logger(logger), launchCount(launchCount)
 {
 	if (path.find(copilot::appDir) == 0) 
 		logName = path.substr(path.find("Copilot for FSLabs"));
@@ -241,15 +244,15 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 		sol::state_view lua(ts);
 		sol::unsafe_function f = lua["Bind"]["parseKeys"];
 		sol::unsafe_function_result ufr = f(s);
-		keypress(ufr.get<SHORT>(0), ufr.get<std::vector<SHORT>>(1), type.value_or(KEYPRESS_TYPE_PRESSRELEASE));
+		keypress(ufr.get<SHORT>(0), ufr.get<std::vector<SHORT>>(1), type.value_or(KEYPRESS_TYPE_PRESSRELEASE), ufr.get<bool>(2));
 	};
-	lua["copilot"]["sendKeyToFsWindow"] = [&](sol::this_state ts, const std::string& s, sol::optional<SimInterface::KeyEvent> event) {
+	lua["copilot"]["sendKeyToFsWindow"] = [&](sol::this_state ts, const std::string& s, sol::optional<SimInterface::KeyEvent> event, sol::optional<int> flags) {
 		sol::state_view lua(ts);
 		sol::unsafe_function f = lua["Bind"]["parseKeys"];
 		sol::unsafe_function_result ufr = f(s);
 		if (!ufr.get<std::vector<SHORT>>(1).empty())
 			throw "No modifiers allowed";
-		SimInterface::sendKeyToSimWindow(ufr.get<SHORT>(0), event.value_or(SimInterface::KeyEvent::Press));
+		SimInterface::sendKeyToSimWindow(ufr.get<SHORT>(0), event.value_or(SimInterface::KeyEvent::Press), flags.value_or(0));
 	};
 	lua["copilot"]["isSimRunning"] = &copilot::simRunning;
 
@@ -306,7 +309,7 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 				str += " ";
 			}
 		}
-		printLogger->info(str);
+		logger->info(str);
 	};
 
 	lua["suppressCursor"] = SimInterface::suppressCursor;
@@ -499,12 +502,12 @@ void LuaPlugin::yeetLuaThread()
 void LuaPlugin::onError(sol::error& err)
 {
 	if (copilot::simRunning())
-		copilot::logger->error(err.what());
+		logger->error(err.what());
 }
 
 void LuaPlugin::onError(const ScriptStartupError& err)
 {
-	copilot::logger->error(err.what());
+	logger->error(err.what());
 }
 
 void LuaPlugin::run()
@@ -528,15 +531,17 @@ void LuaPlugin::stopScript(const std::string& path)
 {
 	std::unique_lock<std::recursive_mutex> globalLock(globalMutex);
 
-	std::string _path = path;
-
 	std::filesystem::path fsp(path);
 	if (fsp.is_relative()) {
-		_path = copilot::appDir + "scripts\\" + path;
+		fsp = (copilot::appDir + "scripts\\") / fsp;
+	}
+
+	if (!fsp.has_extension()) {
+		fsp /= "init.lua";
 	}
 
 	auto it = std::find_if(scripts.begin(), scripts.end(), [&](ScriptInst& s) {
-		return arePathsEqual(s.path, _path);
+		return arePathsEqual(s.path, fsp);
 	});
 	if (it == scripts.end()) return;
 
@@ -584,7 +589,7 @@ void LuaPlugin::launchThread()
 
 	thread = std::thread([this] {
 		if (loggingEnabled)
-			copilot::logger->info("### '{}': Launching new thread!", logName);
+			logger->info("### {} ({}) Launching new thread!", logName, launchCount );
 		try {
 			running = true;
 			if (!setjmp(jumpBuff)) run();
@@ -593,13 +598,13 @@ void LuaPlugin::launchThread()
 			onError(ex);
 		}
 		catch (std::exception& ex) {
-			copilot::logger->error("Exception: '{}'", ex.what());
+			logger->error("Exception: '{}'", ex.what());
 		}
 		catch (...) {
-			copilot::logger->error("Caught (...) exception");
+			logger->error("Caught (...) exception");
 		};
 		if (loggingEnabled)
-			copilot::logger->info("### '{}': Thread finished!", logName);
+			logger->info("### {} ({}) Thread finished!", logName, launchCount);
 	});
 }
 
@@ -619,3 +624,4 @@ LuaPlugin::~LuaPlugin()
 {
 	stopThread();
 }
+

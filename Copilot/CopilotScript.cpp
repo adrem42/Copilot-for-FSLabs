@@ -97,7 +97,7 @@ void CopilotScript::initLuaState(sol::state_view lua)
 				str += " ";
 			}
 		}
-		copilot::logger->info(str);
+		logger->info(str);
 	};
 
 	mcduWatcherToArray = mcduWatcherLua.script(R"(
@@ -300,7 +300,7 @@ void CopilotScript::runMessageLoop()
 			recoResultFetcher->registerCallback();
 		} 		catch (std::exception& ex) {
 			stopThread();
-			copilot::logger->error("Failed to register SAPI callback. Copilot will stop execution.");
+			logger->error("Failed to register SAPI callback. Copilot will stop execution.");
 			return;
 		}
 	}

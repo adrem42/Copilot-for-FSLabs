@@ -6,15 +6,13 @@ require "copilot.copilot.IniUtils"
 
 file = require "FSL2Lua.FSL2Lua.file"
 
-if copilot.UserOptions.general.con_log_level then
-  copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
-end
+copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
 
 copilot.getTimestamp = ipc.elapsedtime
 copilot.__dummy = function() end
 
-function copilot.await(thread, event) 
-  return Event.waitForEvent(event or copilot.getThreadEvent(thread)) 
+function copilot.await(thread) 
+  return Event.waitForEvent(copilot.getThreadEvent(thread)) 
 end
 
 FSL:setPilot(copilot.UserOptions.general.PM_seat)

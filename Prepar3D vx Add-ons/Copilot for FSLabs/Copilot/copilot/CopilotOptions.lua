@@ -28,6 +28,7 @@ return {
         name = "con_log_level",
         type = "enum",
         values = {0, 1, 2, 3, 4, 5, 6},
+        default = 2,
         hidden = true
       },
       {

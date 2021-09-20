@@ -5,7 +5,7 @@ local file = require "FSL2Lua.FSL2Lua.file"
 local iniPath = APPDIR .. "scripts.ini"
 
 if not file.exists(iniPath) then
-  file.create(iniPath, "[autorun.lua]\nautorun=A32X")
+  file.create(iniPath, "[autorun.lua]\nautorun=A32X\nautorun_if_not_exists=0")
 end
 
 local function makeScriptSection(sectionTitle)
@@ -28,6 +28,12 @@ local function makeScriptSection(sectionTitle)
         name = "kill_key",
         default = nil,
         type = "string"
+      },
+      {
+        name = "autorun_if_not_exists",
+        hidden = true,
+        default = true,
+        type = "bool"
       }
     }
   }
@@ -58,12 +64,7 @@ end
 
 local function absoluteScriptPath(prefix, path)
   local scriptDir = prefix == "copilot" and "scripts_copilot\\" or "scripts\\"
-  local absoluteScriptFilePath = APPDIR .. scriptDir
-  if path:find "%.lua$" then
-    absoluteScriptFilePath = absoluteScriptFilePath .. path
-  else
-    absoluteScriptFilePath = absoluteScriptFilePath .. path .. "\\init.lua"
-  end
+  local absoluteScriptFilePath = APPDIR .. scriptDir .. path
   return absoluteScriptFilePath
 end
 
@@ -88,7 +89,7 @@ end)
 
 local function processScriptSection(path, opt)
   if opt.autorun == true or opt.autorun == "A32X" and FSL.acType then
-    autorunScripts[path] = true
+    autorunScripts[path] = opt
   end
   if opt.launch_key then
     pcall(Bind, {key = opt.launch_key, onPress = function() copilot.newLuaThread(path) end})
@@ -115,9 +116,8 @@ for title, section in pairs(ini) do
 end
 
 if SCRIPT_LAUNCHER_AIRCRAFT_RELOAD then
-  for path in pairsByKeys(autorunScripts) do
-    local autorunPath = absoluteScriptPath(nil, "autorun.lua"):lower()
-    if path:lower() ~= autorunPath or file.exists(autorunPath) then
+  for path, opt in pairsByKeys(autorunScripts) do
+    if opt.autorun_if_not_exists or file.exists(path) then
       copilot.newLuaThread(path)
     end
   end
