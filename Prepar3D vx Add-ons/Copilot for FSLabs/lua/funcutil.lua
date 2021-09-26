@@ -1,7 +1,7 @@
 
 local M = {}
 
-function M.bind(func, ...)
+function M.partial(func, ...)
   local boundArgs = table.pack(...)
   return function(...)
     local n = select("#", ...)

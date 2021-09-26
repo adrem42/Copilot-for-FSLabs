@@ -41,7 +41,7 @@
     <ClInclude Include="MCDU.h" />
     <ClInclude Include="McduWatcher.h" />
     <ClInclude Include="Recognizer.h" />
-    <ClInclude Include="RecoResultFetcher.h" />
+    <ClInclude Include="RecognizerCallback.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SimConnect.h" />
     <ClInclude Include="SimInterface.h" />
@@ -76,7 +76,7 @@
     <ClCompile Include="McduWatcher.cpp" />
     <ClCompile Include="ModuleUser64.c" />
     <ClCompile Include="Recognizer.cpp" />
-    <ClCompile Include="RecoResultFetcher.cpp" />
+    <ClCompile Include="RecognizerCallback.cpp" />
     <ClCompile Include="SimConnect.cpp" />
     <ClCompile Include="SimInterface.cpp" />
     <ClCompile Include="Sound.cpp" />

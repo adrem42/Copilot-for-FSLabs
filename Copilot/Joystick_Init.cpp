@@ -4,11 +4,13 @@
 Joystick::Joystick(
 	int vendorId, int productId,
 	std::shared_ptr<JoystickManager> manager,
+	std::shared_ptr<spdlog::logger> logger,
 	int deviceNum
 ) : vendorId(vendorId), 
 	productId(productId), 
 	deviceNum(deviceNum),
-	manager(manager)
+	manager(manager),
+	logger(logger)
 {
 
 	int currDevNum = 0;

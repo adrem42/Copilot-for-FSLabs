@@ -25,6 +25,8 @@
 #include <fstream>
 #include "FSL2LuaControls/FSL2LuaControls.h"
 
+
+
 using namespace std::literals::chrono_literals;
 using namespace P3D;
 
@@ -33,27 +35,16 @@ GAUGESIMPORT ImportTable = {
 { 0x00000000, NULL }
 };
 extern "C" __declspec(dllexport) PPANELS Panels = NULL;
-
+std::shared_ptr<SimConnect::NamedSimConnectEvent> internalMuteEvent;
 namespace copilot {
 
 	std::string appDir;
 	bool isFslAircraft = false;
 	bool _simRunning = true;
 
-	bool muteKeyDepressed = false;
-	std::chrono::milliseconds delayBeforeUnmute = std::chrono::milliseconds(1000);
-	std::chrono::time_point<std::chrono::system_clock> muteKeyReleasedTime = std::chrono::system_clock::now();
-
 	bool simRunning()
 	{
 		return _simRunning;
-	}
-
-	bool isMuted()
-	{
-		if (muteKeyDepressed)
-			return true;
-		return std::chrono::system_clock::now() - muteKeyReleasedTime < delayBeforeUnmute;
 	}
 
 	std::string copilotScriptPath()
@@ -146,14 +137,7 @@ namespace copilot {
 
 	void onMuteKey(bool isPressed)
 	{
-		if (!isPressed && muteKeyDepressed) {
-			muteKeyReleasedTime = std::chrono::system_clock::now();
-			copilot::logger->info("Unmuted");
-		} else if (isPressed && !muteKeyDepressed) {
-			copilot::logger->info("Muted");
-		}
-		muteKeyDepressed = isPressed;
-
+		internalMuteEvent->transmit(isPressed);
 	}
 
 	double readLvar(const std::string& name)
@@ -343,6 +327,7 @@ extern "C" __declspec(dllexport) void __stdcall DLLStart(__in __notnull IPdk * p
 		PdkServices::Init(pPdk);
 
 	SimConnect::init();
+	internalMuteEvent =SimConnect::getNamedEvent("adrem42.Copilot.MuteInternal");
 
 	copilot::init();
 }

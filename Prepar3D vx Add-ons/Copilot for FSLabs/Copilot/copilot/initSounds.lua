@@ -2,7 +2,6 @@
 local calloutDir = string.format("%s\\callouts\\%s", copilot.soundDir, copilot.UserOptions.callouts.sound_set)
 local callouts = {}
 copilot.sounds = {callouts = callouts}
-copilot.PLAY_BLOCKING = -1
 
 local loadFolder
 

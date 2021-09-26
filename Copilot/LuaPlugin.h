@@ -50,7 +50,7 @@ class LuaPlugin {
 	static bool arePathsEqual(const std::filesystem::path& lhs, const std::filesystem::path& rhs);
 
 protected:
-	const std::shared_ptr<spdlog::logger> logger;
+	std::shared_ptr<spdlog::logger> logger;
 
 	virtual void onLuaStateInitialized();
 

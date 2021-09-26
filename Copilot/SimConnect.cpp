@@ -298,7 +298,6 @@ namespace SimConnect {
 			} else {
 				t["items"] = lua.create_table(0);
 			}
-			
 		} else {
 			t["type"] = "message";
 			if (!messages.empty())

@@ -6,11 +6,12 @@
 #include <boost\algorithm\string.hpp>
 
 const int IDX_STRING = 0;
+std::atomic<RuleID> Recognizer::currRuleId = 1;
 
-bool checkResult(const std::string& msg, HRESULT hr)
+bool Recognizer::checkResult(const std::string& msg, HRESULT hr)
 {
 	if (SUCCEEDED(hr)) return true;
-	copilot::logger->error("{}: 0x{:X}", msg, (unsigned long)hr);
+	logger->error("{}: 0x{:X}", msg, (unsigned long)hr);
 	return false;
 }
 
@@ -56,10 +57,10 @@ Recognizer::Phrase::PhraseElement::PhraseElement(std::vector<Choice> choices, st
 		asString += L"]";
 }
 
-Recognizer::Phrase::Phrase(Recognizer* recognizer, ISpRecoGrammar* recoGrammar, std::vector<PhraseElement> elements, std::wstring asString)
+Recognizer::Phrase::Phrase(Recognizer* recognizer, CComPtr<ISpRecoGrammar> recoGrammar, std::vector<PhraseElement> elements, std::wstring asString)
 	:recoGrammar(recoGrammar), recognizer(recognizer), ruleID(recognizer->newRuleId()), phraseElements(elements), asString(asString)
 {
-	checkResult("Error in GetRule", recoGrammar->GetRule(NULL, ruleID, SPRAF_Dynamic, TRUE, &initialState));
+	recognizer->checkResult("Error in GetRule", recoGrammar->GetRule(NULL, ruleID, SPRAF_Dynamic, TRUE, &initialState));
 }
 
 void Recognizer::Phrase::resetGrammar()
@@ -104,7 +105,7 @@ void Recognizer::Phrase::resetGrammar()
 				if (std::get<std::wstring>(choice.value).find(' ') != std::string::npos)
 					sep = L" ";
 				hr = recoGrammar->AddWordTransition(fromState, toState, std::get<std::wstring>(choice.value).c_str(), sep, SPWT_LEXICAL, 1, pProp);
-				checkResult("Error in AddWordTransition", hr);
+				recognizer->checkResult("Error in AddWordTransition", hr);
 			} else {
 				Phrase& phrase = *std::get<std::shared_ptr<Phrase>>(choice.value);
 				hr = recoGrammar->AddRuleTransition(fromState, toState, phrase.initialState, 1, pProp);
@@ -220,7 +221,8 @@ Recognizer::PhraseBuilder& Recognizer::PhraseBuilder::append(std::vector<Phrase:
 	return *this;
 }
 
-Recognizer::Recognizer(std::optional<std::string> device)
+Recognizer::Recognizer(std::shared_ptr<spdlog::logger>& logger, std::optional<std::string> device)
+	:logger(logger)
 {
 
 	throwOnBadResult("CoInitialize error", CoInitialize(NULL));
@@ -339,13 +341,12 @@ Recognizer::Rule& Recognizer::getRuleById(RuleID ruleID)
 
 RuleID Recognizer::newRuleId()
 {
-	currRuleId++;
-	return currRuleId;
+	return currRuleId++;
 }
 
 void Recognizer::logRuleStatus(std::string& prefix, const Rule& rule)
 {
-	copilot::logger->debug(L"{} top-level rule {} ({})", std::wstring(prefix.begin(), prefix.end()), rule.ruleID,
+	logger->debug(L"{} top-level rule {} ({})", std::wstring(prefix.begin(), prefix.end()), rule.ruleID,
 						   rule.phrases.empty() ? L"rule has no phrase variants" : L"phrase #1: '" + rule.phrases[0]->asString + L"'");
 }
 
@@ -466,22 +467,6 @@ void Recognizer::addPhrases(std::vector<std::shared_ptr<Recognizer::Phrase>> phr
 	}
 }
 
-//void Recognizer::removePhrases(std::vector<std::string> phrases, RuleID ruleID, bool dummy = false)
-//{
-//	Rule& rule = getRuleById(ruleID);
-//	std::vector<std::string>* _phrases;
-//	if (dummy) {
-//		if (!rule.dummyRuleID) return;
-//		_phrases = &getRuleById(rule.dummyRuleID).phrases;
-//	} else {
-//		_phrases = &rule.phrases;
-//	}
-//	for (auto&& phrase : phrases) {
-//		auto it = std::find(_phrases->begin(), _phrases->end(), phrase);
-//		if (it != _phrases->end()) _phrases->erase(it);
-//	}
-//}
-
 void Recognizer::removeAllPhrases(RuleID ruleID, bool dummy = false)
 {
 	std::lock_guard<std::recursive_mutex> lock(mtx);
@@ -517,7 +502,7 @@ void Recognizer::resetGrammar()
 		if (!grammarIsDirty) return;
 		grammarIsDirty = false;
 	}
-	copilot::logger->debug("Updating grammar");
+	logger->debug("Updating grammar");
 	HRESULT hr;
 	hr = recognizer->SetRecoState(SPRST_INACTIVE);
 	checkResult("Error deactivating reco state", hr);
@@ -544,7 +529,7 @@ void Recognizer::afterRecoEvent(RuleID ruleID)
 	}
 }
 
-void Recognizer::makeLuaBindings(sol::state_view& lua)
+sol::object Recognizer::makeLuaBindings(sol::state_view& lua)
 {
 	auto RecognizerType = lua.new_usertype<Recognizer>("Recognizer");
 	RecognizerType["addRule"] = &Recognizer::addRule;
@@ -567,7 +552,9 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 
 	RecognizerType["deviceName"] = &Recognizer::getDeviceName;
 
-	auto PhraseBuilderType = lua.new_usertype<PhraseBuilder>(
+	auto RecognizerTable = lua.create_table();
+
+	auto PhraseBuilderType = RecognizerTable.new_usertype<PhraseBuilder>(
 		"PhraseBuilder",
 		sol::factories([&] {return PhraseBuilder(this, recoGrammar.p);})
 	);
@@ -659,6 +646,25 @@ void Recognizer::makeLuaBindings(sol::state_view& lua)
 			{"Disabled", RuleState::Disabled}
 		}
 	);
+
+	auto user = sol::make_object(lua.lua_state(), shared_from_this());
+
+	auto VoiceCommand = lua["require"]("copilot.VoiceCommand").get<sol::unsafe_function>()(user).get<sol::table>();
+	auto PhraseUtils = lua["require"]("copilot.PhraseUtils").get<sol::unsafe_function>()(RecognizerTable["PhraseBuilder"]).get<sol::table>();
+
+	RecognizerType["PhraseBuilder"] = sol::readonly_property([RecognizerTable] {
+		return RecognizerTable["PhraseBuilder"];
+	});
+
+	RecognizerType["VoiceCommand"] = sol::readonly_property([VoiceCommand] {
+		return VoiceCommand;
+	});
+
+	RecognizerType["PhraseUtils"] = sol::readonly_property([PhraseUtils] {
+		return PhraseUtils;
+	});
+
+	return user;
 }
 
 void walkPropertyTree(const SPPHRASEPROPERTY* prop, PropTree& propTree) {

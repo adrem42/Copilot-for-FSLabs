@@ -282,7 +282,7 @@ function Checklist:_suspendVoiceCommands()
   if self.voiceCommandsSuspended then return end
   self.vcStates = {}
   for _, voiceCommand in pairs(Event.voiceCommands) do
-    if not self.voiceCommands[voiceCommand] then
+    if voiceCommand:recognizer() == copilot.recognizer and not self.voiceCommands[voiceCommand] then
       local state = voiceCommand:getState()
       if state ~= RuleState.Inactive and state ~= RuleState.Disabled then
         self.vcStates[voiceCommand] = state
@@ -405,6 +405,7 @@ function Checklist:_insertItem(pos, item, replace)
     item.response = {response = item.response}
   end
   for _, vc in pairs(item.response) do
+    assert(vc:recognizer() == copilot.recognizer)
     self:_incVcCount(vc)
   end
 end

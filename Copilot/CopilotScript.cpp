@@ -10,7 +10,7 @@
 #include "SimInterface.h"
 #include <sapi.h>
 #include <sphelper.h>
-#include <boost/algorithm/string.hpp>
+
 
 void CopilotScript::initLuaState(sol::state_view lua)
 {
@@ -30,62 +30,27 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	auto options = lua["copilot"]["UserOptions"];
 
 	std::optional<std::string> outputDevice = options["callouts"]["device"];
-	bool volumeControl = options["callouts"]["ACP_volume_control"].get_or(true);
+	bool volumeControl = options["callouts"]["ACP_volume_control"].get_or(1) == 1;
+	if (!volumeControl)
+		logger->info("ACP volume control is disabled");
 	int pmSide = options["general"]["PM_seat"];
 	double volume = options["callouts"]["volume"];
 
-	if (SUCCEEDED(CoInitialize(NULL))) {
-		HRESULT hr = CoCreateInstance(CLSID_SpVoice, NULL, CLSCTX_ALL, IID_ISpVoice, reinterpret_cast<void**>(&voice));
-		std::optional<std::string> device = options["callouts"]["sapi_device"];
-		if (device) {
-			CComPtr<IEnumSpObjectTokens> enumTokens;
-			HRESULT hr = SpEnumTokens(SPCAT_AUDIOOUT, NULL, NULL, &enumTokens);
-			CComPtr<ISpObjectToken> voiceObjectToken = nullptr;
+	auto copilotTts = lua["TextToSpeech"]["new"](outputDevice);
 
-			ULONG count;
-			hr = enumTokens->GetCount(&count);
-			if (SUCCEEDED(hr)) {
-				for (size_t i = 0; i < count; ++i) {
-					CComPtr<ISpObjectToken> token;
-					CSpDynamicString deviceName, deviceId;
-					hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
-					if (FAILED(hr)) continue;
-					hr = token->GetStringValue(L"DeviceName", &deviceName);
-					if (FAILED(hr)) continue;
-					if (boost::trim_right_copy(std::string(deviceName.CopyToChar())) == boost::trim_right_copy(device.value())) {
-						voiceObjectToken = token;
-						break;
-					}
-				}
-			}
+	lua["copilot"]["PLAY_BLOCKING"] = lua["TextToSpeech"]["PLAY_BLOCKING"];
 
-			if (FAILED(hr) || !voiceObjectToken) {
-				throw std::runtime_error("Couldn't find SAPI output device: " + device.value());
-			}
-
-			hr = SpCreateObjectFromToken(voiceObjectToken, &voice);
-			if (FAILED(hr)) {
-				throw std::runtime_error("SpCreateObjectFromToken failed");
-			}
-		}
-	}
-
-	Sound::init(outputDevice, pmSide, volume * 0.01, volumeControl, voice);
+	lua["copilot"]["speak"] = [&, copilotTts = copilotTts.get<sol::userdata>()](const std::wstring& phrase, std::optional<size_t> delay) {
+		copilotTts["speak"](phrase, delay);
+	};
+	auto ptr = copilotTts.get<CComPtr<ISpVoice>>();
+	Sound::init(outputDevice, pmSide, volume * 0.01, volumeControl, ptr);
 
 	auto copilot = lua["copilot"];
 
 	copilot["getOutputDeviceName"] = Sound::getDeviceName;
 
 	copilot["onVolKnobPosChanged"] = Sound::onVolumeChanged;
-
-	copilot["speak"] = [&](const std::wstring& phrase, std::optional<size_t> delay) {
-		if (delay == -1) {
-			voice->Speak(phrase.c_str(), 0, NULL);
-		} else {
-			std::lock_guard<std::mutex> lock(ttsQueueMutex);
-			ttsQueue.push(std::make_pair(elapsedTime() + delay.value_or(0), phrase));
-		}
-	};
 
 	mcduWatcherLua.open_libraries();
 	mcduWatcherLua["print"] = [this](sol::variadic_args va) {
@@ -156,9 +121,6 @@ void CopilotScript::initLuaState(sol::state_view lua)
 		return std::make_tuple(std::move(getVar), std::move(clearVar));
 	};
 
-	auto RecoResultFetcherType = lua.new_usertype<RecoResultFetcher>("RecoResultFetcher");
-	RecoResultFetcherType["getResults"] = &RecoResultFetcher::getResults;
-
 	auto SoundType = lua.new_usertype<Sound>("Sound",
 											 sol::constructors<Sound(const std::string&, int, double),
 											 Sound(const std::string&, int),
@@ -170,83 +132,31 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	McduWatcherType["getVar"] = &McduWatcher::getVar;
 	McduWatcherType["clearVar"] = &McduWatcher::clearVar;
 	
-	bool voiceControl = options["voice_control"]["enable"] == 1;
-	if (voiceControl) {
-		try {
-			std::optional<std::string> device = options["voice_control"]["device"];
-			recognizer = std::make_shared<Recognizer>(device);
-		} 		catch (std::exception& ex) {
-			throw ScriptStartupError("Failed to create recognizer: " + std::string(ex.what()));
-		}
-		
-		recoResultFetcher = std::make_shared<RecoResultFetcher>(recognizer);
-	}
 
 	int port = options["general"]["http_port"];
 	mcduWatcher = std::make_unique<McduWatcher>(pmSide, port);
-	recognizer->makeLuaBindings(lua);
-	copilot["recognizer"] = recognizer;
-	copilot["recoResultFetcher"] = recoResultFetcher;
 	copilot["mcduWatcher"] = mcduWatcher;
 
 }
 
 void CopilotScript::onLuaStateInitialized()
 {
-	startBackgroundThread();
+	
 }
 
-FSL2LuaScript::Events* CopilotScript::createEvents()
-{
-	auto parentEvents = FSL2LuaScript::createEvents();
 
-	size_t numEvents = parentEvents->numEvents + 1;
-
-	HANDLE* events = new HANDLE[numEvents]();
-
-	for (size_t i = 0; i < parentEvents->numEvents; ++i) {
-		events[i] = parentEvents->events[i];
-	}
-
-	auto e = new Events{*parentEvents };
-
-	e->EVENT_RECO_EVENT = numEvents - 1;
-	e->events = events;
-	e->numEvents = numEvents;
-
-	events[e->EVENT_RECO_EVENT] = recoResultFetcher ? recoResultFetcher->event() : CreateEvent(0, 0, 0, 0);
-	delete[] parentEvents->events;
-	delete parentEvents;
-	return e;
-}
-
-void CopilotScript::onEvent(FSL2LuaScript::Events* _events, DWORD eventIdx)
-{
-	Events* events = reinterpret_cast<Events*>(_events);
-	if (eventIdx == events->EVENT_RECO_EVENT) {
-		sol::protected_function trigger = lua["Event"]["trigger"];
-		sol::table voiceCommands = lua["Event"]["voiceCommands"];
-		for (auto& result : recoResultFetcher->getResults()) {
-			sol::table voiceCommand = voiceCommands[result.ruleID];
-			callProtectedFunction(trigger, voiceCommand, std::move(result));
-		}
-	} else {
-		FSL2LuaScript::onEvent(_events, eventIdx);
-	}
-}
 
 void CopilotScript::onSimStart()
-{
-	startBackgroundThreadTimer();
+{	
 }
 
 void CopilotScript::onSimExit()
 {
-	stopBackgroundThreadTimer();
 }
 
-void CopilotScript::onMessageLoopTimer()
+void CopilotScript::onBackgroundTimer()
 {
+	FSL2LuaScript::onBackgroundTimer();
 	if (copilot::isFslAircraft) {
 		if (mcduWatcherLuaCallbacks.size()) {
 			mcduWatcher->update([this](const std::string& pf, const std::string& pm, int pmSide) {
@@ -276,82 +186,6 @@ void CopilotScript::onMessageLoopTimer()
 		}
 	}
 	Sound::update(copilot::isFslAircraft);
-	std::lock_guard<std::mutex> lock(ttsQueueMutex);
-	if (ttsQueue.size() && elapsedTime() >= ttsQueue.front().first) {
-		HRESULT hr = voice->Speak(ttsQueue.front().second.c_str(), SPF_ASYNC, NULL);
-		ttsQueue.pop();
-	}
-}
-
-void CopilotScript::actuallyStartBackgroundThreadTimer()
-{
-	backgroundThreadTimerId = SetTimer(NULL, backgroundThreadTimerId, 70, NULL);
-}
-
-void CopilotScript::actuallyStopBackgroundThreadTimer()
-{
-	KillTimer(NULL, backgroundThreadTimerId);
-}
-
-void CopilotScript::runMessageLoop()
-{
-	if (recoResultFetcher) {
-		try {
-			recoResultFetcher->registerCallback();
-		} 		catch (std::exception& ex) {
-			stopThread();
-			logger->error("Failed to register SAPI callback. Copilot will stop execution.");
-			return;
-		}
-	}
-	actuallyStartBackgroundThreadTimer();
-	MSG msg = {};
-	while (GetMessage(&msg, NULL, 0, 0)) {
-		switch (msg.message) {
-			case (WM_STARTTIMER):
-				actuallyStartBackgroundThreadTimer();
-				break;
-			case (WM_STOPTIMER):
-				actuallyStopBackgroundThreadTimer();
-				break;
-			case WM_TIMER:
-				onMessageLoopTimer();
-				break;
-		}
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-	actuallyStopBackgroundThreadTimer();
-}
-
-void CopilotScript::startBackgroundThread()
-{
-	backgroundThread = std::thread(&CopilotScript::runMessageLoop, this);
-}
-
-void CopilotScript::stopBackgroundThread()
-{
-	if (backgroundThread.joinable()) {
-		PostThreadMessage(GetThreadId(backgroundThread.native_handle()),
-						  WM_QUIT, 0, 0);
-		backgroundThread.join();
-	}
-}
-
-void CopilotScript::startBackgroundThreadTimer()
-{
-	if (backgroundThread.joinable()) {
-		PostThreadMessage(GetThreadId(backgroundThread.native_handle()),
-						  WM_STARTTIMER, 0, 0);
-	}
-}
-
-void CopilotScript::stopBackgroundThreadTimer()
-{
-	if (backgroundThread.joinable()) {
-		PostThreadMessage(GetThreadId(backgroundThread.native_handle()),
-						  WM_STOPTIMER, 0, 0);
-	}
 }
 
 CopilotScript::~CopilotScript()

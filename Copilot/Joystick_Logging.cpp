@@ -1,7 +1,6 @@
 #include "Joystick.h"
 #include "Button.h"
 #include "JoystickManager.h"
-#include "Copilot.h"
 
 void Joystick::setLogName(const std::wstring& logName)
 {
@@ -10,7 +9,7 @@ void Joystick::setLogName(const std::wstring& logName)
 
 void Joystick::log(const std::wstring& msg)
 {
-	copilot::logger->info(msg);
+	logger->info(msg);
 }
 
 void Joystick::startLogging(size_t axisDelta)

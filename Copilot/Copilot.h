@@ -1,7 +1,6 @@
 #pragma once
 #include "../Copilot/SimConnect.h"
 #include <spdlog/spdlog.h>
-#include "RecoResultFetcher.h"
 #include <gauges.h>
 #include <atomic>
 #include <memory>
@@ -9,6 +8,21 @@
 #include <string>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <IWindowPluginSystem.h>
+
+namespace sol {
+	template <typename T>
+	struct unique_usertype_traits<CComPtr<T>> {
+		typedef T type;
+		typedef CComPtr<T> actual_type;
+		static const bool value = true;
+		static bool is_null(const actual_type& ptr) {
+			return ptr == NULL;
+		}
+		static type* get(const actual_type& ptr) {
+			return ptr.p;
+		}
+	};
+}
 
 namespace copilot {
 

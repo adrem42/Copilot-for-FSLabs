@@ -32,6 +32,7 @@
 #include <chrono>
 #include <memory>
 #include <mutex>
+#include <spdlog/logger.h>
 
 class JoystickManager;
 
@@ -44,8 +45,11 @@ class Joystick {
 	friend class LuaPlugin;
 
 	const std::shared_ptr<JoystickManager> manager;
+	std::shared_ptr<spdlog::logger> logger;
 
 	static size_t gcd(size_t a, size_t b);
+
+	Joystick(const Joystick&) = delete;
 
 	using ButtonCallback = std::function<void(uint16_t buttonNum, uint16_t action, size_t timestamp)>;
 
@@ -64,15 +68,20 @@ class Joystick {
 	/*** @type AxisProperties */
 	struct AxisProperties {
 
-		double _delta = 0.5;
+		double _delta = 0.5 / 100;
 		double prevValue = 0;
 		bool _invert = false;
 		double nullzoneLower = 0.5;
 		double nullzoneUpper = 0.5;
 		double boundLower = 0;
 		double boundUpper = 1;
-
-		static constexpr double AXIS_MAX_VALUE = 100.0;
+		double _scale = 100.0;
+		double curveFactor = 0;
+		int size = 0;
+		static const int UNSIGNED = 0;
+		static const int SIGNED_PRE = 1;
+		static const int SIGNED_POST = 2;
+		int _signed = UNSIGNED;
 
 		/***
 		Sets the axis delta (how much change in position is needed to trigger the callback)
@@ -81,6 +90,12 @@ class Joystick {
 		@return self
 		*/
 		AxisProperties& delta(double delta);
+
+		AxisProperties& curve(double curve);
+
+		AxisProperties& scale(double scale);
+
+		AxisProperties& isSigned(int flags = 0);
 
 		/***
 		Inverts the axis
@@ -261,7 +276,7 @@ public:
 	@int productId
 	@int[opt=0] deviceNum Specify this parameter if there are multiple devices with the same vendor and product IDs
 	*/
-	Joystick(int vendorId, int productId, std::shared_ptr<JoystickManager>, int deviceNum = 0);
+	Joystick(int vendorId, int productId, std::shared_ptr<JoystickManager>, std::shared_ptr<spdlog::logger> logger, int deviceNum = 0);
 
 	void setLogName(const std::wstring& logName);
 
@@ -395,7 +410,7 @@ public:
 	*/
 	static void logAllJoysticks(std::shared_ptr<JoystickManager>, size_t axisDelta = -1);
 
-	static void makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickManager> manager);
+	static void makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickManager> manager, std::shared_ptr<spdlog::logger> logger);
 
 	static void addJoystickManager(std::shared_ptr<JoystickManager>);
 

@@ -4,7 +4,7 @@ if false then module "VoiceCommand" end
 Event = Event or require "copilot.Event"
 local EventUtils = require "copilot.EventUtils"
 
-local recognizer = copilot.recognizer
+return function(recognizer)
 
 --- VoiceCommand is a subclass of <a href="#Class_Event">Event</a> and is implemented with the Windows Speech API.
 --
@@ -22,7 +22,7 @@ local recognizer = copilot.recognizer
 --
 --- <b>A VoiceCommand event emits a RecoResult as its payload</b>.
 --- @type VoiceCommand
-VoiceCommand = {DefaultConfidence = 0.93, logPrefix = "VoiceCommand"}
+local VoiceCommand = {DefaultConfidence = 0.93, logPrefix = "VoiceCommand"}
 setmetatable(VoiceCommand, {__index = Event})
 
 local function _persistenceMode(persistence)
@@ -38,11 +38,11 @@ local function _persistenceMode(persistence)
 end
 
 local function makePhrases(input)
-  if not copilot.isVoiceControlEnabled then return "" end
+  if not recognizer then return "" end
   input = type(input) == "table" and input or {input}
   for i, v in ipairs(input) do
     if type(v) == "string" then
-      input[i] = PhraseBuilder.new():append(v):build()
+      input[i] = recognizer.PhraseBuilder.new():append(v):build()
     end
   end
   return input
@@ -85,7 +85,7 @@ function VoiceCommand:new(args, confidence)
   voiceCommand.confidence = args.confidence or VoiceCommand.DefaultConfidence
   local phrases = makePhrases(args.phrase)
   args.phrase = nil
-  if copilot.isVoiceControlEnabled then
+  if recognizer then
     voiceCommand.ruleID = recognizer:addRule(phrases, voiceCommand.confidence, _persistenceMode(args.persistent))
     voiceCommand.persistent = nil
     Event.voiceCommands[voiceCommand.ruleID] = voiceCommand
@@ -99,6 +99,10 @@ function VoiceCommand:new(args, confidence)
     args.dummy = nil
   end
   return voiceCommand
+end
+
+function VoiceCommand:recognizer()
+  return recognizer
 end
 
 --- Call this function inside a plugin lua before activating or deactivating voice commands. 
@@ -175,6 +179,7 @@ function VoiceCommand:setConfidence(confidence)
 end
 
 function VoiceCommand:_checkActiveChecklistOnStateChange(state)
+  if not Checklist then return end
   if Checklist.voiceCommands[self] then return false end
   local checklist = Checklist.currChecklist()
   if not checklist then return false end
@@ -187,7 +192,9 @@ function VoiceCommand:activate()
   if self:_checkActiveChecklistOnStateChange(RuleState.Active) then
     return self
   end
-  if copilot.isVoiceControlEnabled then recognizer:activateRule(self.ruleID) end
+  if recognizer then 
+    recognizer:activateRule(self.ruleID) 
+  end
   return self
 end
 
@@ -197,7 +204,9 @@ function VoiceCommand:ignore()
   if self:_checkActiveChecklistOnStateChange(RuleState.Ignore) then
     return self
   end
-  if copilot.isVoiceControlEnabled then recognizer:ignoreRule(self.ruleID) end
+  if recognizer then 
+    recognizer:ignoreRule(self.ruleID) 
+  end
   return self
 end
 
@@ -207,7 +216,9 @@ function VoiceCommand:deactivate()
   if self:_checkActiveChecklistOnStateChange(RuleState.Inactive) then
     return self
   end
-  if copilot.isVoiceControlEnabled then recognizer:deactivateRule(self.ruleID) end
+  if recognizer then 
+    recognizer:deactivateRule(self.ruleID) 
+  end
   return self
 end
 
@@ -216,7 +227,7 @@ function VoiceCommand:disable()
   if self:_checkActiveChecklistOnStateChange(RuleState.Disabled) then
     return self
   end
-  recognizer:disableRule(self.ruleID)
+  recrecognizerognizer:disableRule(self.ruleID)
   return self
 end
 
@@ -272,5 +283,6 @@ end
 --- @usage copilot.voiceCommands.gearUp:removeEventRef('activate',
 --copilot.events.goAround, copilot.events.takeoffInitiated)
 VoiceCommand.removeEventRef = EventUtils.removeEventRef
-
 return VoiceCommand
+
+end

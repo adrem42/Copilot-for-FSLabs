@@ -125,6 +125,7 @@ void Joystick::getData()
 		InputBuffer& buff = bufferQueue.front();
 		bufferQueue.pop();
 
+
 		listSize = dataListSize;
 
 		status = HidP_GetData(
@@ -185,15 +186,19 @@ void Joystick::readBuffers()
 		events[i] = *pEvent;
 	}
 
-	while (true) {
+	if (numEvents > MAXIMUM_WAIT_OBJECTS) {
+		copilot::logger->error("Joystick handle count ({}) exceeds MAXIMUM_WAIT_OBJECTS", numEvents);
+	} else {
+		while (true) {
 
-		DWORD eventIdx = WaitForMultipleObjects(numEvents, events, false, INFINITE);
-		if (eventIdx == IDX_EVENT_STOP)
-			break;
+			DWORD eventIdx = WaitForMultipleObjects(numEvents, events, false, INFINITE);
+			if (eventIdx == IDX_EVENT_STOP)
+				break;
 
-		auto& joystick = joysticks.at(eventIdx);
-		joystick->saveBuffer(joystick->buff);
-		joystick->readFile();
+			auto& joystick = joysticks.at(eventIdx);
+			joystick->saveBuffer(joystick->buff);
+			joystick->readFile();
+		}
 	}
 
 	delete[] events;

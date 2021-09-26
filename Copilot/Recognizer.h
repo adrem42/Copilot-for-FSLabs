@@ -13,6 +13,7 @@
 #include <sol/sol.hpp>
 #include <unordered_map>
 #include <unordered_set>
+#include <spdlog/logger.h>
 
 using RuleID = DWORD;
 struct RecoProp;
@@ -94,7 +95,7 @@ struct RecoResult {
 	RuleID ruleID;
 };
 
-class Recognizer {
+class Recognizer : public std::enable_shared_from_this<Recognizer> {
 	friend class Phrase;
 private:
 	RuleID newRuleId();
@@ -123,7 +124,7 @@ public:
 
 		friend class Recognizer;
 		friend class PhraseBuilder;
-		ISpRecoGrammar* const recoGrammar;
+		CComPtr<ISpRecoGrammar> const recoGrammar;
 		Recognizer* const recognizer;
 		using ChoiceValue = std::variant<std::wstring, std::shared_ptr<Phrase>>;
 		
@@ -146,7 +147,7 @@ public:
 		SPSTATEHANDLE initialState;
 		const RuleID ruleID;
 
-		Phrase(Recognizer*, ISpRecoGrammar*, std::vector<PhraseElement>, std::wstring);
+		Phrase(Recognizer*, CComPtr<ISpRecoGrammar>, std::vector<PhraseElement>, std::wstring);
 
 		void resetGrammar();
 
@@ -267,10 +268,10 @@ public:
 		PhraseBuilder& append(std::vector<Phrase::PhraseElement::Choice>, std::wstring, bool, std::wstring = L"");
 	};
 public:
-		enum class RuleState { Active, Inactive, Ignore, Disabled };
+	enum class RuleState { Active, Inactive, Ignore, Disabled };
 private:
 	bool grammarIsDirty = false;
-	
+	std::shared_ptr<spdlog::logger> logger;
 	
 	struct Rule {
 		std::vector<std::shared_ptr<Phrase>> phrases;
@@ -282,7 +283,7 @@ private:
 		SPRULESTATE sapiRuleState = SPRS_INACTIVE;
 		SPSTATEHANDLE sapiState = 0;
 	};
-	RuleID currRuleId = 0;
+	static std::atomic<RuleID> currRuleId;
 	Rule& getRuleById(RuleID ruleID);
 	void changeRuleState(Rule& rule, RuleState newRuleState, SPRULESTATE spRuleState, std::string&& logMsg, std::string&& dummyLogMsg);
 	CComPtr<ISpRecognizer> recognizer;
@@ -293,9 +294,10 @@ private:
 	std::unordered_map<RuleID, Rule> rules;
 	std::recursive_mutex mtx;
 	std::string deviceName;
+	bool checkResult(const std::string& msg, HRESULT hr);
 public:
 	void markGrammarDirty();
-	Recognizer(std::optional<std::string> device);
+	Recognizer(std::shared_ptr<spdlog::logger>& logger, std::optional<std::string> device);
 	std::string getDeviceName();
 	~Recognizer();
 	void registerCallback(ISpNotifyCallback* callback);
@@ -307,12 +309,11 @@ public:
 	RuleState getRuleState(RuleID ruleID);
 	sol::as_table_t<std::vector<std::shared_ptr<Phrase>>> getPhrases(RuleID ruleID, bool dummy);
 	void addPhrases(std::vector<std::shared_ptr<Phrase>> phrases, RuleID ruleID, bool dummy);
-	//void removePhrases(std::vector<Phrase> phrases, RuleID ruleID, bool dummy);
 	void removeAllPhrases(RuleID ruleID, bool dummy);
 	void setConfidence(float confidence, RuleID ruleID);
 	void setRulePersistence(RulePersistenceMode persistenceMode, RuleID ruleID);
 	void resetGrammar();
 	void afterRecoEvent(RuleID ruleID);
-	void makeLuaBindings(sol::state_view&);
+	sol::object makeLuaBindings(sol::state_view&);
 	RecoResult getResult();
 };

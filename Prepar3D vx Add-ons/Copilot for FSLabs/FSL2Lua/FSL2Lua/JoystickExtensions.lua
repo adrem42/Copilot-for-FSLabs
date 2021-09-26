@@ -16,42 +16,6 @@ function J.printDeviceInfo()
   end
 end
 
-local function parseAxisArgs(...)
-  if select("#", ...) == 2 then
-    return ...
-  else
-    return 1, ...
-  end
-end
-
-function J.signedAxis(...)
-  local max, callback = parseAxisArgs(...)
-  local mult = 1 / 50 * max
-  return function(value)
-    callback((value - 50) * mult)
-  end
-end
-
-function J.unsignedAxis(...)
-  local max, callback = parseAxisArgs(...)
-  local mult = max / 100
-  return function(value)
-    callback(value * mult)
-  end
-end
-
-function J.signedSimAxis(eventID)
-  return J.signedAxis(0x4000, function(value)
-    ipc.control(eventID, value)
-  end)
-end 
-
-function J.unsignedSimAxis(eventID)
-  return J.unsignedAxis(0x4000, function(value)
-    ipc.control(eventID, value)
-  end)
-end
-
 local BUTTON_STATE = {
   UNKNOWN = 0,
   DEPRESSED = 1,

@@ -121,7 +121,7 @@ std::string Sound::getDeviceName() {
 void Sound::update(bool isFslAircraft)
 {
 	double newVolKnobPos = isFslAircraft ? getVolumeKnobPos() / 270 : volKnobPos;
-	bool volumeChanged = volKnobPos != newVolKnobPos;
+	bool volumeChanged = volumeControl && volKnobPos != newVolKnobPos;
 	if (!soundQueue.empty() || volumeChanged) {
 		std::lock_guard<std::mutex> lock(mtx);
 		if (!soundQueue.empty()) {

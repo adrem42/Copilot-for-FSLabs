@@ -57,10 +57,16 @@ copilot.sequences = {}
 copilot.checklists = {}
 
 Event = require "copilot.Event"
-VoiceCommand = require "copilot.VoiceCommand"
+--VoiceCommand = require "copilot.VoiceCommand"
 if copilot.isVoiceControlEnabled then
-  require "copilot.PhraseUtils"
+  copilot.recognizer = copilot.createRecognizer(copilot.UserOptions.voice_control.device, "adrem42.Copilot.MuteInternal")
+  VoiceCommand = copilot.recognizer.VoiceCommand
+  PhraseUtils = copilot.recognizer.PhraseUtils
+  PhraseBuilder = copilot.recognizer.PhraseBuilder
+else
+  VoiceCommand = require "copilot.VoiceCommand"()
 end
+
 require "copilot.Checklist"
 FlightPhaseProcessor = require "copilot.FlightPhaseProcessor"
 local FlightPhaseProcessor = FlightPhaseProcessor

@@ -14,6 +14,7 @@
 #include "CallbackRunner.h"
 #include "SimInterface.h"
 #include "SystemEventLuaManager.h"
+#include <boost/algorithm/string.hpp>
 
 std::unordered_map< P3D::MOUSE_CLICK_TYPE, std::string> clickTypes{
 	{P3D::MOUSE_CLICK_LEFT_SINGLE,		"leftPress"},
@@ -38,6 +39,7 @@ void FSL2LuaScript::MouseRectListenerCallback::MouseRectListenerProc(UINT rect, 
 		});
 	}
 }
+
 
 
 using namespace SimConnect;
@@ -393,6 +395,8 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 
 	LuaPlugin::initLuaState(lua);
 
+	CoInitialize(NULL);
+
 	using logger = spdlog::logger;
 	auto LoggerType = lua.new_usertype<logger>("Logger");
 
@@ -428,7 +432,7 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 
 	joystickManager = std::make_shared<JoystickManager>();
 	Joystick::addJoystickManager(joystickManager);
-	Joystick::makeLuaBindings(lua, joystickManager);
+	Joystick::makeLuaBindings(lua, joystickManager, this->logger);
 
 	lua["Event"] = lua["require"]("copilot.Event");
 	lua["muteCopilot"] = [] { copilot::onMuteKey(true); };
@@ -444,6 +448,83 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 
 	LuaTextMenu::makeLuaBindings(lua, scriptID);
 	LuaNamedSimConnectEvent::makeLuaBindings(lua, scriptID);
+
+	lua["copilot"]["createRecognizer"] = [&](std::optional<std::string> deviceName, std::optional<std::string> muteKeyEvent) {
+		auto recognizer = std::make_shared<Recognizer>(this->logger, deviceName);
+		auto user = recognizer->makeLuaBindings(this->lua);
+		auto cb = std::make_shared<RecognizerCallback>(recognizer, [&] (RecoResult& recoResult) {
+			this->logger->info(L"Recognized '{}' (confidence {:.4f})", recoResult.phrase, recoResult.confidence);
+			withScript<FSL2LuaScript>(scriptID, [=](FSL2LuaScript& s) {
+				s.enqueueCallback([&s, recoResult](sol::state_view& lua) {
+					sol::protected_function trigger = lua["Event"]["trigger"];
+					sol::table voiceCommands = lua["Event"]["voiceCommands"];
+					sol::table voiceCommand = voiceCommands[recoResult.ruleID];
+					s.callProtectedFunction(trigger, voiceCommand, std::move(recoResult));
+				});
+			});
+		}, muteKeyEvent);
+		this->recognizerCallbacks.push_back(cb);
+		cb->start();
+		return user;
+	};
+
+	auto VoiceType = lua.new_usertype<ISpVoice>(
+		"TextToSpeech",
+		sol::factories([](std::optional<std::string> device) {
+			CComPtr<ISpVoice> voice;
+			HRESULT hr = voice.CoCreateInstance(CLSID_SpVoice);
+			if (!device) {
+
+			} else  {
+				CComPtr<IEnumSpObjectTokens> enumTokens;
+				HRESULT hr = SpEnumTokens(SPCAT_AUDIOOUT, NULL, NULL, &enumTokens);
+				CComPtr<ISpObjectToken> voiceObjectToken = NULL;
+
+				ULONG count;
+				hr = enumTokens->GetCount(&count);
+				if (SUCCEEDED(hr)) {
+					for (size_t i = 0; i < count; ++i) {
+						CComPtr<ISpObjectToken> token;
+						CSpDynamicString deviceName, deviceId;
+						hr = enumTokens->Item(i, reinterpret_cast<ISpObjectToken**>(&token));
+						if (FAILED(hr)) continue;
+						hr = token->GetStringValue(L"DeviceName", &deviceName);
+						if (FAILED(hr)) continue;
+						if (std::string(deviceName.CopyToChar()) == device.value()) {
+							voiceObjectToken = token;
+							break;
+						}
+					}
+				}
+				if (FAILED(hr) || !voiceObjectToken) {
+					throw std::runtime_error("Couldn't find SAPI output device: " + device.value());
+				}
+				voice->SetOutput(voiceObjectToken, TRUE);
+				if (FAILED(hr)) {
+					throw std::runtime_error("SpCreateObjectFromToken failed");
+				}
+			}
+			return voice;
+		})
+	);
+
+	auto PLAY_BLOCKING = -1;
+
+	VoiceType["PLAY_BLOCKING"] = sol::var(PLAY_BLOCKING);
+
+	VoiceType["setVolume"] = &ISpVoice::SetVolume;
+
+	VoiceType["speak"] = [&, PLAY_BLOCKING](ISpVoice& voice, const std::wstring& phrase, std::optional<size_t> delay) {
+		if (delay == PLAY_BLOCKING) {
+			voice.Speak(phrase.c_str(), 0, NULL);
+		} else {
+			std::lock_guard<std::mutex> lock(ttsQueueMutex);
+			ttsQueue.push(TtsEvent{ &voice, elapsedTime() + delay.value_or(0), std::move(phrase) });
+		}
+	};
+
+	VoiceType["setVolume"] = &ISpVoice::SetVolume;
+	
 
 	lua["copilot"]["mouseMacroEvent"] = [this](sol::this_state ts) {
 		if (!mouseMacroCallback) {
@@ -511,8 +592,10 @@ void FSL2LuaScript::onEvent(Events* events, DWORD eventIdx)
 		}
 	} else {
 		joystickManager->onNewDataAvailable(eventIdx);
-		while (joystickManager->hasEvents()) 
+		
+		while (joystickManager->hasEvents()) {
 			callProtectedFunction(lua.registry()["dispatchJoystickEvents"]);
+		}
 	}
 }
 
@@ -520,31 +603,39 @@ void FSL2LuaScript::run()
 {
 
 	LuaPlugin::run();
+	startBackgroundThread();
 
 	auto events = createEvents();
 
-	while (true) {
+	if (events->numEvents > MAXIMUM_WAIT_OBJECTS) {
+		logger->error("Handle count ({}) exceeds MAXIMUM_WAIT_OBJECTS", events->numEvents);
+	} else {
+		while (true) {
 
-		size_t timeout = 0;
+			size_t timeout = 0;
 
-		if (callbackRunner->nextUpdate == CallbackRunner::INDEFINITE) {
-			timeout = INFINITE;
-		} else {
-			size_t elapsed = elapsedTime();
-			if (callbackRunner->nextUpdate > elapsed)
-				timeout = callbackRunner->nextUpdate - elapsed;
-		}
+			if (callbackRunner->nextUpdate == CallbackRunner::INDEFINITE) {
+				timeout = INFINITE;
+			} else {
+				size_t elapsed = elapsedTime();
+				if (callbackRunner->nextUpdate > elapsed)
+					timeout = callbackRunner->nextUpdate - elapsed;
+			}
 
-		if (timeout == INFINITE && !events->numEvents)
-			break;
+			if (timeout == INFINITE && !events->numEvents)
+				break;
 
-		DWORD res = WaitForMultipleObjects(events->numEvents, events->events, false, timeout);
-		if (res == events->SHUTDOWN_EVENT) {
-			break;
-		} else if (res == WAIT_TIMEOUT) {
-			callbackRunner->update();
-		} else {
-			onEvent(events, res);
+			DWORD res = WaitForMultipleObjects(events->numEvents, events->events, false, timeout);
+			if (res == events->SHUTDOWN_EVENT) {
+				break;
+			} else if (res == WAIT_TIMEOUT) {
+				callbackRunner->update();
+			} else if (res != WAIT_FAILED) {
+				onEvent(events, res);
+			} else {
+				logger->error("WaitForMultipleObjects returned WAIT_FAILED, error: 0x{:X}", GetLastError());
+				break;
+			}
 		}
 	}
 
@@ -566,11 +657,44 @@ void FSL2LuaScript::stopThread()
 	LuaPlugin::stopThread();
 }
 
+void FSL2LuaScript::onBackgroundTimer()
+{
+	std::lock_guard<std::mutex> lock(ttsQueueMutex);
+	
+	if (ttsQueue.size()) {
+		auto& front = ttsQueue.front();
+		if (elapsedTime() >= front.timestamp) {
+			HRESULT hr = front.voice->Speak(front.phrase.c_str(), SPF_ASYNC, NULL);
+			ttsQueue.pop();
+		}
+	}
+}
+
+void FSL2LuaScript::startBackgroundThread()
+{
+	backgroundThreadRunning = true;
+	backgroundThread = std::thread([&] {
+		while (backgroundThreadRunning) {
+			Sleep(70);
+			onBackgroundTimer();
+		}
+	});
+}
+
+void FSL2LuaScript::stopBackgroundThread()
+{
+	if (backgroundThread.joinable()) {
+		backgroundThreadRunning = false;
+		backgroundThread.join();
+	}
+}
+
 FSL2LuaScript::~FSL2LuaScript()
 {
 	if (mouseMacroCallback)
 		copilot::GetWindowPluginSystem()->UnRegisterMouseRectListenerCallback(mouseMacroCallback.get());
 	Joystick::removeJoystickManager(joystickManager);
 	Keyboard::removeKeyBindManager(keyBindManager);
+	stopBackgroundThread();
 	stopThread();
 }

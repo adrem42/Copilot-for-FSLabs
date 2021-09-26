@@ -2,23 +2,23 @@
 #include "Button.h"
 #include "JoystickManager.h"
 
-void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickManager> manager)
+void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickManager> manager, std::shared_ptr<spdlog::logger> logger)
 {
 	
 	auto JoystickType = lua.new_usertype<Joystick>(
 		"Joystick",
 		sol::factories(
-			[manager]( int vendorId, int productId) {
+			[manager, logger]( int vendorId, int productId) {
 				std::lock_guard<std::mutex> lock(bufferThreadMutex);
-				auto joy = std::make_shared<Joystick>(vendorId, productId, manager);
+				auto joy = std::make_shared<Joystick>(vendorId, productId, manager, logger);
 				stopAndJoinBufferThread();
 				manager->joysticks.push_back(joy);
 				startBufferThread();
 				return joy;
 			}, 
-			[manager]( int vendorId, int productId, int devNum) {
+			[manager, logger]( int vendorId, int productId, int devNum) {
 				std::lock_guard<std::mutex> lock(bufferThreadMutex);
-				auto joy = std::make_shared<Joystick>(vendorId, productId, manager, devNum);
+				auto joy = std::make_shared<Joystick>(vendorId, productId, manager, logger, devNum);
 				stopAndJoinBufferThread();
 				manager->joysticks.push_back(joy);
 				startBufferThread();
@@ -46,6 +46,8 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 		static_cast<AxisProperties& (Joystick::*)(std::string)>(&Joystick::axisProps)
 	);
 
+	JoystickType["AXIS_SCALE_SIM_AXIS"] = sol::var(0x4000);
+
 	auto AxisCallbackType = lua.new_usertype<AxisCallback>("AxisCallback");
 	AxisCallbackType["props"] = &AxisCallback::props;
 
@@ -54,6 +56,11 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 	AxisPropsType["nullzone"] = &AxisProperties::nullzone;
 	AxisPropsType["invert"] = &AxisProperties::invert;
 	AxisPropsType["delta"] = &AxisProperties::delta;
+	AxisPropsType["signed"] = &AxisProperties::isSigned;
+	AxisPropsType["scale"] = &AxisProperties::scale;
+	AxisPropsType["curve"] = &AxisProperties::curve;
+
+	JoystickType["AXIS_SIGNED_POST_CALIBRATION"] = sol::var(AxisProperties::SIGNED_POST);
 
 	JoystickType["info"] = &Joystick::deviceInfo;
 	JoystickType["setLogName"] = &Joystick::setLogName;

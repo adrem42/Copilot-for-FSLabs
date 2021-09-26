@@ -54,7 +54,9 @@
 --    end)
 -- @module PhraseUtils
 
-PhraseUtils = {}
+return function (PhraseBuilder)
+
+local PhraseUtils = {}
 local phrases = {}
 local resultHandlers = {}
 
@@ -213,3 +215,7 @@ makePhrase {
     return digits .. letter
   end
 }
+
+return PhraseUtils
+
+end

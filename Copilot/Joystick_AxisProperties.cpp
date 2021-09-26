@@ -3,7 +3,35 @@
 
 Joystick::AxisProperties& Joystick::AxisProperties::delta(double delta)
 {
-	_delta = delta;
+	_delta = delta / 100;
+	return *this;
+}
+
+Joystick::AxisProperties& Joystick::AxisProperties::scale(double scale)
+{
+	_scale = scale;
+	if (_scale <= 0)
+		throw std::runtime_error("Bad argument");
+	return *this;
+}
+
+Joystick::AxisProperties& Joystick::AxisProperties::curve(double curve)
+{
+	if (curve > 1) {
+		curve = 1;
+	} else if (curve < -1) {
+		curve = -1;
+	}
+	curveFactor = curve;
+	return *this;
+}
+
+Joystick::AxisProperties& Joystick::AxisProperties::isSigned(int flags)
+{
+	if (flags == SIGNED_POST)
+		_signed = SIGNED_POST;
+	else
+		_signed = SIGNED_PRE;
 	return *this;
 }
 
@@ -33,7 +61,7 @@ Joystick::AxisProperties& Joystick::AxisProperties::nullzone(double lower, doubl
 
 bool Joystick::AxisProperties::valueChanged(double value)
 {
-	return fabs(value - prevValue) >= _delta;
+	return fabs(value - prevValue) >= _delta * _scale;
 }
 
 double Joystick::AxisProperties::transformValue(double value)
@@ -50,11 +78,24 @@ double Joystick::AxisProperties::transformValue(double value)
 		value = ((value - nullzoneUpper) / (boundUpper - nullzoneUpper) * 0.5) + 0.5;
 	}
 
-	if (!_invert) {
-		value *= AXIS_MAX_VALUE;
-	} else {
-		value = -(value * AXIS_MAX_VALUE) + AXIS_MAX_VALUE;
+	if (_invert) {
+		value = -(value - 1);
 	}
-	
+
+	if (_signed == SIGNED_PRE) {
+		value = (value - 0.5) * 2;
+	}
+
+	if (curveFactor) {
+		value = value * (1 - curveFactor) + curveFactor * pow(value, 3);
+		if (value > 1) value = 1; else if (value < -1) value = -1;
+	}
+
+	if (_signed == SIGNED_POST) {
+		value = (value - 0.5) * 2;
+	}
+
+	value *= _scale;
+
 	return value;
 }

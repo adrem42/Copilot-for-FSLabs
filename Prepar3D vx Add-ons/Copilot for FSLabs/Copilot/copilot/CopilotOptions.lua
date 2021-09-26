@@ -158,19 +158,13 @@ return {
       {
         name = "ACP_volume_control",
         type = "bool",
-        default = nil,
+        default = UserOptions.TRUE,
         hidden = true
       },
       {
         name = "device", 
         default = nil, 
         comment = "Leave blank for default device. The list of devices is at the top of the log file.", 
-        type = "string"
-      },
-      {
-        name = "sapi_device",
-        default = nil,
-        comment = "This is for text-to-speech if you're using it. Leave blank for default device. The list of devices is at the top of the log file.",
         type = "string"
       },
       {

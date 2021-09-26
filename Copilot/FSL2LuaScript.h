@@ -8,6 +8,8 @@
 #include <IUnknownHelper.h>
 #include <Pdk.h>
 #include "CallbackRunner.h"
+#include "Recognizer.h"
+#include "RecognizerCallback.h"
 
 class FSL2LuaScript : public LuaPlugin {
 
@@ -47,6 +49,23 @@ protected:
 		size_t SHUTDOWN_EVENT;
 		size_t EVENT_LUA_CALLBACK;
 	};
+
+	struct TtsEvent {
+		ISpVoice* voice;
+		size_t timestamp;
+		std::wstring phrase;
+	};
+
+	std::vector<std::shared_ptr<RecognizerCallback>> recognizerCallbacks;
+
+	std::mutex ttsQueueMutex;
+	std::queue<TtsEvent> ttsQueue;
+
+	bool backgroundThreadRunning = false;
+	std::thread backgroundThread;
+	virtual void onBackgroundTimer();
+	void startBackgroundThread();
+	void stopBackgroundThread();
 
 	virtual void initLuaState(sol::state_view lua) override;
 
