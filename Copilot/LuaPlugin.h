@@ -54,7 +54,7 @@ protected:
 
 	virtual void onLuaStateInitialized();
 
-	const std::shared_ptr<std::recursive_mutex> scriptMutex;
+	std::shared_ptr<std::recursive_mutex> scriptMutex;
 
 	struct ScriptStartupError : public std::exception {
 		std::string _what;

@@ -529,65 +529,47 @@ void Recognizer::afterRecoEvent(RuleID ruleID)
 	}
 }
 
-sol::object Recognizer::makeLuaBindings(sol::state_view& lua)
+sol::userdata Recognizer::makeLuaBindingsInstance(sol::state_view& lua)
 {
-	auto RecognizerType = lua.new_usertype<Recognizer>("Recognizer");
-	RecognizerType["addRule"] = &Recognizer::addRule;
-	RecognizerType["activateRule"] = &Recognizer::activateRule;
-	RecognizerType["deactivateRule"] = &Recognizer::deactivateRule;
-	RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;
-	RecognizerType["disableRule"] = &Recognizer::disableRule;
-	RecognizerType["resetGrammar"] = &Recognizer::resetGrammar;
-	RecognizerType["addPhrases"] = &Recognizer::addPhrases;
-	//RecognizerType["removePhrases"] = &Recognizer::removePhrases;
-	RecognizerType["removeAllPhrases"] = &Recognizer::removeAllPhrases;
-	RecognizerType["setConfidence"] = &Recognizer::setConfidence;
-	RecognizerType["getPhrases"] = &Recognizer::getPhrases;
-	RecognizerType["setRulePersistence"] = &Recognizer::setRulePersistence;
-	RecognizerType["getRuleState"] = &Recognizer::getRuleState;
-	lua.new_enum("RulePersistenceMode",
-				 "Ignore", Recognizer::RulePersistenceMode::Ignore,
-				 "Persistent", Recognizer::RulePersistenceMode::Persistent,
-				 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
+	auto table = lua.create_table();
+	lua.registry()[sol::light(this)] = table;
+	auto user = sol::make_object(lua.lua_state(), shared_from_this());
 
-	RecognizerType["deviceName"] = &Recognizer::getDeviceName;
-
-	auto RecognizerTable = lua.create_table();
-
-	auto PhraseBuilderType = RecognizerTable.new_usertype<PhraseBuilder>(
+	auto PhraseBuilderType = table.new_usertype<PhraseBuilder>(
 		"PhraseBuilder",
-		sol::factories([&] {return PhraseBuilder(this, recoGrammar.p);})
+		sol::factories([&] {return PhraseBuilder(this, recoGrammar.p); })
 	);
 
 	PhraseBuilderType["append"] = sol::overload(
-		static_cast<PhraseBuilder& (PhraseBuilder::*)(PhraseBuilder::LuaChoiceMap, std::wstring)>(&PhraseBuilder::append),
-		static_cast<PhraseBuilder& (PhraseBuilder::*)(Phrase::ChoiceValue)>(&PhraseBuilder::append),
-		static_cast<PhraseBuilder& (PhraseBuilder::*)(Phrase::ChoiceValue, std::wstring)>(&PhraseBuilder::append),
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(PhraseBuilder::LuaChoiceMap, std::wstring)>(&PhraseBuilder::append),
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(Phrase::ChoiceValue)>(&PhraseBuilder::append),
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(Phrase::ChoiceValue, std::wstring)>(&PhraseBuilder::append),
 		[](PhraseBuilder& builder, sol::table t) -> PhraseBuilder& {
-			PhraseBuilder::LuaChoiceMap choiceMap;
-			if (t["choices"].get_type() == sol::type::table) {
-				choiceMap = t.get<PhraseBuilder::LuaChoiceMap>("choices");
-			} else {
-				choiceMap.push_back(t["choices"]);
-			}
-			if (t["propName"].get_type() == sol::type::string && !choiceMap.empty()) {
-				builder.append(
-					choiceMap,
-					t.get<std::wstring>("propName"),
-					t.get<std::optional<bool>>("optional").value_or(false),
-					t.get<std::optional<std::wstring>>("asString").value_or(L"")
-				);
-			} else {
-				builder.append(t.as<PhraseBuilder::LuaChoiceMap>());
-			}
-			return builder;
+		PhraseBuilder::LuaChoiceMap choiceMap;
+		if (t["choices"].get_type() == sol::type::table) {
+			choiceMap = t.get<PhraseBuilder::LuaChoiceMap>("choices");
+		} else {
+			choiceMap.push_back(t["choices"]);
 		}
+		if (t["propName"].get_type() == sol::type::string && !choiceMap.empty()) {
+			builder.append(
+				choiceMap,
+				t.get<std::wstring>("propName"),
+				t.get<std::optional<bool>>("optional").value_or(false),
+				t.get<std::optional<std::wstring>>("asString").value_or(L"")
+			);
+		} else {
+			builder.append(t.as<PhraseBuilder::LuaChoiceMap>());
+		}
+		return builder;
+	}
 	);
+
 	PhraseBuilderType["appendOptional"] = sol::overload(
-		static_cast<PhraseBuilder&(PhraseBuilder::*)(PhraseBuilder::LuaChoiceMap, std::wstring)>(&PhraseBuilder::appendOptional),
-		static_cast<PhraseBuilder&(PhraseBuilder::*)(Phrase::ChoiceValue, std::wstring)>(&PhraseBuilder::appendOptional),
-		static_cast<PhraseBuilder&(PhraseBuilder::*)(PhraseBuilder::LuaChoiceMap)>(&PhraseBuilder::appendOptional),
-		static_cast<PhraseBuilder&(PhraseBuilder::*)(Phrase::ChoiceValue)>(&PhraseBuilder::appendOptional)
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(PhraseBuilder::LuaChoiceMap, std::wstring)>(&PhraseBuilder::appendOptional),
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(Phrase::ChoiceValue, std::wstring)>(&PhraseBuilder::appendOptional),
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(PhraseBuilder::LuaChoiceMap)>(&PhraseBuilder::appendOptional),
+		static_cast<PhraseBuilder & (PhraseBuilder::*)(Phrase::ChoiceValue)>(&PhraseBuilder::appendOptional)
 	);
 
 	PhraseBuilderType["build"] = sol::overload(
@@ -595,74 +577,8 @@ sol::object Recognizer::makeLuaBindings(sol::state_view& lua)
 		static_cast<std::shared_ptr<Recognizer::Phrase>(PhraseBuilder::*)()>(&PhraseBuilder::build)
 	);
 
-	auto PhraseType = lua.new_usertype<Phrase>("Phrase");
-
-	PhraseType[sol::meta_function::to_string] = [](const Phrase& phrase) {return phrase.asString; };
-
-	auto ResultType = lua.new_usertype<RecoResult>("RecoResult");
-	ResultType["props"] = sol::readonly_property([](RecoResult& res) {return res.props; });
-	ResultType["confidence"] = sol::readonly_property([](RecoResult& res) {return res.confidence; });
-	ResultType["phrase"] = sol::readonly_property([](RecoResult& res) {return res.phrase; });
-	using getPropRet = std::tuple<sol::optional<std::wstring>, sol::optional<RecoProp&>>;
-	ResultType["getProp"] = [](RecoResult& res, sol::variadic_args va) -> getPropRet {
-		if (va.leftover_count() == 0)
-			throw "Invalid argument";
-		std::function<sol::optional<RecoProp&>( PropTree&, size_t)> walk;
-		walk = [&]( PropTree& tree, size_t keyIdx) -> sol::optional<RecoProp&> {
-			if (keyIdx > (va.leftover_count() - 1))
-				return {};
-			auto key = va.get<std::wstring>(keyIdx);
-			auto it = tree.find(key);
-			if (it == tree.end()) return {};
-			if (keyIdx + 1 > (va.leftover_count() - 1))
-				return it->second;
-			return walk(it->second.children, keyIdx + 1);
-		};
-		sol::optional<RecoProp&> ret{};
-		if (va[0].is<RecoProp>()) {
-			ret = walk(va.get<RecoProp>(0).children, 1);
-		} else {
-			ret = walk(res.props, 0);
-		}
-		if (ret) {
-			auto& val = ret.value();
-			return std::make_tuple(val.value, ret);
-		}
-		return getPropRet();
-	};
-
-	auto RecoPropType = lua.new_usertype<RecoProp>("RecoProp");
-	RecoPropType["value"] = sol::readonly_property([](RecoProp& prop) {return prop.value; });
-	RecoPropType["confidence"] = sol::readonly_property([](RecoProp& prop) {return prop.confidence; });
-	RecoPropType["children"] = sol::readonly_property([](RecoProp& prop) {return prop.children; });
-	RecoPropType[sol::meta_function::to_string] = [](RecoProp& prop) {return prop.value; };
-	
-	lua.new_enum<RuleState>(
-		"RuleState",
-		{
-			{"Active", RuleState::Active},
-			{"Inactive", RuleState::Inactive},
-			{"Ignore", RuleState::Ignore},
-			{"Disabled", RuleState::Disabled}
-		}
-	);
-
-	auto user = sol::make_object(lua.lua_state(), shared_from_this());
-
-	auto VoiceCommand = lua["require"]("copilot.VoiceCommand").get<sol::unsafe_function>()(user).get<sol::table>();
-	auto PhraseUtils = lua["require"]("copilot.PhraseUtils").get<sol::unsafe_function>()(RecognizerTable["PhraseBuilder"]).get<sol::table>();
-
-	RecognizerType["PhraseBuilder"] = sol::readonly_property([RecognizerTable] {
-		return RecognizerTable["PhraseBuilder"];
-	});
-
-	RecognizerType["VoiceCommand"] = sol::readonly_property([VoiceCommand] {
-		return VoiceCommand;
-	});
-
-	RecognizerType["PhraseUtils"] = sol::readonly_property([PhraseUtils] {
-		return PhraseUtils;
-	});
+	table["VoiceCommand"] = lua["require"]("copilot.VoiceCommand").get<sol::unsafe_function>()(user).get<sol::table>();
+	table["PhraseUtils"] = lua["require"]("copilot.PhraseUtils").get<sol::unsafe_function>()(table["PhraseBuilder"]).get<sol::table>();
 
 	return user;
 }

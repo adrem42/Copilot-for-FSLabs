@@ -284,7 +284,7 @@ function Checklist:_suspendVoiceCommands()
   for _, voiceCommand in pairs(Event.voiceCommands) do
     if voiceCommand:recognizer() == copilot.recognizer and not self.voiceCommands[voiceCommand] then
       local state = voiceCommand:getState()
-      if state ~= RuleState.Inactive and state ~= RuleState.Disabled then
+      if state ~= copilot.RuleState.Inactive and state ~= copilot.RuleState.Disabled then
         self.vcStates[voiceCommand] = state
         voiceCommand:deactivate()
       end
@@ -297,11 +297,11 @@ function Checklist:_resumeVoiceCommands()
   if not self.voiceCommandsSuspended then return end
   self.voiceCommandsSuspended = false
   for voiceCommand, state in pairs(self.vcStates) do
-    if state == RuleState.Active then
+    if state == copilot.RuleState.Active then
       voiceCommand:activate()
-    elseif state == RuleState.Ignore then
+    elseif state == copilot.RuleState.Ignore then
       voiceCommand:ignore()
-    elseif state == RuleState.Disabled then
+    elseif state == copilot.RuleState.Disabled then
       voiceCommand:disable()
     end
   end

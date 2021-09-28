@@ -13,7 +13,6 @@ public:
 private:
 	Callback callback;
 	std::shared_ptr<Recognizer> recognizer;
-	std::mutex mutex;
 	void fetchResults();
 	HRESULT NotifyCallback(WPARAM wParam, LPARAM lParam) override;
 	std::optional<std::string> muteKeyEvent;

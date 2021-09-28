@@ -449,10 +449,10 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	LuaTextMenu::makeLuaBindings(lua, scriptID);
 	LuaNamedSimConnectEvent::makeLuaBindings(lua, scriptID);
 
-	lua["copilot"]["createRecognizer"] = [&](std::optional<std::string> deviceName, std::optional<std::string> muteKeyEvent) {
+	auto recognizerFactory = [&](std::optional<std::string> deviceName, std::optional<std::string> muteKeyEvent) {
 		auto recognizer = std::make_shared<Recognizer>(this->logger, deviceName);
-		auto user = recognizer->makeLuaBindings(this->lua);
-		auto cb = std::make_shared<RecognizerCallback>(recognizer, [&] (RecoResult& recoResult) {
+		auto user = recognizer->makeLuaBindingsInstance(this->lua);
+		auto cb = std::make_shared<RecognizerCallback>(recognizer, [&](RecoResult& recoResult) {
 			this->logger->info(L"Recognized '{}' (confidence {:.4f})", recoResult.phrase, recoResult.confidence);
 			withScript<FSL2LuaScript>(scriptID, [=](FSL2LuaScript& s) {
 				s.enqueueCallback([&s, recoResult](sol::state_view& lua) {
@@ -468,7 +468,9 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 		return user;
 	};
 
-	auto VoiceType = lua.new_usertype<ISpVoice>(
+	Recognizer::makeLuaBindings(lua["copilot"].get<sol::table>(), sol::factories(recognizerFactory));
+
+	auto VoiceType = lua["copilot"].get<sol::table>().new_usertype<ISpVoice>(
 		"TextToSpeech",
 		sol::factories([](std::optional<std::string> device) {
 			CComPtr<ISpVoice> voice;
@@ -672,8 +674,8 @@ void FSL2LuaScript::onBackgroundTimer()
 
 void FSL2LuaScript::startBackgroundThread()
 {
-	backgroundThreadRunning = true;
 	backgroundThread = std::thread([&] {
+		backgroundThreadRunning = true;
 		while (backgroundThreadRunning) {
 			Sleep(70);
 			onBackgroundTimer();
@@ -695,6 +697,6 @@ FSL2LuaScript::~FSL2LuaScript()
 		copilot::GetWindowPluginSystem()->UnRegisterMouseRectListenerCallback(mouseMacroCallback.get());
 	Joystick::removeJoystickManager(joystickManager);
 	Keyboard::removeKeyBindManager(keyBindManager);
-	stopBackgroundThread();
 	stopThread();
+	stopBackgroundThread();
 }

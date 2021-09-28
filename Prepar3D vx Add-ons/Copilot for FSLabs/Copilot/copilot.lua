@@ -8,12 +8,7 @@ file = require "FSL2Lua.FSL2Lua.file"
 
 copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
 
-copilot.getTimestamp = ipc.elapsedtime
-copilot.__dummy = function() end
 
-function copilot.await(thread) 
-  return Event.waitForEvent(copilot.getThreadEvent(thread)) 
-end
 
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
 FSL:setHttpPort(copilot.UserOptions.general.http_port)
@@ -59,7 +54,7 @@ copilot.checklists = {}
 Event = require "copilot.Event"
 --VoiceCommand = require "copilot.VoiceCommand"
 if copilot.isVoiceControlEnabled then
-  copilot.recognizer = copilot.createRecognizer(copilot.UserOptions.voice_control.device, "adrem42.Copilot.MuteInternal")
+  copilot.recognizer = copilot.Recognizer.new(copilot.UserOptions.voice_control.device, "adrem42.Copilot.MuteInternal")
   VoiceCommand = copilot.recognizer.VoiceCommand
   PhraseUtils = copilot.recognizer.PhraseUtils
   PhraseBuilder = copilot.recognizer.PhraseBuilder

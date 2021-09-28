@@ -17,10 +17,9 @@ bool RecognizerCallback::isMuted()
 RecognizerCallback::RecognizerCallback(std::shared_ptr<Recognizer> recognizer, Callback callback, std::optional<std::string> muteKeyEvent)
 	:recognizer(recognizer), callback(callback), muteKeyEvent(muteKeyEvent)
 {
-	
 	if (muteKeyEvent) {
 		auto evt = SimConnect::getNamedEvent(muteKeyEvent.value());
-		evt->addCallback([&](DWORD isPressed) {
+		muteKeyEventCallbackId = evt->addCallback([&](DWORD isPressed) {
 			if (!isPressed && muteKeyDepressed) {
 				muteKeyReleasedTime = std::chrono::system_clock::now();
 			}
@@ -51,14 +50,12 @@ RecognizerCallback::~RecognizerCallback()
 						WM_QUIT, 0, 0);
 		callbackThread.join();
 	}
-	
 }
 
 void RecognizerCallback::fetchResults()
 {
 	RecoResult recoResult = recognizer->getResult();
 	if (recoResult.ruleID > 0) {
-		std::lock_guard<std::mutex> lock(mutex);
 		if (!this->isMuted() && recognizer->getRuleState(recoResult.ruleID) == Recognizer::RuleState::Active) {
 			recognizer->afterRecoEvent(recoResult.ruleID);
 			callback(recoResult);

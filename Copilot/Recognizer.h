@@ -314,6 +314,96 @@ public:
 	void setRulePersistence(RulePersistenceMode persistenceMode, RuleID ruleID);
 	void resetGrammar();
 	void afterRecoEvent(RuleID ruleID);
-	sol::object makeLuaBindings(sol::state_view&);
+	template<typename F>
+	static void makeLuaBindings(sol::table ns, F fact) {
+		auto RecognizerType = ns.new_usertype<Recognizer>("Recognizer", fact);
+		RecognizerType["addRule"] = &Recognizer::addRule;
+		RecognizerType["activateRule"] = &Recognizer::activateRule;
+		RecognizerType["deactivateRule"] = &Recognizer::deactivateRule;
+		RecognizerType["ignoreRule"] = &Recognizer::ignoreRule;
+		RecognizerType["disableRule"] = &Recognizer::disableRule;
+		RecognizerType["resetGrammar"] = &Recognizer::resetGrammar;
+		RecognizerType["addPhrases"] = &Recognizer::addPhrases;
+		//RecognizerType["removePhrases"] = &Recognizer::removePhrases;
+		RecognizerType["removeAllPhrases"] = &Recognizer::removeAllPhrases;
+		RecognizerType["setConfidence"] = &Recognizer::setConfidence;
+		RecognizerType["getPhrases"] = &Recognizer::getPhrases;
+		RecognizerType["setRulePersistence"] = &Recognizer::setRulePersistence;
+		RecognizerType["getRuleState"] = &Recognizer::getRuleState;
+		ns.new_enum("RulePersistenceMode",
+					 "Ignore", Recognizer::RulePersistenceMode::Ignore,
+					 "Persistent", Recognizer::RulePersistenceMode::Persistent,
+					 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
+
+		RecognizerType["deviceName"] = &Recognizer::getDeviceName;
+
+		auto PhraseType = ns.new_usertype<Phrase>("Phrase");
+
+		PhraseType[sol::meta_function::to_string] = [](const Phrase& phrase) {return phrase.asString; };
+
+		auto ResultType = ns.new_usertype<RecoResult>("RecoResult");
+		ResultType["props"] = sol::readonly_property([](RecoResult& res) {return res.props; });
+		ResultType["confidence"] = sol::readonly_property([](RecoResult& res) {return res.confidence; });
+		ResultType["phrase"] = sol::readonly_property([](RecoResult& res) {return res.phrase; });
+		using getPropRet = std::tuple<sol::optional<std::wstring>, sol::optional<RecoProp&>>;
+		ResultType["getProp"] = [](RecoResult& res, sol::variadic_args va) -> getPropRet {
+			if (va.leftover_count() == 0)
+				throw "Invalid argument";
+			std::function<sol::optional<RecoProp&>(PropTree&, size_t)> walk;
+			walk = [&](PropTree& tree, size_t keyIdx) -> sol::optional<RecoProp&> {
+				if (keyIdx > (va.leftover_count() - 1))
+					return {};
+				auto key = va.get<std::wstring>(keyIdx);
+				auto it = tree.find(key);
+				if (it == tree.end()) return {};
+				if (keyIdx + 1 > (va.leftover_count() - 1))
+					return it->second;
+				return walk(it->second.children, keyIdx + 1);
+			};
+			sol::optional<RecoProp&> ret{};
+			if (va[0].is<RecoProp>()) {
+				ret = walk(va.get<RecoProp>(0).children, 1);
+			} else {
+				ret = walk(res.props, 0);
+			}
+			if (ret) {
+				auto& val = ret.value();
+				return std::make_tuple(val.value, ret);
+			}
+			return getPropRet();
+		};
+
+		auto RecoPropType = ns.new_usertype<RecoProp>("RecoProp");
+		RecoPropType["value"] = sol::readonly_property([](RecoProp& prop) {return prop.value; });
+		RecoPropType["confidence"] = sol::readonly_property([](RecoProp& prop) {return prop.confidence; });
+		RecoPropType["children"] = sol::readonly_property([](RecoProp& prop) {return prop.children; });
+		RecoPropType[sol::meta_function::to_string] = [](RecoProp& prop) {return prop.value; };
+
+		ns.new_enum<RuleState>(
+			"RuleState",
+			{
+				{"Active", RuleState::Active},
+				{"Inactive", RuleState::Inactive},
+				{"Ignore", RuleState::Ignore},
+				{"Disabled", RuleState::Disabled}
+			}
+		);
+
+		RecognizerType["PhraseBuilder"] = sol::readonly_property([](Recognizer& r, sol::this_state ts) {
+			sol::state_view lua(ts);
+			return lua.registry()[sol::light(&r)]["PhraseBuilder"];
+		});
+
+		RecognizerType["VoiceCommand"] = sol::readonly_property([](Recognizer& r, sol::this_state ts) {
+			sol::state_view lua(ts);
+			return lua.registry()[sol::light(&r)]["VoiceCommand"];
+		});
+
+		RecognizerType["PhraseUtils"] = sol::readonly_property([](Recognizer& r, sol::this_state ts) {
+			sol::state_view lua(ts);
+			return lua.registry()[sol::light(&r)]["PhraseUtils"];
+		});
+	}
+	sol::userdata makeLuaBindingsInstance(sol::state_view&);
 	RecoResult getResult();
 };

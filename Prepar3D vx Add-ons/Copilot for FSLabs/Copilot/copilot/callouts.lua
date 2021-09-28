@@ -273,7 +273,7 @@ function copilot.callouts:flightControlsCheck()
   local brakeCheckVcWasActive
 
   if copilot.isVoiceControlEnabled then
-    brakeCheckVcWasActive = copilot.voiceCommands.brakeCheck:getState() == RuleState.Active
+    brakeCheckVcWasActive = copilot.voiceCommands.brakeCheck:getState() == copilot.RuleState.Active
     if brakeCheckVcWasActive then
       copilot.voiceCommands.brakeCheck:ignore()
     end

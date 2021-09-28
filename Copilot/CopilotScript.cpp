@@ -36,9 +36,9 @@ void CopilotScript::initLuaState(sol::state_view lua)
 	int pmSide = options["general"]["PM_seat"];
 	double volume = options["callouts"]["volume"];
 
-	auto copilotTts = lua["TextToSpeech"]["new"](outputDevice);
+	auto copilotTts = lua["copilot"]["TextToSpeech"]["new"](outputDevice);
 
-	lua["copilot"]["PLAY_BLOCKING"] = lua["TextToSpeech"]["PLAY_BLOCKING"];
+	lua["copilot"]["PLAY_BLOCKING"] = lua["copilot"]["TextToSpeech"]["PLAY_BLOCKING"];
 
 	lua["copilot"]["speak"] = [&, copilotTts = copilotTts.get<sol::userdata>()](const std::wstring& phrase, std::optional<size_t> delay) {
 		copilotTts["speak"](phrase, delay);

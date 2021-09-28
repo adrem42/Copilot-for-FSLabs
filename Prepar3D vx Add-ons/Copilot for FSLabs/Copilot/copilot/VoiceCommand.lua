@@ -27,11 +27,11 @@ setmetatable(VoiceCommand, {__index = Event})
 
 local function _persistenceMode(persistence)
   if not persistence then
-    return RulePersistenceMode.NonPersistent
+    return copilot.RulePersistenceMode.NonPersistent
   elseif persistence == true then
-    return RulePersistenceMode.Persistent
+    return copilot.RulePersistenceMode.Persistent
   elseif persistence == "ignore" then
-    return RulePersistenceMode.Ignore
+    return copilot.RulePersistenceMode.Ignore
   else
     error("Invalid persistence mode", 3)
   end
@@ -189,7 +189,7 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:activate()
-  if self:_checkActiveChecklistOnStateChange(RuleState.Active) then
+  if self:_checkActiveChecklistOnStateChange(copilot.RuleState.Active) then
     return self
   end
   if recognizer then 
@@ -201,7 +201,7 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:ignore()
-  if self:_checkActiveChecklistOnStateChange(RuleState.Ignore) then
+  if self:_checkActiveChecklistOnStateChange(copilot.RuleState.Ignore) then
     return self
   end
   if recognizer then 
@@ -213,7 +213,7 @@ end
 ---<span>
 ---@return self
 function VoiceCommand:deactivate()
-  if self:_checkActiveChecklistOnStateChange(RuleState.Inactive) then
+  if self:_checkActiveChecklistOnStateChange(copilot.RuleState.Inactive) then
     return self
   end
   if recognizer then 
@@ -224,7 +224,7 @@ end
 
 ---Deactivates the voice command and makes successive calls to @{activate} and @{ignore} have no effect.
 function VoiceCommand:disable()
-  if self:_checkActiveChecklistOnStateChange(RuleState.Disabled) then
+  if self:_checkActiveChecklistOnStateChange(copilot.RuleState.Disabled) then
     return self
   end
   recrecognizerognizer:disableRule(self.ruleID)

@@ -14,6 +14,13 @@ if false then
   function copilot.displayText(text, duration, color) end
 end
 
+copilot.getTimestamp = ipc.elapsedtime
+copilot.__dummy = function() end
+
+function copilot.await(thread) 
+  return Event.waitForEvent(copilot.getThreadEvent(thread)) 
+end
+
 local keyMappingIniPath = os.getenv("APPDATA") .. "\\Virtuali\\KeyMapping.ini"
 
 local gsxKeyToCopilotKey = {
