@@ -2,13 +2,6 @@
 See `FSL2Lua` on how to use these <br><br>FSL.CPT.GSLD\_ATC\_MSG\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
-
 FSL.CPT.GSLD\_Autoland\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -542,13 +535,6 @@ FSL.CPT.WINDOW\_ChartLt\_Knob
 
 FSL.FO.GSLD\_ATC\_MSG\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
-
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
 
 FSL.FO.GSLD\_Autoland\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1200,13 +1186,6 @@ FSL.MIP\_ISIS\_BARO\_Button
 FSL.MIP\_ISIS\_BARO\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
-
 FSL.MIP\_ISIS\_BUGS\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -1234,11 +1213,6 @@ FSL.OVHD\_AC\_Cockpit\_Knob
 FSL.OVHD\_AC\_ECON\_FLOW\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
 
-
->**A319: unavailable**
-
->**A320: unavailable**
-
 FSL.OVHD\_AC\_Eng\_APU\_Bleed\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
 
@@ -1262,9 +1236,6 @@ FSL.OVHD\_AC\_Pack\_2\_Button
 
 FSL.OVHD\_AC\_Pack\_Flow\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
-
-
->**A321: unavailable**
 
 > Positions: "LOW", "NORM", "HI"
 
@@ -1353,11 +1324,6 @@ FSL.OVHD\_CALLS\_AFT\_Button
 FSL.OVHD\_CALLS\_ALL\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
-
->**A319: unavailable**
-
->**A320: unavailable**
-
 FSL.OVHD\_CALLS\_EMER\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -1367,11 +1333,6 @@ FSL.OVHD\_CALLS\_EMER\_Guard
 FSL.OVHD\_CALLS\_EXIT\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
-
->**A319: unavailable**
-
->**A320: unavailable**
-
 FSL.OVHD\_CALLS\_FWD\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -1380,11 +1341,6 @@ FSL.OVHD\_CALLS\_MECH\_Button
 
 FSL.OVHD\_CALLS\_MID\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
-
-
->**A319: unavailable**
-
->**A320: unavailable**
 
 FSL.OVHD\_CAPT\_PURS\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -1543,25 +1499,11 @@ FSL.OVHD\_ELEC\_BUS\_TIE\_Button
 FSL.OVHD\_ELEC\_COMM\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
 
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
-
 FSL.OVHD\_ELEC\_EXT\_PWR\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.OVHD\_ELEC\_GALY\_CAB\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
-
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
 
 FSL.OVHD\_ELEC\_GEN\_1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
@@ -1708,38 +1650,17 @@ FSL.OVHD\_FIRE\_ENG2\_TEST\_Button
 FSL.OVHD\_FUEL\_ACT\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
 
-
->**A319: unavailable**
-
->**A320: unavailable**
-
 FSL.OVHD\_FUEL\_CTR\_TK\_1\_PUMP\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
-
-
->**A321: unavailable**
 
 FSL.OVHD\_FUEL\_CTR\_TK\_1\_VALVE\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
 
-
->**A319: unavailable**
-
->**A320: unavailable**
-
 FSL.OVHD\_FUEL\_CTR\_TK\_2\_PUMP\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
 
-
->**A321: unavailable**
-
 FSL.OVHD\_FUEL\_CTR\_TK\_2\_VALVE\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
-
-
->**A319: unavailable**
-
->**A320: unavailable**
 
 FSL.OVHD\_FUEL\_L\_TK\_1\_PUMP\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
@@ -1826,7 +1747,7 @@ FSL.OVHD\_HYD\_RAT\_MAN\_ON\_Guard
 > Class: <a href='../libraries/FSL2Lua.html#Class_Guard'>Guard</a>
 
 FSL.OVHD\_HYD\_YELLOW\_ELEC\_PUMP\_Button
-> Class: <a href='../libraries/FSL2Lua.html#Class_ToggleButton'>ToggleButton</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.OVHD\_INTLT\_AnnLt\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
@@ -1900,13 +1821,6 @@ FSL.OVHD\_RADIO\_3\_HF2\_Button
 FSL.OVHD\_RADIO\_3\_Inner\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
-
 FSL.OVHD\_RADIO\_3\_LS\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -1923,13 +1837,6 @@ FSL.OVHD\_RADIO\_3\_ON\_OFF\_Switch
 
 FSL.OVHD\_RADIO\_3\_Outer\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
-
-
->**A319: no Lvar**
-
->**A320: no Lvar**
-
->**A321: no Lvar**
 
 FSL.OVHD\_RADIO\_3\_VHF1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -2198,7 +2105,9 @@ FSL.PED\_WXRadar\_GCS\_Switch
 > Positions: "OFF", "AUTO"
 
 FSL.PED\_WXRadar\_Gain\_Knob
-> Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
+> Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>
+
+> Positions: "MIN", "-12", "-9", "-6", "-3", "CAL", "+4", "+8", "+12", "MAX"
 
 FSL.PED\_WXRadar\_Mode\_Switch
 > Class: <a href='../libraries/FSL2Lua.html#Class_Switch'>Switch</a>

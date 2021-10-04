@@ -61,7 +61,7 @@ protected:
 	std::mutex ttsQueueMutex;
 	std::queue<TtsEvent> ttsQueue;
 
-	bool backgroundThreadRunning = false;
+	std::atomic_bool backgroundThreadRunning = false;
 	std::thread backgroundThread;
 	virtual void onBackgroundTimer();
 	void startBackgroundThread();

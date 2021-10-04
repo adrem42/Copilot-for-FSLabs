@@ -417,7 +417,7 @@ local function initControls()
 
     if FSL:getAcType() and control.name then
       initControl(control, varname, guards, buttons)
-    elseif FSL2LUA_MAKE_CONTROL_LIST and FSL._checkControl(control) then
+    elseif FSL2LUA_MAKE_CONTROL_LIST and control.name then
       tableOfControls[#tableOfControls+1] = initControl(control, varname, guards, buttons)
     end
   end

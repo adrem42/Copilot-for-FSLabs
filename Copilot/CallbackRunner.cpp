@@ -18,7 +18,7 @@ void CallbackRunner::maybeAwaken(Timestamp deadline)
 		onCallbackAwake();
 }
 
-std::shared_ptr<CallbackRunner::Callback> CallbackRunner::checkAlreadyAdded(sol::object& o, std::optional<std::string>& name)
+std::shared_ptr<CallbackRunner::Callback> CallbackRunner::checkAlreadyAdded(sol::main_object& o, std::optional<std::string>& name)
 {
 	sol::state_view lua(o.lua_state());
 	sol::optional<std::shared_ptr<Callback>> maybeCallback = lua.registry()[REGISTRY_KEY_CALLBACKS_TABLE][o];
@@ -109,7 +109,7 @@ CallbackRunner::CallbackRunner(LuaPlugin* plugin)
 * 
 */
 CallbackRunner::CallbackReturn CallbackRunner::addCallback(
-	sol::object callable,
+	sol::main_object callable,
 	std::optional<std::string> name, 
 	std::optional<Interval> interval, 
 	std::optional<Interval> delay)
@@ -185,7 +185,7 @@ CallbackRunner::CallbackReturn CallbackRunner::addCallback(
 * @int[opt] delay Same as `addCallback`
 * @return The same values as `addCallback`
 */
-CallbackRunner::CallbackReturn CallbackRunner::addCoroutine(sol::object callable, std::optional<std::string> name, std::optional<Interval> delay)
+CallbackRunner::CallbackReturn CallbackRunner::addCoroutine(sol::main_object callable, std::optional<std::string> name, std::optional<Interval> delay)
 {
 	if (callable.get_type() == sol::type::function) {
 		sol::state_view lua(callable.lua_state());
@@ -202,7 +202,7 @@ CallbackRunner::CallbackReturn CallbackRunner::addCoroutine(sol::object callable
 * @int[opt] delay Same as `addCallback`
 * @return The same values as `addCallback`
 */
-CallbackRunner::CallbackReturn CallbackRunner::callOnce(sol::object callable, std::optional<Interval> delay)
+CallbackRunner::CallbackReturn CallbackRunner::callOnce(sol::main_object callable, std::optional<Interval> delay)
 {
 	auto callback = addCallback(callable, {}, {}, delay);
 	if (callable.get_type() == sol::type::function)

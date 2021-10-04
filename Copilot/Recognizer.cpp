@@ -495,6 +495,22 @@ void Recognizer::setRulePersistence(RulePersistenceMode persistenceMode, RuleID 
 	getRuleById(ruleID).persistenceMode = persistenceMode;
 }
 
+void Recognizer::pause() {
+	HRESULT hr;
+	hr = recognizer->SetRecoState(SPRST_INACTIVE);
+	checkResult("Error deactivating reco state", hr);
+	hr = recoContext->Pause(NULL);
+	checkResult("Error pausing reco context", hr);
+}
+
+void Recognizer::resume() {
+	HRESULT hr;
+	hr = recognizer->SetRecoState(SPRST_ACTIVE);
+	checkResult("Error reactivating reco state", hr);
+	hr = recoContext->Resume(NULL);
+	checkResult("Error while resuming reco context", hr);
+}
+
 void Recognizer::resetGrammar()
 {
 	{

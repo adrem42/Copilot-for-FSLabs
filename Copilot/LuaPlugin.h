@@ -116,11 +116,15 @@ public:
 			std::lock_guard<std::recursive_mutex> lock(*s.mutex);
 			auto oldScript = s.script;
 			s.script = nullptr;
+			s.scriptID = -1;
+			auto path = s.path;
+			s.path = std::string();
 			globalLock.unlock();
 			delete oldScript;
-			auto script = new T(s.path, s.mutex, s.logger, s.launchCount);
+			auto script = new T(path, s.mutex, s.logger, s.launchCount);
 			s.script = script;
 			s.scriptID = script->scriptID;
+			s.path = path;
 			if (doLaunch)
 				s.script->launchThread();
 			return script;
@@ -202,8 +206,8 @@ public:
 		auto it = std::find_if(scripts.begin(), scripts.end(), pred);
 		if (it == scripts.end()) return false;
 		auto& inst = *it;
-		std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
 		globalLock.unlock();
+		std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
 		if (inst.script && pred(inst)) {
 			if (T* script = dynamic_cast<T*>(inst.script)) {
 				block(*script);

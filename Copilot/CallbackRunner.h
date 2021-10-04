@@ -113,7 +113,7 @@ private:
 		callRunable(f, std::forward<Args>(args)...);
 	}
 
-	std::shared_ptr<CallbackRunner::Callback> checkAlreadyAdded(sol::object& o, std::optional<std::string>& name);
+	std::shared_ptr<CallbackRunner::Callback> checkAlreadyAdded(sol::main_object& o, std::optional<std::string>& name);
 	sol::unsafe_function createCoroutine;
 
 	void actuallyRemoveCallback(sol::state_view&, std::shared_ptr<Callback>&, ActiveCallbackIter& iter);
@@ -163,9 +163,9 @@ private:
 public:
 
 	CallbackRunner(LuaPlugin*);
-	CallbackReturn addCallback(sol::object callable, std::optional<std::string> name, std::optional<Interval> interval, std::optional<Interval> delay);
-	CallbackReturn addCoroutine(sol::object callable, std::optional<std::string> name, std::optional<Interval> delay);
-	CallbackReturn callOnce(sol::object callable, std::optional<Interval> delay);
+	CallbackReturn addCallback(sol::main_object callable, std::optional<std::string> name, std::optional<Interval> interval, std::optional<Interval> delay);
+	CallbackReturn addCoroutine(sol::main_object callable, std::optional<std::string> name, std::optional<Interval> delay);
+	CallbackReturn callOnce(sol::main_object callable, std::optional<Interval> delay);
 	void removeCallback(sol::object callable);
 	bool setCallbackTimeout(sol::object, Timestamp);
 	bool setCallbackTimeout(sol::object);

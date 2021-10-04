@@ -546,11 +546,10 @@ void LuaPlugin::stopScript(const std::string& path)
 	if (it == scripts.end()) return;
 
 	auto& inst = *it;
-	std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
 	globalLock.unlock();
+	std::lock_guard<std::recursive_mutex> lock(*inst.mutex);
 	delete inst.script;
 	inst.script = nullptr;
-
 }
 
 void LuaPlugin::stopAllScripts()

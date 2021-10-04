@@ -519,7 +519,7 @@ function Event.awaitMenuAction(...)
   local a = textEventCreated:addAction(function(_, menu)
 
     if menu.type ~= "menu" then return end
-    local isEmpty = #menu.items > 0
+    local isEmpty = #menu.items == 0
     if filterEmpty and isEmpty then return end
 
     local res = table.pack(action(menu))

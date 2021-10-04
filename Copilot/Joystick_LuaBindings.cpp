@@ -58,7 +58,7 @@ void Joystick::makeLuaBindings(sol::state_view& lua, std::shared_ptr<JoystickMan
 	AxisPropsType["delta"] = &AxisProperties::delta;
 	AxisPropsType["signed"] = sol::overload(
 		&AxisProperties::isSigned,
-		[](AxisProperties& prop) {return prop.isSigned(); }
+		[](AxisProperties& prop) -> AxisProperties& {return prop.isSigned(); }
 	);
 	AxisPropsType["scale"] = &AxisProperties::scale;
 	AxisPropsType["curve"] = &AxisProperties::curve;

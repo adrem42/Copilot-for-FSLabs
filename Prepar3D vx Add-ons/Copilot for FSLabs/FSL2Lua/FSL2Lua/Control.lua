@@ -3,7 +3,7 @@ if false then module "FSL2Lua" end
 local util = require "FSL2Lua.FSL2Lua.util"
 local hand = require "FSL2Lua.FSL2Lua.hand"
 local FSL = require "FSL2Lua.FSL2Lua.FSLinternal"
-local invokeControl = require "FSL2Lua.FSL2Lua.invokeControl"
+local invokeControl = not FSL2LUA_MAKE_CONTROL_LIST and require "FSL2Lua.FSL2Lua.invokeControl"
 
 --- Abstract control
 --- @type Control

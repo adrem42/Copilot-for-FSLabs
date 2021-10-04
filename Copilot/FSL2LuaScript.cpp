@@ -449,8 +449,8 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	LuaTextMenu::makeLuaBindings(lua, scriptID);
 	LuaNamedSimConnectEvent::makeLuaBindings(lua, scriptID);
 
-	auto recognizerFactory = [&](std::optional<std::string> deviceName, std::optional<std::string> muteKeyEvent) {
-		auto recognizer = std::make_shared<Recognizer>(this->logger, deviceName);
+	auto recognizerFactory = [&](sol::optional<std::string> deviceName, sol::optional<std::string> muteKeyEvent) {
+		auto recognizer = std::make_shared<Recognizer>(this->logger, deviceName.has_value() ? std::optional(deviceName.value()) : std::nullopt);
 		auto user = recognizer->makeLuaBindingsInstance(this->lua);
 		auto cb = std::make_shared<RecognizerCallback>(recognizer, [&](RecoResult& recoResult) {
 			this->logger->info(L"Recognized '{}' (confidence {:.4f})", recoResult.phrase, recoResult.confidence);
@@ -462,7 +462,7 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 					s.callProtectedFunction(trigger, voiceCommand, std::move(recoResult));
 				});
 			});
-		}, muteKeyEvent);
+		}, muteKeyEvent.has_value() ? std::optional(muteKeyEvent.value()) : std::nullopt);
 		this->recognizerCallbacks.push_back(cb);
 		cb->start();
 		return user;
@@ -515,6 +515,7 @@ void FSL2LuaScript::initLuaState(sol::state_view lua)
 	VoiceType["PLAY_BLOCKING"] = sol::var(PLAY_BLOCKING);
 
 	VoiceType["setVolume"] = &ISpVoice::SetVolume;
+	VoiceType["setRate"] = &ISpVoice::SetRate;
 
 	VoiceType["speak"] = [&, PLAY_BLOCKING](ISpVoice& voice, const std::wstring& phrase, std::optional<size_t> delay) {
 		if (delay == PLAY_BLOCKING) {

@@ -42,4 +42,5 @@ public:
 	static void init(std::optional<std::string> device, int side, double userVolume, bool volumeControl, ISpVoice* voice);
 	static void update(bool);
 	static void onVolumeChanged(double newVolume);
+	~Sound();
 };

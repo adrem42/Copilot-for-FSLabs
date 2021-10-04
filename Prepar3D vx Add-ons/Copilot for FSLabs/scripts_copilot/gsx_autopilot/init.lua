@@ -60,11 +60,11 @@ local function handleMenu(menu)
     return selectJetways(menu)
   end
 
-  if options.no_followme and ipc.readLvar "FSDT_VAR_EnginesStopped" == 0 and items[1]:find "FollowMe" then
+  if options.no_followme and ipc.readLvar "FSDT_VAR_EnginesStopped" == 0 and items[1] and items[1]:find "FollowMe" then
     return selectMenuItem(2)
   end
 
-  if options.no_engines_before_pushback and items[2]:find "Do you want to start" then
+  if options.no_engines_before_pushback and items[2] and items[2]:find "Do you want to start" then
     return selectMenuItem(2)
   end
 
@@ -96,9 +96,7 @@ end
 
 copilot.simConnectSystemEvent "TextEventCreated":addAction(function(_, menu)
   if menu.type == "menu" and #menu.items > 0 then
-    if options.debug then 
-      logMenu(menu) 
-    end
+    logMenu(menu) 
     currMenu = menu
     handleMenu(menu)
   end
@@ -109,11 +107,6 @@ local iniFormat = {
   {
     title = "gsx_autopilot",
     keys = {
-      {
-        name = "debug",
-        type = "bool",
-        hidden = true
-      },
       {
         name = "auto_select_operators",
         type = "bool",
@@ -145,49 +138,42 @@ local iniFormat = {
 
 options = copilot.loadIniFile(SCRIPT_DIR .. "gsx_autopilot.ini", iniFormat).gsx_autopilot
 
-if options.debug then
-
-  function debug(msg)
-    print("GSX autopilot - " .. msg)
-  end
-
-  local function lvarMonitor(_, lvar, value)
-    debug(
-      "Lvar event:" .. 
-      "\n\n\tName: " .. lvar ..
-      "\n\tValue: " .. value .. "\n"
-    )
-  end
-
-  local gsxVars = {
-    "JETWAY",
-    "DEPARTURE_STATE",
-    "BOARDING_STATE",
-    "DEBOARDING_STATE",
-    "CATERING_STATE",
-    "DEICING_STATE",
-    "REFUELING_STATE",
-    "JETWAY_POWER",
-    "JETWAY_AIR",
-  }
-
-  for _, lvar in ipairs(gsxVars) do
-    Event.fromLvar(lvar):addAction(lvarMonitor)
-  end
-
-  for i = 0, 9 do
-    local evtName = "SIMCONNECT_MENU_" .. i
-    local evt = copilot.simConnectEvent(evtName)
-    evt:subscribe()
-    evt.event:addAction(function()
-      debug("SimConnect event: " .. evtName)
-    end)
-  end
-
-else
-  function debug() end
+function debug(msg)
+  copilot.logger:debug("GSX autopilot - " .. msg)
 end
 
+local function lvarMonitor(_, lvar, value)
+  debug(
+    "Lvar event:" .. 
+    "\n\n\tName: " .. lvar ..
+    "\n\tValue: " .. value .. "\n"
+  )
+end
+
+local gsxVars = {
+  "JETWAY",
+  "DEPARTURE_STATE",
+  "BOARDING_STATE",
+  "DEBOARDING_STATE",
+  "CATERING_STATE",
+  "DEICING_STATE",
+  "REFUELING_STATE",
+  "JETWAY_POWER",
+  "JETWAY_AIR",
+}
+
+for _, lvar in ipairs(gsxVars) do
+  Event.fromLvar(lvar):addAction(lvarMonitor)
+end
+
+for i = 0, 9 do
+  local evtName = "SIMCONNECT_MENU_" .. i
+  local evt = copilot.simConnectEvent(evtName)
+  evt:subscribe()
+  evt.event:addAction(function()
+    debug("SimConnect event: " .. evtName)
+  end)
+end
 
 if options.auto_dock_default_jetways then
   

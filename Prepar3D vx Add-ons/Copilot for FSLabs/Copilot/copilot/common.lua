@@ -50,6 +50,10 @@ local function getGsxKeymapping()
   return keys
 end
 
+function copilot.getGsxKeymapping()
+  return table.concat(getGsxKeymapping(), "+")
+end
+
 function copilot.toggleGsxMenu()
   local keys = getGsxKeymapping()
   local concat = table.concat(keys, "+")

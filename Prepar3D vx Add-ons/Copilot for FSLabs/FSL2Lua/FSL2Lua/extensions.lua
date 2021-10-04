@@ -100,7 +100,15 @@ end
 function table.find(t, value)
   for i, val in ipairs(t) do
     if val == value then
-      return i
+      return i, val
+    end
+  end
+end
+
+function table.findIf(t, pred)
+  for i, val in ipairs(t) do
+    if pred(val) then
+      return i, val
     end
   end
 end

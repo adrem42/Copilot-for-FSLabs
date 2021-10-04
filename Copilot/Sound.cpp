@@ -16,6 +16,8 @@ std::string outputDevice;
 std::string Sound::knobLvar;
 std::string Sound::switchLvar;
 
+int deviceId = -1;
+
 Sound::Sound(const std::string& path, int length, double fileRelVolume)
 	:length(length), fileRelVolume(fileRelVolume)
 {
@@ -92,24 +94,31 @@ void Sound::init(std::optional<std::string> device, int pmSide, double userVolum
 	if (!volumeControl) {
 		globalVolume = userVolume;
 	}
-
+	auto oldDeviceId = deviceId;
+	deviceId = -1;
 	nextFreeSlot = std::chrono::system_clock::now();
 	Sound::userVolume = userVolume;
 	volKnobPos = -1; // to force a volume update
-	int deviceId = -1;
 	BASS_DEVICEINFO info;
 	if (device) {
-		std::string devTrimmed = boost::trim_right_copy(device.value());
 		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) {
-			if (devTrimmed == boost::trim_right_copy(std::string(info.name))) {
+			if (device.value() == std::string(info.name)) {
 				deviceId = i;
 				break;
 			}
 		}
 		if (deviceId == -1)
 			throw std::runtime_error("Couldn't find device: '" + device.value() + "'");
+	} else {
+		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) {
+			if (info.flags & BASS_DEVICE_DEFAULT) {
+				deviceId = i;
+				break;
+			}
+		}
 	}
-	BASS_Init(deviceId, 44100, BASS_DEVICE_STEREO, 0, NULL);
+	BASS_Init(deviceId, 44100, BASS_DEVICE_MONO | BASS_DEVICE_REINIT, 0, NULL);
+	BASS_SetDevice(deviceId);
 	BASS_GetDeviceInfo(BASS_GetDevice(), &info);
 	outputDevice = info.name;
 }
@@ -164,4 +173,8 @@ double Sound::getVolumeKnobPos()
 		return copilot::readLvar(knobLvar);
 	}
 	return 0;
+}
+
+Sound::~Sound() {
+	BASS_StreamFree(stream);
 }

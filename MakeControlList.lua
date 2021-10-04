@@ -3,7 +3,6 @@ local root = "Prepar3D vx Add-ons\\Copilot for FSLabs\\"
 package.path = root .. "?.lua;" .. root .. "\\lua\\?.lua;" .. root .. "\\?\\init.lua"
 FSL2LUA_MAKE_CONTROL_LIST = true
 local FSL = require "FSL2Lua"
-local checkControl = require "FSL2Lua.FSL2Lua.FSLinternal"._checkControl
 local AC_TYPES = require "FSL2Lua.FSL2Lua.FSLinternal".AC_TYPES
 local path = "topics\\listofcontrols.md"
 io.open(path,"w"):close()
@@ -38,27 +37,11 @@ local function makeList()
     count = count + 1
     local line
 
-    if not checkControl(control) then error "something went wrong" end
-
     local class = getmetatable(control).__class
     local classLink = string.format("<a href='../libraries/FSL2Lua.html#Class_%s'>%s</a>", class, class)
     line = control.name:gsub("_", "\\_")  .. "\n> Class: " .. classLink .. "\n"
 
     local allTypesAvailable = true
-
-    for _, acType in ipairs(AC_TYPES) do
-      local available = checkControl(control, acType)
-      if available ~= "full" then
-        allTypesAvailable = false
-        line = line .. "\n\n>**" .. acType .. ": "
-        if available == "manual" then
-          line = line .. "no Lvar"
-        elseif available == "unavailable" then
-          line = line .. "unavailable"
-        end
-        line = line .. "**"
-      end
-    end
 
     if not allTypesAvailable then
       line = line .. "\n"

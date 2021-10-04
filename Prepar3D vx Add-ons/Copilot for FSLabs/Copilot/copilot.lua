@@ -8,8 +8,6 @@ file = require "FSL2Lua.FSL2Lua.file"
 
 copilot.logger:setLevel(tonumber(copilot.UserOptions.general.con_log_level))
 
-
-
 FSL:setPilot(copilot.UserOptions.general.PM_seat)
 FSL:setHttpPort(copilot.UserOptions.general.http_port)
 FSL:enableSequences()

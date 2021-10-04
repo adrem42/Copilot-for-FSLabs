@@ -312,6 +312,8 @@ public:
 	void removeAllPhrases(RuleID ruleID, bool dummy);
 	void setConfidence(float confidence, RuleID ruleID);
 	void setRulePersistence(RulePersistenceMode persistenceMode, RuleID ruleID);
+	void pause();
+	void resume();
 	void resetGrammar();
 	void afterRecoEvent(RuleID ruleID);
 	template<typename F>
@@ -330,6 +332,8 @@ public:
 		RecognizerType["getPhrases"] = &Recognizer::getPhrases;
 		RecognizerType["setRulePersistence"] = &Recognizer::setRulePersistence;
 		RecognizerType["getRuleState"] = &Recognizer::getRuleState;
+		RecognizerType["pause"] = &Recognizer::pause;
+		RecognizerType["resume"] = &Recognizer::resume;
 		ns.new_enum("RulePersistenceMode",
 					 "Ignore", Recognizer::RulePersistenceMode::Ignore,
 					 "Persistent", Recognizer::RulePersistenceMode::Persistent,
