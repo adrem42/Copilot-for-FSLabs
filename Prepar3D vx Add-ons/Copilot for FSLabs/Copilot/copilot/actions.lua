@@ -114,7 +114,7 @@ if copilot.isVoiceControlEnabled then
       if copilot.onGround() then return end
       if not copilot.airborneTime then return end
       if copilot.getTimestamp() - copilot.airborneTime > 60000 and not isFlightPhrase "flyingCircuits" then return end
-      copilot.sleep(0, 500)
+      FSL:skipHand()
       FSL.MIP_GEAR_Lever "UP"
       if isFlightPhrase "flyingCircuits" then
         copilot.voiceCommands.gearDown:activate()
@@ -131,7 +131,6 @@ if copilot.isVoiceControlEnabled then
     dummy = "... gear ...",
     action = function(vc)
       vc:ignore()
-      VoiceCommand:react()
       FSL.MIP_GEAR_Lever("DN")
       FSL.PED_SPD_BRK_LEVER("ARM")
     end,
@@ -142,7 +141,6 @@ if copilot.isVoiceControlEnabled then
     phrase = "go around, flaps!",
     action = function()
       local flaps = FSL.PED_FLAP_LEVER:getPosn()
-      VoiceCommand:react()
       if flaps == "FULL" then
         FSL.PED_FLAP_LEVER("3")
       elseif flaps == "3" then

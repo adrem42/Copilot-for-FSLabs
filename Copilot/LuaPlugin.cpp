@@ -13,6 +13,7 @@
 #include "lua.hpp"
 #include <optional>
 #include <string_view>
+#include "bass/bass.h"
 #include "FSL2LuaControls/FSL2LuaControls.h"
 
 const char* REG_KEY_JMP_BUFF = "JMPBUFF";
@@ -255,6 +256,75 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 		SimInterface::sendKeyToSimWindow(ufr.get<SHORT>(0), event.value_or(SimInterface::KeyEvent::Press), flags.value_or(0));
 	};
 	lua["copilot"]["isSimRunning"] = &copilot::simRunning;
+
+	lua["copilot"]["flags"] = [](sol::variadic_args va) {
+		size_t flags = 0;
+		for (size_t i = 0; i < va.leftover_count(); ++i) {
+			flags != va.get<size_t>(i);
+		}
+		return flags;
+	};
+
+	auto devInfoType = lua.new_usertype<BASS_DEVICEINFO>("BASS_DEVICEINFO");
+	devInfoType["name"] = &BASS_DEVICEINFO::name;
+	devInfoType["flags"] = &BASS_DEVICEINFO::flags;
+	devInfoType["driver"] = &BASS_DEVICEINFO::driver;
+	
+	lua["copilot"]["getSoundDevices"] = [] {
+		BASS_DEVICEINFO info;
+		std::vector<BASS_DEVICEINFO> devices;
+		for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) {
+			devices.push_back(info);
+		}
+		return sol::as_table(devices);
+	};
+
+	auto Win32 = lua.create_table();
+	lua["package"]["loaded"]["Win32"] = Win32;
+
+	Win32["messageBox"] = [](std::string_view text, std::string_view caption, size_t type) {
+		return MessageBoxA(NULL, text.data(), caption.data(), type);
+	};
+
+	Win32["IDABORT"] = IDABORT;
+	Win32["IDABORT"] = IDCANCEL;
+	Win32["IDABORT"] = IDCONTINUE;
+	Win32["IDABORT"] = IDIGNORE;
+	Win32["IDABORT"] = IDNO;
+	Win32["IDABORT"] = IDOK;
+	Win32["IDABORT"] = IDRETRY;
+	Win32["IDABORT"] = IDTRYAGAIN;
+	Win32["IDABORT"] = IDYES;
+
+	Win32["MB_ABORTRETRYIGNORE"] = MB_ABORTRETRYIGNORE;
+	Win32["MB_CANCELTRYCONTINUE"] = MB_CANCELTRYCONTINUE;
+	Win32["MB_HELP"] = MB_HELP;
+	Win32["MB_OK"] = MB_OK;
+	Win32["MB_OKCANCEL"] = MB_OKCANCEL;
+	Win32["MB_RETRYCANCEL"] = MB_RETRYCANCEL;
+	Win32["MB_YESNO"] = MB_YESNO;
+	Win32["MB_YESNOCANCEL"] = MB_YESNOCANCEL;
+	Win32["MB_ICONEXCLAMATION"] = MB_ICONEXCLAMATION;
+	Win32["MB_ICONWARNING"] = MB_ICONWARNING;
+	Win32["MB_ICONINFORMATION"] = MB_ICONINFORMATION;
+	Win32["MB_ICONASTERISK"] = MB_ICONASTERISK;
+	Win32["MB_ICONQUESTION"] = MB_ICONQUESTION;
+	Win32["MB_ICONSTOP"] = MB_ICONSTOP;
+	Win32["MB_ICONERROR"] = MB_ICONERROR;
+	Win32["MB_ICONHAND"] = MB_ICONHAND;
+	Win32["MB_DEFBUTTON1"] = MB_DEFBUTTON1;
+	Win32["MB_DEFBUTTON2"] = MB_DEFBUTTON2;
+	Win32["MB_DEFBUTTON3"] = MB_DEFBUTTON3;
+	Win32["MB_DEFBUTTON4"] = MB_DEFBUTTON4;
+	Win32["MB_APPLMODAL"] = MB_APPLMODAL;
+	Win32["MB_SYSTEMMODAL"] = MB_SYSTEMMODAL;
+	Win32["MB_TASKMODAL"] = MB_TASKMODAL;
+	Win32["MB_DEFAULT_DESKTOP_ONLY"] = MB_DEFAULT_DESKTOP_ONLY;
+	Win32["MB_RIGHT"] = MB_RIGHT;
+	Win32["MB_RTLREADING"] = MB_RTLREADING;
+	Win32["MB_SETFOREGROUND"] = MB_SETFOREGROUND;
+	Win32["MB_TOPMOST"] = MB_TOPMOST;
+	Win32["MB_SERVICE_NOTIFICATION"] = MB_SERVICE_NOTIFICATION;
 
 	std::unordered_map<std::string, SIMCONNECT_TEXT_TYPE>  textColors = {
 

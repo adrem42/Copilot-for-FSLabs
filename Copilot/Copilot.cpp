@@ -334,7 +334,9 @@ extern "C" __declspec(dllexport) void __stdcall DLLStart(__in __notnull IPdk * p
 
 extern "C" __declspec(dllexport) void __stdcall DLLStop(void)
 {
-	copilot::launchThread.join();
+	internalMuteEvent = nullptr;
+	if (copilot::launchThread.joinable())
+		copilot::launchThread.join();
 	copilot::logger->debug("Shutting down...");
 	LuaPlugin::stopAllScripts();
 	SimConnect::close();

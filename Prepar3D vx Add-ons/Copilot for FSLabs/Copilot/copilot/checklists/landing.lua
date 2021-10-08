@@ -16,7 +16,7 @@ landing:appendItem {
 landing:appendItem {
   label = "autoThrust",
   displayLabel = "A/THR",
-  response = {SPEED = VoiceCommand:new "speed", OFF = VoiceCommand:new "off"},
+  response = {SPEED = VoiceCommand:new "speed", OFF = VoiceCommand:new("off", 0.95)},
   onResponse = function(check, _, label)
     local athrOn = FSL.GSLD_FCU_ATHR_Switch:isLit()
     if label == "SPEED" then
@@ -39,8 +39,10 @@ landing:appendItem {
   response = VoiceCommand:new "Landing no blue",
   onResponse = function(check)
     check(FSL.OVHD_SIGNS_NoSmoking_Switch:getPosn() ~= "OFF", "No smoking switch must be ON or AUTO")
-    check(FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() == "ON",  "Seat belts switch must be ON")
-    check(FSL.PED_SPD_BRK_LEVER:getPosn() == "ARM",           "Spoilers not armed")
-    check(FSL.PED_FLAP_LEVER:getPosn() == "FULL",             "Flaps not set")
+    check(FSL.OVHD_SIGNS_SeatBelts_Switch:getPosn() == "ON", "Seat belts switch must be ON")
+    check(FSL.PED_SPD_BRK_LEVER:getPosn() == "ARM", "Spoilers not armed")
+    local flapsPos = FSL.PED_FLAP_LEVER:getPosn()
+    local flap3Landing = FSL.OVHD_GPWS_LDG_FLAP_3_Button:isDown()
+    check(flapsPos == (flap3Landing and "3" or "FULL"), "Flaps not set")
   end
 }

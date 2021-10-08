@@ -22,25 +22,8 @@ end
 
 local function selectJetways(menu)
   local items = menu.items
-  -- The following is necessary due to a GSX bug where, if you're at a double jetway stand,
-  -- it will want to switch the jetways for boarding (disconnect the already connected jetway
-  -- and connect the other one instead)
-  if items[1]:find "Undock" then
-    if not items[1]:find "<" then
-      selectMenuItem(1)
-    elseif not items[2]:find ">" then
-      selectMenuItem(2)
-    else
-      selectMenuItem(#items)
-    end
-  elseif items[2]:find "Undock" then
-    if not items[1]:find ">" then
-      selectMenuItem(1)
-    elseif not items[2]:find "<" then
-      selectMenuItem(2)
-    else
-      selectMenuItem(#items)
-    end
+  if menu.title:find "Boarding Service" and items[#items]:find "Don't select any jetway" then
+    selectMenuItem(#items)
   elseif items[#items]:find "Confirm" then
     selectMenuItem(#items)
   else

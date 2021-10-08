@@ -196,7 +196,10 @@ function Checklist:onVcStateChange(vc, state)
   return true
 end
 
-function Checklist:_handleCommonEvents(payload)
+function Checklist:_handleCommonEvents(item, payload)
+  if payload == "item_standby" then
+    return self:_onStby(item, true)
+  end
   return {res = payload}
 end
 
@@ -234,7 +237,7 @@ function Checklist:_awaitResponse(item)
   elseif event == self.standbyVoiceCommand then
     return self:_onStby(item)
   elseif event == commonEvents then
-    return self:_handleCommonEvents(payload())
+    return self:_handleCommonEvents(item, payload())
   else
     for _, vc in pairs(item.response) do
       vc:deactivate()
@@ -243,9 +246,11 @@ function Checklist:_awaitResponse(item)
   end
 end
 
-function Checklist:_onStby(item)
+function Checklist:_onStby(item, silent)
   self.standbyVoiceCommand:ignore()
-  self:_playCallout "checklists.standingBy"
+  if not silent then
+    self:_playCallout "checklists.standingBy"
+  end
   for _, vc in pairs(item.response) do
     vc:ignore()
   end

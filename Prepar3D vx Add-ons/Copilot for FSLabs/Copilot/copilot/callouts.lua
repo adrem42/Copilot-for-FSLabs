@@ -4,12 +4,17 @@ local Action = Action
 local VoiceCommand = VoiceCommand
 local copilot = copilot
 local ipc = ipc
+local frameRate = require("FSL2Lua.FSL2Lua.util").frameRate
 
 local PFD_delay = 650
 local ECAM_delay = 300
 local reverserDoorThreshold = 90
 local spoilersDeployedThreshold = 200
 local reactionTime = 300
+
+local function withFrameRateDelay(init)
+  return init + math.max(0,  -70 * math.min(frameRate(), 27) + 2080)
+end
 
 copilot.callouts = {
   takeoffFMAreadoutEnabled = copilot.isVoiceControlEnabled and copilot.UserOptions.voice_commands.takeoff_FMA_readout == copilot.UserOptions.ENABLED
@@ -125,7 +130,7 @@ end
 function copilot.callouts:waitForOneHundred()
   while true do
     if copilot.IAS() >= 100 then
-      copilot.playCallout("oneHundred", PFD_delay)
+      copilot.playCallout("oneHundred", withFrameRateDelay(PFD_delay))
       return
     end
     copilot.suspend(100)
@@ -135,7 +140,7 @@ end
 function copilot.callouts:waitForV1(V1)
   while true do
     if copilot.IAS() >= V1 then
-      copilot.playCallout("V1", PFD_delay)
+      copilot.playCallout("V1", withFrameRateDelay(PFD_delay))
       return
     end
     copilot.suspend(100)
@@ -145,7 +150,7 @@ end
 function copilot.callouts:waitForVr(Vr)
   while true do
     if copilot.IAS() >= Vr then
-      copilot.playCallout("rotate", PFD_delay)
+      copilot.playCallout("rotate", withFrameRateDelay(PFD_delay))
       return
     end
     copilot.suspend(100)
@@ -165,7 +170,7 @@ function copilot.callouts:waitForPositiveClimb()
 end
 
 function copilot.callouts:waitForSpoilers()
-  local delay = ECAM_delay + reactionTime
+  local delay = withFrameRateDelay(ECAM_delay) + reactionTime
   if prob(0.1) then delay = delay + plusminus(500) end
   repeat
     local spoilers_left = ipc.readLvar("FSLA320_spoiler_l_1") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_2") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_3") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_4") > spoilersDeployedThreshold and ipc.readLvar("FSLA320_spoiler_l_5") > spoilersDeployedThreshold
@@ -182,7 +187,7 @@ function copilot.callouts:waitForSpoilers()
 end
 
 function copilot.callouts:waitForReverseGreen()
-  local delay = ECAM_delay + reactionTime
+  local delay = withFrameRateDelay(ECAM_delay) + reactionTime
   if prob(0.1) then delay = delay + plusminus(500) end
   repeat
     local reverseLeftGreen = ipc.readLvar("FSLA320_reverser_left") >= reverserDoorThreshold
