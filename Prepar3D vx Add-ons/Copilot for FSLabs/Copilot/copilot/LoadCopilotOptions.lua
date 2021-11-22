@@ -44,7 +44,7 @@ elseif pfSeatOpt then
 end
 
 if not pmSeatOpt and not pfSeatOpt then
-  local gaugesIni = file.read(FSL.FSLabsPath .. "A320XGauges.ini")
+  local gaugesIni = file.read(FSL.FSLabsPath .. "A320XGauges.ini") or ""
   local seatUsed = tonumber(gaugesIni:match "SeatUsed=(%d)") or 1
   if seatUsed ~= 1 and seatUsed ~= 2 then
     error("Unrecognized seat selection in A320XGauges.ini, please explicitly specify PF_seat or PM_seat in the general section in options.ini")
@@ -54,6 +54,6 @@ if not pmSeatOpt and not pfSeatOpt then
 end
 
 if not copilot.UserOptions.general.http_port then
-  local httpServerIni = file.read(FSL.FSLabsPath .. "httpServer.ini")
+  local httpServerIni = file.read(FSL.FSLabsPath .. "httpServer.ini") or ""
   copilot.UserOptions.general.http_port = tonumber(httpServerIni:match "Port=(%d+)") or 8080
 end

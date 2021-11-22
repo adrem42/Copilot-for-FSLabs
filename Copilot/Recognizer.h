@@ -302,6 +302,8 @@ public:
 	~Recognizer();
 	void registerCallback(ISpNotifyCallback* callback);
 	RuleID addRule(std::vector<std::shared_ptr<Phrase>> phrases, float confidence, RulePersistenceMode persistenceMode);
+	LONG getPropertyNumber(const std::wstring&);
+	void setPropertyNumber(const std::wstring& name, LONG value);
 	void ignoreRule(RuleID ruleID);
 	void activateRule(RuleID ruleID);
 	void deactivateRule(RuleID ruleID);
@@ -338,6 +340,11 @@ public:
 					 "Ignore", Recognizer::RulePersistenceMode::Ignore,
 					 "Persistent", Recognizer::RulePersistenceMode::Persistent,
 					 "NonPersistent", Recognizer::RulePersistenceMode::NonPersistent);
+		RecognizerType["setPropertyNum"] = &Recognizer::setPropertyNumber;
+		RecognizerType["getPropertyNum"] = &Recognizer::getPropertyNumber;
+		RecognizerType["SPPROP_ADAPTATION_ON"] = sol::var(SPPROP_ADAPTATION_ON);
+		RecognizerType["SPPROP_PERSISTED_BACKGROUND_ADAPTATION"] = sol::var(SPPROP_PERSISTED_BACKGROUND_ADAPTATION);
+		RecognizerType["SPPROP_PERSISTED_LANGUAGE_MODEL_ADAPTATION"] = sol::var(SPPROP_PERSISTED_LANGUAGE_MODEL_ADAPTATION);
 
 		RecognizerType["deviceName"] = &Recognizer::getDeviceName;
 

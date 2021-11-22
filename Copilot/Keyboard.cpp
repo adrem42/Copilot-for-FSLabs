@@ -68,8 +68,8 @@ bool Keyboard::onKeyEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
     bool consumed = false;
 
     KeyCode keyCode = wParam;
-    bool extended = lParam & (1 << 24);
-    if (extended) keyCode += 0xFF;
+    /*bool extended = lParam & (1 << 24);
+    if (extended) keyCode += 0xFF;*/
 
     Timestamp timestamp = GetTickCount64();
     EventType event = EventType::None;

@@ -260,7 +260,7 @@ void LuaPlugin::initLuaState(sol::state_view lua)
 	lua["copilot"]["flags"] = [](sol::variadic_args va) {
 		size_t flags = 0;
 		for (size_t i = 0; i < va.leftover_count(); ++i) {
-			flags != va.get<size_t>(i);
+			flags |= va.get<size_t>(i);
 		}
 		return flags;
 	};

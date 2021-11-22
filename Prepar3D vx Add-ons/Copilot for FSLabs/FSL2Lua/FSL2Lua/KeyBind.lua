@@ -16,36 +16,37 @@ function Bind.parseKeys(input)
   local mainKeyCode
   local shifts = {}
   local keyCount = 0
-  local extended = false
-  for keyString in input:gmatch("[^(%+)]+") do
+  --local extended = false
+  for keyString in input:gmatch("[^%+]+") do
     keyCount = keyCount + 1
+    local _keyString = keyString
     keyString = keyString:upper()
-    if keyString == "EXTENDED" then
-      extended = true
-    else
+    -- if keyString == "EXTENDED" then
+    --   extended = true
+    -- else
       local maybeShift = keyCodes.modifiers[keyString]
       if maybeShift then
         shifts[#shifts+1] = maybeShift
       else
         local maybeKey = keyCodes.keys[keyString]
         if not maybeKey then
+          keyString = _keyString
           assert(#keyString == 1, "Invalid key: " .. keyString)
           maybeKey = assert(string.byte(keyString), "Invalid key: " .. keyString)
         end
         assert(mainKeyCode == nil, "Can't have more than one non-modifier key")
         mainKeyCode = maybeKey
       end
-    end
+    --end
   end
   assert(keyCount > 0, "No key specified")
   assert(keyCount ~= #shifts, "Can't have only modifier keys")
-  return mainKeyCode, shifts, extended
+  return mainKeyCode, shifts, false
 end
 
 function KeyBindWrapper:prepareData(data)
-  local keyCode, shifts, extended = Bind.parseKeys(data.key)
-  extended = extended or data.extended
-  self.keyBind = {key = (keyCode + (extended and 0xFF or 0)), shifts = shifts}
+  local keyCode, shifts = Bind.parseKeys(data.key)
+  self.keyBind = {key = keyCode, shifts = shifts}
   return data
 end
 

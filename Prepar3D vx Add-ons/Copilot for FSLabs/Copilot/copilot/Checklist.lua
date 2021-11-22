@@ -229,12 +229,13 @@ function Checklist:_awaitResponse(item)
     )
   end
 
-  local event, payload = Event.waitForEvents(events)
+  local timeout = copilot.UserOptions.checklists.timeout_standby * 1000
+  local event, payload = Event.waitForEventsWithTimeout(timeout, events)
 
   if event == self.sayAgainVoiceCommand then
     self:_playCallout(item.label)
     return self:_awaitResponse(item)
-  elseif event == self.standbyVoiceCommand then
+  elseif event == self.standbyVoiceCommand or event == Event.TIMEOUT then
     return self:_onStby(item)
   elseif event == commonEvents then
     return self:_handleCommonEvents(item, payload())
@@ -255,13 +256,17 @@ function Checklist:_onStby(item, silent)
     vc:ignore()
   end
   self:_resumeVoiceCommands()
-  local event, payload = Event.waitForEvents {self.resumeVoiceCommand:activate(), self:_getCommonEvents()}
-  if event == self.resumeVoiceCommand then
+  local timeout = copilot.UserOptions.checklists.timeout_cancel * 1000
+  local events = {self.resumeVoiceCommand:activate(), self:_getCommonEvents()}
+  local event, payload = Event.waitForEventsWithTimeout(timeout, events)
+  if event == Event.TIMEOUT then
+    return {res = "checklist_cancel"}
+  elseif event == self.resumeVoiceCommand then
     self:_suspendVoiceCommands()
     self:_playCallout(item.label)
     return self:_awaitResponse(item)
   end
-  return self:_handleCommonEvents(payload())
+  return self:_handleCommonEvents(item, payload())
 end
 
 function Checklist:_executeItem(item)
@@ -272,11 +277,8 @@ function Checklist:_executeItem(item)
   if item.beforeChallenge then
     item.beforeChallenge(item)
   end
-  if not copilot.usingTTScallouts then
-    copilot.sleep(200, 700)
-    if prob(0.5) then
-      copilot.sleep(200, 700)
-    end
+  if not copilot.usingTTScallouts and prob(0.1) then
+    copilot.sleep(0, 300)
   end
   self:_playCallout(item.label)
   item.numRetries = -1
@@ -330,7 +332,7 @@ function Checklist:execute()
     error("Checklist.execute() must be called from a coroutine added via a copilot API", 2)
   end
 
-  copilot.sleep(500, 3000)
+  copilot.sleep(0, 1000)
   if copilot.calloutExists("checklists." .. self.label .. ".announce") then
     self:_playCallout "announce"
   end
@@ -363,7 +365,7 @@ function Checklist:execute()
       break
     elseif res.res == "checklist_continue" then 
       if not res.disableDefault and (res.acknowledge or item.acknowledge) then
-        copilot.sleep(200, 1000)
+        if prob(0.1) then copilot.sleep(0, 500) end
         self:_playCallout(res.acknowledge or item.acknowledge)
       end
       i = i + 1

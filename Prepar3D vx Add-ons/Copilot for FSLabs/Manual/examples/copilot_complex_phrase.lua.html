@@ -74,7 +74,7 @@
 <pre>
 <span class="comment">-- Drop this file into FSLabs Copilot/custom - Copilot auto-loads
 </span><span class="comment">-- any lua files in that directory
-</span><span class="comment">-- Read more <a href="../manual/plugins.md.html#">here</a>
+</span><span class="comment">-- Read more here
 </span>
 <span class="keyword">local</span> MCDU_ERROR = <span class="string">"unexpected display state"</span>
 <span class="keyword">local</span> getWeatherSequence, ensureAirportSelected, pressAndWait
@@ -139,7 +139,7 @@
 
 Bind {key = <span class="string">"SHIFT+F"</span>, onPress = <span class="keyword">function</span>() getWeather:activate() <span class="keyword">end</span>}
 
-getWeatherSequence = <span class="keyword">function</span>(reportType, airport)
+<span class="keyword">function</span> getWeatherSequence(reportType, airport)
   <span class="keyword">local</span> disp = FSL.MCDU:getString()
   <span class="keyword">if</span> <span class="keyword">not</span> disp:find <span class="string">"ATIS/WX"</span> <span class="keyword">then</span>
     <span class="keyword">if</span> <span class="keyword">not</span> disp:find <span class="string">"MCDU MENU"</span> <span class="keyword">then</span>
@@ -151,13 +151,17 @@ getWeatherSequence = <span class="keyword">function</span>(reportType, airport)
   <span class="keyword">end</span>
   ensureAirportSelected(airport)
   <span class="keyword">if</span> reportType == <span class="string">"forecast"</span> <span class="keyword">then</span>
-    FSL.PED_MCDU_LSK_R5()
+    pressAndWait(FSL.PED_MCDU_LSK_R5, <span class="string">"ATIS/WX"</span>, <span class="keyword">function</span>(_disp)
+      <span class="keyword">return</span> FSL.MCDU:getLine(<span class="number">11</span>, _disp):match <span class="string">"FORECAST $"</span>
+    <span class="keyword">end</span>)
   <span class="keyword">else</span>
-    FSL.PED_MCDU_LSK_R6()
+    pressAndWait(FSL.PED_MCDU_LSK_R6, <span class="string">"ATIS/WX"</span>, <span class="keyword">function</span>(_disp)
+      <span class="keyword">return</span> FSL.MCDU:getLine(<span class="number">13</span>, _disp):match <span class="string">"METAR $"</span>
+    <span class="keyword">end</span>)
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
-ensureAirportSelected = <span class="keyword">function</span>(airport)
+ <span class="keyword">function</span> ensureAirportSelected(airport)
   <span class="keyword">local</span> disp = FSL.MCDU:getString()
   <span class="keyword">local</span> autoSelected, ICAO, selectKey
   <span class="keyword">if</span> airport == <span class="string">"origin"</span> <span class="keyword">or</span> airport == <span class="string">"destination"</span> <span class="keyword">then</span>
@@ -175,7 +179,7 @@ ensureAirportSelected = <span class="keyword">function</span>(airport)
     ICAO = airport
     autoSelected = <span class="keyword">false</span>
   <span class="keyword">end</span>
-  <span class="keyword">local</span> freeSlot, hasManualEntry
+  <span class="keyword">local</span> freeSlot, freeSlotIdx, hasManualEntry
   <span class="keyword">local</span> manualEntryIdx = <span class="number">69</span>
   <span class="keyword">for</span> line = <span class="number">1</span>, <span class="number">4</span> <span class="keyword">do</span>
     <span class="keyword">local</span> entry = disp:match(<span class="string">"^%u%u%u%u"</span>, manualEntryIdx)
@@ -184,47 +188,68 @@ ensureAirportSelected = <span class="keyword">function</span>(airport)
       hasManualEntry = <span class="keyword">true</span>
     <span class="keyword">else</span>
       freeSlot = freeSlot <span class="keyword">or</span> line
+      freeSlotIdx = freeSlotIdx  <span class="keyword">or</span> manualEntryIdx
     <span class="keyword">end</span>
     manualEntryIdx = manualEntryIdx + FSL.MCDU.LENGTH_LINE * <span class="number">2</span>
   <span class="keyword">end</span>
   <span class="keyword">if</span> autoSelected <span class="keyword">and</span> <span class="keyword">not</span> hasManualEntry <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">end</span>
+  <span class="keyword">local</span> action
   <span class="keyword">if</span> selectKey <span class="keyword">then</span>
-    pressAndWait(selectKey)
+    action = selectKey
   <span class="keyword">else</span>
     copilot.scratchpadClearer.clearScratchpad()
-    FSL.MCDU:<span class="global">type</span>(ICAO)
+    action = <span class="keyword">function</span>() FSL.MCDU:<span class="global">type</span>(ICAO) <span class="keyword">end</span>
   <span class="keyword">end</span>
-  pressAndWait(FSL[<span class="string">"PED_MCDU_LSK_R"</span> .. (freeSlot <span class="keyword">or</span> <span class="number">1</span>)])
+  pressAndWait(action, <span class="string">"ATIS/WX"</span>, <span class="keyword">function</span>(_disp)
+    <span class="keyword">return</span> FSL.MCDU:getScratchpad(_disp):match(<span class="string">"^"</span> .. ICAO)
+  <span class="keyword">end</span>)
+  pressAndWait(FSL[<span class="string">"PED_MCDU_LSK_R"</span> .. (freeSlot <span class="keyword">or</span> <span class="number">1</span>)], <span class="string">"ATIS/WX"</span>, <span class="keyword">function</span>(_disp)
+    <span class="keyword">return</span> _disp:match(<span class="string">"^%["</span> .. ICAO .. <span class="string">"%]"</span>, freeSlotIdx)
+  <span class="keyword">end</span>)
 <span class="keyword">end</span>
 
-pressAndWait = <span class="keyword">function</span>(keyToPress, checkFunc, waitMin, waitMax, init, timeout)
-  init = init <span class="keyword">or</span> FSL.MCDU:getString()
-  <span class="keyword">if</span> <span class="keyword">not</span> checkFunc <span class="keyword">then</span>
-    checkFunc = <span class="keyword">function</span>(disp) <span class="keyword">return</span> disp ~= init <span class="keyword">end</span>
-  <span class="keyword">elseif</span> <span class="global">type</span>(checkFunc) == <span class="string">"string"</span> <span class="keyword">then</span>
-    <span class="keyword">local</span> stringToMatch = checkFunc
-    checkFunc = <span class="keyword">function</span>(disp) <span class="keyword">return</span> disp:find(stringToMatch) <span class="keyword">end</span>
+<span class="keyword">function</span> pressAndWait(action, ...)
+  <span class="keyword">local</span> <span class="keyword">function</span> assertDisplay(val)
+    <span class="keyword">if</span> <span class="keyword">not</span> val <span class="keyword">then</span> <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>) <span class="keyword">end</span>
   <span class="keyword">end</span>
-  <span class="keyword">local</span> firstLine = FSL.MCDU:getLine(<span class="number">1</span>, init)
-  <span class="keyword">local</span> <span class="keyword">function</span> _checkFunc()
-    <span class="keyword">local</span> disp = FSL.MCDU:getString()
-    <span class="keyword">if</span> checkFunc(disp) <span class="keyword">then</span> <span class="keyword">return</span> <span class="keyword">true</span> <span class="keyword">end</span>
-    <span class="keyword">if</span> FSL.MCDU:getLine(<span class="number">1</span>, disp) ~= firstLine <span class="keyword">then</span>
-      <span class="comment">-- Oh no, someone opened a different page on our MCDU!
-</span>      <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>)
-    <span class="keyword">end</span>
-  <span class="keyword">end</span>
-  <span class="keyword">if</span> timeout ~= <span class="number">0</span> <span class="keyword">then</span>
-    timeout = timeout <span class="keyword">or</span> <span class="number">10000</span>
-    <span class="keyword">if</span> <span class="keyword">not</span> checkWithTimeout(timeout, <span class="keyword">function</span>()
-      keyToPress()
-      <span class="keyword">return</span> checkWithTimeout(<span class="number">1000</span>, <span class="number">100</span>, _checkFunc)
-    <span class="keyword">end</span>) <span class="keyword">then</span> <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>) <span class="keyword">end</span>
+  <span class="keyword">local</span> initIdx
+  <span class="keyword">local</span> requirePageTitle
+  <span class="keyword">if</span> <span class="global">type</span>(<span class="global">select</span>(<span class="number">1</span>, ...)) == <span class="string">"string"</span> <span class="keyword">and</span> <span class="global">select</span>(<span class="number">2</span>, ...) <span class="keyword">and</span> <span class="global">type</span>(<span class="global">select</span>(<span class="number">2</span>, ...)) == <span class="string">"function"</span> <span class="keyword">then</span>
+    requirePageTitle = <span class="global">select</span>(<span class="number">1</span>, ...)
+    assertDisplay(FSL.MCDU:getLine(<span class="number">1</span>):find(requirePageTitle))
+    initIdx = <span class="number">2</span>
   <span class="keyword">else</span>
-    <span class="keyword">repeat</span> ipc.sleep(<span class="number">100</span>) <span class="keyword">until</span> _checkFunc()
+    initIdx = <span class="number">1</span>
   <span class="keyword">end</span>
+  <span class="keyword">local</span> predicate, waitMin, waitMax, init, timeout = <span class="global">select</span>(initIdx, ...)
+  init = init <span class="keyword">or</span> FSL.MCDU:getString()
+  <span class="keyword">local</span> checkFunc
+  <span class="keyword">local</span> firstLine = FSL.MCDU:getLine(<span class="number">1</span>, init)
+  <span class="keyword">local</span> <span class="keyword">function</span> checkTitleChanged(disp)
+    assertDisplay(FSL.MCDU:getLine(<span class="number">1</span>, disp) == firstLine)
+  <span class="keyword">end</span>
+  <span class="keyword">if</span> <span class="global">type</span>(predicate) == <span class="string">"string"</span> <span class="keyword">then</span>
+    <span class="comment">-- The caller wants to go to a different page, the predicate is the title
+</span>    <span class="keyword">function</span> checkFunc()
+      <span class="keyword">return</span> FSL.MCDU:getLine(<span class="number">1</span>):find(predicate)
+    <span class="keyword">end</span>
+  <span class="keyword">elseif</span> <span class="global">type</span>(predicate) == <span class="string">"function"</span> <span class="keyword">then</span>
+    <span class="global">assert</span>(requirePageTitle, <span class="string">"Pass in the current page title as the second argument"</span>)
+    <span class="comment">-- The caller wants to do an action on the current page
+</span>    <span class="comment">-- Throw if the page title has changed
+</span>    <span class="comment">-- The predicate is a function that validates the outcome of the action
+</span>    <span class="keyword">function</span> checkFunc()
+      <span class="keyword">local</span> disp =  FSL.MCDU:getString()
+      checkTitleChanged(disp)
+      <span class="keyword">return</span> predicate(disp, assertDisplay)
+    <span class="keyword">end</span>
+  <span class="keyword">else</span>
+    <span class="global">error</span> <span class="string">"Invalid predicate type"</span>
+  <span class="keyword">end</span>
+  action()
+  assertDisplay(checkWithTimeout(timeout <span class="keyword">or</span> <span class="number">3000</span>, <span class="number">100</span>, checkFunc))
   ipc.sleep(<span class="global">math</span>.random(waitMin <span class="keyword">or</span> <span class="number">300</span>, waitMax <span class="keyword">or</span> <span class="number">1000</span>))
-  <span class="keyword">if</span> <span class="keyword">not</span> _checkFunc() <span class="keyword">then</span> <span class="global">error</span>(MCDU_ERROR, <span class="number">0</span>) <span class="keyword">end</span>
+  assertDisplay(checkFunc())
 <span class="keyword">end</span></pre>
 
 
@@ -232,7 +257,7 @@ pressAndWait = <span class="keyword">function</span>(keyToPress, checkFunc, wait
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2021-10-08 14:03:34 </i>
+<i style="float:right;">Last updated 2021-11-11 17:10:49 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

@@ -443,7 +443,7 @@ if FSL:getAcType() then
     ctrTkType = "VALVE"
   end
   for i = 1, 2 do
-    FSL["OVHD_FUEL_CTR_TK_" .. i .. "_COMPAT_Button"] = FSL["OVHD_FUEL_CTR_TK_" .. i .. "_" .. ctrTkType .. " _Button"]
+    FSL["OVHD_FUEL_CTR_TK_" .. i .. "_COMPAT_Button"] = FSL["OVHD_FUEL_CTR_TK_" .. i .. "_" .. ctrTkType .. "_Button"]
   end
 end
 

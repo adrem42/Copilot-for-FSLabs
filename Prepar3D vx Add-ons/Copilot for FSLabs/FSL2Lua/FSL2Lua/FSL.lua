@@ -3957,6 +3957,11 @@ return {
     range = 360,
     type = ""
   },
+  OVHD_RADIO_3_TRANSFER_Button = {
+    LVar = "VC_OVHD_RADIO_3_TRANSFER_Button",
+    name = "FSL.OVHD_RADIO_3_TRANSFER_Button",
+    type = ""
+  },
   OVHD_RADIO_3_VHF1_Button = {
     LVar = "VC_OVHD_RADIO_3_VHF1_Button",
     name = "FSL.OVHD_RADIO_3_VHF1_Button",
@@ -7739,6 +7744,11 @@ return {
     range = 359,
     type = ""
   },
+  PED_RADIO_1_TRANSFER_Button = {
+    LVar = "VC_PED_RADIO_1_TRANSFER_Button",
+    name = "FSL.CPT.PED_RADIO_TRANSFER_Button",
+    type = ""
+  },
   PED_RADIO_1_VHF1_Button = {
     LVar = "VC_PED_RADIO_1_VHF1_Button",
     Lt = "VC_PED_RADIO_1_VHF1_Lamp",
@@ -7931,6 +7941,11 @@ return {
     range = 359,
     type = ""
   },
+  PED_RADIO_2_TRANSFER_Button = {
+    LVar = "VC_PED_RADIO_2_TRANSFER_Button",
+    name = "FSL.FO.PED_RADIO_TRANSFER_Button",
+    type = ""
+  },
   PED_RADIO_2_VHF1_Button = {
     LVar = "VC_PED_RADIO_2_VHF1_Button",
     Lt = "VC_PED_RADIO_2_VHF1_Lamp",
@@ -8111,16 +8126,16 @@ return {
       z = ""
     },
     posn = {
-      ["MIN"] = 0,
-      ["-12"] = 30,
-      ["-9"] = 60,
-      ["-6"] = 90,
-      ["-3"] = 120,
-      ["CAL"] = 150,
       ["+4"] = 180,
       ["+8"] = 210,
       ["+12"] = 240,
-      ["MAX"] = 270,
+      ["-3"] = 120,
+      ["-6"] = 90,
+      ["-9"] = 60,
+      ["-12"] = 30,
+      CAL = 150,
+      MAX = 270,
+      MIN = 0
     },
     type = ""
   },

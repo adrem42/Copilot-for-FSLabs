@@ -132,6 +132,18 @@ return {
         name = "menu_keybind",
         default = nil,
         type = "string",
+      },
+      {
+        name = "timeout_standby",
+        default = 20,
+        type = "int",
+        comment = "Seconds before the checklist goes into standby mode"
+      },
+      {
+        name = "timeout_cancel",
+        default = 60,
+        type = "int",
+        comment = "Seconds before the checklist is cancelled when it's in standby mode"
       }
     }
   },

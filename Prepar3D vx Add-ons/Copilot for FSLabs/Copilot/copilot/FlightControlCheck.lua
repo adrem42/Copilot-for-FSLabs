@@ -50,12 +50,13 @@ end
 
 local sidestick = require "copilot.Sidestick"
 
-function FlightControlCheck:new(mode)
+function FlightControlCheck:new(mode, onActive)
   self.__index = self
   mode = mode or self.MODE_ACTIVE_IMMEDIATE
   return setmetatable({
     axes = axes(),
     isActive = mode == self.MODE_ACTIVE_IMMEDIATE,
+    onActive = onActive,
     timeLastAction = ipc.elapsedtime()
   }, self)
 end
@@ -72,6 +73,7 @@ function FlightControlCheck:checkAxisPart(axisPart, axis)
     axisPart.checked = true
     axis.checkInProgress = true
     self.isActive = true
+    if self.onActive then self.onActive() end
     return true
   end
 end

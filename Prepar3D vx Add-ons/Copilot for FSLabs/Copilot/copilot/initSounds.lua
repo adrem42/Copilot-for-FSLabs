@@ -17,14 +17,10 @@ local function loadNormalConfig(dir, prefix, cfg)
         if table.find(formats, ext:lower()) then
           local key = prefix .. name
           local entryKey = name
-          if ext ~= "ogg" then
-            key = key .. "." .. ext
-            entryKey = entryKey .. "." .. ext
-          end
           local entry = select(2, table.findIf(cfg, function(v)
             return type(v) == "table" and (v.name or v[1] or ""):lower() == entryKey
           end)) or {}
-          callouts[key] = Sound:new(
+          callouts[key:lower()] = Sound:new(
             string.format("%s\\%s", dir, name .. "." .. ext), entry.length or 0, entry.volume or 1
           )
         end
@@ -43,7 +39,7 @@ local function loadTtsConfig(ttsCfg)
       if type(v) == "table" then
         load(v, prefix .. k)
       else
-        ttsPhrases[prefix .. k] = v
+        ttsPhrases[(prefix .. k):lower()] = v
       end
     end
   end
@@ -56,10 +52,12 @@ local function loadTtsConfig(ttsCfg)
   load(ttsCfg, "")
 
   function copilot.calloutExists(fileName)
+    fileName = fileName:lower()
     return ttsPhrases[fileName] ~= nil
   end
 
   function copilot.playCallout(fileName, delay)
+    fileName = fileName:lower()
     if ttsPhrases[fileName] then
       copilot.speak(ttsPhrases[fileName], delay or 0)
     else
@@ -84,9 +82,11 @@ loadFolder = function(dir, prefix)
     loadTtsConfig(cfg)
   else
     function copilot.calloutExists(fileName)
+      fileName = fileName:lower()
       return callouts[fileName] ~= nil
     end
     function copilot.playCallout(fileName, delay)
+      fileName = fileName:lower()
       if callouts[fileName] then
         callouts[fileName]:play(delay or 0)
       else
@@ -106,7 +106,7 @@ function copilot.addCallout(fileName, ...)
   else
     ext, length, volume = "wav", args[1], args[2]
   end
-  callouts[fileName] = Sound:new(string.format("%s\\%s.%s", calloutDir, fileName, ext), length or 0, volume or 1)
+  callouts[fileName:lower()] = Sound:new(string.format("%s\\%s.%s", calloutDir, fileName, ext), length or 0, volume or 1)
 end
 
 assert(loadFolder(calloutDir, ""), "No such voice set found: " .. copilot.UserOptions.callouts.sound_set)

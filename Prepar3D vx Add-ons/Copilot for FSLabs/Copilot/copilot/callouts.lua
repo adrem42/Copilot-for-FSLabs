@@ -201,9 +201,9 @@ function copilot.callouts:waitForReverseGreen()
       copilot.playCallout("reverseGreen", delay)
     elseif noReverse then
       if reverseLeftGreen then
-        copilot.playCallout("noReverseLeft", delay)
-      elseif reverseRightGreen then
         copilot.playCallout("noReverseRight", delay)
+      elseif reverseRightGreen then
+        copilot.playCallout("noReverseLeft", delay)
       else
         copilot.playCallout("noReverse", delay)
       end
@@ -250,7 +250,7 @@ function copilot.callouts.brakeCheck:brakeCheckConditions()
   local pushback = ipc.readLvar("FSLA320_NWS_Pin") == 1
   local brakeAppThreshold = 0.5
   local GS = copilot.GS()
-  return GS >= 0.2 and GS < 3 and not pushback and leftBrakeApp > brakeAppThreshold and rightBrakeApp > brakeAppThreshold
+  return GS >= 0.1 and GS < 3 and not pushback and leftBrakeApp > brakeAppThreshold and rightBrakeApp > brakeAppThreshold
 end
 
 function copilot.callouts.brakeCheck:__call()
@@ -259,7 +259,7 @@ function copilot.callouts.brakeCheck:__call()
     local leftPressure = ipc.readLvar("VC_MIP_BrkPress_L")
     local rightPressure = ipc.readLvar("VC_MIP_BrkPress_R")
     if leftPressure == 0 and rightPressure == 0 then
-      copilot.playCallout("pressureZero", plusminus(800,0.2))
+      copilot.playCallout("pressureZero")
       copilot.events.brakesChecked:trigger()
       self.brakesChecked = true
       return true
@@ -284,12 +284,14 @@ function copilot.callouts:flightControlsCheck()
     end
   end
 
-  self.checkingFlightControls = true
   local check
   if copilot.isVoiceControlEnabled then
+    self.checkingFlightControls = true
     check = FlightControlCheck:new(FlightControlCheck.MODE_ACTIVE_IMMEDIATE)
   else
-    check = FlightControlCheck:new(FlightControlCheck.MODE_ACTIVE_AFTER_FIRST_CHECK)
+    check = FlightControlCheck:new(FlightControlCheck.MODE_ACTIVE_AFTER_FIRST_CHECK, function()
+      self.checkingFlightControls = true
+    end)
   end
   local res, err = check()
   self.checkingFlightControls = false

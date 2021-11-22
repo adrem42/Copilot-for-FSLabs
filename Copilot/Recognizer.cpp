@@ -328,6 +328,18 @@ RuleID Recognizer::addRule(std::vector<std::shared_ptr<Phrase>> phrases, float c
 	return ruleID;
 }
 
+LONG Recognizer::getPropertyNumber(const std::wstring& name) {
+	LONG ret;
+	if (FAILED(recognizer->GetPropertyNum(name.data(), &ret)))
+		throw std::runtime_error("Failed to retrieve property");
+	return ret;
+}
+
+void Recognizer::setPropertyNumber(const std::wstring& name, LONG value) {
+	if (FAILED(recognizer->SetPropertyNum(name.data(), value)))
+		throw std::runtime_error("Failed to set property");
+}
+
 
 void Recognizer::markGrammarDirty()
 {

@@ -366,13 +366,10 @@ function copilot.sequences.parking()
 
   FSL.OVHD_FUEL_L_TK_1_PUMP_Button:toggleUp()
   FSL.OVHD_FUEL_L_TK_2_PUMP_Button:toggleUp()
-  if FSL:getAcType() == "A321" then
-    --FSL.OVHD_FUEL_CTR_TK_1_VALVE_Button:toggleUp()
-    --FSL.OVHD_FUEL_CTR_TK_2_VALVE_Button:toggleUp()
-  else
-    FSL.OVHD_FUEL_CTR_TK_1_PUMP_Button:toggleUp()
-    FSL.OVHD_FUEL_CTR_TK_2_PUMP_Button:toggleUp()
-  end
+
+  FSL.OVHD_FUEL_CTR_TK_1_COMPAT_Button:toggleUp()
+  FSL.OVHD_FUEL_CTR_TK_2_COMPAT_Button:toggleUp()
+
   FSL.OVHD_FUEL_R_TK_1_PUMP_Button:toggleUp()
   FSL.OVHD_FUEL_R_TK_2_PUMP_Button:toggleUp()
 

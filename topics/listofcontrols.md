@@ -515,6 +515,9 @@ FSL.CPT.PED\_RADIO\_ON\_OFF\_Switch
 FSL.CPT.PED\_RADIO\_Outer\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
 
+FSL.CPT.PED\_RADIO\_TRANSFER\_Button
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
+
 FSL.CPT.PED\_RADIO\_VHF1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
@@ -1048,6 +1051,9 @@ FSL.FO.PED\_RADIO\_ON\_OFF\_Switch
 
 FSL.FO.PED\_RADIO\_Outer\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
+
+FSL.FO.PED\_RADIO\_TRANSFER\_Button
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.FO.PED\_RADIO\_VHF1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
@@ -1837,6 +1843,9 @@ FSL.OVHD\_RADIO\_3\_ON\_OFF\_Switch
 
 FSL.OVHD\_RADIO\_3\_Outer\_Knob
 > Class: <a href='../libraries/FSL2Lua.html#Class_RotaryKnob'>RotaryKnob</a>
+
+FSL.OVHD\_RADIO\_3\_TRANSFER\_Button
+> Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
 
 FSL.OVHD\_RADIO\_3\_VHF1\_Button
 > Class: <a href='../libraries/FSL2Lua.html#Class_Button'>Button</a>
